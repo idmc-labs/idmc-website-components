@@ -2,10 +2,37 @@
     display: flex;
     align-items: center;
     flex-direction: column;
-    padding: var(--dui-spacing-large) 0;
+    padding: var(--dui-spacing-large);
 
     .main-content {
+        display: flex;
+        flex-direction: column;
         width: 100%;
         max-width: 1200px;
+        gap: var(--dui-spacing-extra-large);
+
+        .profile {
+            display: flex;
+            flex-direction: column;
+            gap: var(--dui-spacing-large);
+        }
+
+        .at-glance {
+            display: flex;
+            flex-direction: column;
+            gap: var(--dui-spacing-large);
+
+            .overview {
+                display: flex;
+                flex-direction: column;
+                gap: var(--dui-spacing-medium);
+            }
+
+            .at-glance-content {
+                display: flex;
+                flex-direction: column;
+                gap: var(--dui-spacing-medium);
+            }
+        }
     }
 }
