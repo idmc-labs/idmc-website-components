@@ -1,8 +1,8 @@
 {
-    "name": "base-react-app",
-    "longName": "Base React App",
+    "name": "idmc-website-components",
+    "longName": "IDMC Website Components",
     "version": "1.0.0",
-    "description": "Base application configured with React, Typescript, Graphql, Sentry, Google Analytics",
+    "description": "React components for IDMC website",
     "scripts": {
         "test": "jest",
         "test:coverage": "jest --coverage",
@@ -26,15 +26,15 @@
     ],
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/togglecorp/base-react-app.git"
+        "url": "git+https://github.com/idmc-labs/idmc-website-components.git"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "bugs": {
-        "url": "https://github.com/togglecorp/base-react-app/issues"
+        "url": "https://github.com/idmc-labs/idmc-website-components/issues"
     },
-    "homepage": "https://github.com/togglecorp/base-react-app#readme",
+    "homepage": "https://github.com/idmc-labs/idmc-website-components#readme",
     "dependencies": {
         "@apollo/client": "^3.3.21",
         "@babel/runtime": "^7.11.2",
