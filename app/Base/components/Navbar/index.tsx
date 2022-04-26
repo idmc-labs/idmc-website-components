@@ -9,7 +9,6 @@ import {
 import {
     IoHelp,
     IoLogOutOutline,
-    IoRocketSharp,
 } from 'react-icons/io5';
 
 import SmartNavLink from '#base/components/SmartNavLink';
@@ -64,7 +63,12 @@ function Navbar(props: Props) {
     return (
         <nav className={_cs(className, styles.navbar)}>
             <div className={styles.appBrand}>
-                <IoRocketSharp className={styles.logo} />
+                <div className={styles.abbrev}>
+                    iDMC
+                </div>
+                <div className={styles.fullName}>
+                    internal displacement monitoring center
+                </div>
             </div>
             <div className={styles.main}>
                 <div className={styles.navLinks}>
