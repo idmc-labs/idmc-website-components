@@ -1,0 +1,8 @@
+.input {
+    padding: var(--dui-spacing-extra-small);
+    color: var(--dui-color-text);
+
+    &.errored {
+        color: var(--dui-color-negative);
+    }
+}
