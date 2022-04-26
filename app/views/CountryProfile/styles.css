@@ -32,11 +32,11 @@
             flex-direction: column;
             gap: var(--dui-spacing-medium);
 
-            .info-graphics {
+            .infographics {
                 display: flex;
                 gap: var(--dui-spacing-extra-large);
 
-                .conflict-info-graphics {
+                .conflict-infographics {
                     display: flex;
                     flex-basis: 0;
                     flex-direction: column;
@@ -45,7 +45,7 @@
                     padding: var(--dui-spacing-medium);
                     gap: var(--dui-spacing-medium);
 
-                    .info-graphic-list {
+                    .infographic-list {
                         display: flex;
                         color: orange;
 
@@ -56,7 +56,7 @@
                     }
                 }
 
-                .disaster-info-graphics {
+                .disaster-infographics {
                     display: flex;
                     flex-basis: 0;
                     flex-direction: column;
@@ -65,7 +65,7 @@
                     padding: var(--dui-spacing-medium);
                     gap: var(--dui-spacing-medium);
 
-                    .info-graphic-list {
+                    .infographic-list {
                         display: flex;
                         color: blue;
 
@@ -80,7 +80,7 @@
     }
 }
 
-.info-graphic {
+.infographic {
     display: flex;
     flex-direction: column;
     gap: var(--dui-spacing-medium);

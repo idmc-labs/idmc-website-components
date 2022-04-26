@@ -4,9 +4,12 @@ import { _cs } from '@togglecorp/fujs';
 
 import styles from './styles.css';
 
-function useSanitizedHtml(rawHtml: string) {
-    const sanitizedHtml = React.useMemo(() => (
-        sanitizeHtml(
+function useSanitizedHtml(rawHtml: string | null | undefined) {
+    const sanitizedHtml = React.useMemo(() => {
+        if (!rawHtml) {
+            return undefined;
+        }
+        return sanitizeHtml(
             rawHtml,
             {
                 allowedTags: ['b', 'h', 'p', 'bold', 'strong', 'li', 'ul', 'a'],
@@ -25,14 +28,14 @@ function useSanitizedHtml(rawHtml: string) {
                     }),
                 },
             },
-        )
-    ), [rawHtml]);
+        );
+    }, [rawHtml]);
 
     return sanitizedHtml;
 }
 
-interface Props extends Omit<React.HTMLProps<HTMLDivElement>, 'dangerouslySetInnerHTML'>{
-    value: string;
+interface Props extends Omit<React.HTMLProps<HTMLDivElement>, 'dangerouslySetInnerHTML' | 'value'>{
+    value: string | null | undefined;
 }
 
 function RichTextOutput(props: Props) {
@@ -43,6 +46,10 @@ function RichTextOutput(props: Props) {
     } = props;
 
     const sanitizedValue = useSanitizedHtml(value);
+
+    if (!sanitizedValue) {
+        return null;
+    }
 
     return (
         <div
