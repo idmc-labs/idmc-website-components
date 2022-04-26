@@ -1,6 +1,6 @@
-# base-react-app
+# IDMC Website Components
 
-Base React App
+React components for IDMC website
 
 ## Development
 
