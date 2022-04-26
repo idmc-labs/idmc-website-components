@@ -60,7 +60,9 @@ function CountryProfile(props: Props) {
         className,
     } = props;
 
-    const [activeYear, setActiveYear] = React.useState<string | undefined>('2022');
+    const [activeYear, setActiveYear] = React.useState<string | undefined>(
+        countryOverviews[0]?.year,
+    );
 
     return (
         <div className={_cs(styles.countryProfile, className)}>
@@ -171,6 +173,24 @@ function CountryProfile(props: Props) {
                         </div>
                     </section>
                 )}
+                <section className={styles.latestNewDisplacements}>
+                    <Header
+                        headingSize="extraLarge"
+                        heading="Latest New Displacements"
+                    />
+                    <HTMLOutput
+                        value={countryMetadata.latestNewDisplacements}
+                    />
+                </section>
+                <section className={styles.internalDisplacementUpdates}>
+                    <Header
+                        headingSize="extraLarge"
+                        heading="Internal Displacement Updates"
+                    />
+                    <HTMLOutput
+                        value={countryMetadata.internalDisplacementUpdates}
+                    />
+                </section>
             </div>
         </div>
     );
