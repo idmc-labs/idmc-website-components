@@ -14,9 +14,16 @@
         flex-shrink: 0;
         padding: var(--dui-spacing-medium) var(--dui-spacing-large);
         color: var(--dui-color-brand);
+        gap: var(--dui-spacing-medium);
 
-        .logo {
-            font-size: var(--dui-font-size-extra-large);
+        .abbrev {
+            font-size: var(--dui-font-size-mega-large);
+            font-weight: var(--dui-font-weight-bold);
+        }
+
+        .full-name {
+            width: 4rem;
+            font-size: var(--dui-font-size-extra-small);
         }
     }
 
