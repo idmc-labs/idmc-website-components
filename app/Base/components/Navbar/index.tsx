@@ -92,11 +92,13 @@ function Navbar(props: Props) {
                     className={styles.userDisplay}
                     variant="transparent"
                 >
+                    {/*
                     <DropdownMenuItem
                         href={route.myProfile.path}
                     >
                         User Profile
                     </DropdownMenuItem>
+                    */}
                     <DropdownMenuItem
                         name={undefined}
                         onClick={onLogoutClick}

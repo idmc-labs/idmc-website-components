@@ -23,6 +23,7 @@ const login = wrap({
     },
     visibility: 'is-not-authenticated',
 });
+
 const home = wrap({
     path: '/',
     title: 'Home',
@@ -33,13 +34,33 @@ const home = wrap({
     },
     visibility: 'is-authenticated',
 });
-const myProfile = wrap({
-    path: '/my-profile/',
-    title: 'My Profile',
+const goodPractices = wrap({
+    path: '/good-practices/',
+    title: 'Good Practices',
     navbarVisibility: true,
     component: lazy(() => import('#views/Template')),
     componentProps: {
-        name: 'My Profile Page',
+        name: 'Good Practices',
+    },
+    visibility: 'is-authenticated',
+});
+const goodPractice = wrap({
+    path: '/good-practices/:id/',
+    title: 'Good Practice',
+    navbarVisibility: true,
+    component: lazy(() => import('#views/Template')),
+    componentProps: {
+        name: 'Good Practice',
+    },
+    visibility: 'is-authenticated',
+});
+const countryProfile = wrap({
+    path: '/country-profiles/:id/',
+    title: 'Country Profile',
+    navbarVisibility: true,
+    component: lazy(() => import('#views/Template')),
+    componentProps: {
+        name: 'Country Profile',
     },
     visibility: 'is-authenticated',
 });
@@ -47,7 +68,9 @@ const myProfile = wrap({
 const routes = {
     login,
     home,
-    myProfile,
+    goodPractices,
+    goodPractice,
+    countryProfile,
     fourHundredFour,
 };
 export default routes;
