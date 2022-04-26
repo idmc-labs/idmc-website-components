@@ -12,7 +12,6 @@
     flex-direction: column;
     width: 100vw;
     height: 100vh;
-    font-size: var(--dui-font-size-medium);
 
     .navbar {
         flex-shrink: 0;

@@ -1,0 +1,5 @@
+.rich-text-output {
+    p {
+        margin: $spacing/2 0;
+    }
+}
