@@ -5,6 +5,15 @@
     --dui-font-weight-medium: 400;
     --dui-font-weight-bold: 700;
     --dui-font-size-heading: 400;
+
+    --dui-font-size-extra-small: 0.7rem;
+    --dui-font-size-small: 0.8rem;
+    --dui-font-size-medium: 1rem;
+    --dui-font-size-large: 1.26rem;
+    --dui-font-size-extra-large: 1.6rem;
+    --dui-font-size-super-large: 2.2rem;
+    --dui-font-size-mega-large: 3rem;
+    --dui-font-size-ultra-large: 4rem;
 }
 
 .base {
