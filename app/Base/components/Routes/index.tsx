@@ -29,9 +29,21 @@ function Routes(props: Props) {
                 </Route>
                 <Route
                     exact
-                    path={routes.myProfile.path}
+                    path={routes.countryProfile.path}
                 >
-                    {routes.myProfile.load({ className })}
+                    {routes.countryProfile.load({ className })}
+                </Route>
+                <Route
+                    exact
+                    path={routes.goodPractice.path}
+                >
+                    {routes.goodPractice.load({ className })}
+                </Route>
+                <Route
+                    exact
+                    path={routes.goodPractices.path}
+                >
+                    {routes.goodPractices.load({ className })}
                 </Route>
                 <Route
                     exact
