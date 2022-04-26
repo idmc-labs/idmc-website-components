@@ -10,6 +10,8 @@ import {
 import { IoBarChart } from 'react-icons/io5';
 import { _cs } from '@togglecorp/fujs';
 
+import TextInput from '#components/TextInput';
+import RawButton from '#components/RawButton';
 import HTMLOutput from '#components/HTMLOutput';
 
 import { countryMetadata, countryOverviews, statistics } from './data';
@@ -66,6 +68,14 @@ function CountryProfile(props: Props) {
 
     return (
         <div className={_cs(styles.countryProfile, className)}>
+            <TextInput
+                name={undefined}
+                value={undefined}
+                actions="SEARCH"
+            />
+            <RawButton
+                name={undefined}
+            />
             <div className={styles.mainContent}>
                 <section className={styles.profile}>
                     <Header
