@@ -1,0 +1,11 @@
+.country-profile {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    padding: var(--dui-spacing-large) 0;
+
+    .main-content {
+        width: 100%;
+        max-width: 1200px;
+    }
+}

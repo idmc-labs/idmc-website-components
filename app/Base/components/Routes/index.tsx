@@ -47,6 +47,18 @@ function Routes(props: Props) {
                 </Route>
                 <Route
                     exact
+                    path={routes.countryProfile.path}
+                >
+                    {routes.countryProfile.load({ className })}
+                </Route>
+                <Route
+                    exact
+                    path={routes.countryProfiles.path}
+                >
+                    {routes.countryProfiles.load({ className })}
+                </Route>
+                <Route
+                    exact
                     path={routes.login.path}
                 >
                     {routes.login.load({ className })}

@@ -54,14 +54,22 @@ const goodPractice = wrap({
     },
     visibility: 'is-authenticated',
 });
+
 const countryProfile = wrap({
     path: '/country-profiles/:id/',
     title: 'Country Profile',
     navbarVisibility: true,
-    component: lazy(() => import('#views/Template')),
-    componentProps: {
-        name: 'Country Profile',
-    },
+    component: lazy(() => import('#views/CountryProfile')),
+    componentProps: {},
+    visibility: 'is-authenticated',
+});
+
+const countryProfiles = wrap({
+    path: '/country-profiles/',
+    title: 'Country Profiles',
+    navbarVisibility: true,
+    component: lazy(() => import('#views/CountryProfile')),
+    componentProps: {},
     visibility: 'is-authenticated',
 });
 
@@ -71,6 +79,7 @@ const routes = {
     goodPractices,
     goodPractice,
     countryProfile,
+    countryProfiles,
     fourHundredFour,
 };
 export default routes;
