@@ -133,5 +133,17 @@
         width: 100%;
         height: 14rem;
         overflow: auto;
+
+        :global {
+            .recharts-tooltip-wrapper {
+                width: 12rem;
+
+                .recharts-default-tooltip {
+                    width: 100%;
+                    white-space: unset!important;
+                    font-size: var(--dui-font-size-small);
+                }
+            }
+        }
     }
 }
