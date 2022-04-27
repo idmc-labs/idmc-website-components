@@ -1,3 +1,8 @@
+.slider-container {
+    padding: var(--dui-spacing-extra-large) var(--dui-spacing-medium) 0 var(--dui-spacing-medium);
+    min-width: 196px;
+}
+
 .country-profile {
     display: flex;
     align-items: center;
@@ -48,6 +53,12 @@
                     overflow: auto;
                     gap: var(--dui-spacing-medium);
 
+                    .conflict-filter {
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: var(--dui-spacing-medium);
+                    }
+
                     .infographic-list {
                         display: flex;
                         overflow: auto;
@@ -69,6 +80,12 @@
                     min-width: 36rem;
                     overflow: auto;
                     gap: var(--dui-spacing-medium);
+
+                    .disaster-filter {
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: var(--dui-spacing-medium);
+                    }
 
                     .infographic-list {
                         display: flex;
@@ -105,9 +122,42 @@
             flex-direction: column;
             gap: var(--dui-spacing-large);
 
-            .map-container {
+            .idu-filter {
+                display: flex;
+                gap: var(--dui-spacing-large);
+                align-items: flex-end;
+
+                .filter {
+                    display: flex;
+                    flex-grow: 1;
+                    flex-wrap: wrap;
+                    gap: var(--dui-spacing-large);
+                }
+
+                .segment-input {
+                    display: flex;
+                    flex-shrink: 0;
+                    font-size: var(--dui-font-size-extra-large);
+                    gap: var(--dui-spacing-small);
+                }
+            }
+
+            .map-wrapper {
+                position: relative;
                 width: 100%;
-                min-height: 60vh;
+
+                .map-container {
+                    width: 100%;
+                    min-height: 60vh;
+                }
+
+                .legend {
+                    position: absolute;
+                    bottom: var(--dui-spacing-large);
+                    left: var(--dui-spacing-large);
+                    background-color: var(--dui-color-background);
+                    padding: var(--dui-spacing-large);
+                }
             }
         }
     }
