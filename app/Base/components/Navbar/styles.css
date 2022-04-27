@@ -12,19 +12,9 @@
         display: flex;
         align-items: center;
         flex-shrink: 0;
-        padding: var(--dui-spacing-medium) var(--dui-spacing-large);
         color: var(--dui-color-brand);
-        gap: var(--dui-spacing-medium);
-
-        .abbrev {
-            font-size: var(--dui-font-size-mega-large);
-            font-weight: var(--dui-font-weight-bold);
-        }
-
-        .full-name {
-            width: 4rem;
-            font-size: var(--dui-font-size-extra-small);
-        }
+        font-size: var(--dui-font-size-mega-large);
+        font-weight: var(--dui-font-weight-bold);
     }
 
     .main {
@@ -56,14 +46,5 @@
         >* {
             margin: 0 var(--dui-spacing-small);
         }
-    }
-
-    .user-display {
-        display: flex;
-        align-items: stretch;
-        flex-shrink: 0;
-        padding: 0 var(--dui-spacing-large);
-        color: var(--dui-color-text-message);
-        font-weight: var(--dui-font-weight-bold);
     }
 }

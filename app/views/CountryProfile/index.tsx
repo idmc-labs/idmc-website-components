@@ -5,6 +5,7 @@ import {
     TabList,
     TabPanel,
     NumberOutput,
+    SelectInput,
 } from '@the-deep/deep-ui';
 import Map, {
     MapContainer,
@@ -29,14 +30,15 @@ import {
     Cell,
 } from 'recharts';
 
-import Header from '#components/Header';
-import TextInput from '#components/TextInput';
 import Button from '#components/Button';
+import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
 
-import { countryMetadata, countryOverviews, statistics, iduGeojson } from './data';
+import { countryMetadata, countryOverviews, statistics, iduGeojson, idus } from './data';
 import styles from './styles.css';
+
+const options: { key: string; label: string }[] = [];
 
 const orangePointHaloCirclePaint: mapboxgl.CirclePaint = {
     'circle-opacity': 0.6,
@@ -44,9 +46,9 @@ const orangePointHaloCirclePaint: mapboxgl.CirclePaint = {
         property: 'type',
         type: 'categorical',
         stops: [
-            ['Conflict', 'orange'],
-            ['Disaster', 'blue'],
-            ['Other', 'green'],
+            ['Conflict', 'rgb(239, 125, 0)'],
+            ['Disaster', 'rgb(1, 142, 202)'],
+            ['Other', 'rgb(51, 149, 62)'],
         ],
     },
     'circle-radius': {
@@ -125,17 +127,19 @@ function Infographic(props: InfoGraphicProps) {
 
     return (
         <div className={styles.infographic}>
-            <NumberOutput
-                className={styles.totalValue}
-                value={totalValue}
-                precision={1}
-                normal
-            />
-            <div className={styles.description}>
-                {description}
-            </div>
-            <div className={styles.date}>
-                {date}
+            <div>
+                <NumberOutput
+                    className={styles.totalValue}
+                    value={totalValue}
+                    precision={1}
+                    normal
+                />
+                <div className={styles.description}>
+                    {description}
+                </div>
+                <div className={styles.date}>
+                    {date}
+                </div>
             </div>
             <div className={styles.chart}>
                 {chart}
@@ -153,23 +157,14 @@ function CountryProfile(props: Props) {
         className,
     } = props;
 
+    const [moreIduShown, setMoreIduShown] = React.useState(false);
+
     const [activeYear, setActiveYear] = React.useState<string | undefined>(
         countryOverviews[0]?.year,
     );
 
     return (
         <div className={_cs(styles.countryProfile, className)}>
-            <TextInput
-                name={undefined}
-                value={undefined}
-                actions="SEARCH"
-            />
-            <Button
-                name={undefined}
-                icons="Wow"
-            >
-                Say hellow!
-            </Button>
             <div className={styles.mainContent}>
                 <section className={styles.profile}>
                     <Header
@@ -244,6 +239,17 @@ function CountryProfile(props: Props) {
                                         heading="Conflict and Violence Data"
                                         headingSize="medium"
                                     />
+                                    <div>
+                                        <SelectInput
+                                            label="Disaster Category"
+                                            name="disasterCategory"
+                                            value={undefined}
+                                            options={options}
+                                            keySelector={(item) => item.key}
+                                            labelSelector={(item) => item.label}
+                                            onChange={() => undefined}
+                                        />
+                                    </div>
                                     <div className={styles.infographicList}>
                                         <Infographic
                                             totalValue={statistics.conflict.newDisplacements}
@@ -273,7 +279,7 @@ function CountryProfile(props: Props) {
                                                         <Legend />
                                                         <Bar
                                                             dataKey="total"
-                                                            fill="orange"
+                                                            fill="var(--color-conflict)"
                                                             name="Conflict new displacements"
                                                             shape={<CustomBar />}
                                                             maxBarSize={10}
@@ -312,7 +318,7 @@ function CountryProfile(props: Props) {
                                                             dataKey="totalStock"
                                                             name="Conflict total number of IDPs"
                                                             key="totalStock"
-                                                            stroke="orange"
+                                                            stroke="var(--color-conflict)"
                                                             strokeWidth={2}
                                                             connectNulls
                                                             dot
@@ -330,6 +336,17 @@ function CountryProfile(props: Props) {
                                         headingSize="medium"
                                         heading="Disaster Data"
                                     />
+                                    <div>
+                                        <SelectInput
+                                            label="Disaster Category"
+                                            name="disasterCategory"
+                                            value={undefined}
+                                            options={options}
+                                            keySelector={(item) => item.key}
+                                            labelSelector={(item) => item.label}
+                                            onChange={() => undefined}
+                                        />
+                                    </div>
                                     <div className={styles.infographicList}>
                                         <Infographic
                                             totalValue={statistics.disaster.newDisplacements}
@@ -359,7 +376,7 @@ function CountryProfile(props: Props) {
                                                         <Legend />
                                                         <Bar
                                                             dataKey="total"
-                                                            fill="blue"
+                                                            fill="var(--color-disaster)"
                                                             name="Disaster new displacements"
                                                             shape={<CustomBar />}
                                                             maxBarSize={10}
@@ -405,7 +422,7 @@ function CountryProfile(props: Props) {
                 )}
                 <section className={styles.latestNewDisplacements}>
                     <Header
-                        headingSize="extraLarge"
+                        headingSize="large"
                         heading="Latest New Displacements"
                     />
                     <EllipsizedContent>
@@ -413,10 +430,33 @@ function CountryProfile(props: Props) {
                             value={countryMetadata.latestNewDisplacements}
                         />
                     </EllipsizedContent>
+                    <div className={styles.iduContainer}>
+                        {(moreIduShown ? idus : idus.slice(0, 4)).map((idu) => (
+                            <div
+                                key={idu.id}
+                                className={styles.idu}
+                            >
+                                <HTMLOutput
+                                    value={idu.standard_popup_text}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                    {idus.length > 4 && (
+                        <Button
+                            name={undefined}
+                            // variant="secondary"
+                            onClick={() => {
+                                setMoreIduShown((val) => !val);
+                            }}
+                        >
+                            {moreIduShown ? 'Collapse' : 'Show more'}
+                        </Button>
+                    )}
                 </section>
                 <section className={styles.internalDisplacementUpdates}>
                     <Header
-                        headingSize="extraLarge"
+                        headingSize="large"
                         heading="Internal Displacement Updates"
                     />
                     <EllipsizedContent>
