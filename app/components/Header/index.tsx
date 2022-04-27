@@ -5,8 +5,6 @@ import Heading, { HeadingSizeType } from '#components/Heading';
 
 import styles from './styles.css';
 
-// FIXME: do the styling
-
 interface Props {
     className?: string;
     heading?: React.ReactNode;
@@ -15,6 +13,7 @@ interface Props {
     description?: React.ReactNode;
     headingDescription?: React.ReactNode;
     headingSize?: HeadingSizeType,
+    inlineHeadingDescription?: boolean,
 }
 
 function Header(props: Props) {
@@ -26,6 +25,7 @@ function Header(props: Props) {
         description,
         headingDescription,
         headingSize,
+        inlineHeadingDescription,
     } = props;
 
     return (
@@ -36,7 +36,12 @@ function Header(props: Props) {
                         {icons}
                     </div>
                 )}
-                <div className={styles.headingContainer}>
+                <div
+                    className={_cs(
+                        styles.headingContainer,
+                        inlineHeadingDescription && styles.inlineHeadingDescription,
+                    )}
+                >
                     {heading && (
                         <Heading size={headingSize}>
                             {heading}
@@ -49,8 +54,8 @@ function Header(props: Props) {
                     )}
                 </div>
                 {actions && (
-                    <div className={styles.icons}>
-                        {icons}
+                    <div className={styles.actions}>
+                        {actions}
                     </div>
                 )}
             </div>

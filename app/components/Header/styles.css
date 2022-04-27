@@ -1,4 +1,15 @@
 .header {
-    padding: 0;
-    /* text-transform: uppercase; */
+    .heading-section {
+        display: flex;
+        gap: var(--dui-spacing-small);
+
+        .heading-container {
+            flex-grow: 1;
+
+            &.inline-heading-description {
+                display: flex;
+                gap: var(--dui-spacing-small);
+            }
+        }
+    }
 }

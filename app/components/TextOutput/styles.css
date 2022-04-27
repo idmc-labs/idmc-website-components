@@ -1,0 +1,36 @@
+.text-output {
+    &.inline-type {
+        display: flex;
+        align-items: center;
+        gap: var(--dui-spacing-medium);
+    }
+
+    >.label {
+        color: var(--dui-color-text);
+        font-weight: var(--dui-font-weight-medium);
+    }
+
+    &.table-type {
+        display: table-row;
+
+        >.description,
+        >.value,
+        >.label {
+            display: table-cell;
+        }
+    }
+
+    &.with-label-colon {
+        >.label {
+            &:after {
+                content: ':';
+            }
+        }
+    }
+
+    &.strong-value {
+        >.value {
+            font-weight: var(--dui-font-weight-bold);
+        }
+    }
+}
