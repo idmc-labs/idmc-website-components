@@ -1,8 +1,8 @@
 import React from 'react';
 import {
-    Button,
     TextInput,
     SelectInput,
+    NumberOutput,
 } from '@the-deep/deep-ui';
 import Map, {
     MapContainer,
@@ -12,6 +12,7 @@ import Map, {
 import { _cs } from '@togglecorp/fujs';
 import { IoSearch } from 'react-icons/io5';
 
+import Button from '#components/Button';
 import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
@@ -70,16 +71,20 @@ function GlobalRepositories(props: Props) {
                         heading="Global Repositories for Good Practices"
                     />
                     <div className={styles.content}>
-                        <EllipsizedContent>
+                        <EllipsizedContent
+                            className={styles.description}
+                        >
                             <HTMLOutput
                                 value={goodPracticeMeta.description}
                             />
                         </EllipsizedContent>
-                        <div>
-                            <div>
-                                {goodPracticeMeta.totalCount}
-                            </div>
-                            <div>
+                        <div className={styles.numberBlock}>
+                            <NumberOutput
+                                className={styles.count}
+                                value={goodPracticeMeta.totalCount}
+                                precision={0}
+                            />
+                            <div className={styles.countLabel}>
                                 Good Practices
                             </div>
                         </div>
@@ -116,22 +121,22 @@ function GlobalRepositories(props: Props) {
                             />
                         </MapSource>
                     </Map>
-                    <div>
-                        <div>
-                            <p>
+                    <div className={styles.sidePane}>
+                        <div className={styles.block}>
+                            <div>
                                 Do you have a Good Practice you would like us to review?
-                            </p>
+                            </div>
                             <Button
                                 name={undefined}
                             >
                                 Submit a Good Practice
                             </Button>
                         </div>
-                        <div>
-                            <p>
-                                For more information please contact:
-                            </p>
+                        <div className={styles.block}>
                             <div>
+                                For more information please contact:
+                            </div>
+                            <div className={styles.contactLinks}>
                                 <a
                                     href={`mailto:${goodPracticeMeta.contactEmail}`}
                                     target="_blank"

@@ -19,6 +19,24 @@
             .content {
                 display: flex;
                 gap: var(--dui-spacing-large);
+
+                .description {
+                    flex-grow: 1;
+                }
+
+                .number-block {
+                    flex-shrink: 0;
+                    padding: var(--dui-spacing-large);
+
+                    .count {
+                        font-size: var(--dui-font-size-mega-large);
+                        font-weight: var(--dui-font-weight-bold);
+                    }
+                    .count-label {
+                        font-size: var(--dui-font-size-large);
+                        font-weight: var(--dui-font-weight-bold);
+                    }
+                }
             }
         }
 
@@ -28,7 +46,27 @@
 
             .map-container {
                 width: 100%;
-                min-height: 42vh;
+                min-height: 26rem;
+            }
+
+            .side-pane {
+                display: flex;
+                flex-direction: column;
+                gap: var(--dui-spacing-medium);
+
+                .block {
+                    display: flex;
+                    flex-direction: column;
+                    border-radius: 0.25rem;
+
+                    background-color: var(--dui-color-background);
+                    padding: var(--dui-spacing-medium);
+                    gap: var(--dui-spacing-small);
+                    .contact-links {
+                        display: flex;
+                        gap: var(--dui-spacing-medium);
+                    }
+                }
             }
         }
 
