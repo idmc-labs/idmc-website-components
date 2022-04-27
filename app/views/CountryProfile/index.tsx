@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-    Header,
     Tab,
     Tabs,
     TabList,
@@ -13,7 +12,6 @@ import Map, {
     MapSource,
     MapLayer,
 } from '@togglecorp/re-map';
-import { IoBarChart } from 'react-icons/io5';
 import { _cs, formattedNormalize, Lang } from '@togglecorp/fujs';
 import {
     ResponsiveContainer,
@@ -31,6 +29,7 @@ import {
     Cell,
 } from 'recharts';
 
+import Header from '#components/Header';
 import TextInput from '#components/TextInput';
 import RawButton from '#components/RawButton';
 import HTMLOutput from '#components/HTMLOutput';
@@ -182,7 +181,7 @@ function CountryProfile(props: Props) {
                 {countryOverviews && countryOverviews.length > 0 && (
                     <section className={styles.overview}>
                         <Header
-                            headingSize="medium"
+                            headingSize="large"
                             heading="Overview"
                         />
                         <Tabs
@@ -209,9 +208,11 @@ function CountryProfile(props: Props) {
                                         Last modified:
                                         {countryOverview.lastModified}
                                     </div>
-                                    <HTMLOutput
-                                        value={countryOverview.description}
-                                    />
+                                    <EllipsizedContent>
+                                        <HTMLOutput
+                                            value={countryOverview.description}
+                                        />
+                                    </EllipsizedContent>
                                 </TabPanel>
                             ))}
                         </Tabs>
@@ -224,17 +225,20 @@ function CountryProfile(props: Props) {
                 ) && (
                     <section className={styles.displacementData}>
                         <Header
-                            headingSize="medium"
+                            headingSize="large"
                             heading="Displacement Data"
                         />
-                        <HTMLOutput
-                            value={countryMetadata.displacementData}
-                        />
+                        <EllipsizedContent>
+                            <HTMLOutput
+                                value={countryMetadata.displacementData}
+                            />
+                        </EllipsizedContent>
                         <div className={styles.infographics}>
                             {statistics.conflict && (
                                 <div className={styles.conflictInfographics}>
                                     <Header
                                         heading="Conflict and Violence Data"
+                                        headingSize="medium"
                                     />
                                     <div className={styles.infographicList}>
                                         <Infographic
@@ -319,6 +323,7 @@ function CountryProfile(props: Props) {
                             {statistics.disaster && (
                                 <div className={styles.disasterInfographics}>
                                     <Header
+                                        headingSize="medium"
                                         heading="Disaster Data"
                                     />
                                     <div className={styles.infographicList}>
@@ -399,9 +404,11 @@ function CountryProfile(props: Props) {
                         headingSize="extraLarge"
                         heading="Latest New Displacements"
                     />
-                    <HTMLOutput
-                        value={countryMetadata.latestNewDisplacements}
-                    />
+                    <EllipsizedContent>
+                        <HTMLOutput
+                            value={countryMetadata.latestNewDisplacements}
+                        />
+                    </EllipsizedContent>
                 </section>
                 <section className={styles.internalDisplacementUpdates}>
                     <Header
