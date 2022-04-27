@@ -1,0 +1,15 @@
+.ellipsized-content {
+    .container {
+        &.ellipsized {
+            display: -webkit-box;
+            overflow: hidden;
+            -webkit-line-clamp: 6;
+            -webkit-box-orient: vertical;
+        }
+    }
+
+    .ellipsize-toggle-button {
+        color: var(--dui-color-accent);
+    }
+}
+

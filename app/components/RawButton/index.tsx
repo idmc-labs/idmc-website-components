@@ -5,7 +5,7 @@ import { genericMemo } from '../../utils/common';
 
 import styles from './styles.css';
 
-export interface Props<N extends string | number | undefined> extends Omit<React.HTMLProps<HTMLButtonElement>, 'ref' | 'onClick' | 'name'>{
+export interface Props<N> extends Omit<React.HTMLProps<HTMLButtonElement>, 'ref' | 'onClick' | 'name'>{
     className?: string;
     name: N;
     onClick?: (name: N, e: React.MouseEvent<HTMLButtonElement>) => void;
@@ -14,7 +14,7 @@ export interface Props<N extends string | number | undefined> extends Omit<React
     focused?: boolean;
 }
 
-function RawButton<N extends number | string | undefined>(props: Props<N>) {
+function RawButton<N>(props: Props<N>) {
     const {
         className,
         onClick,
@@ -46,7 +46,7 @@ function RawButton<N extends number | string | undefined>(props: Props<N>) {
             )}
             disabled={disabled}
             onClick={onClick ? handleClick : undefined}
-            name={name as string}
+            name={typeof name === 'string' ? name : undefined}
             // eslint-disable-next-line react/jsx-props-no-spreading
             {...otherProps}
         >
