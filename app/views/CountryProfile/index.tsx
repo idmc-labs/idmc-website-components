@@ -7,6 +7,12 @@ import {
     TabPanel,
     NumberOutput,
 } from '@the-deep/deep-ui';
+import Map, {
+    MapContainer,
+    MapBounds,
+    MapSource,
+    MapLayer,
+} from '@togglecorp/re-map';
 import { IoBarChart } from 'react-icons/io5';
 import { _cs, formattedNormalize, Lang } from '@togglecorp/fujs';
 import {
@@ -28,8 +34,35 @@ import TextInput from '#components/TextInput';
 import RawButton from '#components/RawButton';
 import HTMLOutput from '#components/HTMLOutput';
 
-import { countryMetadata, countryOverviews, statistics } from './data';
+import { countryMetadata, countryOverviews, statistics, iduGeojson } from './data';
 import styles from './styles.css';
+
+const orangePointHaloCirclePaint: mapboxgl.CirclePaint = {
+    'circle-opacity': 0.6,
+    'circle-color': {
+        property: 'type',
+        type: 'categorical',
+        stops: [
+            ['conflict', 'orange'],
+            ['disaster', 'blue'],
+        ],
+    },
+    'circle-radius': {
+        property: 'value', // geojson property based on which you want too change the color
+        base: 1.75,
+        stops: [
+            [0, 5],
+            [100, 9],
+            [1000, 13],
+        ],
+    },
+};
+
+const sourceOption: mapboxgl.GeoJSONSourceRaw = {
+    type: 'geojson',
+};
+
+const lightStyle = 'mapbox://styles/mapbox/light-v10';
 
 const colorScheme = [
     '#06169e',
@@ -375,6 +408,35 @@ function CountryProfile(props: Props) {
                     <HTMLOutput
                         value={countryMetadata.internalDisplacementUpdates}
                     />
+                    <Map
+                        mapStyle={lightStyle}
+                        mapOptions={{
+                            logoPosition: 'bottom-left',
+                            scrollZoom: false,
+                        }}
+                        scaleControlShown
+                        navControlShown
+                    >
+                        <MapContainer className={styles.mapContainer} />
+                        <MapBounds
+                            bounds={statistics.bounds}
+                            padding={50}
+                        />
+                        <MapSource
+                            sourceKey="multi-points"
+                            sourceOptions={sourceOption}
+                            geoJson={iduGeojson}
+                        >
+                            <MapLayer
+                                layerKey="points-halo-circle"
+                                // onClick={handlePointClick}
+                                layerOptions={{
+                                    type: 'circle',
+                                    paint: orangePointHaloCirclePaint,
+                                }}
+                            />
+                        </MapSource>
+                    </Map>
                 </section>
             </div>
         </div>
