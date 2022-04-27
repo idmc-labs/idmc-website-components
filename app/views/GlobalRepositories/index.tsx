@@ -15,6 +15,7 @@ import { IoSearch } from 'react-icons/io5';
 import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
+import CollapsibleContent from '#components/CollapsibleContent';
 
 import { goodPracticeMeta, goodPracticesGeoJson } from './data';
 import styles from './styles.css';
@@ -49,6 +50,16 @@ function GlobalRepositories(props: Props) {
     const {
         className,
     } = props;
+
+    const [expandedFaq, setExpandedFaq] = React.useState<number>();
+
+    const handleFaqExpansionChange = React.useCallback((newValue: boolean, name: number) => {
+        if (newValue === false) {
+            setExpandedFaq(undefined);
+        } else {
+            setExpandedFaq(name);
+        }
+    }, []);
 
     return (
         <div className={_cs(styles.goodPractices, className)}>
@@ -140,18 +151,17 @@ function GlobalRepositories(props: Props) {
                         </div>
                     </div>
                 </section>
-                <section>
-                    {goodPracticeMeta.faqs.map((faq) => (
-                        <div
+                <section className={styles.faqSection}>
+                    {goodPracticeMeta.faqs.map((faq, i) => (
+                        <CollapsibleContent
                             key={faq.id}
+                            name={faq.id}
+                            onExpansionChange={handleFaqExpansionChange}
+                            isExpanded={expandedFaq === faq.id}
+                            header={`Q${i + 1}: ${faq.title}`}
                         >
-                            <div>
-                                {faq.title}
-                            </div>
-                            <div>
-                                {faq.description || '-'}
-                            </div>
-                        </div>
+                            {faq.description || '-'}
+                        </CollapsibleContent>
                     ))}
                 </section>
                 <section className={styles.filters}>
@@ -164,7 +174,8 @@ function GlobalRepositories(props: Props) {
                     </div>
                     <div className={styles.inputs}>
                         <SelectInput
-                            label="Type of Good Practice"
+                            variant="general"
+                            placeholder="Type of Good Practice"
                             name="typeOfGoodPractice"
                             value={undefined}
                             options={options}
@@ -173,7 +184,8 @@ function GlobalRepositories(props: Props) {
                             onChange={() => undefined}
                         />
                         <SelectInput
-                            label="Drivers of Displacement"
+                            variant="general"
+                            placeholder="Drivers of Displacement"
                             name="driversOfDisplacement"
                             value={undefined}
                             options={options}
@@ -182,7 +194,8 @@ function GlobalRepositories(props: Props) {
                             onChange={() => undefined}
                         />
                         <SelectInput
-                            label="Focus Area"
+                            variant="general"
+                            placeholder="Focus Area"
                             name="focusArea"
                             value={undefined}
                             options={options}
@@ -191,7 +204,8 @@ function GlobalRepositories(props: Props) {
                             onChange={() => undefined}
                         />
                         <SelectInput
-                            label="State"
+                            variant="general"
+                            placeholder="State"
                             name="stage"
                             value={undefined}
                             options={options}
@@ -200,7 +214,8 @@ function GlobalRepositories(props: Props) {
                             onChange={() => undefined}
                         />
                         <SelectInput
-                            label="Region"
+                            variant="general"
+                            placeholder="Region"
                             name="region"
                             value={undefined}
                             options={options}
@@ -209,7 +224,8 @@ function GlobalRepositories(props: Props) {
                             onChange={() => undefined}
                         />
                         <SelectInput
-                            label="Country"
+                            variant="general"
+                            placeholder="Country"
                             name="country"
                             value={undefined}
                             options={options}
@@ -220,8 +236,9 @@ function GlobalRepositories(props: Props) {
                     </div>
                     <div className={styles.searchContainer}>
                         <TextInput
+                            variant="general"
                             value={undefined}
-                            label="Search for Best Practice"
+                            placeholder="Search for Best Practice"
                             name="search"
                             onChange={() => undefined}
                             icons={(
