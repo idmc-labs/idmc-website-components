@@ -44,9 +44,28 @@
             display: flex;
             gap: var(--dui-spacing-large);
 
-            .map-container {
-                width: 100%;
-                min-height: 26rem;
+            .map-wrapper {
+                .map-container {
+                    width: 100%;
+                    min-height: 44rem;
+                }
+
+                .legend-list {
+                    display: flex;
+                    background-color: var(--dui-color-background);
+                    padding: var(--dui-spacing-small) 0;
+
+                    .legend {
+                        display: flex;
+                        padding: var(--dui-spacing-medium) var(--dui-spacing-large);
+                        gap: var(--dui-spacing-medium);
+
+                        .legend-element-list {
+                            display: flex;
+                            gap: var(--dui-spacing-large);
+                        }
+                    }
+                }
             }
 
             .side-pane {

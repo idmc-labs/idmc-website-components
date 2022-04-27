@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-    NumberOutput,
     SelectInput,
 } from '@the-deep/deep-ui';
 import Map, {
@@ -14,7 +13,7 @@ import {
     IoListCircleOutline,
     IoDownloadOutline,
 } from 'react-icons/io5';
-import { _cs, formattedNormalize, Lang } from '@togglecorp/fujs';
+import { _cs } from '@togglecorp/fujs';
 import {
     ResponsiveContainer,
     BarChart,
@@ -31,23 +30,28 @@ import {
     Cell,
 } from 'recharts';
 
+import RoundedBar from '#components/RoundedBar';
 import Tabs from '#components/Tabs';
 import Tab from '#components/Tabs/Tab';
 import TabList from '#components/Tabs/TabList';
 import TabPanel from '#components/Tabs/TabPanel';
 
+import LegendElement from '#components/LegendElement';
 import Button from '#components/Button';
 import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
 import TextOutput from '#components/TextOutput';
+import Infographic from '#components/Infographic';
+
+import { formatNumber } from '#utils/common';
 
 import { countryMetadata, countryOverviews, statistics, iduGeojson, idus } from './data';
 import styles from './styles.css';
 
 const options: { key: string; label: string }[] = [];
 
-const orangePointHaloCirclePaint: mapboxgl.CirclePaint = {
+const iduPointColor: mapboxgl.CirclePaint = {
     'circle-opacity': 0.6,
     'circle-color': {
         property: 'type',
@@ -83,109 +87,6 @@ const colorScheme = [
     'rgb(45, 183, 226)',
     'rgb(94, 217, 238)',
 ];
-
-interface LegendElementProps {
-    color: string;
-    size?: number;
-    label: React.ReactNode;
-}
-
-function LegendElement(props: LegendElementProps) {
-    const {
-        color,
-        size = 16,
-        label,
-    } = props;
-
-    return (
-        <div className={styles.legendElement}>
-            <div className={styles.circleContainer}>
-                <div
-                    className={styles.circle}
-                    style={{
-                        backgroundColor: color,
-                        width: `${size}px`,
-                        height: size < 16 ? size : undefined,
-                    }}
-                />
-            </div>
-            <div className={styles.label}>
-                {label}
-            </div>
-        </div>
-    );
-}
-
-// NOTE: No types defined by Recharts
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function CustomBar(props: any) {
-    const {
-        fill,
-        x,
-        y,
-        width,
-        height,
-    } = props;
-
-    return (
-        <rect
-            x={x}
-            y={y}
-            rx={width / 2}
-            width={width}
-            height={height}
-            stroke="none"
-            fill={fill}
-        />
-    );
-}
-
-function formatNumber(value: number) {
-    const {
-        number,
-        normalizeSuffix = '',
-    } = formattedNormalize(value, Lang.en);
-
-    return `${number.toPrecision(3)} ${normalizeSuffix}`;
-}
-
-interface InfoGraphicProps {
-    totalValue: number;
-    description: React.ReactNode;
-    date: React.ReactNode;
-    chart: React.ReactNode;
-}
-
-function Infographic(props: InfoGraphicProps) {
-    const {
-        totalValue,
-        description,
-        date,
-        chart,
-    } = props;
-
-    return (
-        <div className={styles.infographic}>
-            <div>
-                <NumberOutput
-                    className={styles.totalValue}
-                    value={totalValue}
-                    precision={1}
-                    normal
-                />
-                <div className={styles.description}>
-                    {description}
-                </div>
-                <div className={styles.date}>
-                    {date}
-                </div>
-            </div>
-            <div className={styles.chart}>
-                {chart}
-            </div>
-        </div>
-    );
-}
 
 interface Props {
     className?: string;
@@ -308,7 +209,6 @@ function CountryProfile(props: Props) {
                                             chart={(
                                                 <ResponsiveContainer>
                                                     <BarChart
-                                                        className={styles.chart}
                                                         data={statistics.conflict.timeseries}
                                                     >
                                                         <XAxis
@@ -331,7 +231,7 @@ function CountryProfile(props: Props) {
                                                             dataKey="total"
                                                             fill="var(--color-conflict)"
                                                             name="Conflict new displacements"
-                                                            shape={<CustomBar />}
+                                                            shape={<RoundedBar />}
                                                             maxBarSize={6}
                                                         />
                                                     </BarChart>
@@ -345,7 +245,6 @@ function CountryProfile(props: Props) {
                                             chart={(
                                                 <ResponsiveContainer>
                                                     <LineChart
-                                                        className={styles.chart}
                                                         data={statistics.conflict.timeseries}
                                                     >
                                                         <XAxis
@@ -421,7 +320,6 @@ function CountryProfile(props: Props) {
                                                 <ResponsiveContainer>
                                                     <BarChart
                                                         data={statistics.disaster.timeseries}
-                                                        className={styles.chart}
                                                     >
                                                         <XAxis
                                                             dataKey="year"
@@ -443,7 +341,7 @@ function CountryProfile(props: Props) {
                                                             dataKey="total"
                                                             fill="var(--color-disaster)"
                                                             name="Disaster new displacements"
-                                                            shape={<CustomBar />}
+                                                            shape={<RoundedBar />}
                                                             maxBarSize={6}
                                                         />
                                                     </BarChart>
@@ -456,7 +354,7 @@ function CountryProfile(props: Props) {
                                             date={`${statistics.startYear} - ${statistics.endYear}`}
                                             chart={(
                                                 <ResponsiveContainer>
-                                                    <PieChart className={styles.chart}>
+                                                    <PieChart>
                                                         <Tooltip
                                                             formatter={formatNumber}
                                                         />
@@ -634,16 +532,16 @@ function CountryProfile(props: Props) {
                             padding={50}
                         />
                         <MapSource
-                            sourceKey="multi-points"
+                            sourceKey="idu-points"
                             sourceOptions={sourceOption}
                             geoJson={iduGeojson}
                         >
                             <MapLayer
-                                layerKey="points-halo-circle"
+                                layerKey="idu-point"
                                 // onClick={handlePointClick}
                                 layerOptions={{
                                     type: 'circle',
-                                    paint: orangePointHaloCirclePaint,
+                                    paint: iduPointColor,
                                 }}
                             />
                         </MapSource>

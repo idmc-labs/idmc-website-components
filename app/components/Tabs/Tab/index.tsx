@@ -12,7 +12,6 @@ import { TabKey, TabContext, TabVariant } from '#components/Tabs/TabContext';
 import styles from './styles.css';
 
 const tabVariantToStyleMap: {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     [key in TabVariant]: string;
 } = {
     primary: styles.primary,
@@ -85,7 +84,6 @@ export default function Tab<T extends TabKey>(props: Props<T>) {
             // since it has weird behaviour with react-tabs
             // role="tab"
             type="button"
-            // eslint-disable-next-line react/jsx-props-no-spreading
             {...otherProps}
         >
             {errored && <span className={styles.errorIcon} />}

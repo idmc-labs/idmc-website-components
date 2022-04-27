@@ -12,6 +12,7 @@ import Map, {
 import { _cs } from '@togglecorp/fujs';
 import { IoSearch } from 'react-icons/io5';
 
+import LegendElement from '#components/LegendElement';
 import Button from '#components/Button';
 import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
@@ -106,20 +107,44 @@ function GlobalRepositories(props: Props) {
                         scaleControlShown
                         navControlShown
                     >
-                        <MapContainer className={styles.mapContainer} />
-                        <MapSource
-                            sourceKey="multi-points"
-                            sourceOptions={sourceOption}
-                            geoJson={goodPracticesGeoJson}
-                        >
-                            <MapLayer
-                                layerKey="points-halo-circle"
-                                layerOptions={{
-                                    type: 'circle',
-                                    paint: orangePointHaloCirclePaint,
-                                }}
-                            />
-                        </MapSource>
+                        <div className={styles.mapWrapper}>
+                            <MapContainer className={styles.mapContainer} />
+                            <MapSource
+                                sourceKey="multi-points"
+                                sourceOptions={sourceOption}
+                                geoJson={goodPracticesGeoJson}
+                            >
+                                <MapLayer
+                                    layerKey="points-halo-circle"
+                                    layerOptions={{
+                                        type: 'circle',
+                                        paint: orangePointHaloCirclePaint,
+                                    }}
+                                />
+                            </MapSource>
+                            <div className={styles.legendList}>
+                                <div className={styles.legend}>
+                                    <Header
+                                        headingSize="extraSmall"
+                                        heading="State"
+                                    />
+                                    <div className={styles.legendElementList}>
+                                        <LegendElement
+                                            color="var(--color-green)"
+                                            label="Approved"
+                                        />
+                                        <LegendElement
+                                            color="var(--color-blue)"
+                                            label="Under Review"
+                                        />
+                                        <LegendElement
+                                            color="var(--color-orange)"
+                                            label="Recently submitted or registered"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </Map>
                     <div className={styles.sidePane}>
                         <div className={styles.block}>
