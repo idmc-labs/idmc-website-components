@@ -33,6 +33,7 @@ import {
 import TextInput from '#components/TextInput';
 import RawButton from '#components/RawButton';
 import HTMLOutput from '#components/HTMLOutput';
+import EllipsizedContent from '#components/EllipsizedContent';
 
 import { countryMetadata, countryOverviews, statistics, iduGeojson } from './data';
 import styles from './styles.css';
@@ -170,9 +171,11 @@ function CountryProfile(props: Props) {
                         headingSize="extraLarge"
                         heading="Country Profile"
                     />
-                    <HTMLOutput
-                        value={countryMetadata.description}
-                    />
+                    <EllipsizedContent>
+                        <HTMLOutput
+                            value={countryMetadata.description}
+                        />
+                    </EllipsizedContent>
                 </section>
                 {countryOverviews && countryOverviews.length > 0 && (
                     <section className={styles.overview}>
@@ -405,9 +408,11 @@ function CountryProfile(props: Props) {
                         headingSize="extraLarge"
                         heading="Internal Displacement Updates"
                     />
-                    <HTMLOutput
-                        value={countryMetadata.internalDisplacementUpdates}
-                    />
+                    <EllipsizedContent>
+                        <HTMLOutput
+                            value={countryMetadata.internalDisplacementUpdates}
+                        />
+                    </EllipsizedContent>
                     <Map
                         mapStyle={lightStyle}
                         mapOptions={{
