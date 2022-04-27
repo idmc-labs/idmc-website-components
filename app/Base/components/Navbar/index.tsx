@@ -77,6 +77,16 @@ function Navbar(props: Props) {
                         route={route.home}
                         className={styles.link}
                     />
+                    <SmartNavLink
+                        exact
+                        route={route.countryProfile}
+                        className={styles.link}
+                    />
+                    <SmartNavLink
+                        exact
+                        route={route.goodPractices}
+                        className={styles.link}
+                    />
                 </div>
                 <div className={styles.actions}>
                     <QuickActionLink

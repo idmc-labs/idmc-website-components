@@ -76,6 +76,7 @@ const colorScheme = [
 ];
 
 // NOTE: No types defined by Recharts
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function CustomBar(props: any) {
     const {
         fill,

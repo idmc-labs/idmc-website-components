@@ -24,6 +24,7 @@ function useSanitizedHtml(rawHtml: string | null | undefined) {
                         attribs: {
                             ...attribs,
                             target: '_blank',
+                            ref: 'noreferrer',
                         },
                     }),
                 },

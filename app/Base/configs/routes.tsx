@@ -38,10 +38,8 @@ const goodPractices = wrap({
     path: '/good-practices/',
     title: 'Good Practices',
     navbarVisibility: true,
-    component: lazy(() => import('#views/Template')),
-    componentProps: {
-        name: 'Good Practices',
-    },
+    component: lazy(() => import('#views/GlobalRepositories')),
+    componentProps: {},
     visibility: 'is-authenticated',
 });
 const goodPractice = wrap({
@@ -56,17 +54,8 @@ const goodPractice = wrap({
 });
 
 const countryProfile = wrap({
-    path: '/country-profiles/:id/',
+    path: '/country-profiles/:id?/',
     title: 'Country Profile',
-    navbarVisibility: true,
-    component: lazy(() => import('#views/CountryProfile')),
-    componentProps: {},
-    visibility: 'is-authenticated',
-});
-
-const countryProfiles = wrap({
-    path: '/country-profiles/',
-    title: 'Country Profiles',
     navbarVisibility: true,
     component: lazy(() => import('#views/CountryProfile')),
     componentProps: {},
@@ -79,7 +68,6 @@ const routes = {
     goodPractices,
     goodPractice,
     countryProfile,
-    countryProfiles,
     fourHundredFour,
 };
 export default routes;

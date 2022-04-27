@@ -47,7 +47,6 @@ function RawButton<N>(props: Props<N>) {
             disabled={disabled}
             onClick={onClick ? handleClick : undefined}
             name={typeof name === 'string' ? name : undefined}
-            // eslint-disable-next-line react/jsx-props-no-spreading
             {...otherProps}
         >
             { children }

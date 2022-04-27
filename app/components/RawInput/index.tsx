@@ -54,7 +54,6 @@ function RawInput<N extends NameType>(
             value={immediateValue ?? ''}
             name={isDefined(name) ? String(name) : undefined}
             autoComplete={autoComplete}
-            // eslint-disable-next-line react/jsx-props-no-spreading
             {...otherProps}
         />
     );

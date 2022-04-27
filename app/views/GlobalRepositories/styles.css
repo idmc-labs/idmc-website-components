@@ -1,0 +1,47 @@
+.good-practices {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    padding: var(--dui-spacing-large);
+
+    .main-content {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 1200px;
+        gap: var(--dui-spacing-extra-large);
+
+        .profile {
+            display: flex;
+            flex-direction: column;
+            gap: var(--dui-spacing-large);
+
+            .content {
+                display: flex;
+                gap: var(--dui-spacing-large);
+            }
+        }
+
+        .map {
+            display: flex;
+            gap: var(--dui-spacing-large);
+
+            .map-container {
+                width: 100%;
+                min-height: 42vh;
+            }
+        }
+
+        .filters {
+            display: flex;
+            flex-direction: column;
+            gap: var(--dui-spacing-medium);
+
+            .inputs, .search-container {
+                display: flex;
+                flex-wrap: wrap;
+                gap: var(--dui-spacing-medium);
+            }
+        }
+    }
+}
