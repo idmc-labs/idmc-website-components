@@ -1,4 +1,5 @@
 .heading {
+    position: relative;
     margin: 0;
     color: var(--dui-color-brand);
     font-family: var(--dui-font-family-heading);
@@ -22,5 +23,14 @@
 
     &.extra-small {
         font-size: var(--dui-font-medium);
+    }
+
+    .border {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        background-color: var(--dui-color-accent);
+        width: 8rem;
+        height: var(--dui-width-separator-medium);
     }
 }

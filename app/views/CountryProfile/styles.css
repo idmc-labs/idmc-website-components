@@ -8,13 +8,21 @@
     align-items: center;
     flex-direction: column;
     padding: var(--dui-spacing-large);
+    gap: var(--dui-spacing-super-large);
+
+    .cover-image {
+        align-self: stretch;
+        height: 32rem;
+        object-fit: cover;
+        object-position: center center;
+    }
 
     .main-content {
         display: flex;
         flex-direction: column;
         width: 100%;
         max-width: 1200px;
-        gap: var(--dui-spacing-extra-large);
+        gap: var(--dui-spacing-ultra-large);
 
         .tab {
             font-size: var(--dui-font-size-large);
@@ -35,7 +43,7 @@
         .displacement-data {
             display: flex;
             flex-direction: column;
-            gap: var(--dui-spacing-medium);
+            gap: var(--dui-spacing-extra-large);
 
             .infographics {
                 display: flex;
@@ -124,8 +132,8 @@
 
             .idu-filter {
                 display: flex;
-                gap: var(--dui-spacing-large);
                 align-items: flex-end;
+                gap: var(--dui-spacing-large);
 
                 .filter {
                     display: flex;
@@ -148,15 +156,31 @@
 
                 .map-container {
                     width: 100%;
-                    min-height: 60vh;
+                    min-height: 44rem;
                 }
 
-                .legend {
-                    position: absolute;
-                    bottom: var(--dui-spacing-large);
-                    left: var(--dui-spacing-large);
+                .legend-list {
+                    display: flex;
                     background-color: var(--dui-color-background);
-                    padding: var(--dui-spacing-large);
+                    padding: var(--dui-spacing-small) 0;
+
+                    .legend {
+                        display: flex;
+                        padding: var(--dui-spacing-medium) var(--dui-spacing-large);
+                        gap: var(--dui-spacing-medium);
+
+                        .legend-element-list {
+                            display: flex;
+                            gap: var(--dui-spacing-large);
+                        }
+                    }
+
+                    .separator {
+                        align-self: stretch;
+                        margin: var(--dui-spacing-small) 0;
+                        background-color: var(--dui-color-separator);
+                        width: var(--dui-width-separator-medium);
+                    }
                 }
             }
         }
@@ -205,5 +229,25 @@
                 }
             }
         }
+    }
+}
+
+.legend-element {
+    display: flex;
+    align-items: center;
+    gap: var(--dui-spacing-small);
+
+    .circle-container {
+        display: flex;
+        justify-content: center;
+
+        .circle {
+            border-radius: 2rem;
+            height: 1rem;
+        }
+    }
+
+    .label {
+        flex-grow: 1;
     }
 }

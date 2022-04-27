@@ -14,9 +14,22 @@ interface Props {
 function Heading(props: Props) {
     const {
         className,
-        children,
+        children: childrenFromProps,
         size = 'medium',
     } = props;
+
+    const children: React.ReactNode = React.useMemo(() => {
+        if (size === 'extraLarge' || size === 'large') {
+            return (
+                <>
+                    {childrenFromProps}
+                    <div className={styles.border} />
+                </>
+            );
+        }
+
+        return childrenFromProps;
+    }, [size, childrenFromProps]);
 
     return (
         <>

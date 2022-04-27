@@ -1,9 +1,5 @@
 import React from 'react';
 import {
-    Tab,
-    Tabs,
-    TabList,
-    TabPanel,
     NumberOutput,
     SelectInput,
 } from '@the-deep/deep-ui';
@@ -33,6 +29,11 @@ import {
     Pie,
     Cell,
 } from 'recharts';
+
+import Tabs from '#components/Tabs';
+import Tab from '#components/Tabs/Tab';
+import TabList from '#components/Tabs/TabList';
+import TabPanel from '#components/Tabs/TabPanel';
 
 import Button from '#components/Button';
 import Header from '#components/Header';
@@ -80,6 +81,38 @@ const colorScheme = [
     '#2cb7e1',
     '#5ed9ed',
 ];
+
+interface LegendElementProps {
+    color: string;
+    size?: number;
+    label: React.ReactNode;
+}
+
+function LegendElement(props: LegendElementProps) {
+    const {
+        color,
+        size = 16,
+        label,
+    } = props;
+
+    return (
+        <div className={styles.legendElement}>
+            <div className={styles.circleContainer}>
+                <div
+                    className={styles.circle}
+                    style={{
+                        backgroundColor: color,
+                        width: `${size}px`,
+                        height: size < 16 ? size : undefined,
+                    }}
+                />
+            </div>
+            <div className={styles.label}>
+                {label}
+            </div>
+        </div>
+    );
+}
 
 // NOTE: No types defined by Recharts
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -163,17 +196,22 @@ function CountryProfile(props: Props) {
 
     const [moreIduShown, setMoreIduShown] = React.useState(false);
 
-    const [activeYear, setActiveYear] = React.useState<string | undefined>(
+    const [activeYear, setActiveYear] = React.useState<string>(
         countryOverviews[0]?.year,
     );
 
     return (
         <div className={_cs(styles.countryProfile, className)}>
+            <img
+                className={styles.coverImage}
+                src="https://images.unsplash.com/photo-1599230080795-a48439229cb7?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1774&q=80"
+                alt="india"
+            />
             <div className={styles.mainContent}>
                 <section className={styles.profile}>
                     <Header
                         headingSize="extraLarge"
-                        heading="Country Profile"
+                        heading="Country Profile: India"
                     />
                     <EllipsizedContent>
                         <HTMLOutput
@@ -241,11 +279,12 @@ function CountryProfile(props: Props) {
                                 <div className={styles.conflictInfographics}>
                                     <Header
                                         heading="Conflict and Violence Data"
-                                        headingSize="medium"
+                                        headingSize="small"
                                     />
                                     <div className={styles.conflictFilter}>
                                         <SelectInput
-                                            label="Timescale"
+                                            variant="general"
+                                            placeholder="Timescale"
                                             name="timescale"
                                             value={undefined}
                                             options={options}
@@ -286,7 +325,7 @@ function CountryProfile(props: Props) {
                                                             fill="var(--color-conflict)"
                                                             name="Conflict new displacements"
                                                             shape={<CustomBar />}
-                                                            maxBarSize={10}
+                                                            maxBarSize={6}
                                                         />
                                                     </BarChart>
                                                 </ResponsiveContainer>
@@ -337,12 +376,13 @@ function CountryProfile(props: Props) {
                             {statistics.disaster && (
                                 <div className={styles.disasterInfographics}>
                                     <Header
-                                        headingSize="medium"
+                                        headingSize="small"
                                         heading="Disaster Data"
                                     />
                                     <div className={styles.disasterFilter}>
                                         <SelectInput
-                                            label="Timescale"
+                                            variant="general"
+                                            placeholder="Timescale"
                                             name="timescale"
                                             value={undefined}
                                             options={options}
@@ -351,7 +391,8 @@ function CountryProfile(props: Props) {
                                             onChange={() => undefined}
                                         />
                                         <SelectInput
-                                            label="Disaster Category"
+                                            variant="general"
+                                            placeholder="Disaster Category"
                                             name="disasterCategory"
                                             value={undefined}
                                             options={options}
@@ -392,7 +433,7 @@ function CountryProfile(props: Props) {
                                                             fill="var(--color-disaster)"
                                                             name="Disaster new displacements"
                                                             shape={<CustomBar />}
-                                                            maxBarSize={10}
+                                                            maxBarSize={6}
                                                         />
                                                     </BarChart>
                                                 </ResponsiveContainer>
@@ -480,7 +521,8 @@ function CountryProfile(props: Props) {
                     <div className={styles.iduFilter}>
                         <div className={styles.filter}>
                             <SelectInput
-                                label="Timescale"
+                                variant="general"
+                                placeholder="Timescale"
                                 name="timescale"
                                 value={undefined}
                                 options={options}
@@ -489,7 +531,8 @@ function CountryProfile(props: Props) {
                                 onChange={() => undefined}
                             />
                             <SelectInput
-                                label="Type of displacement"
+                                variant="general"
+                                placeholder="Type of displacement"
                                 name="typeOfDisplacement"
                                 value={undefined}
                                 options={options}
@@ -498,7 +541,8 @@ function CountryProfile(props: Props) {
                                 onChange={() => undefined}
                             />
                             <SelectInput
-                                label="No. of displacement"
+                                variant="general"
+                                placeholder="No. of displacement"
                                 name="numberOfDisplacement"
                                 value={undefined}
                                 options={options}
@@ -527,8 +571,51 @@ function CountryProfile(props: Props) {
                             <MapContainer
                                 className={styles.mapContainer}
                             />
-                            <div className={styles.legend}>
-                                Legend goes here!
+                            <div className={styles.legendList}>
+                                <div className={styles.legend}>
+                                    <Header
+                                        headingSize="extraSmall"
+                                        heading="Type of displacement"
+                                    />
+                                    <div className={styles.legendElementList}>
+                                        <LegendElement
+                                            color="var(--color-conflict)"
+                                            label="Conflict"
+                                        />
+                                        <LegendElement
+                                            color="var(--color-disaster)"
+                                            label="Disaster"
+                                        />
+                                        <LegendElement
+                                            color="var(--color-other)"
+                                            label="Other"
+                                        />
+                                    </div>
+                                </div>
+                                <div className={styles.separator} />
+                                <div className={styles.legend}>
+                                    <Header
+                                        headingSize="extraSmall"
+                                        heading="No. of Displacement"
+                                    />
+                                    <div className={styles.legendElementList}>
+                                        <LegendElement
+                                            color="grey"
+                                            size={10}
+                                            label="< 100"
+                                        />
+                                        <LegendElement
+                                            color="grey"
+                                            size={18}
+                                            label="< 1000"
+                                        />
+                                        <LegendElement
+                                            color="grey"
+                                            size={26}
+                                            label="> 1000"
+                                        />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <MapBounds

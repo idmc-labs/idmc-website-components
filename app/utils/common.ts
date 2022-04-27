@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import {
+    isFalsy,
     isFalsyString,
     caseInsensitiveSubmatch,
     compareStringSearch,
@@ -33,3 +34,19 @@ export const setHashToBrowser = (hash: string | undefined) => {
         window.location.hash = '';
     }
 };
+
+export function isValidNumber(value: unknown): value is number {
+    if (isFalsy(value)) {
+        return false;
+    }
+
+    if (Number.isNaN(+(value as number))) {
+        return false;
+    }
+
+    if (value === null) {
+        return false;
+    }
+
+    return true;
+}
