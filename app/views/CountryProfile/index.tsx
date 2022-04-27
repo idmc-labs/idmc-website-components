@@ -13,6 +13,10 @@ import Map, {
     MapSource,
     MapLayer,
 } from '@togglecorp/re-map';
+import {
+    IoMapOutline,
+    IoListCircleOutline,
+} from 'react-icons/io5';
 import { _cs, formattedNormalize, Lang } from '@togglecorp/fujs';
 import {
     ResponsiveContainer,
@@ -239,10 +243,10 @@ function CountryProfile(props: Props) {
                                         heading="Conflict and Violence Data"
                                         headingSize="medium"
                                     />
-                                    <div>
+                                    <div className={styles.conflictFilter}>
                                         <SelectInput
-                                            label="Disaster Category"
-                                            name="disasterCategory"
+                                            label="Timescale"
+                                            name="timescale"
                                             value={undefined}
                                             options={options}
                                             keySelector={(item) => item.key}
@@ -336,7 +340,16 @@ function CountryProfile(props: Props) {
                                         headingSize="medium"
                                         heading="Disaster Data"
                                     />
-                                    <div>
+                                    <div className={styles.disasterFilter}>
+                                        <SelectInput
+                                            label="Timescale"
+                                            name="timescale"
+                                            value={undefined}
+                                            options={options}
+                                            keySelector={(item) => item.key}
+                                            labelSelector={(item) => item.label}
+                                            onChange={() => undefined}
+                                        />
                                         <SelectInput
                                             label="Disaster Category"
                                             name="disasterCategory"
@@ -464,6 +477,43 @@ function CountryProfile(props: Props) {
                             value={countryMetadata.internalDisplacementUpdates}
                         />
                     </EllipsizedContent>
+                    <div className={styles.iduFilter}>
+                        <div className={styles.filter}>
+                            <SelectInput
+                                label="Timescale"
+                                name="timescale"
+                                value={undefined}
+                                options={options}
+                                keySelector={(item) => item.key}
+                                labelSelector={(item) => item.label}
+                                onChange={() => undefined}
+                            />
+                            <SelectInput
+                                label="Type of displacement"
+                                name="typeOfDisplacement"
+                                value={undefined}
+                                options={options}
+                                keySelector={(item) => item.key}
+                                labelSelector={(item) => item.label}
+                                onChange={() => undefined}
+                            />
+                            <SelectInput
+                                label="No. of displacement"
+                                name="numberOfDisplacement"
+                                value={undefined}
+                                options={options}
+                                keySelector={(item) => item.key}
+                                labelSelector={(item) => item.label}
+                                onChange={() => undefined}
+                            />
+                        </div>
+                        <div className={styles.segmentInput}>
+                            <IoMapOutline />
+                            <IoListCircleOutline />
+                        </div>
+                    </div>
+                    Hover over and click on the coloured bubbles to see near real-time
+                    snapshots of situations of internal displacement across the globe.
                     <Map
                         mapStyle={lightStyle}
                         mapOptions={{
@@ -473,7 +523,14 @@ function CountryProfile(props: Props) {
                         scaleControlShown
                         navControlShown
                     >
-                        <MapContainer className={styles.mapContainer} />
+                        <div className={styles.mapWrapper}>
+                            <MapContainer
+                                className={styles.mapContainer}
+                            />
+                            <div className={styles.legend}>
+                                Legend goes here!
+                            </div>
+                        </div>
                         <MapBounds
                             bounds={statistics.bounds}
                             padding={50}
