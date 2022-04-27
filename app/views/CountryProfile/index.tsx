@@ -16,6 +16,7 @@ import Map, {
 import { IoBarChart } from 'react-icons/io5';
 import { _cs, formattedNormalize, Lang } from '@togglecorp/fujs';
 import {
+    ResponsiveContainer,
     BarChart,
     CartesianGrid,
     XAxis,
@@ -136,7 +137,7 @@ function Infographic(props: InfoGraphicProps) {
                 {date}
             </div>
             <div className={styles.chart}>
-                {chart ?? <IoBarChart className={styles.icon} />}
+                {chart}
             </div>
         </div>
     );
@@ -240,36 +241,36 @@ function CountryProfile(props: Props) {
                                             description={statistics.conflict.newDisplacementsLabel}
                                             date={`${statistics.startYear} - ${statistics.endYear}`}
                                             chart={(
-                                                <BarChart
-                                                    className={styles.chart}
-                                                    width={320}
-                                                    height={200}
-                                                    data={statistics.conflict.timeseries}
-                                                >
-                                                    <XAxis
-                                                        dataKey="year"
-                                                        axisLine={false}
-                                                    />
-                                                    <CartesianGrid
-                                                        vertical={false}
-                                                        strokeDasharray="3 3"
-                                                    />
-                                                    <YAxis
-                                                        axisLine={false}
-                                                        tickFormatter={formatNumber}
-                                                    />
-                                                    <Tooltip
-                                                        formatter={formatNumber}
-                                                    />
-                                                    <Legend />
-                                                    <Bar
-                                                        dataKey="total"
-                                                        fill="orange"
-                                                        name="Conflict new displacements"
-                                                        shape={<CustomBar />}
-                                                        maxBarSize={16}
-                                                    />
-                                                </BarChart>
+                                                <ResponsiveContainer>
+                                                    <BarChart
+                                                        className={styles.chart}
+                                                        data={statistics.conflict.timeseries}
+                                                    >
+                                                        <XAxis
+                                                            dataKey="year"
+                                                            axisLine={false}
+                                                        />
+                                                        <CartesianGrid
+                                                            vertical={false}
+                                                            strokeDasharray="3 3"
+                                                        />
+                                                        <YAxis
+                                                            axisLine={false}
+                                                            tickFormatter={formatNumber}
+                                                        />
+                                                        <Tooltip
+                                                            formatter={formatNumber}
+                                                        />
+                                                        <Legend />
+                                                        <Bar
+                                                            dataKey="total"
+                                                            fill="orange"
+                                                            name="Conflict new displacements"
+                                                            shape={<CustomBar />}
+                                                            maxBarSize={10}
+                                                        />
+                                                    </BarChart>
+                                                </ResponsiveContainer>
                                             )}
                                         />
                                         <Infographic
@@ -277,38 +278,38 @@ function CountryProfile(props: Props) {
                                             description={statistics.conflict.noOfIdpsLabel}
                                             date={`As of end of ${statistics.endYear}`}
                                             chart={(
-                                                <LineChart
-                                                    className={styles.chart}
-                                                    width={320}
-                                                    height={200}
-                                                    data={statistics.conflict.timeseries}
-                                                >
-                                                    <XAxis
-                                                        dataKey="year"
-                                                        axisLine={false}
-                                                    />
-                                                    <CartesianGrid
-                                                        vertical={false}
-                                                        strokeDasharray="3 3"
-                                                    />
-                                                    <YAxis
-                                                        axisLine={false}
-                                                        tickFormatter={formatNumber}
-                                                    />
-                                                    <Tooltip
-                                                        formatter={formatNumber}
-                                                    />
-                                                    <Legend />
-                                                    <Line
-                                                        dataKey="totalStock"
-                                                        name="Conflict total number of IDPs"
-                                                        key="totalStock"
-                                                        stroke="orange"
-                                                        strokeWidth={2}
-                                                        connectNulls
-                                                        dot
-                                                    />
-                                                </LineChart>
+                                                <ResponsiveContainer>
+                                                    <LineChart
+                                                        className={styles.chart}
+                                                        data={statistics.conflict.timeseries}
+                                                    >
+                                                        <XAxis
+                                                            dataKey="year"
+                                                            axisLine={false}
+                                                        />
+                                                        <CartesianGrid
+                                                            vertical={false}
+                                                            strokeDasharray="3 3"
+                                                        />
+                                                        <YAxis
+                                                            axisLine={false}
+                                                            tickFormatter={formatNumber}
+                                                        />
+                                                        <Tooltip
+                                                            formatter={formatNumber}
+                                                        />
+                                                        <Legend />
+                                                        <Line
+                                                            dataKey="totalStock"
+                                                            name="Conflict total number of IDPs"
+                                                            key="totalStock"
+                                                            stroke="orange"
+                                                            strokeWidth={2}
+                                                            connectNulls
+                                                            dot
+                                                        />
+                                                    </LineChart>
+                                                </ResponsiveContainer>
                                             )}
                                         />
                                     </div>
@@ -325,36 +326,36 @@ function CountryProfile(props: Props) {
                                             description={statistics.disaster.newDisplacementsLabel}
                                             date={`${statistics.startYear} - ${statistics.endYear}`}
                                             chart={(
-                                                <BarChart
-                                                    width={320}
-                                                    height={200}
-                                                    data={statistics.disaster.timeseries}
-                                                    className={styles.chart}
-                                                >
-                                                    <XAxis
-                                                        dataKey="year"
-                                                        axisLine={false}
-                                                    />
-                                                    <CartesianGrid
-                                                        vertical={false}
-                                                        strokeDasharray="3 3"
-                                                    />
-                                                    <YAxis
-                                                        axisLine={false}
-                                                        tickFormatter={formatNumber}
-                                                    />
-                                                    <Tooltip
-                                                        formatter={formatNumber}
-                                                    />
-                                                    <Legend />
-                                                    <Bar
-                                                        dataKey="total"
-                                                        fill="blue"
-                                                        name="Disaster new displacements"
-                                                        shape={<CustomBar />}
-                                                        maxBarSize={16}
-                                                    />
-                                                </BarChart>
+                                                <ResponsiveContainer>
+                                                    <BarChart
+                                                        data={statistics.disaster.timeseries}
+                                                        className={styles.chart}
+                                                    >
+                                                        <XAxis
+                                                            dataKey="year"
+                                                            axisLine={false}
+                                                        />
+                                                        <CartesianGrid
+                                                            vertical={false}
+                                                            strokeDasharray="3 3"
+                                                        />
+                                                        <YAxis
+                                                            axisLine={false}
+                                                            tickFormatter={formatNumber}
+                                                        />
+                                                        <Tooltip
+                                                            formatter={formatNumber}
+                                                        />
+                                                        <Legend />
+                                                        <Bar
+                                                            dataKey="total"
+                                                            fill="blue"
+                                                            name="Disaster new displacements"
+                                                            shape={<CustomBar />}
+                                                            maxBarSize={10}
+                                                        />
+                                                    </BarChart>
+                                                </ResponsiveContainer>
                                             )}
                                         />
                                         <Infographic
@@ -362,30 +363,28 @@ function CountryProfile(props: Props) {
                                             description={statistics.disaster.noOfEventsLabel}
                                             date={`${statistics.startYear} - ${statistics.endYear}`}
                                             chart={(
-                                                <PieChart
-                                                    width={280}
-                                                    height={200}
-                                                    className={styles.chart}
-                                                >
-                                                    <Tooltip
-                                                        formatter={formatNumber}
-                                                    />
-                                                    <Legend />
-                                                    <Pie
-                                                        data={statistics.disaster.categories}
-                                                        dataKey="total"
-                                                        nameKey="label"
-                                                    >
-                                                        {statistics.disaster.categories.map(({ label }, index) => ( // eslint-disable-line max-len
-                                                            <Cell
-                                                                key={label}
-                                                                fill={colorScheme[
-                                                                    index % colorScheme.length
-                                                                ]}
-                                                            />
-                                                        ))}
-                                                    </Pie>
-                                                </PieChart>
+                                                <ResponsiveContainer>
+                                                    <PieChart className={styles.chart}>
+                                                        <Tooltip
+                                                            formatter={formatNumber}
+                                                        />
+                                                        <Legend />
+                                                        <Pie
+                                                            data={statistics.disaster.categories}
+                                                            dataKey="total"
+                                                            nameKey="label"
+                                                        >
+                                                            {statistics.disaster.categories.map(({ label }, index) => ( // eslint-disable-line max-len
+                                                                <Cell
+                                                                    key={label}
+                                                                    fill={colorScheme[
+                                                                        index % colorScheme.length
+                                                                    ]}
+                                                                />
+                                                            ))}
+                                                        </Pie>
+                                                    </PieChart>
+                                                </ResponsiveContainer>
                                             )}
                                         />
                                     </div>
