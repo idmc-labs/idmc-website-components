@@ -21,6 +21,7 @@
     flex-direction: column;
     width: 100vw;
     height: 100vh;
+    line-height: 1.5;
 
     .navbar {
         flex-shrink: 0;
@@ -42,5 +43,14 @@
         right: var(--dui-spacing-large);
         z-index: 1;
         width: 20rem;
+    }
+}
+
+a {
+    text-decoration: none;
+    color: var(--dui-color-accent);
+
+    &:visited {
+        text-decoration: none;
     }
 }
