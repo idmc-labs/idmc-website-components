@@ -41,7 +41,6 @@
                     flex-basis: 0;
                     flex-direction: column;
                     flex-grow: 1;
-                    border: var(--dui-width-separator-thin) solid orange;
                     padding: var(--dui-spacing-medium);
                     gap: var(--dui-spacing-medium);
 
@@ -61,7 +60,6 @@
                     flex-basis: 0;
                     flex-direction: column;
                     flex-grow: 1;
-                    border: var(--dui-width-separator-thin) solid blue;
                     padding: var(--dui-spacing-medium);
                     gap: var(--dui-spacing-medium);
 
