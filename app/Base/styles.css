@@ -19,7 +19,14 @@
     --dui-color-accent: rgb(65, 131, 196);
     --dui-color-brand: rgb(25, 50, 86);
 
-    /* --dui-color-text: rgb(100,99,99); */
+    --dui-color-text: rgb(100,99,99);
+    /*
+    --dui-color-label: rgb(100,99,99);
+    --dui-color-description: rgb(100,99,99);
+    --dui-color-watermark: rgb(100,99,99);
+    */
+
+    --dui-color-background: rgb(230,230,230);
 
     --color-orange: rgb(239, 125, 0);
     --color-blue: rgb(1, 142, 202);

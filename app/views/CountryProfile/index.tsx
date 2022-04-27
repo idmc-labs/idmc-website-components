@@ -76,12 +76,12 @@ const sourceOption: mapboxgl.GeoJSONSourceRaw = {
 const lightStyle = 'mapbox://styles/mapbox/light-v10';
 
 const colorScheme = [
-    '#06169e',
-    '#0738c8',
-    '#0774e1',
-    '#018ec9',
-    '#2cb7e1',
-    '#5ed9ed',
+    'rgb(6, 23, 158)',
+    'rgb(8, 56, 201)',
+    'rgb(8, 116, 226)',
+    'rgb(1, 142, 202)',
+    'rgb(45, 183, 226)',
+    'rgb(94, 217, 238)',
 ];
 
 interface LegendElementProps {
