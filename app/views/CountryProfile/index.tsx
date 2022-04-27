@@ -31,7 +31,7 @@ import {
 
 import Header from '#components/Header';
 import TextInput from '#components/TextInput';
-import RawButton from '#components/RawButton';
+import Button from '#components/Button';
 import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
 
@@ -163,9 +163,12 @@ function CountryProfile(props: Props) {
                 value={undefined}
                 actions="SEARCH"
             />
-            <RawButton
+            <Button
                 name={undefined}
-            />
+                icons="Wow"
+            >
+                Say hellow!
+            </Button>
             <div className={styles.mainContent}>
                 <section className={styles.profile}>
                     <Header

@@ -1,0 +1,27 @@
+.button {
+    display: flex;
+    border-radius: 0.25rem;
+    background-color: var(--dui-color-brand);
+    padding: var(--dui-spacing-small) var(--dui-spacing-large);
+    color: blue;
+    color: var(--dui-color-text-on-dark);
+    gap: var(--dui-spacing-medium);
+
+    .icons {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: var(--dui-spacing-extra-small);
+    }
+
+    .children {
+        flex-grow: 1;
+    }
+
+    .actions {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: var(--dui-spacing-extra-small);
+    }
+}
