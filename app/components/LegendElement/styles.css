@@ -1,0 +1,19 @@
+.legend-element {
+    display: flex;
+    align-items: center;
+    gap: var(--dui-spacing-small);
+
+    .circle-container {
+        display: flex;
+        justify-content: center;
+
+        .circle {
+            border-radius: 2rem;
+            height: 1rem;
+        }
+    }
+
+    .label {
+        flex-grow: 1;
+    }
+}

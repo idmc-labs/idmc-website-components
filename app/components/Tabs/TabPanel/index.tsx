@@ -23,7 +23,6 @@ export default function TabPanel(props: Props) {
 
     return (
         <div
-            // eslint-disable-next-line react/jsx-props-no-spreading
             {...otherProps}
             role="tabpanel"
             ref={elementRef}

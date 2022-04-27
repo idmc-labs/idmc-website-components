@@ -4,6 +4,8 @@ import {
     isFalsyString,
     caseInsensitiveSubmatch,
     compareStringSearch,
+    formattedNormalize,
+    Lang,
 } from '@togglecorp/fujs';
 
 export function rankedSearchOnList<T>(
@@ -49,4 +51,13 @@ export function isValidNumber(value: unknown): value is number {
     }
 
     return true;
+}
+
+export function formatNumber(value: number) {
+    const {
+        number,
+        normalizeSuffix = '',
+    } = formattedNormalize(value, Lang.en);
+
+    return `${number.toPrecision(3)} ${normalizeSuffix}`;
 }
