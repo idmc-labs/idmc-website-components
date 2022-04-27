@@ -77,6 +77,7 @@ The history of conflict displacement in Afghanistan goes back to the late 1970s.
 interface Statistics {
     startYear: number;
     endYear: number;
+    bounds: [number, number, number, number];
     conflict?: {
         newDisplacements: number; // this can be calculated
         newDisplacementsLabel: string;
@@ -111,6 +112,7 @@ interface Statistics {
 export const statistics: Statistics = {
     startYear: 2008,
     endYear: 2020,
+    bounds: [68.176645, 7.965535, 97.402561, 35.49401],
     conflict: {
         newDisplacements: 1821629,
         newDisplacementsLabel: 'New Displacements',
@@ -130,4 +132,253 @@ export const statistics: Statistics = {
         timeseries: [{ year: '2008', total: 6662165 }, { year: '2009', total: 5304000 }, { year: '2010', total: 1411285 }, { year: '2011', total: 1503320 }, { year: '2012', total: 9110000 }, { year: '2013', total: 2144671 }, { year: '2014', total: 3427618 }, { year: '2015', total: 3654637 }, { year: '2016', total: 2400307 }, { year: '2017', total: 1345994 }, { year: '2018', total: 2675414 }, { year: '2019', total: 5017722 }, { year: '2020', total: 3856213 }],
         categories: [{ label: 'Flood', total: 37171049 }, { label: 'Storm', total: 11104537 }, { label: 'Earthquake', total: 166510 }, { label: 'Drought', total: 63404 }, { label: 'Wet Mass Movement', total: 7701 }, { label: 'Other', total: 145 }],
     },
+};
+
+export const iduGeojson: GeoJSON.FeatureCollection<
+    GeoJSON.Point,
+    { type: string, value: number }
+> = {
+    type: 'FeatureCollection',
+    features: [
+        {
+            id: 1,
+            type: 'Feature',
+            properties: {
+                type: 'conflict',
+                value: 1200,
+            },
+            geometry: {
+                type: 'Point',
+                coordinates: [
+                    77.431640625,
+                    25.24469595130604,
+                ],
+            },
+        },
+        {
+            id: 2,
+            type: 'Feature',
+            properties: {
+                type: 'disaster',
+                value: 100,
+            },
+            geometry: {
+                type: 'Point',
+                coordinates: [
+                    84.0234375,
+                    23.483400654325642,
+                ],
+            },
+        },
+        {
+            id: 3,
+            type: 'Feature',
+            properties: {
+                type: 'conflict',
+                value: 10,
+            },
+            geometry: {
+                type: 'Point',
+                coordinates: [
+                    77.16796875,
+                    17.14079039331665,
+                ],
+            },
+        },
+        {
+            id: 4,
+            type: 'Feature',
+            properties: {
+                type: 'conflict',
+                value: 12,
+            },
+            geometry: {
+                type: 'Point',
+                coordinates: [
+                    73.916015625,
+                    23.725011735951796,
+                ],
+            },
+        },
+        {
+            id: 5,
+            type: 'Feature',
+            properties: {
+                type: 'conflict',
+                value: 10,
+            },
+            geometry: {
+                type: 'Point',
+                coordinates: [
+                    73.95996093749999,
+                    23.34225583513053,
+                ],
+            },
+        },
+        {
+            id: 6,
+            type: 'Feature',
+            properties: {
+                type: 'disaster',
+                value: 120,
+            },
+            geometry: {
+                type: 'Point',
+                coordinates: [
+                    82.02392578125,
+                    19.02057711096681,
+                ],
+            },
+        },
+        {
+            id: 7,
+            type: 'Feature',
+            properties: {
+                type: 'disaster',
+                value: 780,
+            },
+            geometry: {
+                type: 'Point',
+                coordinates: [
+                    75.47607421875,
+                    28.38173504322308,
+                ],
+            },
+        },
+        {
+            id: 8,
+            type: 'Feature',
+            properties: {
+                type: 'disaster',
+                value: 1299,
+            },
+            geometry: {
+                type: 'Point',
+                coordinates: [
+                    77.82714843749999,
+                    28.05259082333983,
+                ],
+            },
+        },
+        {
+            id: 9,
+            type: 'Feature',
+            properties: {
+                type: 'conflict',
+                value: 67,
+            },
+            geometry: {
+                type: 'Point',
+                coordinates: [
+                    70.86181640625,
+                    22.654571520098994,
+                ],
+            },
+        },
+        {
+            id: 10,
+            type: 'Feature',
+            properties: {
+                type: 'disaster',
+                value: 178,
+            },
+            geometry: {
+                type: 'Point',
+                coordinates: [
+                    71.12548828125,
+                    23.42292845506526,
+                ],
+            },
+        },
+        {
+            id: 11,
+            type: 'Feature',
+            properties: {
+                type: 'conflict',
+                value: 200,
+            },
+            geometry: {
+                type: 'Point',
+                coordinates: [
+                    71.69677734375,
+                    23.180763583129444,
+                ],
+            },
+        },
+        {
+            id: 12,
+            type: 'Feature',
+            properties: {
+                type: 'disaster',
+                value: 1056,
+            },
+            geometry: {
+                type: 'Point',
+                coordinates: [
+                    83.78173828125,
+                    24.726874870506972,
+                ],
+            },
+        },
+        {
+            id: 13,
+            type: 'Feature',
+            properties: {
+                type: 'disaster',
+                value: 12,
+            },
+            geometry: {
+                type: 'Point',
+                coordinates: [
+                    87.71484375,
+                    26.23430203240673,
+                ],
+            },
+        },
+        {
+            id: 14,
+            type: 'Feature',
+            properties: {
+                type: 'disaster',
+                value: 19,
+            },
+            geometry: {
+                type: 'Point',
+                coordinates: [
+                    84.24316406249999,
+                    26.980828590472107,
+                ],
+            },
+        },
+        {
+            id: 15,
+            type: 'Feature',
+            properties: {
+                type: 'conflict',
+                value: 120,
+            },
+            geometry: {
+                type: 'Point',
+                coordinates: [
+                    86.72607421875,
+                    26.254009699865737,
+                ],
+            },
+        },
+        {
+            id: 16,
+            type: 'Feature',
+            properties: {
+                type: 'conflict',
+                value: 50,
+            },
+            geometry: {
+                type: 'Point',
+                coordinates: [
+                    81.298828125,
+                    27.664068965384516,
+                ],
+            },
+        },
+    ],
 };

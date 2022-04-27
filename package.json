@@ -22,6 +22,7 @@
         "prestart": "yarn initialize"
     },
     "sideEffects": [
+        "mapbox-gl/dist/mapbox-gl.css",
         "@the-deep/deep-ui/build/index.css"
     ],
     "repository": {
@@ -38,10 +39,12 @@
     "dependencies": {
         "@apollo/client": "^3.3.21",
         "@babel/runtime": "^7.11.2",
+        "@mapbox/mapbox-gl-draw": "^1.3.0",
         "@sentry/react": "^6.9.0",
         "@sentry/tracing": "^6.9.0",
         "@the-deep/deep-ui": "^1.5.12",
         "@togglecorp/fujs": "^1.9.2",
+        "@togglecorp/re-map": "^0.1.3",
         "@togglecorp/toggle-form": "^1.2.1",
         "apollo-link": "^1.2.14",
         "apollo-link-batch-http": "^1.2.14",
@@ -51,6 +54,7 @@
         "core-js": "3",
         "graphql": "^15.5.1",
         "graphql-anywhere": "^4.2.7",
+        "mapbox-gl": "^2.8.2",
         "react": "^17.0.2",
         "react-dom": "^17.0.2",
         "react-ga": "^3.3.0",
@@ -75,6 +79,7 @@
         "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
         "@types/apollo-upload-client": "^14.1.0",
         "@types/jest": "^27.4.0",
+        "@types/mapbox-gl": "^2.7.0",
         "@types/react": "^17.0.14",
         "@types/react-dom": "^17.0.9",
         "@types/react-router-dom": "^5.1.8",
