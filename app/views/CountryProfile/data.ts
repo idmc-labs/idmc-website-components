@@ -134,251 +134,76 @@ export const statistics: Statistics = {
     },
 };
 
+interface Idu {
+    id: number;
+    country: string;
+    iso3: string;
+    centroid: string;
+    latitude: number;
+    longitude: number;
+    // eslint-disable-next-line camelcase
+    displacement_type: 'Disaster' | 'Conflict';
+    qualifier: string;
+    figure: number;
+    // eslint-disable-next-line camelcase
+    displacement_date: string;
+    // eslint-disable-next-line camelcase
+    displacement_start_date: string;
+    // eslint-disable-next-line camelcase
+    displacement_end_date: string;
+    year: number;
+    // eslint-disable-next-line camelcase
+    event_name: string;
+    // eslint-disable-next-line camelcase
+    event_start_date: string;
+    // eslint-disable-next-line camelcase
+    event_end_date: string;
+    category: string;
+    subcategory: string;
+    type: string;
+    subtype: string;
+    // eslint-disable-next-line camelcase
+    standard_popup_text: string;
+    // eslint-disable-next-line camelcase
+    standard_info_text: string;
+}
+
+export const idus: Idu[] = [
+    { id: 66081, country: 'India', iso3: 'IND', centroid: '[12.09197, 92.769341]', latitude: 12.09197, longitude: 92.769341, displacement_type: 'Disaster', qualifier: 'approximately', figure: 1525, displacement_date: '2022-03-21', displacement_start_date: '2022-03-16', displacement_end_date: '2022-03-21', year: 2022, event_name: 'India, Myanmar: Storm - 16/03/2022', event_start_date: '2022-03-16', event_end_date: '2022-03-22', category: 'Weather related', subcategory: 'Meteorological', type: 'Storm', subtype: 'Storm', standard_popup_text: '<b> India:            1,525 displacements (evacuated), 16 March     - 21 March     </b> <br> A storm in the Bay of Bengal caused heavy rainfall and strong winds in the Andaman and Nicobar Islands. Between 16-21 March, 1,525 people were evacuated by state and national disaster response authorities. <br> <a href="https://ndmindia.mha.gov.in/NDMINDIA-CMS/viewWhatsNewPdf-D783"target="_blank">Ministry of Home Affairs Disaster Management Division National Emergency Response Centre (NERC) - \t 21 March     2022</a>', standard_info_text: '<b> India:            1,525 displacements (evacuated), 16 March     - 21 March     </b>' },
+    { id: 64374, country: 'India', iso3: 'IND', centroid: '[10.71677, 78.540237]', latitude: 10.71677, longitude: 78.540237, displacement_type: 'Disaster', qualifier: 'approximately', figure: 77842, displacement_date: '2021-11-30', displacement_start_date: '2021-11-26', displacement_end_date: '2021-11-30', year: 2021, event_name: 'India: Flood - Tamil Nadu - 26/11/2021', event_start_date: '2021-11-26', event_end_date: '2021-12-17', category: 'Weather related', subcategory: 'Hydrological', type: 'Flood', subtype: 'Flood', standard_popup_text: '<b> India:           77,842 displacements (evacuated), 26 November  - 30 November  </b> <br> Heavy rainfall and flooding between 26-30 November resulted in the evacuation of 77,842 people in Tamil Nadu, according to disaster management authorities. <br> <a href="https://ndmindia.mha.gov.in/whats-new#"target="_blank">Ministry of Home Affairs Disaster Management Division National Emergency Response Centre (NERC) - \t 30 November  2021</a>', standard_info_text: '<b> India:           77,842 displacements (evacuated), 26 November  - 30 November  </b>' },
+    { id: 63450, country: 'India', iso3: 'IND', centroid: '[33.228156999999996, 74.574932]', latitude: 33.228156999999996, longitude: 74.574932, displacement_type: 'Disaster', qualifier: 'approximately', figure: 27, displacement_date: '2022-01-09', displacement_start_date: '2022-01-09', displacement_end_date: '2022-01-09', year: 2022, event_name: 'India: Winter Storm - Jammu and Kashmir (Reasi, Rajouri) - 09/01/2022', event_start_date: '2022-01-08', event_end_date: '2022-01-09', category: 'Weather related', subcategory: 'Meteorological', type: 'Storm', subtype: 'Winter storm', standard_popup_text: '<b> India:               27 displacements (destroyed housing), 09 January   - 09 January   </b> <br> Severe winter weather has impacted much of Jammu and Kashmir in early January. At least six houses were destroyed by heavy rain and snowfall in Rajouri and Reasi Districts on 9 January, resulting in approximately 28 displacements. <br> <a href="https://www.dailyexcelsior.com/heavy-rain-snowfall-wreak-havoc-across-j-nh-many-roads-blocked-power-supply-hit/"target="_blank">Daily Excelsior - \t 09 January   2022</a>', standard_info_text: '<b> India:               27 displacements (destroyed housing), 09 January   - 09 January   </b>' },
+    { id: 62205, country: 'India', iso3: 'IND', centroid: '[10.690906, 78.528458]', latitude: 10.690906, longitude: 78.528458, displacement_type: 'Disaster', qualifier: 'approximately', figure: 40044, displacement_date: '2021-12-17', displacement_start_date: '2021-12-01', displacement_end_date: '2021-12-17', year: 2021, event_name: 'India: Flood - Tamil Nadu - 26/11/2021', event_start_date: '2021-11-26', event_end_date: '2021-12-17', category: 'Weather related', subcategory: 'Hydrological', type: 'Flood', subtype: 'Flood', standard_popup_text: '<b> India:           40,044 displacements (evacuated), 01 December  - 17 December  </b> <br> Heavy rainfall and flooding between 1-17 December resulted in the evacuation of 40,044 people in Tamil Nadu, according to disaster management authorities. <br> <a href="https://ndmindia.mha.gov.in/whats-new#"target="_blank">Ministry of Home Affairs Disaster Management Division National Emergency Response Centre (NERC) - \t 31 December  2021</a>', standard_info_text: '<b> India:           40,044 displacements (evacuated), 01 December  - 17 December  </b>' },
+    { id: 62155, country: 'India', iso3: 'IND', centroid: '[10.690906, 78.528458]', latitude: 10.690906, longitude: 78.528458, displacement_type: 'Disaster', qualifier: 'approximately', figure: 4222, displacement_date: '2021-12-06', displacement_start_date: '2021-12-04', displacement_end_date: '2021-12-06', year: 2021, event_name: 'India: Tropical Storm Jawad - 4 States - 02/12/2021', event_start_date: '2021-12-02', event_end_date: '2021-12-06', category: 'Weather related', subcategory: 'Meteorological', type: 'Storm', subtype: 'Storm, Tropical', standard_popup_text: '<b> India:            4,222 displacements (in relief camp), 04 December  - 06 December  </b> <br> Tropical Storm Jawad brought heavy rain and high winds to Tamil Nadu, causing approximately 4,222 displacements from 4-6 December. <br> <a href="https://ndmindia.mha.gov.in/whats-new#"target="_blank">Ministry of Home Affairs Disaster Management Division National Emergency Response Centre (NERC) - \t 31 December  2021</a>', standard_info_text: '<b> India:            4,222 displacements (in relief camp), 04 December  - 06 December  </b>' },
+    { id: 62152, country: 'India', iso3: 'IND', centroid: '[20.190725, 84.702431]', latitude: 20.190725, longitude: 84.702431, displacement_type: 'Disaster', qualifier: 'approximately', figure: 4990, displacement_date: '2021-12-06', displacement_start_date: '2021-12-04', displacement_end_date: '2021-12-06', year: 2021, event_name: 'India: Tropical Storm Jawad - 4 States - 02/12/2021', event_start_date: '2021-12-02', event_end_date: '2021-12-06', category: 'Weather related', subcategory: 'Meteorological', type: 'Storm', subtype: 'Storm, Tropical', standard_popup_text: '<b> India:            4,990 displacements (evacuated), 04 December  - 06 December  </b> <br> Tropical Storm Jawand made landfall in India between 4-6 December. According to disaster management authorities, as of 6 December, a total of 4,990 people in Odisha had been evacuated and were sheltering in relief camps. <br> <a href="https://ndmindia.mha.gov.in/NDMINDIA-CMS/viewWhatsNewPdf-D712"target="_blank">Ministry of Home Affairs Disaster Management Division National Emergency Response Centre (NERC) - \t 06 December  2021</a>', standard_info_text: '<b> India:            4,990 displacements (evacuated), 04 December  - 06 December  </b>' },
+    { id: 61908, country: 'India', iso3: 'IND', centroid: '[15.021329, 75.536125]', latitude: 15.021329, longitude: 75.536125, displacement_type: 'Disaster', qualifier: 'approximately', figure: 1500, displacement_date: '2021-11-21', displacement_start_date: '2021-11-19', displacement_end_date: '2021-11-21', year: 2021, event_name: 'India: Flooding - Andhra Pradesh, Karnataka, Puducherry - 18/11/2021', event_start_date: '2021-11-18', event_end_date: '2021-11-24', category: 'Weather related', subcategory: 'Hydrological', type: 'Flood', subtype: 'Flood', standard_popup_text: '<b> India:            1,500 displacements (in relief camp), 19 November  - 21 November  </b> <br> Heavy rainfall and flooding in Karnataka from 19-21 November has resulted in at least 1,500 new displacements, according to disaster management authorities.  <br> <a href="https://ndmindia.mha.gov.in/whats-new#"target="_blank">Ministry of Home Affairs Disaster Management Division National Emergency Response Centre (NERC) - \t 30 November  2021</a>', standard_info_text: '<b> India:            1,500 displacements (in relief camp), 19 November  - 21 November  </b>' },
+    { id: 61902, country: 'India', iso3: 'IND', centroid: '[15.884972, 79.770943]', latitude: 15.884972, longitude: 79.770943, displacement_type: 'Disaster', qualifier: 'approximately', figure: 2294, displacement_date: '2021-11-21', displacement_start_date: '2021-11-19', displacement_end_date: '2021-11-21', year: 2021, event_name: 'India: Flooding - Andhra Pradesh, Karnataka, Puducherry - 18/11/2021', event_start_date: '2021-11-18', event_end_date: '2021-11-24', category: 'Weather related', subcategory: 'Hydrological', type: 'Flood', subtype: 'Flood', standard_popup_text: '<b> India:            2,294 displacements (in relief camp), 19 November  - 21 November  </b> <br> Heavy rainfall and flooding in Puducherry from 19-21 November has resulted in at least 2,294 new displacements according to disaster management authorities.  <br> <a href="https://ndmindia.mha.gov.in/whats-new#"target="_blank">Ministry of Home Affairs Disaster Management Division National Emergency Response Centre (NERC) - \t 30 November  2021</a>', standard_info_text: '<b> India:            2,294 displacements (in relief camp), 19 November  - 21 November  </b>' },
+    { id: 61882, country: 'India', iso3: 'IND', centroid: '[10.690906, 78.528458]', latitude: 10.690906, longitude: 78.528458, displacement_type: 'Disaster', qualifier: 'approximately', figure: 113824, displacement_date: '2021-11-24', displacement_start_date: '2021-11-18', displacement_end_date: '2021-11-24', year: 2021, event_name: 'India: Flood - Tamil Nadu - 07/11/2021', event_start_date: '2021-11-07', event_end_date: '2021-11-17', category: 'Weather related', subcategory: 'Hydrological', type: 'Flood', subtype: 'Flood', standard_popup_text: '<b> India:          113,824 displacements (evacuated), 18 November  - 24 November  </b> <br> According to disaster management authorities, a low pressure system brought heavy rainfall and flooding to Tamil Nadu between 18-24 November. A total of 113,824 people were evacuated to relief centres by local authorities. <br> <a href="https://ndmindia.mha.gov.in/whats-new#"target="_blank">Ministry of Home Affairs Disaster Management Division National Emergency Response Centre (NERC) - \t 30 November  2021</a>', standard_info_text: '<b> India:          113,824 displacements (evacuated), 18 November  - 24 November  </b>' },
+    { id: 61862, country: 'India', iso3: 'IND', centroid: '[10.690906, 78.528458]', latitude: 10.690906, longitude: 78.528458, displacement_type: 'Disaster', qualifier: 'approximately', figure: 79864, displacement_date: '2021-11-17', displacement_start_date: '2021-11-08', displacement_end_date: '2021-11-17', year: 2021, event_name: 'India: Flood - Tamil Nadu - 07/11/2021', event_start_date: '2021-11-07', event_end_date: '2021-11-17', category: 'Weather related', subcategory: 'Hydrological', type: 'Flood', subtype: 'Flood', standard_popup_text: '<b> India:           79,864 displacements (evacuated), 08 November  - 17 November  </b> <br> From 08-17 November, heavy rainfall and flooding affected Tamil Nadu. According to disaster management authorities, at least 79,864 evacuations occurred during this period. All displaced people are sheltering in relief camps.  <br> <a href="https://ndmindia.mha.gov.in/whats-new#"target="_blank">Ministry of Home Affairs Disaster Management Division National Emergency Response Centre (NERC) - \t 30 November  2021</a>', standard_info_text: '<b> India:           79,864 displacements (evacuated), 08 November  - 17 November  </b>' },
+    { id: 61861, country: 'India', iso3: 'IND', centroid: '[10.902537, 79.975235]', latitude: 10.902537, longitude: 79.975235, displacement_type: 'Disaster', qualifier: 'approximately', figure: 220, displacement_date: '2021-11-30', displacement_start_date: '2021-11-30', displacement_end_date: '2021-11-30', year: 2021, event_name: 'India: Flood - Puducherry - 30/11/2021', event_start_date: '2021-11-30', event_end_date: '2021-11-30', category: 'Weather related', subcategory: 'Hydrological', type: 'Flood', subtype: 'Flood', standard_popup_text: '<b> India:              220 displacements (evacuated), 30 November  - 30 November  </b> <br> Heavy rainfall and flooding in Puducherry on 30 November resulted in 220 evacuations. <br> <a href="https://ndmindia.mha.gov.in/whats-new#"target="_blank">Ministry of Home Affairs Disaster Management Division National Emergency Response Centre (NERC) - \t 30 November  2021</a>', standard_info_text: '<b> India:              220 displacements (evacuated), 30 November  - 30 November  </b>' },
+    { id: 61853, country: 'India', iso3: 'IND', centroid: '[10.902537, 79.975235]', latitude: 10.902537, longitude: 79.975235, displacement_type: 'Disaster', qualifier: 'approximately', figure: 8, displacement_date: '2021-11-12', displacement_start_date: '2021-11-12', displacement_end_date: '2021-11-12', year: 2021, event_name: 'India: Flood - Puducherry - 10/11/2021', event_start_date: '2021-11-10', event_end_date: '2021-11-12', category: 'Weather related', subcategory: 'Hydrological', type: 'Flood', subtype: 'Flood', standard_popup_text: '<b> India:                8 displacements (in relief camp), 12 November  - 12 November  </b> <br> Heavy rainfall and flooding in Puducherry on 12 November resulted in 8 new displacements. <br> <a href="https://ndmindia.mha.gov.in/whats-new#"target="_blank">Ministry of Home Affairs Disaster Management Division National Emergency Response Centre (NERC) - \t 30 November  2021</a>', standard_info_text: '<b> India:                8 displacements (in relief camp), 12 November  - 12 November  </b>' },
+    { id: 61847, country: 'India', iso3: 'IND', centroid: '[10.445806, 76.27562]', latitude: 10.445806, longitude: 76.27562, displacement_type: 'Disaster', qualifier: 'approximately', figure: 1155, displacement_date: '2021-11-29', displacement_start_date: '2021-11-19', displacement_end_date: '2021-11-29', year: 2021, event_name: 'India: Flood - Kerala - 28/11/2021', event_start_date: '2021-11-28', event_end_date: '2021-12-11', category: 'Weather related', subcategory: 'Hydrological', type: 'Flood', subtype: 'Flood', standard_popup_text: '<b> India:            1,155 displacements (in relief camp), 19 November  - 29 November  </b> <br> According to disaster management authorities, heavy rainfall and flooding affected Kerala from 28-29 November. At least 1,155 people were in relief shelters during this time. <br> <a href="https://ndmindia.mha.gov.in/whats-new#"target="_blank">Ministry of Home Affairs Disaster Management Division National Emergency Response Centre (NERC) - \t 30 November  2021</a>', standard_info_text: '<b> India:            1,155 displacements (in relief camp), 19 November  - 29 November  </b>' },
+    { id: 61820, country: 'India', iso3: 'IND', centroid: '[15.884972, 79.770943]', latitude: 15.884972, longitude: 79.770943, displacement_type: 'Disaster', qualifier: 'approximately', figure: 79680, displacement_date: '2021-11-24', displacement_start_date: '2021-11-19', displacement_end_date: '2021-11-24', year: 2021, event_name: 'India: Flooding - Andhra Pradesh, Karnataka, Puducherry - 18/11/2021', event_start_date: '2021-11-18', event_end_date: '2021-11-24', category: 'Weather related', subcategory: 'Hydrological', type: 'Flood', subtype: 'Flood', standard_popup_text: '<b> India:           79,680 displacements (evacuated), 19 November  - 24 November  </b> <br> According to disaster management authorities, a low pressure system brought heavy rainfall and flooding to Andhra Pradesh between 19-24 November. A total of 79,680 people were evacuated to relief centres by local authorities. <br> <a href="https://ndmindia.mha.gov.in/whats-new#"target="_blank">Ministry of Home Affairs Disaster Management Division National Emergency Response Centre (NERC) - \t 30 November  2021</a>', standard_info_text: '<b> India:           79,680 displacements (evacuated), 19 November  - 24 November  </b>' },
+    { id: 61818, country: 'India', iso3: 'IND', centroid: '[10.445806, 76.27562]', latitude: 10.445806, longitude: 76.27562, displacement_type: 'Disaster', qualifier: 'approximately', figure: 13896, displacement_date: '2021-11-19', displacement_start_date: '2021-11-19', displacement_end_date: '2021-11-19', year: 2021, event_name: 'India: Flood - Kerala - 08/11/2021', event_start_date: '2021-11-08', event_end_date: '2021-11-21', category: 'Weather related', subcategory: 'Hydrological', type: 'Flood', subtype: 'Flood', standard_popup_text: '<b> India:           13,896 displacements (in relief camp), 19 November  - 19 November  </b> <br> According to disaster management authorities, a low pressure system brought heavy flooding to Kerala on 19 November. At least 13,896 people were in relief shelters. <br> <a href="https://ndmindia.mha.gov.in/whats-new#"target="_blank">Ministry of Home Affairs Disaster Management Division National Emergency Response Centre (NERC) - \t 30 November  2021</a>', standard_info_text: '<b> India:           13,896 displacements (in relief camp), 19 November  - 19 November  </b>' },
+];
+
 export const iduGeojson: GeoJSON.FeatureCollection<
     GeoJSON.Point,
-    { type: string, value: number }
+    { type: 'Disaster' | 'Conflict' | 'Other', value: number }
 > = {
     type: 'FeatureCollection',
-    features: [
-        {
-            id: 1,
-            type: 'Feature',
-            properties: {
-                type: 'conflict',
-                value: 1200,
-            },
-            geometry: {
-                type: 'Point',
-                coordinates: [
-                    77.431640625,
-                    25.24469595130604,
-                ],
-            },
+    features: idus.map((idu) => ({
+        id: 1,
+        type: 'Feature',
+        properties: {
+            type: idu.displacement_type,
+            value: idu.figure,
         },
-        {
-            id: 2,
-            type: 'Feature',
-            properties: {
-                type: 'disaster',
-                value: 100,
-            },
-            geometry: {
-                type: 'Point',
-                coordinates: [
-                    84.0234375,
-                    23.483400654325642,
-                ],
-            },
+        geometry: {
+            type: 'Point',
+            coordinates: [
+                idu.longitude,
+                idu.latitude,
+            ],
         },
-        {
-            id: 3,
-            type: 'Feature',
-            properties: {
-                type: 'conflict',
-                value: 10,
-            },
-            geometry: {
-                type: 'Point',
-                coordinates: [
-                    77.16796875,
-                    17.14079039331665,
-                ],
-            },
-        },
-        {
-            id: 4,
-            type: 'Feature',
-            properties: {
-                type: 'conflict',
-                value: 12,
-            },
-            geometry: {
-                type: 'Point',
-                coordinates: [
-                    73.916015625,
-                    23.725011735951796,
-                ],
-            },
-        },
-        {
-            id: 5,
-            type: 'Feature',
-            properties: {
-                type: 'conflict',
-                value: 10,
-            },
-            geometry: {
-                type: 'Point',
-                coordinates: [
-                    73.95996093749999,
-                    23.34225583513053,
-                ],
-            },
-        },
-        {
-            id: 6,
-            type: 'Feature',
-            properties: {
-                type: 'disaster',
-                value: 120,
-            },
-            geometry: {
-                type: 'Point',
-                coordinates: [
-                    82.02392578125,
-                    19.02057711096681,
-                ],
-            },
-        },
-        {
-            id: 7,
-            type: 'Feature',
-            properties: {
-                type: 'disaster',
-                value: 780,
-            },
-            geometry: {
-                type: 'Point',
-                coordinates: [
-                    75.47607421875,
-                    28.38173504322308,
-                ],
-            },
-        },
-        {
-            id: 8,
-            type: 'Feature',
-            properties: {
-                type: 'disaster',
-                value: 1299,
-            },
-            geometry: {
-                type: 'Point',
-                coordinates: [
-                    77.82714843749999,
-                    28.05259082333983,
-                ],
-            },
-        },
-        {
-            id: 9,
-            type: 'Feature',
-            properties: {
-                type: 'conflict',
-                value: 67,
-            },
-            geometry: {
-                type: 'Point',
-                coordinates: [
-                    70.86181640625,
-                    22.654571520098994,
-                ],
-            },
-        },
-        {
-            id: 10,
-            type: 'Feature',
-            properties: {
-                type: 'disaster',
-                value: 178,
-            },
-            geometry: {
-                type: 'Point',
-                coordinates: [
-                    71.12548828125,
-                    23.42292845506526,
-                ],
-            },
-        },
-        {
-            id: 11,
-            type: 'Feature',
-            properties: {
-                type: 'conflict',
-                value: 200,
-            },
-            geometry: {
-                type: 'Point',
-                coordinates: [
-                    71.69677734375,
-                    23.180763583129444,
-                ],
-            },
-        },
-        {
-            id: 12,
-            type: 'Feature',
-            properties: {
-                type: 'disaster',
-                value: 1056,
-            },
-            geometry: {
-                type: 'Point',
-                coordinates: [
-                    83.78173828125,
-                    24.726874870506972,
-                ],
-            },
-        },
-        {
-            id: 13,
-            type: 'Feature',
-            properties: {
-                type: 'disaster',
-                value: 12,
-            },
-            geometry: {
-                type: 'Point',
-                coordinates: [
-                    87.71484375,
-                    26.23430203240673,
-                ],
-            },
-        },
-        {
-            id: 14,
-            type: 'Feature',
-            properties: {
-                type: 'disaster',
-                value: 19,
-            },
-            geometry: {
-                type: 'Point',
-                coordinates: [
-                    84.24316406249999,
-                    26.980828590472107,
-                ],
-            },
-        },
-        {
-            id: 15,
-            type: 'Feature',
-            properties: {
-                type: 'conflict',
-                value: 120,
-            },
-            geometry: {
-                type: 'Point',
-                coordinates: [
-                    86.72607421875,
-                    26.254009699865737,
-                ],
-            },
-        },
-        {
-            id: 16,
-            type: 'Feature',
-            properties: {
-                type: 'conflict',
-                value: 50,
-            },
-            geometry: {
-                type: 'Point',
-                coordinates: [
-                    81.298828125,
-                    27.664068965384516,
-                ],
-            },
-        },
-    ],
+    })),
 };

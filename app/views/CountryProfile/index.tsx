@@ -45,8 +45,9 @@ const orangePointHaloCirclePaint: mapboxgl.CirclePaint = {
         property: 'type',
         type: 'categorical',
         stops: [
-            ['conflict', 'orange'],
-            ['disaster', 'blue'],
+            ['Conflict', 'orange'],
+            ['Disaster', 'blue'],
+            ['Other', 'green'],
         ],
     },
     'circle-radius': {
