@@ -12,6 +12,7 @@ import Map, {
 import {
     IoMapOutline,
     IoListCircleOutline,
+    IoDownloadOutline,
 } from 'react-icons/io5';
 import { _cs, formattedNormalize, Lang } from '@togglecorp/fujs';
 import {
@@ -39,6 +40,7 @@ import Button from '#components/Button';
 import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
+import TextOutput from '#components/TextOutput';
 
 import { countryMetadata, countryOverviews, statistics, iduGeojson, idus } from './data';
 import styles from './styles.css';
@@ -245,10 +247,11 @@ function CountryProfile(props: Props) {
                                     key={countryOverview.year}
                                     name={countryOverview.year}
                                 >
-                                    <div>
-                                        Last modified:
-                                        {countryOverview.lastModified}
-                                    </div>
+                                    <TextOutput
+                                        label="Last modified"
+                                        value={countryOverview.lastModified}
+                                        valueType="date"
+                                    />
                                     <EllipsizedContent>
                                         <HTMLOutput
                                             value={countryOverview.description}
@@ -280,6 +283,10 @@ function CountryProfile(props: Props) {
                                     <Header
                                         heading="Conflict and Violence Data"
                                         headingSize="small"
+                                        headingDescription={(
+                                            <IoDownloadOutline />
+                                        )}
+                                        inlineHeadingDescription
                                     />
                                     <div className={styles.conflictFilter}>
                                         <SelectInput
@@ -378,6 +385,10 @@ function CountryProfile(props: Props) {
                                     <Header
                                         headingSize="small"
                                         heading="Disaster Data"
+                                        headingDescription={(
+                                            <IoDownloadOutline />
+                                        )}
+                                        inlineHeadingDescription
                                     />
                                     <div className={styles.disasterFilter}>
                                         <SelectInput
