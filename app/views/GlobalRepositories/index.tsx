@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-    Header,
     Button,
     TextInput,
     SelectInput,
@@ -13,6 +12,7 @@ import Map, {
 import { _cs } from '@togglecorp/fujs';
 import { IoSearch } from 'react-icons/io5';
 
+import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
 
@@ -25,9 +25,9 @@ const orangePointHaloCirclePaint: mapboxgl.CirclePaint = {
         property: 'status',
         type: 'categorical',
         stops: [
-            ['recently_submitted', 'orange'],
-            ['under_review', 'blue'],
-            ['approved', 'green'],
+            ['recently_submitted', 'rgb(239, 125, 0)'],
+            ['under_review', 'rgb(1, 142, 202)'],
+            ['approved', 'rgb(51, 149, 62)'],
         ],
     },
     'circle-radius': 9,
@@ -122,7 +122,7 @@ function GlobalRepositories(props: Props) {
                             </p>
                             <div>
                                 <a
-                                    href={goodPracticeMeta.contactEmail}
+                                    href={`mailto:${goodPracticeMeta.contactEmail}`}
                                     target="_blank"
                                     rel="noreferrer"
                                 >

@@ -14,6 +14,20 @@
     --dui-font-size-super-large: 2.2rem;
     --dui-font-size-mega-large: 3rem;
     --dui-font-size-ultra-large: 4rem;
+
+    --dui-color-primary: rgb(65, 131, 196);
+    --dui-color-accent: rgb(65, 131, 196);
+    --dui-color-brand: rgb(25, 50, 86);
+
+    /* --dui-color-text: rgb(100,99,99); */
+
+    --color-orange: rgb(239, 125, 0);
+    --color-blue: rgb(1, 142, 202);
+    --color-green: rgb(41, 181, 115);
+
+    --color-conflict: var(--color-orange);
+    --color-disaster: var(--color-blue);
+    --color-other: var(--color-green);
 }
 
 .base {
