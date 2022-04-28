@@ -471,46 +471,58 @@ function CountryProfile(props: Props) {
                             value={countryMetadata.internalDisplacementUpdates}
                         />
                     </EllipsizedContent>
-                    <div className={styles.iduFilter}>
-                        <div className={styles.filter}>
-                            <SelectInput
-                                variant="general"
-                                placeholder="Timescale"
-                                name="timescale"
-                                value={undefined}
-                                options={options}
-                                keySelector={(item) => item.key}
-                                labelSelector={(item) => item.label}
-                                onChange={() => undefined}
-                            />
-                            <SelectInput
-                                variant="general"
-                                placeholder="Type of displacement"
-                                name="typeOfDisplacement"
-                                value={undefined}
-                                options={options}
-                                keySelector={(item) => item.key}
-                                labelSelector={(item) => item.label}
-                                onChange={() => undefined}
-                            />
-                            <SelectInput
-                                variant="general"
-                                placeholder="No. of displacement"
-                                name="numberOfDisplacement"
-                                value={undefined}
-                                options={options}
-                                keySelector={(item) => item.key}
-                                labelSelector={(item) => item.label}
-                                onChange={() => undefined}
-                            />
-                        </div>
-                        <div className={styles.segmentInput}>
-                            <IoMapOutline />
-                            <IoListCircleOutline />
-                        </div>
+                    <Tabs
+                        value="map"
+                        onChange={() => undefined}
+                    >
+                        <TabList
+                            actions={(
+                                <div className={styles.filter}>
+                                    <SelectInput
+                                        variant="general"
+                                        placeholder="Timescale"
+                                        name="timescale"
+                                        value={undefined}
+                                        options={options}
+                                        keySelector={(item) => item.key}
+                                        labelSelector={(item) => item.label}
+                                        onChange={() => undefined}
+                                    />
+                                    <SelectInput
+                                        variant="general"
+                                        placeholder="Type of displacement"
+                                        name="typeOfDisplacement"
+                                        value={undefined}
+                                        options={options}
+                                        keySelector={(item) => item.key}
+                                        labelSelector={(item) => item.label}
+                                        onChange={() => undefined}
+                                    />
+                                    <SelectInput
+                                        variant="general"
+                                        placeholder="No. of displacement"
+                                        name="numberOfDisplacement"
+                                        value={undefined}
+                                        options={options}
+                                        keySelector={(item) => item.key}
+                                        labelSelector={(item) => item.label}
+                                        onChange={() => undefined}
+                                    />
+                                </div>
+                            )}
+                        >
+                            <Tab name="map">
+                                <IoMapOutline />
+                            </Tab>
+                            <Tab name="table">
+                                <IoListCircleOutline />
+                            </Tab>
+                        </TabList>
+                    </Tabs>
+                    <div>
+                        Hover over and click on the coloured bubbles to see near real-time
+                        snapshots of situations of internal displacement across the globe.
                     </div>
-                    Hover over and click on the coloured bubbles to see near real-time
-                    snapshots of situations of internal displacement across the globe.
                     <Map
                         mapStyle={lightStyle}
                         mapOptions={{

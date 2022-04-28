@@ -8,6 +8,7 @@ import styles from './styles.css';
 export interface Props extends React.HTMLProps<HTMLDivElement> {
     children: React.ReactNode;
     className?: string;
+    actions?: React.ReactNode;
 }
 
 export default function TabList(props: Props) {
@@ -22,6 +23,7 @@ export default function TabList(props: Props) {
     const {
         children,
         className,
+        actions,
         ...otherProps
     } = props;
 
@@ -71,12 +73,14 @@ export default function TabList(props: Props) {
                     />
                 </div>
             )}
-            {variant === 'primary' && (
+            {variant === 'primary' && !actions && (
                 <div className={styles.startDummyContent} />
             )}
             { children }
             {variant === 'primary' && (
-                <div className={styles.endDummyContent} />
+                <div className={styles.endDummyContent}>
+                    {actions}
+                </div>
             )}
         </div>
     );

@@ -22,7 +22,7 @@
     }
 
     &.extra-small {
-        font-size: var(--dui-font-medium);
+        font-size: var(--dui-font-size-medium);
     }
 
     .border {
