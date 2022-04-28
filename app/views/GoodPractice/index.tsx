@@ -4,11 +4,17 @@ import { _cs } from '@togglecorp/fujs';
 import Button from '#components/Button';
 import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
-
+import EllipsizedContent from '#components/EllipsizedContent';
+import DateOutput from '#components/DateOutput';
 import TextOutput from '#components/TextOutput';
 import SmartLink from '#base/components/SmartLink';
 import route from '#base/configs/routes';
-import { goodPractice } from './data';
+
+import grid2021CoverImage from '../../resources/img/grid2021-cover.png';
+import {
+    goodPractice,
+    gallery,
+} from './data';
 import styles from './styles.css';
 
 interface Props {
@@ -98,6 +104,28 @@ function GoodPractice(props: Props) {
                         value={goodPractice.description}
                     />
                     <div className={styles.sidePane}>
+                        <div className={styles.reportDownloadSection}>
+                            <Header
+                                heading="20201 Global Report on Internal Displacement"
+                                headingSize="small"
+                                description={(
+                                    <DateOutput value="2021-05-20" />
+                                )}
+                            />
+                            <img
+                                src={grid2021CoverImage}
+                                alt="GRID 2021"
+                            />
+                            <div className={styles.description}>
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+                                sed do eiusmod tempor incididunt ut labore et
+                                dolore magna aliqua. Ut enim ad minim veniam,
+                                quis nostrud exercitation ullamco laboris nisi
+                            </div>
+                            <Button name={undefined}>
+                                Download Report
+                            </Button>
+                        </div>
                         <div className={styles.block}>
                             <div>
                                 Do you have a Good Practice you would like us to review?
@@ -131,6 +159,25 @@ function GoodPractice(props: Props) {
                             </div>
                         </div>
                     </div>
+                </section>
+                <section className={styles.gallery}>
+                    {gallery.map((galleryItem) => (
+                        <div
+                            key={galleryItem.id}
+                            className={styles.galleryItem}
+                        >
+                            <img
+                                className={styles.image}
+                                src={galleryItem.image}
+                                alt="Gallery Item"
+                            />
+                            <EllipsizedContent>
+                                <HTMLOutput
+                                    value={galleryItem.description}
+                                />
+                            </EllipsizedContent>
+                        </div>
+                    ))}
                 </section>
             </div>
         </div>

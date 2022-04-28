@@ -10,7 +10,9 @@ import Map, {
     MapLayer,
 } from '@togglecorp/re-map';
 import { _cs } from '@togglecorp/fujs';
-import { IoSearch } from 'react-icons/io5';
+import {
+    IoSearch,
+} from 'react-icons/io5';
 
 import LegendElement from '#components/LegendElement';
 import Button from '#components/Button';
@@ -301,6 +303,16 @@ function GoodPractices(props: Props) {
                             icons={(
                                 <IoSearch />
                             )}
+                        />
+                        <SelectInput
+                            variant="general"
+                            placeholder="Most popular"
+                            name="order"
+                            value={undefined}
+                            options={options}
+                            keySelector={(item) => item.key}
+                            labelSelector={(item) => item.label}
+                            onChange={() => undefined}
                         />
                     </div>
                 </section>

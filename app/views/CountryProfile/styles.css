@@ -44,7 +44,6 @@
             .infographics {
                 display: flex;
                 flex-wrap: wrap;
-                overflow: auto;
                 gap: var(--dui-spacing-large);
 
                 .conflict-infographics {
@@ -52,9 +51,7 @@
                     flex-basis: 0;
                     flex-direction: column;
                     flex-grow: 1;
-                    /* padding: var(--dui-spacing-medium); */
                     min-width: 36rem;
-                    overflow: auto;
                     gap: var(--dui-spacing-medium);
 
                     .conflict-filter {
@@ -65,7 +62,6 @@
 
                     .infographic-list {
                         display: flex;
-                        overflow: auto;
                         color: var(--color-conflict);
 
                         >* {
@@ -80,9 +76,7 @@
                     flex-basis: 0;
                     flex-direction: column;
                     flex-grow: 1;
-                    /* padding: var(--dui-spacing-medium); */
                     min-width: 36rem;
-                    overflow: auto;
                     gap: var(--dui-spacing-medium);
 
                     .disaster-filter {
@@ -93,7 +87,6 @@
 
                     .infographic-list {
                         display: flex;
-                        overflow: auto;
                         color: var(--color-disaster);
 
                         >* {
@@ -126,24 +119,14 @@
             flex-direction: column;
             gap: var(--dui-spacing-large);
 
-            .idu-filter {
+            .filter {
                 display: flex;
-                align-items: flex-end;
-                gap: var(--dui-spacing-large);
-
-                .filter {
-                    display: flex;
-                    flex-grow: 1;
-                    flex-wrap: wrap;
-                    gap: var(--dui-spacing-large);
-                }
-
-                .segment-input {
-                    display: flex;
-                    flex-shrink: 0;
-                    font-size: var(--dui-font-size-extra-large);
-                    gap: var(--dui-spacing-small);
-                }
+                flex-grow: 1;
+                flex-wrap: wrap;
+                justify-content: flex-end;
+                padding-bottom: var(--dui-spacing-medium);
+                gap: var(--dui-spacing-medium);
+                font-size: 1rem;
             }
 
             .map-wrapper {
