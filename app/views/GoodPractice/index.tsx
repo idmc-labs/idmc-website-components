@@ -161,23 +161,29 @@ function GoodPractice(props: Props) {
                     </div>
                 </section>
                 <section className={styles.gallery}>
-                    {gallery.map((galleryItem) => (
-                        <div
-                            key={galleryItem.id}
-                            className={styles.galleryItem}
-                        >
-                            <img
-                                className={styles.image}
-                                src={galleryItem.image}
-                                alt="Gallery Item"
-                            />
-                            <EllipsizedContent>
-                                <HTMLOutput
-                                    value={galleryItem.description}
+                    <Header
+                        heading="Gallery"
+                        headingSize="large"
+                    />
+                    <div className={styles.galleryItemList}>
+                        {gallery.map((galleryItem) => (
+                            <div
+                                key={galleryItem.id}
+                                className={styles.galleryItem}
+                            >
+                                <img
+                                    className={styles.image}
+                                    src={galleryItem.image}
+                                    alt="Gallery Item"
                                 />
-                            </EllipsizedContent>
-                        </div>
-                    ))}
+                                <EllipsizedContent>
+                                    <HTMLOutput
+                                        value={galleryItem.description}
+                                    />
+                                </EllipsizedContent>
+                            </div>
+                        ))}
+                    </div>
                 </section>
             </div>
         </div>

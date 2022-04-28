@@ -189,6 +189,7 @@ function Base() {
                                         <Routes
                                             className={styles.view}
                                         />
+                                        <footer className={styles.footer} />
                                     </Init>
                                 </Router>
                             </AlertContext.Provider>

@@ -113,10 +113,19 @@
             flex-direction: column;
             gap: var(--dui-spacing-extra-large);
 
-            .inputs, .search-container {
+            .inputs {
                 display: flex;
                 flex-wrap: wrap;
                 gap: var(--dui-spacing-medium);
+            }
+
+            .search-container {
+                .filter {
+                    display: flex;
+                    justify-content: flex-end;
+                    padding-bottom: var(--dui-spacing-medium);
+                    gap: var(--dui-spacing-medium);
+                }
             }
         }
 
