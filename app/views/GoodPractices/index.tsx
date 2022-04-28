@@ -18,6 +18,9 @@ import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
 import CollapsibleContent from '#components/CollapsibleContent';
+import GoodPracticeItem from '#components/GoodPracticeItem';
+
+import grid2021coverImage from '../../resources/img/grid2021-cover.png';
 
 import { goodPracticeMeta, goodPracticesGeoJson } from './data';
 import styles from './styles.css';
@@ -283,7 +286,14 @@ function GoodPractices(props: Props) {
                     </div>
                 </section>
                 <section>
-                    -
+                    <GoodPracticeItem
+                        coverImageUrl={grid2021coverImage}
+                        type="Report"
+                        heading="2021 Global Report on Internal Displacement"
+                        date="2021-05-20"
+                        description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+                        tags="Tags: Somalia, Climate Change, 2018"
+                    />
                 </section>
             </div>
         </div>

@@ -1,0 +1,19 @@
+.good-practice-item {
+    display: flex;
+    flex-direction: column;
+    width: 18rem;
+    gap: var(--dui-spacing-small);
+
+    .cover-image {
+        width: 100%;
+        height: auto;
+    }
+
+    .type {
+        text-transform: uppercase;
+    }
+
+    .tags {
+        color: var(--dui-color-text-light);
+    }
+}
