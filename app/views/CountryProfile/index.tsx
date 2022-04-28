@@ -2,11 +2,21 @@ import React from 'react';
 import {
     SelectInput,
 } from '@the-deep/deep-ui';
+import {
+    MapboxGeoJSONFeature,
+    AnySourceData,
+    MapboxOptions,
+    Layer,
+    LngLat,
+    PopupOptions,
+    LngLatLike,
+} from 'mapbox-gl';
 import Map, {
     MapContainer,
     MapBounds,
     MapSource,
     MapLayer,
+    MapTooltip,
 } from '@togglecorp/re-map';
 import {
     IoMapOutline,
@@ -73,6 +83,13 @@ const iduPointColor: mapboxgl.CirclePaint = {
     },
 };
 
+const tooltipOptions: PopupOptions = {
+    closeOnClick: true,
+    closeButton: false,
+    offset: 12,
+    maxWidth: '480px',
+};
+
 const sourceOption: mapboxgl.GeoJSONSourceRaw = {
     type: 'geojson',
 };
@@ -102,6 +119,33 @@ function CountryProfile(props: Props) {
     const [activeYear, setActiveYear] = React.useState<string>(
         countryOverviews[0]?.year,
     );
+
+    interface Properties {
+        type: 'Disaster' | 'Conflict' | 'Other',
+        value: number,
+        description: string,
+    }
+
+    const [
+        hoverFeatureProperties,
+        setHoverFeatureProperties,
+    ] = React.useState<Properties | undefined>(undefined);
+    const [hoverLngLat, setHoverLngLat] = React.useState<LngLatLike>();
+
+    const handlePointClick = React.useCallback((feature: MapboxGeoJSONFeature, lngLat: LngLat) => {
+        if (feature.properties) {
+            setHoverLngLat(lngLat);
+            setHoverFeatureProperties(feature.properties as Properties);
+        } else {
+            setHoverFeatureProperties(undefined);
+        }
+        return true;
+    }, []);
+
+    const handleTooltipClose = React.useCallback(() => {
+        setHoverLngLat(undefined);
+        setHoverFeatureProperties(undefined);
+    }, []);
 
     return (
         <div className={_cs(styles.countryProfile, className)}>
@@ -543,7 +587,19 @@ function CountryProfile(props: Props) {
                                     type: 'circle',
                                     paint: iduPointColor,
                                 }}
+                                onClick={handlePointClick}
                             />
+                            {hoverLngLat && hoverFeatureProperties && (
+                                <MapTooltip
+                                    coordinates={hoverLngLat}
+                                    tooltipOptions={tooltipOptions}
+                                    onHide={handleTooltipClose}
+                                >
+                                    <HTMLOutput
+                                        value={hoverFeatureProperties.description}
+                                    />
+                                </MapTooltip>
+                            )}
                         </MapSource>
                     </Map>
                 </section>
