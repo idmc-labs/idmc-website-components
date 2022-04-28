@@ -4,6 +4,7 @@
     gap: var(--dui-spacing-medium);
 
     .cover-image {
+        background-color: var(--dui-color-background);
         width: 100%;
         height: 25rem;
         object-fit: cover;

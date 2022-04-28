@@ -20,8 +20,6 @@ import EllipsizedContent from '#components/EllipsizedContent';
 import CollapsibleContent from '#components/CollapsibleContent';
 import GoodPracticeItem from '#components/GoodPracticeItem';
 
-import grid2021coverImage from '../../resources/img/grid2021-cover.png';
-
 import {
     goodPracticeMeta,
     goodPracticesGeoJson,
@@ -60,6 +58,8 @@ function GoodPractices(props: Props) {
         className,
     } = props;
 
+    const practicesListRef = React.useRef<HTMLDivElement>(null);
+
     const [expandedFaq, setExpandedFaq] = React.useState<number>();
 
     const handleFaqExpansionChange = React.useCallback((newValue: boolean, name: number) => {
@@ -69,6 +69,17 @@ function GoodPractices(props: Props) {
             setExpandedFaq(name);
         }
     }, []);
+
+    const handleJumpToGoodPractices = React.useCallback(
+        () => {
+            if (practicesListRef.current) {
+                practicesListRef.current.scrollIntoView({
+                    behavior: 'smooth',
+                });
+            }
+        },
+        [],
+    );
 
     return (
         <div className={_cs(styles.goodPractices, className)}>
@@ -103,6 +114,7 @@ function GoodPractices(props: Props) {
                         </div>
                     </div>
                     <Button
+                        onClick={handleJumpToGoodPractices}
                         name={undefined}
                     >
                         Find Good Practices
@@ -206,7 +218,10 @@ function GoodPractices(props: Props) {
                         </CollapsibleContent>
                     ))}
                 </section>
-                <section className={styles.filters}>
+                <section
+                    className={styles.filters}
+                    ref={practicesListRef}
+                >
                     <Header
                         headingSize="large"
                         heading="Filter or search the Good Practices"
