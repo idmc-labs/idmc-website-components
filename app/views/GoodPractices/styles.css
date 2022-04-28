@@ -118,5 +118,16 @@
                 gap: var(--dui-spacing-medium);
             }
         }
+
+        .good-practice-list {
+            --gap: 5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--gap);
+
+            >* {
+                flex-basis: calc(100% / 3 - var(--gap));
+            }
+        }
     }
 }
