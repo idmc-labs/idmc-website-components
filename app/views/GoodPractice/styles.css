@@ -32,6 +32,12 @@
             }
         }
 
+        .meta {
+            display: table;
+            width: fit-content;
+            border-spacing: var(--dui-spacing-medium) var(--dui-spacing-small);
+        }
+
         .details {
             display: flex;
             gap: var(--dui-spacing-large);

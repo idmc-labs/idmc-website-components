@@ -50,39 +50,48 @@ function GoodPractices(props: Props) {
                         label="Last updated at"
                         value={goodPractice.lastUpdated}
                         valueType="date"
+                        displayType="table"
                     />
-                    <div>
-                        <span>Region: </span>
-                        <span>{goodPractice.region}</span>
-                    </div>
-                    <div>
-                        <span>Country: </span>
-                        <span>{goodPractice.country}</span>
-                    </div>
-                    <div>
-                        <span>Implementing Entity: </span>
-                        <span>{goodPractice.implementingEntity}</span>
-                    </div>
-                    <div>
-                        <span>CC Driver: </span>
-                        <span>{goodPractice.ccDriver}</span>
-                    </div>
-                    <div>
-                        <span>Trigger: </span>
-                        <span>{goodPractice.trigger}</span>
-                    </div>
-                    <div>
-                        <span>Displacement Impact: </span>
-                        <span>{goodPractice.displacementImpact}</span>
-                    </div>
-                    <div>
-                        <span>Intervention Phase: </span>
-                        <span>{goodPractice.interventionPhase}</span>
-                    </div>
-                    <div>
-                        <span>Timeframe: </span>
-                        <span>{goodPractice.timeframe}</span>
-                    </div>
+                    <TextOutput
+                        label="Region"
+                        value={goodPractice.region}
+                        displayType="table"
+                    />
+                    <TextOutput
+                        label="Country"
+                        value={goodPractice.country}
+                        displayType="table"
+                    />
+                    <TextOutput
+                        label="Implementing Entity"
+                        value={goodPractice.implementingEntity}
+                        displayType="table"
+                    />
+                    <TextOutput
+                        label="CC Driver"
+                        value={goodPractice.ccDriver}
+                        displayType="table"
+                    />
+                    <TextOutput
+                        label="Trigger"
+                        value={goodPractice.trigger}
+                        displayType="table"
+                    />
+                    <TextOutput
+                        label="Displacement Impact"
+                        value={goodPractice.displacementImpact}
+                        displayType="table"
+                    />
+                    <TextOutput
+                        label="Intervention Phase"
+                        value={goodPractice.interventionPhase}
+                        displayType="table"
+                    />
+                    <TextOutput
+                        label="Timeframe"
+                        value={goodPractice.timeframe}
+                        displayType="table"
+                    />
                 </section>
                 <section className={styles.details}>
                     <HTMLOutput
