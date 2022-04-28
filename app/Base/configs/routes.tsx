@@ -28,10 +28,8 @@ const home = wrap({
     path: '/',
     title: 'Home',
     navbarVisibility: true,
-    component: lazy(() => import('#views/Template')),
-    componentProps: {
-        name: 'Home Page',
-    },
+    component: lazy(() => import('#views/Home')),
+    componentProps: {},
     visibility: 'is-authenticated',
 });
 const goodPractices = wrap({
