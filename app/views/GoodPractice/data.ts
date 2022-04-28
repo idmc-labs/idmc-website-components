@@ -38,7 +38,7 @@ The main activities involved working with the community to map the houses of peo
 <p>Lessons learned:</p> Regular monitoring visits to the project areas is important to ensure any gaps are identified early and opportunities for connecting people with disabilities and their associations to relevant government processes. In terms of replicating the project, while some aspects were easier due to the previous experience, such as helping people with disabilities to establish associations and engage with the local government, the contextual differences should not be underestimated. The new region where the initiative is being implemented is affected by different types of hazards, particularly cyclones, and requires more substantial investment in transport and communications infrastructure to facilitate the project.
 </p>
 <p>
-<b>Links:</b> https://www.cbm.org/fileadmin/user_upload/DRR_Booklet_FINAL_-_Online_10MB.pdf
+<b>Links:</b> <a href="https://www.cbm.org/fileadmin/user_upload/DRR_Booklet_FINAL_-_Online_10MB.pdf">https://www.cbm.org/fileadmin/user_upload/DRR_Booklet_FINAL_-_Online_10MB.pdf</a>
 </p>
     `,
     country: 'Bangladesh',
