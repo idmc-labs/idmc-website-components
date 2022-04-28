@@ -48,7 +48,7 @@ interface Props {
     className?: string;
 }
 
-function GlobalRepositories(props: Props) {
+function GoodPractices(props: Props) {
     const {
         className,
     } = props;
@@ -65,6 +65,11 @@ function GlobalRepositories(props: Props) {
 
     return (
         <div className={_cs(styles.goodPractices, className)}>
+            <img
+                className={styles.coverImage}
+                src="https://images.unsplash.com/photo-1534271057238-c2c170a76672?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
+                alt="good practices"
+            />
             <div className={styles.mainContent}>
                 <section className={styles.profile}>
                     <Header
@@ -285,4 +290,4 @@ function GlobalRepositories(props: Props) {
     );
 }
 
-export default GlobalRepositories;
+export default GoodPractices;

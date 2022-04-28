@@ -38,7 +38,7 @@ const goodPractices = wrap({
     path: '/good-practices/',
     title: 'Good Practices',
     navbarVisibility: true,
-    component: lazy(() => import('#views/GlobalRepositories')),
+    component: lazy(() => import('#views/GoodPractices')),
     componentProps: {},
     visibility: 'is-authenticated',
 });
@@ -46,15 +46,13 @@ const goodPractice = wrap({
     path: '/good-practices/:id/',
     title: 'Good Practice',
     navbarVisibility: true,
-    component: lazy(() => import('#views/Template')),
-    componentProps: {
-        name: 'Good Practice',
-    },
+    component: lazy(() => import('#views/GoodPractice')),
+    componentProps: {},
     visibility: 'is-authenticated',
 });
 
 const countryProfile = wrap({
-    path: '/country-profiles/:id?/',
+    path: '/country-profiles/:id/',
     title: 'Country Profile',
     navbarVisibility: true,
     component: lazy(() => import('#views/CountryProfile')),

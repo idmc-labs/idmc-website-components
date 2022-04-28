@@ -3,6 +3,14 @@
     align-items: center;
     flex-direction: column;
     padding: var(--dui-spacing-large);
+    gap: var(--dui-spacing-super-large);
+
+    .cover-image {
+        align-self: stretch;
+        height: 32rem;
+        object-fit: cover;
+        object-position: center center;
+    }
 
     .main-content {
         display: flex;
@@ -45,9 +53,11 @@
             gap: var(--dui-spacing-large);
 
             .map-wrapper {
+                flex-grow: 1;
+
                 .map-container {
                     width: 100%;
-                    min-height: 44rem;
+                    height: 32rem;
                 }
 
                 .legend-list {
@@ -70,7 +80,9 @@
 
             .side-pane {
                 display: flex;
+                flex-basis: 30%;
                 flex-direction: column;
+                flex-shrink: 0;
                 gap: var(--dui-spacing-medium);
 
                 .block {
