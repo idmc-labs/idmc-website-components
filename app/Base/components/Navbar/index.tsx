@@ -28,11 +28,6 @@ function Navbar(props: Props) {
                 <div className={styles.navLinks}>
                     <SmartNavLink
                         exact
-                        route={route.home}
-                        className={styles.link}
-                    />
-                    <SmartNavLink
-                        exact
                         route={route.countryProfile}
                         attrs={{
                             id: 'IND',
