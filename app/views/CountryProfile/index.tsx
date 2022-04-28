@@ -4,9 +4,6 @@ import {
 } from '@the-deep/deep-ui';
 import {
     MapboxGeoJSONFeature,
-    AnySourceData,
-    MapboxOptions,
-    Layer,
     LngLat,
     PopupOptions,
     LngLatLike,
@@ -181,7 +178,6 @@ function CountryProfile(props: Props) {
                                     <Tab
                                         key={countryOverview.year}
                                         name={countryOverview.year}
-                                        className={styles.tab}
                                     >
                                         {countryOverview.year}
                                     </Tab>

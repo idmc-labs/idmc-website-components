@@ -40,9 +40,9 @@
 .base {
     display: flex;
     flex-direction: column;
-    width: 100vw;
-    height: 100vh;
+    min-height: 100vh;
     line-height: 1.5;
+    gap: var(--dui-spacing-extra-large);
 
     .navbar {
         flex-shrink: 0;
@@ -55,7 +55,6 @@
     .view,
     .init {
         flex-grow: 1;
-        overflow: auto;
     }
 
     .alert-container {
@@ -64,6 +63,11 @@
         right: var(--dui-spacing-large);
         z-index: 1;
         width: 20rem;
+    }
+
+    .footer {
+        background-color: var(--dui-color-brand);
+        height: 30rem;
     }
 }
 

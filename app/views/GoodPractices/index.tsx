@@ -12,8 +12,13 @@ import Map, {
 import { _cs } from '@togglecorp/fujs';
 import {
     IoSearch,
+    IoGridOutline,
+    IoListOutline,
 } from 'react-icons/io5';
 
+import Tabs from '#components/Tabs';
+import Tab from '#components/Tabs/Tab';
+import TabList from '#components/Tabs/TabList';
 import LegendElement from '#components/LegendElement';
 import Button from '#components/Button';
 import Header from '#components/Header';
@@ -294,26 +299,44 @@ function GoodPractices(props: Props) {
                         />
                     </div>
                     <div className={styles.searchContainer}>
-                        <TextInput
-                            variant="general"
-                            value={undefined}
-                            placeholder="Search for Best Practice"
-                            name="search"
+                        <Tabs
+                            value="grid"
                             onChange={() => undefined}
-                            icons={(
-                                <IoSearch />
-                            )}
-                        />
-                        <SelectInput
-                            variant="general"
-                            placeholder="Most popular"
-                            name="order"
-                            value={undefined}
-                            options={options}
-                            keySelector={(item) => item.key}
-                            labelSelector={(item) => item.label}
-                            onChange={() => undefined}
-                        />
+                        >
+                            <TabList
+                                actions={(
+                                    <div className={styles.filter}>
+                                        <TextInput
+                                            variant="general"
+                                            value={undefined}
+                                            placeholder="Search for Best Practice"
+                                            name="search"
+                                            onChange={() => undefined}
+                                            icons={(
+                                                <IoSearch />
+                                            )}
+                                        />
+                                        <SelectInput
+                                            variant="general"
+                                            placeholder="Most popular"
+                                            name="order"
+                                            value={undefined}
+                                            options={options}
+                                            keySelector={(item) => item.key}
+                                            labelSelector={(item) => item.label}
+                                            onChange={() => undefined}
+                                        />
+                                    </div>
+                                )}
+                            >
+                                <Tab name="grid">
+                                    <IoGridOutline />
+                                </Tab>
+                                <Tab name="list">
+                                    <IoListOutline />
+                                </Tab>
+                            </TabList>
+                        </Tabs>
                     </div>
                 </section>
                 <section className={styles.goodPracticeList}>

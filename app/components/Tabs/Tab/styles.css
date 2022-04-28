@@ -12,6 +12,7 @@
     &.primary {
         position: relative;
         background-color: var(--dui-color-background);
+        font-size: var(--dui-font-size-large);
 
         .active-border {
             position: absolute;
