@@ -188,7 +188,7 @@ export const idus: Idu[] = [
 
 export const iduGeojson: GeoJSON.FeatureCollection<
     GeoJSON.Point,
-    { type: 'Disaster' | 'Conflict' | 'Other', value: number }
+    { type: 'Disaster' | 'Conflict' | 'Other', value: number, description: string }
 > = {
     type: 'FeatureCollection',
     features: idus.map((idu) => ({
@@ -197,6 +197,7 @@ export const iduGeojson: GeoJSON.FeatureCollection<
         properties: {
             type: idu.displacement_type,
             value: idu.figure,
+            description: idu.standard_popup_text,
         },
         geometry: {
             type: 'Point',
