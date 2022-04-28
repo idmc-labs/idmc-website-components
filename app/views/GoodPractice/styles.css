@@ -1,0 +1,62 @@
+.good-practices {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    padding: var(--dui-spacing-large);
+    gap: var(--dui-spacing-super-large);
+
+    .cover-image {
+        align-self: stretch;
+        height: 32rem;
+        object-fit: cover;
+        object-position: center center;
+    }
+
+    .main-content {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 1200px;
+        gap: var(--dui-spacing-extra-large);
+
+        .breadcrumb {
+            display: flex;
+            flex-wrap: wrap;
+            border-radius: 0.25rem;
+            background-color: var(--dui-color-background);
+            padding: var(--dui-spacing-medium);
+            gap: var(--dui-spacing-small);
+
+            >* {
+                display: inline-block;
+            }
+        }
+
+        .details {
+            display: flex;
+            gap: var(--dui-spacing-large);
+
+            .side-pane {
+                display: flex;
+                flex-basis: 30%;
+                flex-direction: column;
+                flex-shrink: 0;
+                gap: var(--dui-spacing-medium);
+
+                .block {
+                    display: flex;
+                    flex-direction: column;
+                    border-radius: 0.25rem;
+
+                    background-color: var(--dui-color-background);
+                    padding: var(--dui-spacing-medium);
+                    gap: var(--dui-spacing-small);
+                    .contact-links {
+                        display: flex;
+                        gap: var(--dui-spacing-medium);
+                    }
+                }
+            }
+        }
+    }
+}
