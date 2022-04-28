@@ -44,14 +44,6 @@ function Navbar(props: Props) {
                         route={route.goodPractices}
                         className={styles.link}
                     />
-                    <SmartNavLink
-                        exact
-                        route={route.goodPractice}
-                        className={styles.link}
-                        attrs={{
-                            id: '1',
-                        }}
-                    />
                 </div>
                 <div className={styles.actions}>
                     <QuickActionLink

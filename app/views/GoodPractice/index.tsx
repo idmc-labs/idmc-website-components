@@ -15,7 +15,7 @@ interface Props {
     className?: string;
 }
 
-function GoodPractices(props: Props) {
+function GoodPractice(props: Props) {
     const {
         className,
     } = props;
@@ -137,4 +137,4 @@ function GoodPractices(props: Props) {
     );
 }
 
-export default GoodPractices;
+export default GoodPractice;
