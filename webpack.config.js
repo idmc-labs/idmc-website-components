@@ -8,10 +8,10 @@ const WebpackPwaManifest = require('webpack-pwa-manifest');
 const { merge } = require('webpack-merge');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
-const CssMinimizerWebpackPlugin = require('css-minimizer-webpack-plugin');
+// const CssMinimizerWebpackPlugin = require('css-minimizer-webpack-plugin');
 const StyleLintPlugin = require('stylelint-webpack-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
-const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
+// const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 const ResourceHintWebpackPlugin = require('resource-hints-webpack-plugin');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
@@ -212,7 +212,7 @@ module.exports = () => {
                                 compress: { typeofs: false },
                             },
                         }),
-                        new CssMinimizerWebpackPlugin(),
+                        // new CssMinimizerWebpackPlugin(),
                     ],
                     splitChunks: {
                         cacheGroups: {
@@ -228,6 +228,7 @@ module.exports = () => {
                 plugins: [
                     new ResourceHintWebpackPlugin(),
                     new CompressionPlugin(),
+                    /*
                     new WorkboxWebpackPlugin.GenerateSW({
                         // these options encourage the ServiceWorkers to get in there fast
                         // and not allow any straggling "old" SWs to hang around
@@ -246,6 +247,7 @@ module.exports = () => {
                         ],
                         exclude: [/\.map$/, /\.map.gz$/, /index.html/, /index.html.gz/],
                     }),
+                    */
                 ],
             },
         );
