@@ -1,6 +1,7 @@
 import React from 'react';
 import { _cs } from '@togglecorp/fujs';
 import {
+    Svg,
     QuickActionLink,
 } from '@the-deep/deep-ui';
 import {
@@ -9,6 +10,7 @@ import {
 
 import SmartNavLink from '#base/components/SmartNavLink';
 import route from '#base/configs/routes';
+import svgImage from '../../../resources/img/idmc.svg';
 
 import styles from './styles.css';
 
@@ -22,7 +24,9 @@ function Navbar(props: Props) {
     return (
         <nav className={_cs(className, styles.navbar)}>
             <div className={styles.appBrand}>
-                IDMC
+                <Svg
+                    src={svgImage}
+                />
             </div>
             <div className={styles.main}>
                 <div className={styles.navLinks}>
@@ -42,7 +46,7 @@ function Navbar(props: Props) {
                 </div>
                 <div className={styles.actions}>
                     <QuickActionLink
-                        to="https://togglecorp.com"
+                        to="https://www.internal-displacement.org"
                     >
                         <IoHelp />
                     </QuickActionLink>

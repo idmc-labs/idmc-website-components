@@ -12,6 +12,7 @@
         display: flex;
         align-items: center;
         flex-shrink: 0;
+        width: 4em;
         color: var(--dui-color-brand);
         font-size: var(--dui-font-size-mega-large);
         font-weight: var(--dui-font-weight-bold);
