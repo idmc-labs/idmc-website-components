@@ -35,6 +35,8 @@
     --color-conflict: var(--color-orange);
     --color-disaster: var(--color-blue);
     --color-other: var(--color-green);
+
+    --width-page-max: 60rem;
 }
 
 .base {
