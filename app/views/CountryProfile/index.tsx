@@ -16,9 +16,8 @@ import Map, {
     MapTooltip,
 } from '@togglecorp/re-map';
 import {
-    IoMapOutline,
-    IoListCircleOutline,
     IoDownloadOutline,
+    IoInformationCircleOutline,
 } from 'react-icons/io5';
 import { _cs } from '@togglecorp/fujs';
 import {
@@ -156,6 +155,11 @@ function CountryProfile(props: Props) {
                     <Header
                         headingSize="extraLarge"
                         heading="Country Profile: India"
+                        headingInfo={countryMetadata.countryProfileTooltip && (
+                            <IoInformationCircleOutline
+                                title={countryMetadata.countryProfileTooltip}
+                            />
+                        )}
                     />
                     <EllipsizedContent>
                         <HTMLOutput
@@ -212,6 +216,11 @@ function CountryProfile(props: Props) {
                         <Header
                             headingSize="large"
                             heading="Displacement Data"
+                            headingInfo={countryMetadata.displacementDataTooltip && (
+                                <IoInformationCircleOutline
+                                    title={countryMetadata.displacementDataTooltip}
+                                />
+                            )}
                         />
                         <EllipsizedContent>
                             <HTMLOutput
@@ -225,7 +234,23 @@ function CountryProfile(props: Props) {
                                         heading="Conflict and Violence Data"
                                         headingSize="small"
                                         headingDescription={(
-                                            <IoDownloadOutline />
+                                            <>
+                                                <Button
+                                                    name={undefined}
+                                                    // variant="secondary"
+                                                    onClick={() => undefined}
+                                                    icons={(
+                                                        <IoDownloadOutline />
+                                                    )}
+                                                >
+                                                    Download data
+                                                </Button>
+                                            </>
+                                        )}
+                                        headingInfo={countryMetadata.conflictAndViolenceTooltip && (
+                                            <IoInformationCircleOutline
+                                                title={countryMetadata.conflictAndViolenceTooltip}
+                                            />
                                         )}
                                         inlineHeadingDescription
                                     />
@@ -325,7 +350,23 @@ function CountryProfile(props: Props) {
                                         headingSize="small"
                                         heading="Disaster Data"
                                         headingDescription={(
-                                            <IoDownloadOutline />
+                                            <>
+                                                <Button
+                                                    name={undefined}
+                                                    // variant="secondary"
+                                                    onClick={() => undefined}
+                                                    icons={(
+                                                        <IoDownloadOutline />
+                                                    )}
+                                                >
+                                                    Download data
+                                                </Button>
+                                            </>
+                                        )}
+                                        headingInfo={countryMetadata.disasterTooltip && (
+                                            <IoInformationCircleOutline
+                                                title={countryMetadata.disasterTooltip}
+                                            />
                                         )}
                                         inlineHeadingDescription
                                     />
@@ -427,6 +468,11 @@ function CountryProfile(props: Props) {
                     <Header
                         headingSize="large"
                         heading="Latest New Displacements"
+                        headingInfo={countryMetadata.latestNewDisplacementsTooltip && (
+                            <IoInformationCircleOutline
+                                title={countryMetadata.latestNewDisplacementsTooltip}
+                            />
+                        )}
                     />
                     <EllipsizedContent>
                         <HTMLOutput
@@ -461,60 +507,49 @@ function CountryProfile(props: Props) {
                     <Header
                         headingSize="large"
                         heading="Internal Displacement Updates"
+                        headingInfo={countryMetadata.internalDisplacementUpdatesTooltip && (
+                            <IoInformationCircleOutline
+                                title={countryMetadata.internalDisplacementUpdatesTooltip}
+                            />
+                        )}
                     />
                     <EllipsizedContent>
                         <HTMLOutput
                             value={countryMetadata.internalDisplacementUpdates}
                         />
                     </EllipsizedContent>
-                    <Tabs
-                        value="map"
-                        onChange={() => undefined}
-                    >
-                        <TabList
-                            actions={(
-                                <div className={styles.filter}>
-                                    <SelectInput
-                                        variant="general"
-                                        placeholder="Timescale"
-                                        name="timescale"
-                                        value={undefined}
-                                        options={options}
-                                        keySelector={(item) => item.key}
-                                        labelSelector={(item) => item.label}
-                                        onChange={() => undefined}
-                                    />
-                                    <SelectInput
-                                        variant="general"
-                                        placeholder="Type of displacement"
-                                        name="typeOfDisplacement"
-                                        value={undefined}
-                                        options={options}
-                                        keySelector={(item) => item.key}
-                                        labelSelector={(item) => item.label}
-                                        onChange={() => undefined}
-                                    />
-                                    <SelectInput
-                                        variant="general"
-                                        placeholder="No. of displacement"
-                                        name="numberOfDisplacement"
-                                        value={undefined}
-                                        options={options}
-                                        keySelector={(item) => item.key}
-                                        labelSelector={(item) => item.label}
-                                        onChange={() => undefined}
-                                    />
-                                </div>
-                            )}
-                        >
-                            <Tab name="map">
-                                <IoMapOutline />
-                            </Tab>
-                            <Tab name="table">
-                                <IoListCircleOutline />
-                            </Tab>
-                        </TabList>
-                    </Tabs>
+                    <div className={styles.filter}>
+                        <SelectInput
+                            variant="general"
+                            placeholder="Timescale"
+                            name="timescale"
+                            value={undefined}
+                            options={options}
+                            keySelector={(item) => item.key}
+                            labelSelector={(item) => item.label}
+                            onChange={() => undefined}
+                        />
+                        <SelectInput
+                            variant="general"
+                            placeholder="Type of displacement"
+                            name="typeOfDisplacement"
+                            value={undefined}
+                            options={options}
+                            keySelector={(item) => item.key}
+                            labelSelector={(item) => item.label}
+                            onChange={() => undefined}
+                        />
+                        <SelectInput
+                            variant="general"
+                            placeholder="No. of displacement"
+                            name="numberOfDisplacement"
+                            value={undefined}
+                            options={options}
+                            keySelector={(item) => item.key}
+                            labelSelector={(item) => item.label}
+                            onChange={() => undefined}
+                        />
+                    </div>
                     <div>
                         Hover over and click on the coloured bubbles to see near real-time
                         snapshots of situations of internal displacement across the globe.
@@ -529,9 +564,6 @@ function CountryProfile(props: Props) {
                         navControlShown
                     >
                         <div className={styles.mapWrapper}>
-                            <MapContainer
-                                className={styles.mapContainer}
-                            />
                             <div className={styles.legendList}>
                                 <div className={styles.legend}>
                                     <Header
@@ -578,6 +610,9 @@ function CountryProfile(props: Props) {
                                     </div>
                                 </div>
                             </div>
+                            <MapContainer
+                                className={styles.mapContainer}
+                            />
                         </div>
                         <MapBounds
                             bounds={statistics.bounds}
@@ -610,6 +645,49 @@ function CountryProfile(props: Props) {
                             )}
                         </MapSource>
                     </Map>
+                </section>
+                <section className={styles.relatedMaterial}>
+                    <Header
+                        headingSize="large"
+                        heading="Related Material"
+                        headingInfo={countryMetadata.relatedMaterialTooltip && (
+                            <IoInformationCircleOutline
+                                title={countryMetadata.relatedMaterialTooltip}
+                            />
+                        )}
+                    />
+                </section>
+                <section className={styles.misc}>
+                    {countryMetadata.essentialReading && (
+                        <div className={styles.essentialReading}>
+                            <Header
+                                heading="Essential Reading"
+                                headingSize="large"
+                                headingInfo={countryMetadata.essentialReadingTooltip && (
+                                    <IoInformationCircleOutline
+                                        title={countryMetadata.essentialReadingTooltip}
+                                    />
+                                )}
+                            />
+                            <HTMLOutput
+                                value={countryMetadata.essentialReading}
+                            />
+                        </div>
+                    )}
+                    <div className={styles.contact}>
+                        <Header
+                            heading="For more information please contact:"
+                            headingSize="medium"
+                            headingInfo={countryMetadata.contactTooltip && (
+                                <IoInformationCircleOutline
+                                    title={countryMetadata.contactTooltip}
+                                />
+                            )}
+                        />
+                        <HTMLOutput
+                            value={countryMetadata.contactInformation}
+                        />
+                    </div>
                 </section>
             </div>
         </div>

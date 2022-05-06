@@ -117,10 +117,7 @@
 
             .filter {
                 display: flex;
-                flex-grow: 1;
                 flex-wrap: wrap;
-                justify-content: flex-end;
-                padding-bottom: var(--dui-spacing-medium);
                 gap: var(--dui-spacing-medium);
                 font-size: 1rem;
             }
@@ -154,6 +151,29 @@
                         width: var(--dui-width-separator-medium);
                     }
                 }
+            }
+        }
+
+        .related-material {
+            display: flex;
+            flex-direction: column;
+            gap: var(--dui-spacing-large);
+        }
+
+        .misc {
+            display: flex;
+            gap: var(--dui-spacing-large);
+
+            .essential-reading {
+                display: flex;
+                flex-direction: column;
+                gap: var(--dui-spacing-large);
+            }
+
+            .contact {
+                display: flex;
+                flex-direction: column;
+                gap: var(--dui-spacing-large);
             }
         }
     }

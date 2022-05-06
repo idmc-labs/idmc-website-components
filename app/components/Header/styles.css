@@ -6,9 +6,17 @@
         .heading-container {
             flex-grow: 1;
 
+            .heading {
+                display: flex;
+                align-items: center;
+                gap: var(--dui-spacing-small);
+                flex-grow: 1;
+            }
+
             &.inline-heading-description {
                 display: flex;
                 gap: var(--dui-spacing-small);
+                flex-shrink: 0;
             }
         }
     }
