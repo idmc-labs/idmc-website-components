@@ -8,6 +8,7 @@ import styles from './styles.css';
 interface Props {
     className?: string;
     heading?: React.ReactNode;
+    headingInfo?: React.ReactNode;
     icons?: React.ReactNode;
     actions?: React.ReactNode;
     description?: React.ReactNode;
@@ -25,6 +26,7 @@ function Header(props: Props) {
         description,
         headingDescription,
         headingSize,
+        headingInfo,
         inlineHeadingDescription,
     } = props;
 
@@ -43,8 +45,12 @@ function Header(props: Props) {
                     )}
                 >
                     {heading && (
-                        <Heading size={headingSize}>
+                        <Heading
+                            size={headingSize}
+                            className={styles.heading}
+                        >
                             {heading}
+                            {headingInfo}
                         </Heading>
                     )}
                     {headingDescription && (
