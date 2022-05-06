@@ -50,7 +50,11 @@ function Header(props: Props) {
                             className={styles.heading}
                         >
                             {heading}
-                            {headingInfo}
+                            {headingInfo && (
+                                <span className={styles.headingInfo}>
+                                    {headingInfo}
+                                </span>
+                            )}
                         </Heading>
                     )}
                     {headingDescription && (

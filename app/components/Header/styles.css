@@ -7,10 +7,13 @@
             flex-grow: 1;
 
             .heading {
-                display: flex;
-                align-items: center;
-                gap: var(--dui-spacing-small);
                 flex-grow: 1;
+
+                .heading-info {
+                    padding: 0 var(--dui-spacing-small);
+                    vertical-align: middle;
+                    line-height: 1;
+                }
             }
 
             &.inline-heading-description {

@@ -37,25 +37,27 @@ function GoodPracticeItem(props: Props) {
                 className={styles.coverImage}
                 alt="Cover"
             />
-            <Header
-                heading={(
-                    <SmartLink
-                        route={route.goodPractice}
-                        attrs={{
-                            id: dataId,
-                        }}
-                    >
-                        {heading}
-                    </SmartLink>
-                )}
-                headingSize="small"
-                description={(
-                    <DateOutput value={date} />
-                )}
-            />
-            <EllipsizedContent>
-                <HTMLOutput value={description} />
-            </EllipsizedContent>
+            <div className={styles.content}>
+                <Header
+                    heading={(
+                        <SmartLink
+                            route={route.goodPractice}
+                            attrs={{
+                                id: dataId,
+                            }}
+                        >
+                            {heading}
+                        </SmartLink>
+                    )}
+                    headingSize="extraSmall"
+                    description={(
+                        <DateOutput value={date} />
+                    )}
+                />
+                <EllipsizedContent>
+                    <HTMLOutput value={description} />
+                </EllipsizedContent>
+            </div>
         </div>
     );
 }

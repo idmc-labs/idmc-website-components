@@ -17,7 +17,7 @@
         display: flex;
         flex-direction: column;
         width: 100%;
-        max-width: 1200px;
+        max-width: var(--width-page-max);
         gap: var(--dui-spacing-ultra-large);
 
         .profile {
@@ -158,6 +158,25 @@
             display: flex;
             flex-direction: column;
             gap: var(--dui-spacing-large);
+
+            .material-list {
+                --gap: 5rem;
+                display: flex;
+                flex-wrap: wrap;
+                gap: var(--gap);
+
+                .material {
+                    --image-height: 20rem;
+                    --image-width: 10rem;
+                    flex-basis: calc(100% / 2 - var(--gap));
+                    flex-direction: row;
+
+                    >* {
+                        flex-basis: 0;
+                        flex-grow: 1;
+                    }
+                }
+            }
         }
 
         .misc {
@@ -174,6 +193,12 @@
                 display: flex;
                 flex-direction: column;
                 gap: var(--dui-spacing-large);
+
+                .preview {
+                    width: 14rem;
+                    height: 16rem;
+                    object-fit: cover;
+                }
             }
         }
     }

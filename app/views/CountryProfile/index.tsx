@@ -49,10 +49,18 @@ import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
 import TextOutput from '#components/TextOutput';
 import Infographic from '#components/Infographic';
+import GoodPracticeItem from '#components/GoodPracticeItem';
+import { goodPracticesList } from '#views/GoodPractices/data';
 
 import { formatNumber } from '#utils/common';
 
-import { countryMetadata, countryOverviews, statistics, iduGeojson, idus } from './data';
+import {
+    countryMetadata,
+    countryOverviews,
+    statistics,
+    iduGeojson,
+    idus,
+} from './data';
 import styles from './styles.css';
 
 const options: { key: string; label: string }[] = [];
@@ -656,6 +664,19 @@ function CountryProfile(props: Props) {
                             />
                         )}
                     />
+                    <div className={styles.materialList}>
+                        {goodPracticesList.map((gp) => (
+                            <GoodPracticeItem
+                                dataId={gp.id}
+                                key={gp.id}
+                                className={styles.material}
+                                coverImageUrl={gp.image}
+                                heading={gp.title}
+                                description={gp.description}
+                                date="2021-05-20"
+                            />
+                        ))}
+                    </div>
                 </section>
                 <section className={styles.misc}>
                     {countryMetadata.essentialReading && (
@@ -683,6 +704,11 @@ function CountryProfile(props: Props) {
                                     title={countryMetadata.contactTooltip}
                                 />
                             )}
+                        />
+                        <img
+                            className={styles.preview}
+                            src="https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=774&q=80"
+                            alt="Contact"
                         />
                         <HTMLOutput
                             value={countryMetadata.contactInformation}
