@@ -18,7 +18,6 @@ interface GoodPractice {
     contactFormLink: string,
 }
 
-// eslint-disable-next-line import/prefer-default-export
 export const goodPractice: GoodPractice = {
     title: 'Gaibanda model for Community-Driven Disability-inclusive Disaster Risk Reduction (CDDiDRR)',
     description: `
