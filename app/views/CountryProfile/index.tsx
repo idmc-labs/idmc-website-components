@@ -131,6 +131,14 @@ const COUNTRY_PROFILE = gql`
                 year
                 updatedAt
             }
+            contactPersonDescription
+            contactPersonImage {
+                url
+                name
+            }
+            essentialLinks
+            internalDisplacementDescription
+            latestNewDisplacementsDescription
         }
     }
 `;
@@ -554,7 +562,7 @@ function CountryProfile(props: Props) {
                     />
                     <EllipsizedContent>
                         <HTMLOutput
-                            value={countryMetadata.latestNewDisplacements}
+                            value={countryProfileData.country.latestNewDisplacementsDescription}
                         />
                     </EllipsizedContent>
                     <div className={styles.iduContainer}>
@@ -593,7 +601,7 @@ function CountryProfile(props: Props) {
                     />
                     <EllipsizedContent>
                         <HTMLOutput
-                            value={countryMetadata.internalDisplacementUpdates}
+                            value={countryProfileData.country.internalDisplacementDescription}
                         />
                     </EllipsizedContent>
                     <div className={styles.filter}>
@@ -749,7 +757,7 @@ function CountryProfile(props: Props) {
                     </div>
                 </section>
                 <section className={styles.misc}>
-                    {countryMetadata.essentialReading && (
+                    {countryProfileData.country.essentialLinks && (
                         <div className={styles.essentialReading}>
                             <Header
                                 heading="Essential Reading"
@@ -761,29 +769,36 @@ function CountryProfile(props: Props) {
                                 )}
                             />
                             <HTMLOutput
-                                value={countryMetadata.essentialReading}
+                                value={countryProfileData.country.essentialLinks}
                             />
                         </div>
                     )}
-                    <div className={styles.contact}>
-                        <Header
-                            heading="For more information please contact:"
-                            headingSize="medium"
-                            headingInfo={countryMetadata.contactTooltip && (
-                                <IoInformationCircleOutline
-                                    title={countryMetadata.contactTooltip}
+                    {(
+                        countryProfileData.country.contactPersonDescription
+                        || countryProfileData.country.contactPersonImage
+                    ) && (
+                        <div className={styles.contact}>
+                            <Header
+                                heading="For more information please contact:"
+                                headingSize="medium"
+                                headingInfo={countryMetadata.contactTooltip && (
+                                    <IoInformationCircleOutline
+                                        title={countryMetadata.contactTooltip}
+                                    />
+                                )}
+                            />
+                            {countryProfileData.country.contactPersonImage && (
+                                <img
+                                    className={styles.preview}
+                                    src={countryProfileData.country.contactPersonImage.url}
+                                    alt={countryProfileData.country.contactPersonImage.name}
                                 />
                             )}
-                        />
-                        <img
-                            className={styles.preview}
-                            src="https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=774&q=80"
-                            alt="Contact"
-                        />
-                        <HTMLOutput
-                            value={countryMetadata.contactInformation}
-                        />
-                    </div>
+                            <HTMLOutput
+                                value={countryMetadata.contactPersonDescription}
+                            />
+                        </div>
+                    )}
                 </section>
             </div>
         </div>
