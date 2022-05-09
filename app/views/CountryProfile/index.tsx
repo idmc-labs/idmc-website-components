@@ -3,6 +3,10 @@ import {
     SelectInput,
 } from '@the-deep/deep-ui';
 import {
+    gql,
+    useQuery,
+} from '@apollo/client';
+import {
     MapboxGeoJSONFeature,
     LngLat,
     PopupOptions,
@@ -35,7 +39,10 @@ import {
     Pie,
     Cell,
 } from 'recharts';
-
+import {
+    CountryProfileQuery,
+    CountryProfileQueryVariables,
+} from '#generated/types';
 import RoundedBar from '#components/RoundedBar';
 import Tabs from '#components/Tabs';
 import Tab from '#components/Tabs/Tab';
@@ -56,7 +63,6 @@ import { formatNumber } from '#utils/common';
 
 import {
     countryMetadata,
-    countryOverviews,
     statistics,
     iduGeojson,
     idus,
@@ -109,6 +115,40 @@ const colorScheme = [
     'rgb(94, 217, 238)',
 ];
 
+const COUNTRY_PROFILE = gql`
+    query CountryProfile($countryId: ID!) {
+        country(pk: $countryId) {
+            id
+            title
+            description
+            backgroundImage {
+                name
+                url
+            }
+            overviews {
+                description
+                id
+                year
+                updatedAt
+            }
+            essentialLinks {
+                id
+                link
+            }
+            contactPersons {
+                designation
+                email
+                fullName
+                id
+                image {
+                    name
+                    url
+                }
+            }
+        }
+    }
+`;
+
 interface Props {
     className?: string;
 }
@@ -118,11 +158,33 @@ function CountryProfile(props: Props) {
         className,
     } = props;
 
-    const [moreIduShown, setMoreIduShown] = React.useState(false);
-
-    const [activeYear, setActiveYear] = React.useState<string>(
-        countryOverviews[0]?.year,
+    const [activeYear, setActiveYear] = React.useState<string | undefined>();
+    const {
+        previousData,
+        data: countryProfileData = previousData,
+        loading: countryProfileLoading,
+        error: countryProfileError,
+    } = useQuery<CountryProfileQuery, CountryProfileQueryVariables>(
+        COUNTRY_PROFILE,
+        {
+            variables: {
+                countryId: '93', // TODO make this dynamic
+            },
+            onCompleted: (response) => {
+                if (!response.country) {
+                    return;
+                }
+                const {
+                    overviews,
+                } = response.country;
+                if (overviews && overviews.length > 0) {
+                    setActiveYear(overviews[0].year.toString());
+                }
+            },
+        },
     );
+
+    const [moreIduShown, setMoreIduShown] = React.useState(false);
 
     interface Properties {
         type: 'Disaster' | 'Conflict' | 'Other',
@@ -151,31 +213,48 @@ function CountryProfile(props: Props) {
         setHoverFeatureProperties(undefined);
     }, []);
 
+    if (countryProfileLoading) {
+        return (
+            <div className={_cs(styles.countryProfile, className)}>
+                Loading....
+            </div>
+        );
+    }
+
+    if (countryProfileError) {
+        return (
+            <div className={_cs(styles.countryProfile, className)}>
+                Error fetching country profile....
+            </div>
+        );
+    }
+
     return (
         <div className={_cs(styles.countryProfile, className)}>
             <img
                 className={styles.coverImage}
-                src="https://images.unsplash.com/photo-1599230080795-a48439229cb7?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1774&q=80"
-                alt="india"
+                src={countryProfileData?.country.backgroundImage.url}
+                alt={countryProfileData?.country.title}
             />
             <div className={styles.mainContent}>
                 <section className={styles.profile}>
                     <Header
                         headingSize="extraLarge"
-                        heading="Country Profile: India"
                         headingInfo={countryMetadata.countryProfileTooltip && (
                             <IoInformationCircleOutline
                                 title={countryMetadata.countryProfileTooltip}
                             />
                         )}
+                        heading={`Country Profile: ${countryProfileData?.country.title}`}
                     />
                     <EllipsizedContent>
                         <HTMLOutput
-                            value={countryMetadata.description}
+                            value={countryProfileData?.country.description}
                         />
                     </EllipsizedContent>
                 </section>
-                {countryOverviews && countryOverviews.length > 0 && (
+                {countryProfileData?.country.overviews
+                && countryProfileData.country.overviews.length > 0 && activeYear && (
                     <section className={styles.overview}>
                         <Header
                             headingSize="large"
@@ -186,23 +265,23 @@ function CountryProfile(props: Props) {
                             onChange={setActiveYear}
                         >
                             <TabList>
-                                {countryOverviews.map((countryOverview) => (
+                                {countryProfileData.country.overviews.map((countryOverview) => (
                                     <Tab
                                         key={countryOverview.year}
-                                        name={countryOverview.year}
+                                        name={countryOverview.year.toString()}
                                     >
                                         {countryOverview.year}
                                     </Tab>
                                 ))}
                             </TabList>
-                            {countryOverviews.map((countryOverview) => (
+                            {countryProfileData.country.overviews.map((countryOverview) => (
                                 <TabPanel
                                     key={countryOverview.year}
-                                    name={countryOverview.year}
+                                    name={countryOverview.year.toString()}
                                 >
                                     <TextOutput
                                         label="Last modified"
-                                        value={countryOverview.lastModified}
+                                        value={countryOverview.updatedAt}
                                         valueType="date"
                                     />
                                     <EllipsizedContent>
