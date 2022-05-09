@@ -42,6 +42,8 @@ import {
 import {
     CountryProfileQuery,
     CountryProfileQueryVariables,
+    IduDataQuery,
+    IduDataQueryVariables,
 } from '#generated/types';
 import RoundedBar from '#components/RoundedBar';
 import Tabs from '#components/Tabs';
@@ -143,6 +145,35 @@ const COUNTRY_PROFILE = gql`
     }
 `;
 
+const IDU_DATA = gql`
+    query IduData($country: String!) {
+        idu(country: $country) @rest(type: "[IduData]", method: "GET", path: "data/idus_view_flat_cached?iso3=eq.:country") {
+            id
+            country
+            iso3
+            centroid
+            latitude
+            longitude
+            displacement_type
+            qualifier
+            figure
+            displacment_date
+            displacement_start_date
+            displacement_end_date
+            year
+            event_name
+            event_start_date
+            event_end_date
+            category
+            subcategory
+            type
+            subtype
+            standard_popup_text
+            standard_info_text
+        }
+    }
+`;
+
 interface Props {
     className?: string;
 }
@@ -174,6 +205,22 @@ function CountryProfile(props: Props) {
                 if (overviews && overviews.length > 0) {
                     setActiveYear(overviews[0].year.toString());
                 }
+            },
+        },
+    );
+    const {
+        previousData: previousIduData,
+        data: iduData = previousIduData,
+        loading: iduDataLoading,
+        error: iduDataError,
+    } = useQuery<IduDataQuery, IduDataQueryVariables>(
+        IDU_DATA,
+        {
+            variables: {
+                country: 'IND', // TODO make this dynamic
+            },
+            onCompleted: (response) => {
+                console.warn('response', response);
             },
         },
     );

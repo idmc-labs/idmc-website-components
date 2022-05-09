@@ -1,10 +1,16 @@
-import { ApolloClientOptions, NormalizedCacheObject, InMemoryCache, ApolloLink as ApolloLinkFromClient, HttpLink } from '@apollo/client';
+import { ApolloClientOptions, NormalizedCacheObject, InMemoryCache, ApolloLink as ApolloLinkFromClient, HttpLink, from } from '@apollo/client';
+import { RestLink } from 'apollo-link-rest';
 
 const GRAPHQL_ENDPOINT = process.env.REACT_APP_GRAPHQL_ENDPOINT as string;
+const IDMC_ENDPOINT = process.env.IDMC_ENDPOINT as string;
 
 const link = new HttpLink({
     uri: GRAPHQL_ENDPOINT,
     credentials: 'include',
+}) as unknown as ApolloLinkFromClient;
+
+const idmcLink = new RestLink({
+    uri: IDMC_ENDPOINT,
 }) as unknown as ApolloLinkFromClient;
 
 /*
@@ -30,7 +36,7 @@ const link: ApolloLinkFromClient = ApolloLink.from([
 */
 
 const apolloOptions: ApolloClientOptions<NormalizedCacheObject> = {
-    link,
+    link: from([idmcLink, link]),
     cache: new InMemoryCache(),
     assumeImmutableResults: true,
     defaultOptions: {

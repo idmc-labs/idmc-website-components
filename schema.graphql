@@ -1,0 +1,34 @@
+type IduData {
+    id: Int!
+    country: String!
+    iso3: String!
+    centroid: [Float!]
+    latitude: Float
+    longitude: Float
+    displacement_type: String
+    qualifier: String
+    figure: Int
+    displacment_date: String
+    displacement_start_date: String
+    displacement_end_date: String
+    year: Int
+    event_name: String
+    event_start_date: String
+    event_end_date: String
+    category: String
+    subcategory: String
+    type: String
+    subtype: String
+    standard_popup_text: String
+    standard_info_text: String
+}
+
+type Query {
+    idu(country: String!): [IduData]!
+}
+
+directive @rest(
+    type: String!
+    path: String!
+    method: String
+) on FIELD
