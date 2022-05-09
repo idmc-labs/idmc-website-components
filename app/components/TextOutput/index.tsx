@@ -21,7 +21,6 @@ interface BaseProps {
 }
 
 const displayTypeToStyleMap: {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     [key in DisplayType]: string;
 } = {
     inline: styles.inlineType,
@@ -59,19 +58,24 @@ function TextOutput(props: Props) {
     // eslint-disable-next-line prefer-destructuring, react/destructuring-assignment
     let value: React.ReactNode = props.value;
 
-    // eslint-disable-next-line prefer-destructuring, react/destructuring-assignment
+    // eslint-disable-next-line react/destructuring-assignment
     if (props.valueType === 'number') {
         value = (
             <NumberOutput
+                // eslint-disable-next-line react/destructuring-assignment
                 value={props.value}
+                // eslint-disable-next-line react/destructuring-assignment
                 {...props.valueProps}
             />
         );
-    // eslint-disable-next-line prefer-destructuring, react/destructuring-assignment
+    // eslint-disable-next-line react/destructuring-assignment
     } else if (props.valueType === 'date') {
+        // eslint-disable-next-line react/destructuring-assignment
         value = props.value ? (
             <DateOutput
+                // eslint-disable-next-line react/destructuring-assignment
                 value={props.value}
+                // eslint-disable-next-line react/destructuring-assignment
                 {...props.valueProps}
             />
         ) : null;
