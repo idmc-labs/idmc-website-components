@@ -1,10 +1,10 @@
 interface CountryMetadata {
-    description: string | undefined;
-    displacementData: string | undefined;
-    internalDisplacementUpdates: string | undefined;
-    latestNewDisplacements: string | undefined;
-    essentialReading: string | undefined;
-    contactInformation: string | undefined;
+    // description: string | undefined;
+    // displacementData: string | undefined;
+    // internalDisplacementUpdates: string | undefined;
+    // latestNewDisplacements: string | undefined;
+    // essentialReading: string | undefined;
+    // contactInformation: string | undefined;
 
     countryProfileTooltip?: string;
     displacementDataTooltip?: string;

@@ -119,7 +119,7 @@ const COUNTRY_PROFILE = gql`
     query CountryProfile($countryId: ID!) {
         country(pk: $countryId) {
             id
-            title
+            name
             description
             backgroundImage {
                 name
@@ -130,20 +130,6 @@ const COUNTRY_PROFILE = gql`
                 id
                 year
                 updatedAt
-            }
-            essentialLinks {
-                id
-                link
-            }
-            contactPersons {
-                designation
-                email
-                fullName
-                id
-                image {
-                    name
-                    url
-                }
             }
         }
     }
@@ -168,7 +154,7 @@ function CountryProfile(props: Props) {
         COUNTRY_PROFILE,
         {
             variables: {
-                countryId: '93', // TODO make this dynamic
+                countryId: '2', // TODO make this dynamic
             },
             onCompleted: (response) => {
                 if (!response.country) {
@@ -221,7 +207,7 @@ function CountryProfile(props: Props) {
         );
     }
 
-    if (countryProfileError) {
+    if (countryProfileError || !countryProfileData?.country) {
         return (
             <div className={_cs(styles.countryProfile, className)}>
                 Error fetching country profile....
@@ -231,11 +217,13 @@ function CountryProfile(props: Props) {
 
     return (
         <div className={_cs(styles.countryProfile, className)}>
-            <img
-                className={styles.coverImage}
-                src={countryProfileData?.country.backgroundImage.url}
-                alt={countryProfileData?.country.title}
-            />
+            {countryProfileData.country.backgroundImage.url && (
+                <img
+                    className={styles.coverImage}
+                    src={countryProfileData.country.backgroundImage.url}
+                    alt={countryProfileData.country.title}
+                />
+            )}
             <div className={styles.mainContent}>
                 <section className={styles.profile}>
                     <Header
@@ -245,16 +233,19 @@ function CountryProfile(props: Props) {
                                 title={countryMetadata.countryProfileTooltip}
                             />
                         )}
-                        heading={`Country Profile: ${countryProfileData?.country.title}`}
+                        heading={`Country Profile: ${countryProfileData.country.name}`}
                     />
                     <EllipsizedContent>
                         <HTMLOutput
-                            value={countryProfileData?.country.description}
+                            value={countryProfileData.country.description}
                         />
                     </EllipsizedContent>
                 </section>
-                {countryProfileData?.country.overviews
-                && countryProfileData.country.overviews.length > 0 && activeYear && (
+                {(
+                    countryProfileData.country.overviews
+                    && countryProfileData.country.overviews.length > 0
+                    && activeYear
+                ) && (
                     <section className={styles.overview}>
                         <Header
                             headingSize="large"
@@ -297,7 +288,7 @@ function CountryProfile(props: Props) {
                 {(
                     statistics.conflict
                     || statistics.disaster
-                    || countryMetadata.displacementData
+                    || countryProfileData.country.description
                 ) && (
                     <section className={styles.displacementData}>
                         <Header
@@ -311,7 +302,7 @@ function CountryProfile(props: Props) {
                         />
                         <EllipsizedContent>
                             <HTMLOutput
-                                value={countryMetadata.displacementData}
+                                value={countryProfileData.country.description}
                             />
                         </EllipsizedContent>
                         <div className={styles.infographics}>

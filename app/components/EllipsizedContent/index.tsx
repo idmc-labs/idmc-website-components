@@ -54,6 +54,10 @@ function EllipsizedContent(props: Props) {
         }
     }, [shouldEllipsize]);
 
+    if (!children) {
+        return null;
+    }
+
     return (
         <div className={_cs(styles.ellipsizedContent, className)}>
             <div
