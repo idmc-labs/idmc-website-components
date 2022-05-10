@@ -2,7 +2,7 @@ import { ApolloClientOptions, NormalizedCacheObject, InMemoryCache, ApolloLink a
 import { RestLink } from 'apollo-link-rest';
 
 const GRAPHQL_ENDPOINT = process.env.REACT_APP_GRAPHQL_ENDPOINT as string;
-const IDMC_ENDPOINT = process.env.IDMC_ENDPOINT as string;
+const IDMC_ENDPOINT = process.env.REACT_APP_IDMC_ENDPOINT as string;
 
 const link = new HttpLink({
     uri: GRAPHQL_ENDPOINT,

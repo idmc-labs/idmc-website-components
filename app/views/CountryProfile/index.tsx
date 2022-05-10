@@ -184,6 +184,7 @@ function CountryProfile(props: Props) {
     } = props;
 
     const [activeYear, setActiveYear] = React.useState<string | undefined>();
+
     const {
         previousData,
         data: countryProfileData = previousData,
@@ -208,6 +209,7 @@ function CountryProfile(props: Props) {
             },
         },
     );
+
     const {
         previousData: previousIduData,
         data: iduData = previousIduData,
@@ -224,6 +226,8 @@ function CountryProfile(props: Props) {
             },
         },
     );
+
+    console.warn(iduData, iduDataLoading, iduDataError);
 
     const [moreIduShown, setMoreIduShown] = React.useState(false);
 
@@ -272,11 +276,11 @@ function CountryProfile(props: Props) {
 
     return (
         <div className={_cs(styles.countryProfile, className)}>
-            {countryProfileData.country.backgroundImage.url && (
+            {countryProfileData.country.backgroundImage && (
                 <img
                     className={styles.coverImage}
                     src={countryProfileData.country.backgroundImage.url}
-                    alt={countryProfileData.country.title}
+                    alt={countryProfileData.country.backgroundImage.name}
                 />
             )}
             <div className={styles.mainContent}>
@@ -842,7 +846,7 @@ function CountryProfile(props: Props) {
                                 />
                             )}
                             <HTMLOutput
-                                value={countryMetadata.contactPersonDescription}
+                                value={countryProfileData.country.contactPersonDescription}
                             />
                         </div>
                     )}
