@@ -23,7 +23,7 @@ function LegendElement(props: LegendElementProps) {
                     style={{
                         backgroundColor: color,
                         width: `${size}px`,
-                        height: size < 16 ? size : undefined,
+                        height: `${size}px`,
                     }}
                 />
             </div>

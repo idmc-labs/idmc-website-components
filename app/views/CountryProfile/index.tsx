@@ -1,6 +1,6 @@
 import React from 'react';
+import { useParams } from 'react-router-dom';
 import {
-    SelectInput,
     MultiSelectInput,
     useInputState,
     Link,
@@ -95,8 +95,6 @@ type IduGeoJSON = GeoJSON.FeatureCollection<
 
 const REST_ENDPOINT = process.env.REACT_APP_REST_ENDPOINT as string;
 const categoryKeySelector = (d: CategoryStatisticsType) => d.label;
-
-const options: { key: string; label: string }[] = [];
 
 const iduPointColor: mapboxgl.CirclePaint = {
     'circle-opacity': 0.6,
@@ -250,6 +248,7 @@ const IDU_DATA = gql`
 const initialIduItems = 2;
 const startYear = 2008;
 const endYear = (new Date()).getFullYear();
+const giddLink = 'https://www.internal-displacement.org/database/displacement-data';
 
 // options
 const typeOfDisplacementOptions: {
@@ -277,9 +276,7 @@ function CountryProfile(props: Props) {
         className,
     } = props;
 
-    // Send this to server
-    // Read this from navbar
-    const currentCountry = 'MMR';
+    const { id: currentCountry } = useParams<{ id: string }>();
 
     // Overview section
     const [activeYear, setActiveYear] = React.useState<string>(String(endYear));
@@ -613,6 +610,13 @@ function CountryProfile(props: Props) {
                                                 >
                                                     Download data
                                                 </Link>
+                                                <Link
+                                                    to={giddLink}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                >
+                                                    View GIDD dashboard
+                                                </Link>
                                             </>
                                         )}
                                         headingInfo={countryMetadata.conflictAndViolenceTooltip && (
@@ -631,12 +635,13 @@ function CountryProfile(props: Props) {
                                             value={conflictTimeRange}
                                             onChange={setConflictTimeRange}
                                         />
+                                        <div />
                                     </div>
                                     <div className={styles.infographicList}>
                                         <Infographic
                                             totalValue={conflictData
                                                 ?.conflictStatistics.newDisplacements || 0}
-                                            description="New Displacements"
+                                            description="Internal Displacements"
                                             date={`${startYear} - ${endYear}`}
                                             chart={(
                                                 <ResponsiveContainer>
@@ -717,8 +722,8 @@ function CountryProfile(props: Props) {
                             {disasterData?.disasterStatistics && (
                                 <div className={styles.disasterInfographics}>
                                     <Header
-                                        headingSize="small"
                                         heading="Disaster Data"
+                                        headingSize="small"
                                         headingDescription={(
                                             <>
                                                 <Link
@@ -730,6 +735,13 @@ function CountryProfile(props: Props) {
                                                     rel="noopener noreferrer"
                                                 >
                                                     Download data
+                                                </Link>
+                                                <Link
+                                                    to={giddLink}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                >
+                                                    View GIDD dashboard
                                                 </Link>
                                             </>
                                         )}
@@ -768,7 +780,7 @@ function CountryProfile(props: Props) {
                                         <Infographic
                                             totalValue={disasterData
                                                 ?.disasterStatistics.newDisplacements || 0}
-                                            description="New Displacements"
+                                            description="Internal Displacements"
                                             date={`${startYear} - ${endYear}`}
                                             chart={(
                                                 <ResponsiveContainer>
