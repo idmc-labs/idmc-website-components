@@ -10,9 +10,7 @@ function Thumb(props, state) {
         <div
             {...props}
             className={styles.thumb}
-        >
-            {state.valueNow}
-        </div>
+        />
     );
 }
 
@@ -22,7 +20,10 @@ function Track(props, state) {
         <div
             {...props}
             index={state.index}
-            className={styles.track}
+            className={_cs(
+                styles.track,
+                state.index === 1 && styles.center,
+            )}
         />
     );
 }
@@ -49,18 +50,25 @@ function Slider<T extends number | number[]>(props: Props<T>) {
     } = props;
 
     return (
-        <ReactSlider
-            className={_cs(styles.slider, className)}
-            min={min}
-            max={max}
-            step={step}
-            minDistance={minDistance}
-            pearling
-            value={value}
-            onChange={onChange}
-            renderThumb={Thumb}
-            renderTrack={Track}
-        />
+        <div className={_cs(styles.slider, className)}>
+            <ReactSlider
+                className={styles.reactSlider}
+                min={min}
+                max={max}
+                step={step}
+                minDistance={minDistance}
+                pearling
+                value={value}
+                onChange={onChange}
+                renderThumb={Thumb}
+                renderTrack={Track}
+            />
+            {typeof value !== 'number' && (
+                <div className={styles.selectedRange}>
+                    {`${value[0]} - ${value[1]}`}
+                </div>
+            )}
+        </div>
     );
 }
 

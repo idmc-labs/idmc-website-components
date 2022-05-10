@@ -1,18 +1,34 @@
 .slider {
-    width: 300px;
-    height: 10px;
+    position: relative;
+    width: 100%;
 
-    .thumb {
-        background-color: var(--dui-color-brand);
-        cursor: grab;
-        padding: var(--dui-spacing-small);
-        text-align: center;
-        color: var(--dui-color-text-on-dark);
+    .react-slider {
+        height: 2ch;
+
+        .thumb {
+            border: 1px solid var(--dui-color-brand);
+            border-radius: 50%;
+            background-color: #fff;
+            cursor: grab;
+            width: 2ch;
+            height: 2ch;
+            text-align: center;
+        }
+
+        .track {
+            top: 1ch;
+            background-color: var(--dui-color-separator);
+            height: 1px;
+
+            &.center {
+                background-color: var(--dui-color-brand);
+            }
+        }
     }
 
-    .track {
-        top: 0;
-        bottom: 0;
-        background: var(--dui-color-background-dark);
+    .selected-range {
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 }

@@ -480,6 +480,14 @@ function CountryProfile(props: Props) {
     ) {
         return (
             <div className={_cs(styles.countryProfile, className)}>
+                <SliderInput
+                    min={startYear}
+                    max={endYear}
+                    step={1}
+                    minDistance={0}
+                    value={range}
+                    onChange={setRange}
+                />
                 Error fetching country profile....
             </div>
         );
