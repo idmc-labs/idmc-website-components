@@ -2,6 +2,7 @@ import React from 'react';
 import {
     SelectInput,
     MultiSelectInput,
+    useInputState,
 } from '@the-deep/deep-ui';
 import {
     gql,
@@ -67,6 +68,7 @@ import EllipsizedContent from '#components/EllipsizedContent';
 import TextOutput from '#components/TextOutput';
 import Infographic from '#components/Infographic';
 import GoodPracticeItem from '#components/GoodPracticeItem';
+import SliderInput from '#components/SliderInput';
 import { goodPracticesList as relatedMaterials } from '#views/GoodPractices/data';
 
 import { formatNumber } from '#utils/common';
@@ -76,6 +78,9 @@ import {
     statistics,
 } from './data';
 import styles from './styles.css';
+
+type DisplacementType = 'Conflict' | 'Disaster' | 'Other';
+type DisplacementNumber = 'less-than-100' | 'less-than-1000' | 'more-than-1000';
 
 interface PopupProperties {
     type: 'Disaster' | 'Conflict' | 'Other',
@@ -137,8 +142,8 @@ const colorScheme = [
 ];
 
 const COUNTRY_PROFILE = gql`
-    query CountryProfile($countryId: ID!) {
-        country(pk: $countryId) {
+    query CountryProfile($iso3: String!) {
+        country(iso3: $iso3) {
             id
             name
             description
@@ -252,11 +257,13 @@ function CountryProfile(props: Props) {
     // Read this from navbar
     const currentCountry = 'IND';
 
-    // NOTE: these will be replaced by timescale for conflict and disaster
+    // Max years
     const startYear = 2008;
-    const endYear = 2020;
+    const endYear = (new Date()).getFullYear();
 
-    const currentYear = String(new Date().getFullYear());
+    const [range, setRange] = React.useState([startYear, endYear]);
+
+    const currentYear = String(endYear);
 
     // constant
     const initialIduItems = 2;
@@ -264,6 +271,16 @@ function CountryProfile(props: Props) {
     const [activeYear, setActiveYear] = React.useState<string>(currentYear);
     const [categories, setCategories] = React.useState<string[] | undefined>();
     const [moreIduShown, setMoreIduShown] = React.useState(1);
+
+    // inputs for idu map
+    const [
+        typeOfDisplacements,
+        handleTypeOfDisplacementsChange,
+    ] = useInputState<DisplacementType[]>([]);
+    const [
+        noOfDisplacements,
+        handleNoOfDisplacementsChange,
+    ] = useInputState<DisplacementNumber[]>([]);
 
     const [
         hoverFeatureProperties,
@@ -295,7 +312,7 @@ function CountryProfile(props: Props) {
         COUNTRY_PROFILE,
         {
             variables: {
-                countryId: '91', // TODO make this dynamic
+                iso3: currentCountry,
             },
             onCompleted: (response) => {
                 if (!response.country) {
@@ -382,14 +399,35 @@ function CountryProfile(props: Props) {
                 ?.map((idu) => {
                     if (
                         isNotDefined(idu.longitude)
-                    || isNotDefined(idu.latitude)
-                    || isNotDefined(idu.figure)
-                    || isNotDefined(idu.displacement_type)
-                    // NOTE: filtering out displacement_type Other
-                    || idu.displacement_type === 'Other'
+                        || isNotDefined(idu.latitude)
+                        || isNotDefined(idu.figure)
+                        || isNotDefined(idu.displacement_type)
+                        // NOTE: filtering out displacement_type Other
+                        || idu.displacement_type === 'Other'
                     ) {
                         return undefined;
                     }
+
+                    if (typeOfDisplacements.length > 0) {
+                        if (!typeOfDisplacements.includes(idu.displacement_type)) {
+                            return undefined;
+                        }
+                    }
+                    if (noOfDisplacements.length > 0) {
+                        let key: DisplacementNumber;
+                        if (idu.figure < 100) {
+                            key = 'less-than-100';
+                        } else if (idu.figure < 1000) {
+                            key = 'less-than-1000';
+                        } else {
+                            key = 'more-than-1000';
+                        }
+
+                        if (!noOfDisplacements.includes(key)) {
+                            return undefined;
+                        }
+                    }
+
                     return {
                         id: idu.id,
                         type: 'Feature' as const,
@@ -408,13 +446,26 @@ function CountryProfile(props: Props) {
                     };
                 }).filter(isDefined) ?? [],
         }),
-        [idus],
+        [idus, noOfDisplacements, typeOfDisplacements],
     );
 
-    if (
-        countryProfileLoading
-        || iduDataLoading
-    ) {
+    const typeOfDisplacementOptions: {
+        key: DisplacementType;
+        label: string;
+    }[] = [
+        { key: 'Conflict', label: 'Conflict' },
+        { key: 'Disaster', label: 'Disaster' },
+    ];
+    const noOfDisplacementOptions: {
+        key: DisplacementNumber;
+        label: string;
+    }[] = [
+        { key: 'less-than-100', label: '< 100' },
+        { key: 'less-than-1000', label: '< 1000' },
+        { key: 'more-than-1000', label: '> 1000' },
+    ];
+
+    if (countryProfileLoading || iduDataLoading) {
         return (
             <div className={_cs(styles.countryProfile, className)}>
                 Loading....
@@ -557,6 +608,7 @@ function CountryProfile(props: Props) {
                                             keySelector={(item) => item.key}
                                             labelSelector={(item) => item.label}
                                             onChange={() => undefined}
+                                            disabled
                                         />
                                     </div>
                                     <div className={styles.infographicList}>
@@ -677,6 +729,7 @@ function CountryProfile(props: Props) {
                                             keySelector={(item) => item.key}
                                             labelSelector={(item) => item.label}
                                             onChange={() => undefined}
+                                            disabled
                                         />
                                         <MultiSelectInput
                                             variant="general"
@@ -845,6 +898,14 @@ function CountryProfile(props: Props) {
                             />
                         </EllipsizedContent>
                         <div className={styles.filter}>
+                            <SliderInput
+                                min={startYear}
+                                max={endYear}
+                                step={1}
+                                minDistance={0}
+                                value={range}
+                                onChange={setRange}
+                            />
                             <SelectInput
                                 variant="general"
                                 placeholder="Timescale"
@@ -854,26 +915,27 @@ function CountryProfile(props: Props) {
                                 keySelector={(item) => item.key}
                                 labelSelector={(item) => item.label}
                                 onChange={() => undefined}
+                                disabled
                             />
-                            <SelectInput
+                            <MultiSelectInput
                                 variant="general"
                                 placeholder="Type of displacement"
                                 name="typeOfDisplacement"
-                                value={undefined}
-                                options={options}
+                                value={typeOfDisplacements}
+                                options={typeOfDisplacementOptions}
                                 keySelector={(item) => item.key}
                                 labelSelector={(item) => item.label}
-                                onChange={() => undefined}
+                                onChange={handleTypeOfDisplacementsChange}
                             />
-                            <SelectInput
+                            <MultiSelectInput
                                 variant="general"
                                 placeholder="No. of displacement"
                                 name="numberOfDisplacement"
-                                value={undefined}
-                                options={options}
+                                value={noOfDisplacements}
+                                options={noOfDisplacementOptions}
                                 keySelector={(item) => item.key}
                                 labelSelector={(item) => item.label}
-                                onChange={() => undefined}
+                                onChange={handleNoOfDisplacementsChange}
                             />
                         </div>
                         <div>

@@ -1,0 +1,18 @@
+.slider {
+    width: 300px;
+    height: 10px;
+
+    .thumb {
+        background-color: var(--dui-color-brand);
+        cursor: grab;
+        padding: var(--dui-spacing-small);
+        text-align: center;
+        color: var(--dui-color-text-on-dark);
+    }
+
+    .track {
+        top: 0;
+        bottom: 0;
+        background: var(--dui-color-background-dark);
+    }
+}
