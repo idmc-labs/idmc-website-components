@@ -1,3 +1,9 @@
+enum DisplacementType {
+  Conflict
+  Disaster
+  Other
+}
+
 type IduData {
     id: Int!
     country: String!
@@ -5,9 +11,9 @@ type IduData {
     centroid: [Float!]
     latitude: Float
     longitude: Float
-    displacement_type: String
+    displacement_type: DisplacementType
     qualifier: String
-    figure: Int
+    figure: Int!
     displacment_date: String
     displacement_start_date: String
     displacement_end_date: String
@@ -24,7 +30,7 @@ type IduData {
 }
 
 type Query {
-    idu(country: String!): [IduData]!
+    idu(country: String!): [IduData!]!
 }
 
 directive @rest(

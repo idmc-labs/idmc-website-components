@@ -23,7 +23,7 @@ import {
     IoDownloadOutline,
     IoInformationCircleOutline,
 } from 'react-icons/io5';
-import { _cs } from '@togglecorp/fujs';
+import { _cs, isDefined, isNotDefined } from '@togglecorp/fujs';
 import {
     ResponsiveContainer,
     BarChart,
@@ -66,10 +66,14 @@ import { formatNumber } from '#utils/common';
 import {
     countryMetadata,
     statistics,
-    iduGeojson,
-    idus,
 } from './data';
 import styles from './styles.css';
+
+interface PopupProperties {
+    type: 'Disaster' | 'Conflict' | 'Other',
+    value: number,
+    description: string,
+}
 
 const options: { key: string; label: string }[] = [];
 
@@ -85,7 +89,7 @@ const iduPointColor: mapboxgl.CirclePaint = {
         ],
     },
     'circle-radius': {
-        property: 'value', // geojson property based on which you want too change the color
+        property: 'value',
         base: 1.75,
         stops: [
             [0, 5],
@@ -95,7 +99,7 @@ const iduPointColor: mapboxgl.CirclePaint = {
     },
 };
 
-const tooltipOptions: PopupOptions = {
+const popupOptions: PopupOptions = {
     closeOnClick: true,
     closeButton: false,
     offset: 12,
@@ -106,7 +110,7 @@ const sourceOption: mapboxgl.GeoJSONSourceRaw = {
     type: 'geojson',
 };
 
-const lightStyle = 'mapbox://styles/mapbox/light-v10';
+const lightStyle = process.env.REACT_APP_MAPBOX_STYLE || 'mapbox://styles/mapbox/light-v10';
 
 const colorScheme = [
     'rgb(6, 23, 158)',
@@ -147,7 +151,11 @@ const COUNTRY_PROFILE = gql`
 
 const IDU_DATA = gql`
     query IduData($country: String!) {
-        idu(country: $country) @rest(type: "[IduData]", method: "GET", path: "data/idus_view_flat_cached?iso3=eq.:country") {
+        idu(country: $country) @rest(
+            type: "[IduData]",
+            method: "GET",
+            path: "data/idus_view_flat_cached?iso3=eq.:country&order=displacement_start_date.desc,displacement_end_date.desc"
+        ) {
             id
             country
             iso3
@@ -183,7 +191,31 @@ function CountryProfile(props: Props) {
         className,
     } = props;
 
+    const currentCountry = 'IND';
+
     const [activeYear, setActiveYear] = React.useState<string | undefined>();
+    const [moreIduShown, setMoreIduShown] = React.useState(false);
+
+    const [
+        hoverFeatureProperties,
+        setHoverFeatureProperties,
+    ] = React.useState<PopupProperties | undefined>(undefined);
+    const [hoverLngLat, setHoverLngLat] = React.useState<LngLatLike>();
+
+    const handlePointClick = React.useCallback((feature: MapboxGeoJSONFeature, lngLat: LngLat) => {
+        if (feature.properties) {
+            setHoverLngLat(lngLat);
+            setHoverFeatureProperties(feature.properties as PopupProperties);
+        } else {
+            setHoverFeatureProperties(undefined);
+        }
+        return true;
+    }, []);
+
+    const handleTooltipClose = React.useCallback(() => {
+        setHoverLngLat(undefined);
+        setHoverFeatureProperties(undefined);
+    }, []);
 
     const {
         previousData,
@@ -219,44 +251,50 @@ function CountryProfile(props: Props) {
         IDU_DATA,
         {
             variables: {
-                country: 'IND', // TODO make this dynamic
-            },
-            onCompleted: (response) => {
-                console.warn('response', response);
+                country: currentCountry,
             },
         },
     );
 
-    console.warn(iduData, iduDataLoading, iduDataError);
+    console.warn(iduDataLoading, iduDataError);
 
-    const [moreIduShown, setMoreIduShown] = React.useState(false);
+    const idus = iduData?.idu;
 
-    interface Properties {
-        type: 'Disaster' | 'Conflict' | 'Other',
-        value: number,
-        description: string,
-    }
-
-    const [
-        hoverFeatureProperties,
-        setHoverFeatureProperties,
-    ] = React.useState<Properties | undefined>(undefined);
-    const [hoverLngLat, setHoverLngLat] = React.useState<LngLatLike>();
-
-    const handlePointClick = React.useCallback((feature: MapboxGeoJSONFeature, lngLat: LngLat) => {
-        if (feature.properties) {
-            setHoverLngLat(lngLat);
-            setHoverFeatureProperties(feature.properties as Properties);
-        } else {
-            setHoverFeatureProperties(undefined);
-        }
-        return true;
-    }, []);
-
-    const handleTooltipClose = React.useCallback(() => {
-        setHoverLngLat(undefined);
-        setHoverFeatureProperties(undefined);
-    }, []);
+    const iduGeojson: GeoJSON.FeatureCollection<
+        GeoJSON.Point,
+        { type: 'Disaster' | 'Conflict' | 'Other', value: number, description: string | null | undefined }
+    > = {
+        type: 'FeatureCollection',
+        features: idus
+            ?.map((idu) => {
+                if (
+                    isNotDefined(idu.longitude)
+                    || isNotDefined(idu.latitude)
+                    || isNotDefined(idu.figure)
+                    || isNotDefined(idu.displacement_type)
+                    // NOTE: filtering out displacement_type Other
+                    || idu.displacement_type === 'Other'
+                ) {
+                    return undefined;
+                }
+                return {
+                    id: idu.id,
+                    type: 'Feature' as const,
+                    properties: {
+                        type: idu.displacement_type,
+                        value: idu.figure,
+                        description: idu.standard_popup_text,
+                    },
+                    geometry: {
+                        type: 'Point' as const,
+                        coordinates: [
+                            idu.longitude,
+                            idu.latitude,
+                        ],
+                    },
+                };
+            }).filter(isDefined) ?? [],
+    };
 
     if (countryProfileLoading) {
         return (
@@ -617,7 +655,7 @@ function CountryProfile(props: Props) {
                         />
                     </EllipsizedContent>
                     <div className={styles.iduContainer}>
-                        {(moreIduShown ? idus : idus.slice(0, 4)).map((idu) => (
+                        {(moreIduShown ? idus : idus?.slice(0, 4))?.map((idu) => (
                             <div
                                 key={idu.id}
                                 className={styles.idu}
@@ -628,7 +666,7 @@ function CountryProfile(props: Props) {
                             </div>
                         ))}
                     </div>
-                    {idus.length > 4 && (
+                    {(idus && idus.length > 4) && (
                         <Button
                             name={undefined}
                             // variant="secondary"
@@ -716,10 +754,12 @@ function CountryProfile(props: Props) {
                                             color="var(--color-disaster)"
                                             label="Disaster"
                                         />
+                                        {/*
                                         <LegendElement
                                             color="var(--color-other)"
                                             label="Other"
                                         />
+                                        */}
                                     </div>
                                 </div>
                                 <div className={styles.separator} />
@@ -772,7 +812,7 @@ function CountryProfile(props: Props) {
                             {hoverLngLat && hoverFeatureProperties && (
                                 <MapTooltip
                                     coordinates={hoverLngLat}
-                                    tooltipOptions={tooltipOptions}
+                                    tooltipOptions={popupOptions}
                                     onHide={handleTooltipClose}
                                 >
                                     <HTMLOutput
