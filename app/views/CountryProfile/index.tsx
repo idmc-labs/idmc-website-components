@@ -3,6 +3,7 @@ import {
     SelectInput,
     MultiSelectInput,
     useInputState,
+    Link,
 } from '@the-deep/deep-ui';
 import {
     gql,
@@ -13,6 +14,7 @@ import {
     LngLat,
     PopupOptions,
     LngLatLike,
+    LngLatBounds,
 } from 'mapbox-gl';
 import Map, {
     MapContainer,
@@ -70,12 +72,10 @@ import Infographic from '#components/Infographic';
 import GoodPracticeItem from '#components/GoodPracticeItem';
 import SliderInput from '#components/SliderInput';
 import { goodPracticesList as relatedMaterials } from '#views/GoodPractices/data';
-
 import { formatNumber } from '#utils/common';
 
 import {
     countryMetadata,
-    statistics,
 } from './data';
 import styles from './styles.css';
 
@@ -93,6 +93,7 @@ type IduGeoJSON = GeoJSON.FeatureCollection<
     { type: 'Disaster' | 'Conflict' | 'Other', value: number, description: string | null | undefined }
 >;
 
+const REST_ENDPOINT = process.env.REACT_APP_REST_ENDPOINT as string;
 const categoryKeySelector = (d: CategoryStatisticsType) => d.label;
 
 const options: { key: string; label: string }[] = [];
@@ -146,6 +147,7 @@ const COUNTRY_PROFILE = gql`
         country(iso3: $iso3) {
             id
             name
+            boundingBox
             description
             backgroundImage {
                 name
@@ -560,8 +562,8 @@ function CountryProfile(props: Props) {
                     </section>
                 )}
                 {(
-                    statistics.conflict
-                    || statistics.disaster
+                    conflictData?.conflictStatistics
+                    || disasterData?.disasterStatistics
                     || countryInfo.description
                 ) && (
                     <section className={styles.displacementData}>
@@ -580,23 +582,23 @@ function CountryProfile(props: Props) {
                             />
                         </EllipsizedContent>
                         <div className={styles.infographics}>
-                            {statistics.conflict && (
+                            {conflictData?.conflictStatistics && (
                                 <div className={styles.conflictInfographics}>
                                     <Header
                                         heading="Conflict and Violence Data"
                                         headingSize="small"
                                         headingDescription={(
                                             <>
-                                                <Button
-                                                    name={undefined}
-                                                    // variant="secondary"
-                                                    onClick={() => undefined}
+                                                <Link
+                                                    to={`${REST_ENDPOINT}/countries/${currentCountry}/conflict-export/`}
                                                     icons={(
                                                         <IoDownloadOutline />
                                                     )}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
                                                 >
                                                     Download data
-                                                </Button>
+                                                </Link>
                                             </>
                                         )}
                                         headingInfo={countryMetadata.conflictAndViolenceTooltip && (
@@ -623,7 +625,7 @@ function CountryProfile(props: Props) {
                                         <Infographic
                                             totalValue={conflictData
                                                 ?.conflictStatistics.newDisplacements || 0}
-                                            description={statistics.conflict.newDisplacementsLabel}
+                                            description="New Displacements"
                                             date={`${startYear} - ${endYear}`}
                                             chart={(
                                                 <ResponsiveContainer>
@@ -663,7 +665,7 @@ function CountryProfile(props: Props) {
                                         <Infographic
                                             totalValue={conflictData
                                                 ?.conflictStatistics.totalIdps || 0}
-                                            description={statistics.conflict.noOfIdpsLabel}
+                                            description="Total number of IDPs"
                                             date={`As of end of ${endYear}`}
                                             chart={(
                                                 <ResponsiveContainer>
@@ -701,23 +703,23 @@ function CountryProfile(props: Props) {
                                     </div>
                                 </div>
                             )}
-                            {statistics.disaster && (
+                            {disasterData?.disasterStatistics && (
                                 <div className={styles.disasterInfographics}>
                                     <Header
                                         headingSize="small"
                                         heading="Disaster Data"
                                         headingDescription={(
                                             <>
-                                                <Button
-                                                    name={undefined}
-                                                    // variant="secondary"
-                                                    onClick={() => undefined}
+                                                <Link
+                                                    to={`${REST_ENDPOINT}/countries/${currentCountry}/disaster-export/`}
                                                     icons={(
                                                         <IoDownloadOutline />
                                                     )}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
                                                 >
                                                     Download data
-                                                </Button>
+                                                </Link>
                                             </>
                                         )}
                                         headingInfo={countryMetadata.disasterTooltip && (
@@ -758,7 +760,7 @@ function CountryProfile(props: Props) {
                                         <Infographic
                                             totalValue={disasterData
                                                 ?.disasterStatistics.newDisplacements || 0}
-                                            description={statistics.disaster.newDisplacementsLabel}
+                                            description="New Displacements"
                                             date={`${startYear} - ${endYear}`}
                                             chart={(
                                                 <ResponsiveContainer>
@@ -798,7 +800,7 @@ function CountryProfile(props: Props) {
                                         <Infographic
                                             totalValue={disasterData
                                                 ?.disasterStatistics.totalEvents || 0}
-                                            description={statistics.disaster.noOfEventsLabel}
+                                            description="Disaster events reported"
                                             date={`${startYear} - ${endYear}`}
                                             chart={(
                                                 <ResponsiveContainer>
@@ -813,14 +815,15 @@ function CountryProfile(props: Props) {
                                                             dataKey="total"
                                                             nameKey="label"
                                                         >
-                                                            {statistics.disaster.categories.map(({ label }, index) => ( // eslint-disable-line max-len
-                                                                <Cell
-                                                                    key={label}
-                                                                    fill={colorScheme[
-                                                                        index % colorScheme.length
-                                                                    ]}
-                                                                />
-                                                            ))}
+                                                            {disasterCategories
+                                                                ?.disasterStatistics?.categories?.map(({ label }, index) => ( // eslint-disable-line max-len
+                                                                    <Cell
+                                                                        key={label}
+                                                                        fill={colorScheme[
+                                                                            index % colorScheme.length // eslint-disable-line max-len
+                                                                        ]}
+                                                                    />
+                                                                ))}
                                                         </Pie>
                                                     </PieChart>
                                                 </ResponsiveContainer>
@@ -1013,7 +1016,7 @@ function CountryProfile(props: Props) {
                                 />
                             </div>
                             <MapBounds
-                                bounds={statistics.bounds}
+                                bounds={countryInfo.boundingBox as LngLatBounds | undefined}
                                 padding={50}
                             />
                             <MapSource
