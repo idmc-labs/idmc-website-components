@@ -24,7 +24,8 @@ const displayTypeToStyleMap: {
     [key in DisplayType]: string;
 } = {
     inline: styles.inlineType,
-    block: styles.blockType,
+    block: '',
+    // block: styles.blockType,
     table: styles.tableType,
 };
 

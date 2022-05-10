@@ -5,7 +5,7 @@ import { _cs } from '@togglecorp/fujs';
 import styles from './styles.css';
 
 // FIXME: set appropriate typings
-function Thumb(props, state) {
+function Thumb(props) {
     return (
         <div
             {...props}
@@ -16,13 +16,14 @@ function Thumb(props, state) {
 
 // FIXME: set appropriate typings
 function Track(props, state) {
+    const { index } = state;
     return (
         <div
             {...props}
-            index={state.index}
+            index={index}
             className={_cs(
                 styles.track,
-                state.index === 1 && styles.center,
+                index === 1 && styles.center,
             )}
         />
     );

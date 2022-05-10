@@ -34,7 +34,7 @@ function Header(props: Props) {
         <header className={_cs(styles.header, className)}>
             <div className={styles.headingSection}>
                 {icons && (
-                    <div className={styles.icons}>
+                    <div>
                         {icons}
                     </div>
                 )}
@@ -64,13 +64,13 @@ function Header(props: Props) {
                     )}
                 </div>
                 {actions && (
-                    <div className={styles.actions}>
+                    <div>
                         {actions}
                     </div>
                 )}
             </div>
             {description && (
-                <div className={styles.description}>
+                <div>
                     {description}
                 </div>
             )}

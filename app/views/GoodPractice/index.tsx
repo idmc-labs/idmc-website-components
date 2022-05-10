@@ -116,7 +116,7 @@ function GoodPractice(props: Props) {
                                 src={grid2021CoverImage}
                                 alt="GRID 2021"
                             />
-                            <div className={styles.description}>
+                            <div>
                                 Lorem ipsum dolor sit amet, consectetur adipiscing elit,
                                 sed do eiusmod tempor incididunt ut labore et
                                 dolore magna aliqua. Ut enim ad minim veniam,

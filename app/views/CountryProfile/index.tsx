@@ -276,7 +276,9 @@ function CountryProfile(props: Props) {
         className,
     } = props;
 
-    const { id: currentCountry } = useParams<{ id: string }>();
+    const {
+        id: currentCountry = 'NPL',
+    } = useParams<{ id: string }>();
 
     // Overview section
     const [activeYear, setActiveYear] = React.useState<string>(String(endYear));
@@ -364,8 +366,8 @@ function CountryProfile(props: Props) {
     const {
         previousData: previousDisasterData,
         data: disasterData = previousDisasterData,
-        loading: disasterDataLoading,
-        error: disasterDataError,
+        // loading: disasterDataLoading,
+        // error: disasterDataError,
     } = useQuery<DisasterDataQuery, DisasterDataQueryVariables>(
         DISASTER_DATA,
         {
@@ -381,8 +383,8 @@ function CountryProfile(props: Props) {
     const {
         previousData: previousConflictData,
         data: conflictData = previousConflictData,
-        loading: conflictDataLoading,
-        error: conflictDataError,
+        // loading: conflictDataLoading,
+        // error: conflictDataError,
     } = useQuery<ConflictDataQuery, ConflictDataQueryVariables>(
         CONFLICT_DATA,
         {
