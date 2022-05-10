@@ -50,6 +50,8 @@ import {
     DisasterCategoryQueryVariables,
     DisasterDataQueryVariables,
     CategoryStatisticsType,
+    ConflictDataQuery,
+    ConflictDataQueryVariables,
 } from '#generated/types';
 import RoundedBar from '#components/RoundedBar';
 import Tabs from '#components/Tabs';
@@ -162,6 +164,20 @@ const COUNTRY_PROFILE = gql`
     }
 `;
 
+const CONFLICT_DATA = gql`
+    query ConflictData($countryIso3: String!, $startYear: Int, $endYear: Int) {
+        conflictStatistics(filters: { countriesIso3: [$countryIso3], endYear: $endYear, startYear: $startYear }) {
+            newDisplacements
+            totalIdps
+            timeseries {
+                totalIdps
+                totalNewDisplacement
+                year
+            }
+        }
+    }
+`;
+
 const DISASTER_DATA = gql`
     query DisasterData($countryIso3: String!, $startYear: Int, $endYear: Int, $categories: [String!]) {
         disasterStatistics(filters: { countriesIso3: [$countryIso3], endYear: $endYear, startYear: $startYear, categories: $categories}) {
@@ -178,6 +194,7 @@ const DISASTER_DATA = gql`
         }
     }
 `;
+
 const COUNTRY_DISASTER_CATEGORIES = gql`
     query DisasterCategory($countryIso3: String!) {
         disasterStatistics(filters: { countriesIso3: [$countryIso3] }) {
@@ -326,6 +343,22 @@ function CountryProfile(props: Props) {
     );
 
     const {
+        previousData: previousConflictData,
+        data: conflictData = previousConflictData,
+        loading: conflictDataLoading,
+        error: conflictDataError,
+    } = useQuery<ConflictDataQuery, ConflictDataQueryVariables>(
+        CONFLICT_DATA,
+        {
+            variables: {
+                countryIso3: currentCountry,
+                startYear,
+                endYear,
+            },
+        },
+    );
+
+    const {
         previousData: previousIduData,
         data: iduData = previousIduData,
         loading: iduDataLoading,
@@ -393,7 +426,6 @@ function CountryProfile(props: Props) {
         iduDataError
         || countryProfileError
         || !countryInfo
-        || disasterDataError
     ) {
         return (
             <div className={_cs(styles.countryProfile, className)}>
@@ -529,49 +561,15 @@ function CountryProfile(props: Props) {
                                     </div>
                                     <div className={styles.infographicList}>
                                         <Infographic
-                                            totalValue={statistics.conflict.newDisplacements}
+                                            totalValue={conflictData
+                                                ?.conflictStatistics.newDisplacements || 0}
                                             description={statistics.conflict.newDisplacementsLabel}
                                             date={`${startYear} - ${endYear}`}
                                             chart={(
                                                 <ResponsiveContainer>
-                                                    <BarChart
-                                                        data={statistics.conflict.timeseries}
-                                                    >
-                                                        <XAxis
-                                                            dataKey="year"
-                                                            axisLine={false}
-                                                        />
-                                                        <CartesianGrid
-                                                            vertical={false}
-                                                            strokeDasharray="3 3"
-                                                        />
-                                                        <YAxis
-                                                            axisLine={false}
-                                                            tickFormatter={formatNumber}
-                                                        />
-                                                        <Tooltip
-                                                            formatter={formatNumber}
-                                                        />
-                                                        <Legend />
-                                                        <Bar
-                                                            dataKey="total"
-                                                            fill="var(--color-conflict)"
-                                                            name="Conflict internal displacements"
-                                                            shape={<RoundedBar />}
-                                                            maxBarSize={6}
-                                                        />
-                                                    </BarChart>
-                                                </ResponsiveContainer>
-                                            )}
-                                        />
-                                        <Infographic
-                                            totalValue={statistics.conflict.noOfIdps}
-                                            description={statistics.conflict.noOfIdpsLabel}
-                                            date={`As of end of ${endYear}`}
-                                            chart={(
-                                                <ResponsiveContainer>
                                                     <LineChart
-                                                        data={statistics.conflict.timeseries}
+                                                        data={conflictData
+                                                            ?.conflictStatistics.timeseries}
                                                     >
                                                         <XAxis
                                                             dataKey="year"
@@ -590,15 +588,53 @@ function CountryProfile(props: Props) {
                                                         />
                                                         <Legend />
                                                         <Line
-                                                            dataKey="totalStock"
-                                                            name="Conflict total number of IDPs"
-                                                            key="totalStock"
+                                                            dataKey="totalNewDisplacement"
+                                                            key="totalNewDisplacement"
                                                             stroke="var(--color-conflict)"
+                                                            name="Conflict internal displacements"
                                                             strokeWidth={2}
                                                             connectNulls
                                                             dot
                                                         />
                                                     </LineChart>
+                                                </ResponsiveContainer>
+                                            )}
+                                        />
+                                        <Infographic
+                                            totalValue={conflictData
+                                                ?.conflictStatistics.totalIdps || 0}
+                                            description={statistics.conflict.noOfIdpsLabel}
+                                            date={`As of end of ${endYear}`}
+                                            chart={(
+                                                <ResponsiveContainer>
+                                                    <BarChart
+                                                        data={conflictData
+                                                            ?.conflictStatistics.timeseries}
+                                                    >
+                                                        <XAxis
+                                                            dataKey="year"
+                                                            axisLine={false}
+                                                        />
+                                                        <CartesianGrid
+                                                            vertical={false}
+                                                            strokeDasharray="3 3"
+                                                        />
+                                                        <YAxis
+                                                            axisLine={false}
+                                                            tickFormatter={formatNumber}
+                                                        />
+                                                        <Tooltip
+                                                            formatter={formatNumber}
+                                                        />
+                                                        <Legend />
+                                                        <Bar
+                                                            dataKey="totalIdps"
+                                                            name="Conflict total number of IDPs"
+                                                            fill="var(--color-conflict)"
+                                                            shape={<RoundedBar />}
+                                                            maxBarSize={6}
+                                                        />
+                                                    </BarChart>
                                                 </ResponsiveContainer>
                                             )}
                                         />
