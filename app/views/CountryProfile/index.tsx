@@ -75,6 +75,11 @@ interface PopupProperties {
     description: string,
 }
 
+type IduGeoJSON = GeoJSON.FeatureCollection<
+    GeoJSON.Point,
+    { type: 'Disaster' | 'Conflict' | 'Other', value: number, description: string | null | undefined }
+>;
+
 const options: { key: string; label: string }[] = [];
 
 const iduPointColor: mapboxgl.CirclePaint = {
@@ -191,7 +196,17 @@ function CountryProfile(props: Props) {
         className,
     } = props;
 
+    // Send this to server
+    // Read this from navbar
     const currentCountry = 'IND';
+
+    // NOTE: we may need these separate variables for conflict and disaster
+    // charts
+    const startYear = 2008;
+    const endYear = 2020;
+
+    // constant
+    const initialIduItems = 2;
 
     const [activeYear, setActiveYear] = React.useState<string | undefined>();
     const [moreIduShown, setMoreIduShown] = React.useState(false);
@@ -256,47 +271,45 @@ function CountryProfile(props: Props) {
         },
     );
 
-    console.warn(iduDataLoading, iduDataError);
-
     const idus = iduData?.idu;
 
-    const iduGeojson: GeoJSON.FeatureCollection<
-        GeoJSON.Point,
-        { type: 'Disaster' | 'Conflict' | 'Other', value: number, description: string | null | undefined }
-    > = {
-        type: 'FeatureCollection',
-        features: idus
-            ?.map((idu) => {
-                if (
-                    isNotDefined(idu.longitude)
+    const iduGeojson: IduGeoJSON = React.useMemo(
+        () => ({
+            type: 'FeatureCollection',
+            features: idus
+                ?.map((idu) => {
+                    if (
+                        isNotDefined(idu.longitude)
                     || isNotDefined(idu.latitude)
                     || isNotDefined(idu.figure)
                     || isNotDefined(idu.displacement_type)
                     // NOTE: filtering out displacement_type Other
                     || idu.displacement_type === 'Other'
-                ) {
-                    return undefined;
-                }
-                return {
-                    id: idu.id,
-                    type: 'Feature' as const,
-                    properties: {
-                        type: idu.displacement_type,
-                        value: idu.figure,
-                        description: idu.standard_popup_text,
-                    },
-                    geometry: {
-                        type: 'Point' as const,
-                        coordinates: [
-                            idu.longitude,
-                            idu.latitude,
-                        ],
-                    },
-                };
-            }).filter(isDefined) ?? [],
-    };
+                    ) {
+                        return undefined;
+                    }
+                    return {
+                        id: idu.id,
+                        type: 'Feature' as const,
+                        properties: {
+                            type: idu.displacement_type,
+                            value: idu.figure,
+                            description: idu.standard_popup_text,
+                        },
+                        geometry: {
+                            type: 'Point' as const,
+                            coordinates: [
+                                idu.longitude,
+                                idu.latitude,
+                            ],
+                        },
+                    };
+                }).filter(isDefined) ?? [],
+        }),
+        [idus],
+    );
 
-    if (countryProfileLoading) {
+    if (countryProfileLoading || iduDataLoading) {
         return (
             <div className={_cs(styles.countryProfile, className)}>
                 Loading....
@@ -304,7 +317,9 @@ function CountryProfile(props: Props) {
         );
     }
 
-    if (countryProfileError || !countryProfileData?.country) {
+    const countryInfo = countryProfileData?.country;
+
+    if (iduDataError || countryProfileError || !countryInfo) {
         return (
             <div className={_cs(styles.countryProfile, className)}>
                 Error fetching country profile....
@@ -314,11 +329,11 @@ function CountryProfile(props: Props) {
 
     return (
         <div className={_cs(styles.countryProfile, className)}>
-            {countryProfileData.country.backgroundImage && (
+            {countryInfo.backgroundImage && (
                 <img
                     className={styles.coverImage}
-                    src={countryProfileData.country.backgroundImage.url}
-                    alt={countryProfileData.country.backgroundImage.name}
+                    src={countryInfo.backgroundImage.url}
+                    alt={countryInfo.backgroundImage.name}
                 />
             )}
             <div className={styles.mainContent}>
@@ -330,17 +345,17 @@ function CountryProfile(props: Props) {
                                 title={countryMetadata.countryProfileTooltip}
                             />
                         )}
-                        heading={`Country Profile: ${countryProfileData.country.name}`}
+                        heading={`Country Profile: ${countryInfo.name}`}
                     />
                     <EllipsizedContent>
                         <HTMLOutput
-                            value={countryProfileData.country.description}
+                            value={countryInfo.description}
                         />
                     </EllipsizedContent>
                 </section>
                 {(
-                    countryProfileData.country.overviews
-                    && countryProfileData.country.overviews.length > 0
+                    countryInfo.overviews
+                    && countryInfo.overviews.length > 0
                     && activeYear
                 ) && (
                     <section className={styles.overview}>
@@ -353,7 +368,7 @@ function CountryProfile(props: Props) {
                             onChange={setActiveYear}
                         >
                             <TabList>
-                                {countryProfileData.country.overviews.map((countryOverview) => (
+                                {countryInfo.overviews.map((countryOverview) => (
                                     <Tab
                                         key={countryOverview.year}
                                         name={countryOverview.year.toString()}
@@ -362,7 +377,7 @@ function CountryProfile(props: Props) {
                                     </Tab>
                                 ))}
                             </TabList>
-                            {countryProfileData.country.overviews.map((countryOverview) => (
+                            {countryInfo.overviews.map((countryOverview) => (
                                 <TabPanel
                                     key={countryOverview.year}
                                     name={countryOverview.year.toString()}
@@ -385,7 +400,7 @@ function CountryProfile(props: Props) {
                 {(
                     statistics.conflict
                     || statistics.disaster
-                    || countryProfileData.country.description
+                    || countryInfo.description
                 ) && (
                     <section className={styles.displacementData}>
                         <Header
@@ -399,7 +414,7 @@ function CountryProfile(props: Props) {
                         />
                         <EllipsizedContent>
                             <HTMLOutput
-                                value={countryProfileData.country.description}
+                                value={countryInfo.description}
                             />
                         </EllipsizedContent>
                         <div className={styles.infographics}>
@@ -445,7 +460,7 @@ function CountryProfile(props: Props) {
                                         <Infographic
                                             totalValue={statistics.conflict.newDisplacements}
                                             description={statistics.conflict.newDisplacementsLabel}
-                                            date={`${statistics.startYear} - ${statistics.endYear}`}
+                                            date={`${startYear} - ${endYear}`}
                                             chart={(
                                                 <ResponsiveContainer>
                                                     <BarChart
@@ -470,7 +485,7 @@ function CountryProfile(props: Props) {
                                                         <Bar
                                                             dataKey="total"
                                                             fill="var(--color-conflict)"
-                                                            name="Conflict new displacements"
+                                                            name="Conflict internal displacements"
                                                             shape={<RoundedBar />}
                                                             maxBarSize={6}
                                                         />
@@ -481,7 +496,7 @@ function CountryProfile(props: Props) {
                                         <Infographic
                                             totalValue={statistics.conflict.noOfIdps}
                                             description={statistics.conflict.noOfIdpsLabel}
-                                            date={`As of end of ${statistics.endYear}`}
+                                            date={`As of end of ${endYear}`}
                                             chart={(
                                                 <ResponsiveContainer>
                                                     <LineChart
@@ -571,7 +586,7 @@ function CountryProfile(props: Props) {
                                         <Infographic
                                             totalValue={statistics.disaster.newDisplacements}
                                             description={statistics.disaster.newDisplacementsLabel}
-                                            date={`${statistics.startYear} - ${statistics.endYear}`}
+                                            date={`${startYear} - ${endYear}`}
                                             chart={(
                                                 <ResponsiveContainer>
                                                     <BarChart
@@ -596,7 +611,7 @@ function CountryProfile(props: Props) {
                                                         <Bar
                                                             dataKey="total"
                                                             fill="var(--color-disaster)"
-                                                            name="Disaster new displacements"
+                                                            name="Disaster internal displacements"
                                                             shape={<RoundedBar />}
                                                             maxBarSize={6}
                                                         />
@@ -607,7 +622,7 @@ function CountryProfile(props: Props) {
                                         <Infographic
                                             totalValue={statistics.disaster.noOfEvents}
                                             description={statistics.disaster.noOfEventsLabel}
-                                            date={`${statistics.startYear} - ${statistics.endYear}`}
+                                            date={`${startYear} - ${endYear}`}
                                             chart={(
                                                 <ResponsiveContainer>
                                                     <PieChart>
@@ -642,7 +657,7 @@ function CountryProfile(props: Props) {
                 <section className={styles.latestNewDisplacements}>
                     <Header
                         headingSize="large"
-                        heading="Latest New Displacements"
+                        heading="Latest Internal Displacements"
                         headingInfo={countryMetadata.latestNewDisplacementsTooltip && (
                             <IoInformationCircleOutline
                                 title={countryMetadata.latestNewDisplacementsTooltip}
@@ -651,11 +666,11 @@ function CountryProfile(props: Props) {
                     />
                     <EllipsizedContent>
                         <HTMLOutput
-                            value={countryProfileData.country.latestNewDisplacementsDescription}
+                            value={countryInfo.latestNewDisplacementsDescription}
                         />
                     </EllipsizedContent>
                     <div className={styles.iduContainer}>
-                        {(moreIduShown ? idus : idus?.slice(0, 4))?.map((idu) => (
+                        {(moreIduShown ? idus : idus?.slice(0, initialIduItems))?.map((idu) => (
                             <div
                                 key={idu.id}
                                 className={styles.idu}
@@ -666,7 +681,7 @@ function CountryProfile(props: Props) {
                             </div>
                         ))}
                     </div>
-                    {(idus && idus.length > 4) && (
+                    {(idus && idus.length > initialIduItems) && (
                         <Button
                             name={undefined}
                             // variant="secondary"
@@ -690,7 +705,7 @@ function CountryProfile(props: Props) {
                     />
                     <EllipsizedContent>
                         <HTMLOutput
-                            value={countryProfileData.country.internalDisplacementDescription}
+                            value={countryInfo.internalDisplacementDescription}
                         />
                     </EllipsizedContent>
                     <div className={styles.filter}>
@@ -848,7 +863,7 @@ function CountryProfile(props: Props) {
                     </div>
                 </section>
                 <section className={styles.misc}>
-                    {countryProfileData.country.essentialLinks && (
+                    {countryInfo.essentialLinks && (
                         <div className={styles.essentialReading}>
                             <Header
                                 heading="Essential Reading"
@@ -860,13 +875,13 @@ function CountryProfile(props: Props) {
                                 )}
                             />
                             <HTMLOutput
-                                value={countryProfileData.country.essentialLinks}
+                                value={countryInfo.essentialLinks}
                             />
                         </div>
                     )}
                     {(
-                        countryProfileData.country.contactPersonDescription
-                        || countryProfileData.country.contactPersonImage
+                        countryInfo.contactPersonDescription
+                        || countryInfo.contactPersonImage
                     ) && (
                         <div className={styles.contact}>
                             <Header
@@ -878,15 +893,15 @@ function CountryProfile(props: Props) {
                                     />
                                 )}
                             />
-                            {countryProfileData.country.contactPersonImage && (
+                            {countryInfo.contactPersonImage && (
                                 <img
                                     className={styles.preview}
-                                    src={countryProfileData.country.contactPersonImage.url}
-                                    alt={countryProfileData.country.contactPersonImage.name}
+                                    src={countryInfo.contactPersonImage.url}
+                                    alt={countryInfo.contactPersonImage.name}
                                 />
                             )}
                             <HTMLOutput
-                                value={countryProfileData.country.contactPersonDescription}
+                                value={countryInfo.contactPersonDescription}
                             />
                         </div>
                     )}

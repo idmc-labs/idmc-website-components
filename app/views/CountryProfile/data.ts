@@ -23,8 +23,7 @@ export const countryMetadata: CountryMetadata = {
 };
 
 interface Statistics {
-    startYear: number;
-    endYear: number;
+    // FIXME: get this from country query
     bounds: [number, number, number, number];
     conflict?: {
         newDisplacements: number; // this can be calculated
@@ -58,8 +57,6 @@ interface Statistics {
 }
 
 export const statistics: Statistics = {
-    startYear: 2008,
-    endYear: 2020,
     bounds: [68.176645, 7.965535, 97.402561, 35.49401],
     conflict: {
         newDisplacements: 1821629,
