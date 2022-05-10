@@ -293,6 +293,8 @@ function CountryProfile(props: Props) {
     // IDU map section
     const [timerangeBounds, setTimerangeBounds] = React.useState([startYear, endYear]);
     const [timerange, setTimerange] = React.useState([startYear, endYear]);
+    const [conflictTimeRange, setConflictTimeRange] = React.useState([startYear, endYear]);
+    const [disasterTimeRange, setDisasterTimeRange] = React.useState([startYear, endYear]);
 
     const [
         typeOfDisplacements,
@@ -372,8 +374,8 @@ function CountryProfile(props: Props) {
         {
             variables: {
                 countryIso3: currentCountry,
-                startYear,
-                endYear,
+                startYear: disasterTimeRange[0],
+                endYear: disasterTimeRange[1],
                 categories,
             },
         },
@@ -389,8 +391,8 @@ function CountryProfile(props: Props) {
         {
             variables: {
                 countryIso3: currentCountry,
-                startYear,
-                endYear,
+                startYear: conflictTimeRange[0],
+                endYear: conflictTimeRange[1],
             },
         },
     );
@@ -502,14 +504,6 @@ function CountryProfile(props: Props) {
     ) {
         return (
             <div className={_cs(styles.countryProfile, className)}>
-                <SliderInput
-                    min={startYear}
-                    max={endYear}
-                    step={1}
-                    minDistance={0}
-                    value={range}
-                    onChange={setRange}
-                />
                 Error fetching country profile....
             </div>
         );
@@ -629,16 +623,13 @@ function CountryProfile(props: Props) {
                                         inlineHeadingDescription
                                     />
                                     <div className={styles.conflictFilter}>
-                                        <SelectInput
-                                            variant="general"
-                                            placeholder="Timescale"
-                                            name="timescale"
-                                            value={undefined}
-                                            options={options}
-                                            keySelector={(item) => item.key}
-                                            labelSelector={(item) => item.label}
-                                            onChange={() => undefined}
-                                            disabled
+                                        <SliderInput
+                                            min={startYear}
+                                            max={endYear}
+                                            step={1}
+                                            minDistance={0}
+                                            value={conflictTimeRange}
+                                            onChange={setConflictTimeRange}
                                         />
                                     </div>
                                     <div className={styles.infographicList}>
@@ -750,16 +741,13 @@ function CountryProfile(props: Props) {
                                         inlineHeadingDescription
                                     />
                                     <div className={styles.disasterFilter}>
-                                        <SelectInput
-                                            variant="general"
-                                            placeholder="Timescale"
-                                            name="timescale"
-                                            value={undefined}
-                                            options={options}
-                                            keySelector={(item) => item.key}
-                                            labelSelector={(item) => item.label}
-                                            onChange={() => undefined}
-                                            disabled
+                                        <SliderInput
+                                            min={startYear}
+                                            max={endYear}
+                                            step={1}
+                                            minDistance={0}
+                                            value={disasterTimeRange}
+                                            onChange={setDisasterTimeRange}
                                         />
                                         <MultiSelectInput
                                             variant="general"
