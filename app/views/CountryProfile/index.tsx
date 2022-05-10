@@ -59,7 +59,7 @@ import EllipsizedContent from '#components/EllipsizedContent';
 import TextOutput from '#components/TextOutput';
 import Infographic from '#components/Infographic';
 import GoodPracticeItem from '#components/GoodPracticeItem';
-import { goodPracticesList } from '#views/GoodPractices/data';
+import { goodPracticesList as relatedMaterials } from '#views/GoodPractices/data';
 
 import { formatNumber } from '#utils/common';
 
@@ -200,16 +200,17 @@ function CountryProfile(props: Props) {
     // Read this from navbar
     const currentCountry = 'IND';
 
-    // NOTE: we may need these separate variables for conflict and disaster
-    // charts
+    // NOTE: these will be replaced by timescale for conflict and disaster
     const startYear = 2008;
     const endYear = 2020;
+
+    const currentYear = String(new Date().getFullYear());
 
     // constant
     const initialIduItems = 2;
 
-    const [activeYear, setActiveYear] = React.useState<string | undefined>();
-    const [moreIduShown, setMoreIduShown] = React.useState(false);
+    const [activeYear, setActiveYear] = React.useState<string>(currentYear);
+    const [moreIduShown, setMoreIduShown] = React.useState(1);
 
     const [
         hoverFeatureProperties,
@@ -272,6 +273,7 @@ function CountryProfile(props: Props) {
     );
 
     const idus = iduData?.idu;
+    const countryInfo = countryProfileData?.country;
 
     const iduGeojson: IduGeoJSON = React.useMemo(
         () => ({
@@ -317,8 +319,6 @@ function CountryProfile(props: Props) {
         );
     }
 
-    const countryInfo = countryProfileData?.country;
-
     if (iduDataError || countryProfileError || !countryInfo) {
         return (
             <div className={_cs(styles.countryProfile, className)}>
@@ -353,11 +353,7 @@ function CountryProfile(props: Props) {
                         />
                     </EllipsizedContent>
                 </section>
-                {(
-                    countryInfo.overviews
-                    && countryInfo.overviews.length > 0
-                    && activeYear
-                ) && (
+                {countryInfo.overviews && countryInfo.overviews.length > 0 && (
                     <section className={styles.overview}>
                         <Header
                             headingSize="large"
@@ -654,214 +650,236 @@ function CountryProfile(props: Props) {
                         </div>
                     </section>
                 )}
-                <section className={styles.latestNewDisplacements}>
-                    <Header
-                        headingSize="large"
-                        heading="Latest Internal Displacements"
-                        headingInfo={countryMetadata.latestNewDisplacementsTooltip && (
-                            <IoInformationCircleOutline
-                                title={countryMetadata.latestNewDisplacementsTooltip}
-                            />
-                        )}
-                    />
-                    <EllipsizedContent>
-                        <HTMLOutput
-                            value={countryInfo.latestNewDisplacementsDescription}
-                        />
-                    </EllipsizedContent>
-                    <div className={styles.iduContainer}>
-                        {(moreIduShown ? idus : idus?.slice(0, initialIduItems))?.map((idu) => (
-                            <div
-                                key={idu.id}
-                                className={styles.idu}
-                            >
-                                <HTMLOutput
-                                    value={idu.standard_popup_text}
+                {((idus && idus.length > 0) || countryInfo.latestNewDisplacementsDescription) && (
+                    <section className={styles.latestNewDisplacements}>
+                        <Header
+                            headingSize="large"
+                            heading="Latest Internal Displacements"
+                            headingInfo={countryMetadata.latestNewDisplacementsTooltip && (
+                                <IoInformationCircleOutline
+                                    title={countryMetadata.latestNewDisplacementsTooltip}
                                 />
-                            </div>
-                        ))}
-                    </div>
-                    {(idus && idus.length > initialIduItems) && (
-                        <Button
-                            name={undefined}
-                            // variant="secondary"
-                            onClick={() => {
-                                setMoreIduShown((val) => !val);
-                            }}
-                        >
-                            {moreIduShown ? 'Collapse' : 'Show more'}
-                        </Button>
-                    )}
-                </section>
-                <section className={styles.internalDisplacementUpdates}>
-                    <Header
-                        headingSize="large"
-                        heading="Internal Displacement Updates"
-                        headingInfo={countryMetadata.internalDisplacementUpdatesTooltip && (
-                            <IoInformationCircleOutline
-                                title={countryMetadata.internalDisplacementUpdatesTooltip}
+                            )}
+                        />
+                        <EllipsizedContent>
+                            <HTMLOutput
+                                value={countryInfo.latestNewDisplacementsDescription}
                             />
-                        )}
-                    />
-                    <EllipsizedContent>
-                        <HTMLOutput
-                            value={countryInfo.internalDisplacementDescription}
-                        />
-                    </EllipsizedContent>
-                    <div className={styles.filter}>
-                        <SelectInput
-                            variant="general"
-                            placeholder="Timescale"
-                            name="timescale"
-                            value={undefined}
-                            options={options}
-                            keySelector={(item) => item.key}
-                            labelSelector={(item) => item.label}
-                            onChange={() => undefined}
-                        />
-                        <SelectInput
-                            variant="general"
-                            placeholder="Type of displacement"
-                            name="typeOfDisplacement"
-                            value={undefined}
-                            options={options}
-                            keySelector={(item) => item.key}
-                            labelSelector={(item) => item.label}
-                            onChange={() => undefined}
-                        />
-                        <SelectInput
-                            variant="general"
-                            placeholder="No. of displacement"
-                            name="numberOfDisplacement"
-                            value={undefined}
-                            options={options}
-                            keySelector={(item) => item.key}
-                            labelSelector={(item) => item.label}
-                            onChange={() => undefined}
-                        />
-                    </div>
-                    <div>
-                        Hover over and click on the coloured bubbles to see near real-time
-                        snapshots of situations of internal displacement across the globe.
-                    </div>
-                    <Map
-                        mapStyle={lightStyle}
-                        mapOptions={{
-                            logoPosition: 'bottom-left',
-                            scrollZoom: false,
-                        }}
-                        scaleControlShown
-                        navControlShown
-                    >
-                        <div className={styles.mapWrapper}>
-                            <div className={styles.legendList}>
-                                <div className={styles.legend}>
-                                    <Header
-                                        headingSize="extraSmall"
-                                        heading="Type of displacement"
-                                    />
-                                    <div className={styles.legendElementList}>
-                                        <LegendElement
-                                            color="var(--color-conflict)"
-                                            label="Conflict"
-                                        />
-                                        <LegendElement
-                                            color="var(--color-disaster)"
-                                            label="Disaster"
-                                        />
-                                        {/*
-                                        <LegendElement
-                                            color="var(--color-other)"
-                                            label="Other"
-                                        />
-                                        */}
-                                    </div>
-                                </div>
-                                <div className={styles.separator} />
-                                <div className={styles.legend}>
-                                    <Header
-                                        headingSize="extraSmall"
-                                        heading="No. of Displacement"
-                                    />
-                                    <div className={styles.legendElementList}>
-                                        <LegendElement
-                                            color="grey"
-                                            size={10}
-                                            label="< 100"
-                                        />
-                                        <LegendElement
-                                            color="grey"
-                                            size={18}
-                                            label="< 1000"
-                                        />
-                                        <LegendElement
-                                            color="grey"
-                                            size={26}
-                                            label="> 1000"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                            <MapContainer
-                                className={styles.mapContainer}
-                            />
-                        </div>
-                        <MapBounds
-                            bounds={statistics.bounds}
-                            padding={50}
-                        />
-                        <MapSource
-                            sourceKey="idu-points"
-                            sourceOptions={sourceOption}
-                            geoJson={iduGeojson}
-                        >
-                            <MapLayer
-                                layerKey="idu-point"
-                                // onClick={handlePointClick}
-                                layerOptions={{
-                                    type: 'circle',
-                                    paint: iduPointColor,
-                                }}
-                                onClick={handlePointClick}
-                            />
-                            {hoverLngLat && hoverFeatureProperties && (
-                                <MapTooltip
-                                    coordinates={hoverLngLat}
-                                    tooltipOptions={popupOptions}
-                                    onHide={handleTooltipClose}
+                        </EllipsizedContent>
+                        <div className={styles.iduContainer}>
+                            {idus && idus.slice(0, moreIduShown * initialIduItems)?.map((idu) => (
+                                <div
+                                    key={idu.id}
+                                    className={styles.idu}
                                 >
                                     <HTMLOutput
-                                        value={hoverFeatureProperties.description}
+                                        value={idu.standard_popup_text}
                                     />
-                                </MapTooltip>
+                                </div>
+                            ))}
+                        </div>
+                        <div className={styles.iduPager}>
+                            {idus && idus.length > (moreIduShown * initialIduItems) && (
+                                <Button
+                                    name={undefined}
+                                    // variant="secondary"
+                                    onClick={() => {
+                                        setMoreIduShown((val) => val + 1);
+                                    }}
+                                >
+                                    Show more
+                                </Button>
                             )}
-                        </MapSource>
-                    </Map>
-                </section>
-                <section className={styles.relatedMaterial}>
-                    <Header
-                        headingSize="large"
-                        heading="Related Material"
-                        headingInfo={countryMetadata.relatedMaterialTooltip && (
-                            <IoInformationCircleOutline
-                                title={countryMetadata.relatedMaterialTooltip}
+                            {moreIduShown > 1 && (
+                                <Button
+                                    name={undefined}
+                                    // variant="secondary"
+                                    onClick={() => {
+                                        setMoreIduShown(1);
+                                    }}
+                                >
+                                    Collapse
+                                </Button>
+                            )}
+                        </div>
+                    </section>
+                )}
+                {(
+                    countryInfo.internalDisplacementDescription
+                    || (idus && idus.length > 0)
+                ) && (
+                    <section className={styles.internalDisplacementUpdates}>
+                        <Header
+                            headingSize="large"
+                            heading="Internal Displacement Updates"
+                            headingInfo={countryMetadata.internalDisplacementUpdatesTooltip && (
+                                <IoInformationCircleOutline
+                                    title={countryMetadata.internalDisplacementUpdatesTooltip}
+                                />
+                            )}
+                        />
+                        <EllipsizedContent>
+                            <HTMLOutput
+                                value={countryInfo.internalDisplacementDescription}
                             />
-                        )}
-                    />
-                    <div className={styles.materialList}>
-                        {goodPracticesList.map((gp) => (
-                            <GoodPracticeItem
-                                dataId={gp.id}
-                                key={gp.id}
-                                className={styles.material}
-                                coverImageUrl={gp.image}
-                                heading={gp.title}
-                                description={gp.description}
-                                date="2021-05-20"
+                        </EllipsizedContent>
+                        <div className={styles.filter}>
+                            <SelectInput
+                                variant="general"
+                                placeholder="Timescale"
+                                name="timescale"
+                                value={undefined}
+                                options={options}
+                                keySelector={(item) => item.key}
+                                labelSelector={(item) => item.label}
+                                onChange={() => undefined}
                             />
-                        ))}
-                    </div>
-                </section>
+                            <SelectInput
+                                variant="general"
+                                placeholder="Type of displacement"
+                                name="typeOfDisplacement"
+                                value={undefined}
+                                options={options}
+                                keySelector={(item) => item.key}
+                                labelSelector={(item) => item.label}
+                                onChange={() => undefined}
+                            />
+                            <SelectInput
+                                variant="general"
+                                placeholder="No. of displacement"
+                                name="numberOfDisplacement"
+                                value={undefined}
+                                options={options}
+                                keySelector={(item) => item.key}
+                                labelSelector={(item) => item.label}
+                                onChange={() => undefined}
+                            />
+                        </div>
+                        <div>
+                            Hover over and click on the coloured bubbles to see near real-time
+                            snapshots of situations of internal displacement across the globe.
+                        </div>
+                        <Map
+                            mapStyle={lightStyle}
+                            mapOptions={{
+                                logoPosition: 'bottom-left',
+                                scrollZoom: false,
+                            }}
+                            scaleControlShown
+                            navControlShown
+                        >
+                            <div className={styles.mapWrapper}>
+                                <div className={styles.legendList}>
+                                    <div className={styles.legend}>
+                                        <Header
+                                            headingSize="extraSmall"
+                                            heading="Type of displacement"
+                                        />
+                                        <div className={styles.legendElementList}>
+                                            <LegendElement
+                                                color="var(--color-conflict)"
+                                                label="Conflict"
+                                            />
+                                            <LegendElement
+                                                color="var(--color-disaster)"
+                                                label="Disaster"
+                                            />
+                                            {/*
+                                            <LegendElement
+                                                color="var(--color-other)"
+                                                label="Other"
+                                            />
+                                            */}
+                                        </div>
+                                    </div>
+                                    <div className={styles.separator} />
+                                    <div className={styles.legend}>
+                                        <Header
+                                            headingSize="extraSmall"
+                                            heading="No. of Displacement"
+                                        />
+                                        <div className={styles.legendElementList}>
+                                            <LegendElement
+                                                color="grey"
+                                                size={10}
+                                                label="< 100"
+                                            />
+                                            <LegendElement
+                                                color="grey"
+                                                size={18}
+                                                label="< 1000"
+                                            />
+                                            <LegendElement
+                                                color="grey"
+                                                size={26}
+                                                label="> 1000"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                                <MapContainer
+                                    className={styles.mapContainer}
+                                />
+                            </div>
+                            <MapBounds
+                                bounds={statistics.bounds}
+                                padding={50}
+                            />
+                            <MapSource
+                                sourceKey="idu-points"
+                                sourceOptions={sourceOption}
+                                geoJson={iduGeojson}
+                            >
+                                <MapLayer
+                                    layerKey="idu-point"
+                                    // onClick={handlePointClick}
+                                    layerOptions={{
+                                        type: 'circle',
+                                        paint: iduPointColor,
+                                    }}
+                                    onClick={handlePointClick}
+                                />
+                                {hoverLngLat && hoverFeatureProperties && (
+                                    <MapTooltip
+                                        coordinates={hoverLngLat}
+                                        tooltipOptions={popupOptions}
+                                        onHide={handleTooltipClose}
+                                    >
+                                        <HTMLOutput
+                                            value={hoverFeatureProperties.description}
+                                        />
+                                    </MapTooltip>
+                                )}
+                            </MapSource>
+                        </Map>
+                    </section>
+                )}
+                {relatedMaterials.length > 0 && (
+                    <section className={styles.relatedMaterial}>
+                        <Header
+                            headingSize="large"
+                            heading="Related Material"
+                            headingInfo={countryMetadata.relatedMaterialTooltip && (
+                                <IoInformationCircleOutline
+                                    title={countryMetadata.relatedMaterialTooltip}
+                                />
+                            )}
+                        />
+                        <div className={styles.materialList}>
+                            {relatedMaterials.map((gp) => (
+                                <GoodPracticeItem
+                                    dataId={gp.id}
+                                    key={gp.id}
+                                    className={styles.material}
+                                    coverImageUrl={gp.image}
+                                    heading={gp.title}
+                                    description={gp.description}
+                                    date="2021-05-20"
+                                />
+                            ))}
+                        </div>
+                    </section>
+                )}
                 <section className={styles.misc}>
                     {countryInfo.essentialLinks && (
                         <div className={styles.essentialReading}>

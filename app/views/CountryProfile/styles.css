@@ -110,6 +110,12 @@
             }
         }
 
+        .idu-pager {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--dui-spacing-small);
+        }
+
         .internal-displacement-updates {
             display: flex;
             flex-direction: column;
