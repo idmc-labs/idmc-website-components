@@ -246,6 +246,28 @@ const IDU_DATA = gql`
     }
 `;
 
+// constant
+const initialIduItems = 2;
+const startYear = 2008;
+const endYear = (new Date()).getFullYear();
+
+// options
+const typeOfDisplacementOptions: {
+    key: DisplacementType;
+    label: string;
+}[] = [
+    { key: 'Conflict', label: 'Conflict' },
+    { key: 'Disaster', label: 'Disaster' },
+];
+const noOfDisplacementOptions: {
+    key: DisplacementNumber;
+    label: string;
+}[] = [
+    { key: 'less-than-100', label: '< 100' },
+    { key: 'less-than-1000', label: '< 1000' },
+    { key: 'more-than-1000', label: '> 1000' },
+];
+
 interface Props {
     className?: string;
 }
@@ -257,24 +279,21 @@ function CountryProfile(props: Props) {
 
     // Send this to server
     // Read this from navbar
-    const currentCountry = 'IND';
+    const currentCountry = 'MMR';
 
-    // Max years
-    const startYear = 2008;
-    const endYear = (new Date()).getFullYear();
+    // Overview section
+    const [activeYear, setActiveYear] = React.useState<string>(String(endYear));
 
-    const [range, setRange] = React.useState([startYear, endYear]);
-
-    const currentYear = String(endYear);
-
-    // constant
-    const initialIduItems = 2;
-
-    const [activeYear, setActiveYear] = React.useState<string>(currentYear);
+    // Disaster section
     const [categories, setCategories] = React.useState<string[] | undefined>();
-    const [moreIduShown, setMoreIduShown] = React.useState(1);
 
-    // inputs for idu map
+    // IDU list section
+    const [iduPage, setIduPage] = React.useState(1);
+
+    // IDU map section
+    const [timerangeBounds, setTimerangeBounds] = React.useState([startYear, endYear]);
+    const [timerange, setTimerange] = React.useState([startYear, endYear]);
+
     const [
         typeOfDisplacements,
         handleTypeOfDisplacementsChange,
@@ -283,7 +302,6 @@ function CountryProfile(props: Props) {
         noOfDisplacements,
         handleNoOfDisplacementsChange,
     ] = useInputState<DisplacementNumber[]>([]);
-
     const [
         hoverFeatureProperties,
         setHoverFeatureProperties,
@@ -300,7 +318,7 @@ function CountryProfile(props: Props) {
         return true;
     }, []);
 
-    const handleTooltipClose = React.useCallback(() => {
+    const handlePopupClose = React.useCallback(() => {
         setHoverLngLat(undefined);
         setHoverFeatureProperties(undefined);
     }, []);
@@ -388,6 +406,18 @@ function CountryProfile(props: Props) {
             variables: {
                 country: currentCountry,
             },
+            onCompleted: (response) => {
+                if (!response.idu || response.idu.length <= 0) {
+                    return;
+                }
+                const max = Math.max(...response.idu.map((item) => item.year).filter(isDefined));
+                let min = Math.min(...response.idu.map((item) => item.year).filter(isDefined));
+                if (min === max) {
+                    min -= 1;
+                }
+                setTimerangeBounds([min, max]);
+                setTimerange([min, max]);
+            },
         },
     );
 
@@ -429,6 +459,12 @@ function CountryProfile(props: Props) {
                             return undefined;
                         }
                     }
+                    if (timerange) {
+                        const [min, max] = timerange;
+                        if (!idu.year || idu.year < min || idu.year > max) {
+                            return undefined;
+                        }
+                    }
 
                     return {
                         id: idu.id,
@@ -448,24 +484,8 @@ function CountryProfile(props: Props) {
                     };
                 }).filter(isDefined) ?? [],
         }),
-        [idus, noOfDisplacements, typeOfDisplacements],
+        [idus, noOfDisplacements, typeOfDisplacements, timerange],
     );
-
-    const typeOfDisplacementOptions: {
-        key: DisplacementType;
-        label: string;
-    }[] = [
-        { key: 'Conflict', label: 'Conflict' },
-        { key: 'Disaster', label: 'Disaster' },
-    ];
-    const noOfDisplacementOptions: {
-        key: DisplacementNumber;
-        label: string;
-    }[] = [
-        { key: 'less-than-100', label: '< 100' },
-        { key: 'less-than-1000', label: '< 1000' },
-        { key: 'more-than-1000', label: '> 1000' },
-    ];
 
     if (countryProfileLoading || iduDataLoading) {
         return (
@@ -852,7 +872,7 @@ function CountryProfile(props: Props) {
                             />
                         </EllipsizedContent>
                         <div className={styles.iduContainer}>
-                            {idus && idus.slice(0, moreIduShown * initialIduItems)?.map((idu) => (
+                            {idus && idus.slice(0, iduPage * initialIduItems)?.map((idu) => (
                                 <div
                                     key={idu.id}
                                     className={styles.idu}
@@ -864,23 +884,23 @@ function CountryProfile(props: Props) {
                             ))}
                         </div>
                         <div className={styles.iduPager}>
-                            {idus && idus.length > (moreIduShown * initialIduItems) && (
+                            {idus && idus.length > (iduPage * initialIduItems) && (
                                 <Button
                                     name={undefined}
                                     // variant="secondary"
                                     onClick={() => {
-                                        setMoreIduShown((val) => val + 1);
+                                        setIduPage((val) => val + 1);
                                     }}
                                 >
                                     Show more
                                 </Button>
                             )}
-                            {moreIduShown > 1 && (
+                            {iduPage > 1 && (
                                 <Button
                                     name={undefined}
                                     // variant="secondary"
                                     onClick={() => {
-                                        setMoreIduShown(1);
+                                        setIduPage(1);
                                     }}
                                 >
                                     Collapse
@@ -910,23 +930,13 @@ function CountryProfile(props: Props) {
                         </EllipsizedContent>
                         <div className={styles.filter}>
                             <SliderInput
-                                min={startYear}
-                                max={endYear}
+                                // NOTE: timescale
+                                min={timerangeBounds[0]}
+                                max={timerangeBounds[1]}
                                 step={1}
                                 minDistance={0}
-                                value={range}
-                                onChange={setRange}
-                            />
-                            <SelectInput
-                                variant="general"
-                                placeholder="Timescale"
-                                name="timescale"
-                                value={undefined}
-                                options={options}
-                                keySelector={(item) => item.key}
-                                labelSelector={(item) => item.label}
-                                onChange={() => undefined}
-                                disabled
+                                value={timerange}
+                                onChange={setTimerange}
                             />
                             <MultiSelectInput
                                 variant="general"
@@ -1037,7 +1047,7 @@ function CountryProfile(props: Props) {
                                     <MapTooltip
                                         coordinates={hoverLngLat}
                                         tooltipOptions={popupOptions}
-                                        onHide={handleTooltipClose}
+                                        onHide={handlePopupClose}
                                     >
                                         <HTMLOutput
                                             value={hoverFeatureProperties.description}
