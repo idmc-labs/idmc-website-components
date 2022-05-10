@@ -1,6 +1,7 @@
 import React from 'react';
 import {
     SelectInput,
+    MultiSelectInput,
 } from '@the-deep/deep-ui';
 import {
     gql,
@@ -44,6 +45,11 @@ import {
     CountryProfileQueryVariables,
     IduDataQuery,
     IduDataQueryVariables,
+    DisasterDataQuery,
+    DisasterCategoryQuery,
+    DisasterCategoryQueryVariables,
+    DisasterDataQueryVariables,
+    CategoryStatisticsType,
 } from '#generated/types';
 import RoundedBar from '#components/RoundedBar';
 import Tabs from '#components/Tabs';
@@ -79,6 +85,8 @@ type IduGeoJSON = GeoJSON.FeatureCollection<
     GeoJSON.Point,
     { type: 'Disaster' | 'Conflict' | 'Other', value: number, description: string | null | undefined }
 >;
+
+const categoryKeySelector = (d: CategoryStatisticsType) => d.label;
 
 const options: { key: string; label: string }[] = [];
 
@@ -154,6 +162,33 @@ const COUNTRY_PROFILE = gql`
     }
 `;
 
+const DISASTER_DATA = gql`
+    query DisasterData($countryIso3: String!, $startYear: Int, $endYear: Int, $categories: [String!]) {
+        disasterStatistics(filters: { countriesIso3: [$countryIso3], endYear: $endYear, startYear: $startYear, categories: $categories}) {
+            newDisplacements
+            totalEvents
+            categories {
+                label
+                total
+            }
+            timeseries {
+                total
+                year
+            }
+        }
+    }
+`;
+const COUNTRY_DISASTER_CATEGORIES = gql`
+    query DisasterCategory($countryIso3: String!) {
+        disasterStatistics(filters: { countriesIso3: [$countryIso3] }) {
+            categories {
+                label
+                total
+            }
+        }
+    }
+`;
+
 const IDU_DATA = gql`
     query IduData($country: String!) {
         idu(country: $country) @rest(
@@ -210,6 +245,7 @@ function CountryProfile(props: Props) {
     const initialIduItems = 2;
 
     const [activeYear, setActiveYear] = React.useState<string>(currentYear);
+    const [categories, setCategories] = React.useState<string[] | undefined>();
     const [moreIduShown, setMoreIduShown] = React.useState(1);
 
     const [
@@ -242,7 +278,7 @@ function CountryProfile(props: Props) {
         COUNTRY_PROFILE,
         {
             variables: {
-                countryId: '2', // TODO make this dynamic
+                countryId: '91', // TODO make this dynamic
             },
             onCompleted: (response) => {
                 if (!response.country) {
@@ -254,6 +290,37 @@ function CountryProfile(props: Props) {
                 if (overviews && overviews.length > 0) {
                     setActiveYear(overviews[0].year.toString());
                 }
+            },
+        },
+    );
+
+    const {
+        previousData: previousDisasterCategories,
+        data: disasterCategories = previousDisasterCategories,
+        loading: disasterCategoriesLoading,
+        error: disasterCategoriesError,
+    } = useQuery<DisasterCategoryQuery, DisasterCategoryQueryVariables>(
+        COUNTRY_DISASTER_CATEGORIES,
+        {
+            variables: {
+                countryIso3: currentCountry,
+            },
+        },
+    );
+
+    const {
+        previousData: previousDisasterData,
+        data: disasterData = previousDisasterData,
+        loading: disasterDataLoading,
+        error: disasterDataError,
+    } = useQuery<DisasterDataQuery, DisasterDataQueryVariables>(
+        DISASTER_DATA,
+        {
+            variables: {
+                countryIso3: currentCountry,
+                startYear,
+                endYear,
+                categories,
             },
         },
     );
@@ -311,7 +378,10 @@ function CountryProfile(props: Props) {
         [idus],
     );
 
-    if (countryProfileLoading || iduDataLoading) {
+    if (
+        countryProfileLoading
+        || iduDataLoading
+    ) {
         return (
             <div className={_cs(styles.countryProfile, className)}>
                 Loading....
@@ -319,7 +389,12 @@ function CountryProfile(props: Props) {
         );
     }
 
-    if (iduDataError || countryProfileError || !countryInfo) {
+    if (
+        iduDataError
+        || countryProfileError
+        || !countryInfo
+        || disasterDataError
+    ) {
         return (
             <div className={_cs(styles.countryProfile, className)}>
                 Error fetching country profile....
@@ -567,26 +642,32 @@ function CountryProfile(props: Props) {
                                             labelSelector={(item) => item.label}
                                             onChange={() => undefined}
                                         />
-                                        <SelectInput
+                                        <MultiSelectInput
                                             variant="general"
                                             placeholder="Disaster Category"
                                             name="disasterCategory"
-                                            value={undefined}
-                                            options={options}
-                                            keySelector={(item) => item.key}
-                                            labelSelector={(item) => item.label}
-                                            onChange={() => undefined}
+                                            value={categories}
+                                            options={
+                                                disasterCategories?.disasterStatistics.categories
+                                            }
+                                            keySelector={categoryKeySelector}
+                                            labelSelector={categoryKeySelector}
+                                            onChange={setCategories}
+                                            disabled={disasterCategoriesLoading
+                                                || isDefined(disasterCategoriesError)}
                                         />
                                     </div>
                                     <div className={styles.infographicList}>
                                         <Infographic
-                                            totalValue={statistics.disaster.newDisplacements}
+                                            totalValue={disasterData
+                                                ?.disasterStatistics.newDisplacements || 0}
                                             description={statistics.disaster.newDisplacementsLabel}
                                             date={`${startYear} - ${endYear}`}
                                             chart={(
                                                 <ResponsiveContainer>
-                                                    <BarChart
-                                                        data={statistics.disaster.timeseries}
+                                                    <LineChart
+                                                        data={disasterData
+                                                            ?.disasterStatistics.timeseries}
                                                     >
                                                         <XAxis
                                                             dataKey="year"
@@ -604,19 +685,22 @@ function CountryProfile(props: Props) {
                                                             formatter={formatNumber}
                                                         />
                                                         <Legend />
-                                                        <Bar
+                                                        <Line
                                                             dataKey="total"
+                                                            key="total"
                                                             fill="var(--color-disaster)"
                                                             name="Disaster internal displacements"
-                                                            shape={<RoundedBar />}
-                                                            maxBarSize={6}
+                                                            strokeWidth={2}
+                                                            connectNulls
+                                                            dot
                                                         />
-                                                    </BarChart>
+                                                    </LineChart>
                                                 </ResponsiveContainer>
                                             )}
                                         />
                                         <Infographic
-                                            totalValue={statistics.disaster.noOfEvents}
+                                            totalValue={disasterData
+                                                ?.disasterStatistics.totalEvents || 0}
                                             description={statistics.disaster.noOfEventsLabel}
                                             date={`${startYear} - ${endYear}`}
                                             chart={(
@@ -627,7 +711,8 @@ function CountryProfile(props: Props) {
                                                         />
                                                         <Legend />
                                                         <Pie
-                                                            data={statistics.disaster.categories}
+                                                            data={disasterData
+                                                                ?.disasterStatistics.categories}
                                                             dataKey="total"
                                                             nameKey="label"
                                                         >
