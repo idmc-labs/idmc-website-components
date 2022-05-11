@@ -1,6 +1,9 @@
+@import url("https://use.typekit.net/ret0ejy.css");
+
 :root {
-    --dui-font-family-sans-serif: 'Lato', sans-serif;
-    --dui-font-family-heading: 'Lora', sans-serif;
+    --dui-font-family-sans-serif: 'proxima-nova', sans-serif;
+    --dui-font-family-heading: 'freight-big-pro', sans-serif;
+
     --dui-font-weight-light: 300;
     --dui-font-weight-medium: 400;
     --dui-font-weight-bold: 700;
@@ -49,6 +52,8 @@
     .view {
         flex-grow: 1;
     }
+
+    font-family: 'proxima-nova', sans-serif;
 }
 
 a {
