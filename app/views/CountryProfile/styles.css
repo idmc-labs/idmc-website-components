@@ -71,6 +71,12 @@
                             flex-basis: 0;
                             flex-grow: 1;
                         }
+
+                        .description {
+                            display: flex;
+                            align-items: center;
+                            gap: var(--dui-spacing-extra-small);
+                        }
                     }
                 }
 
@@ -102,6 +108,12 @@
                         >* {
                             flex-basis: 0;
                             flex-grow: 1;
+                        }
+
+                        .description {
+                            display: flex;
+                            align-items: center;
+                            gap: var(--dui-spacing-extra-small);
                         }
                     }
                 }

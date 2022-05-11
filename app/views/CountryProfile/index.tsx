@@ -643,7 +643,18 @@ function CountryProfile(props: Props) {
                                         <Infographic
                                             totalValue={conflictData
                                                 ?.conflictStatistics.newDisplacements || 0}
-                                            description="Internal Displacements"
+                                            description={(
+                                                <div className={styles.description}>
+                                                    Internal Displacements
+                                                    {countryMetadata
+                                                        ?.conflictInternalDisplacementTooltip && (
+                                                        <IoInformationCircleOutline
+                                                            title={countryMetadata
+                                                                .conflictInternalDisplacementTooltip} // eslint-disable-line max-len
+                                                        />
+                                                    )}
+                                                </div>
+                                            )}
                                             date={`${conflictTimeRange[0]} - ${conflictTimeRange[1]}`}
                                             chart={(
                                                 <ResponsiveContainer>
@@ -683,7 +694,17 @@ function CountryProfile(props: Props) {
                                         <Infographic
                                             totalValue={conflictData
                                                 ?.conflictStatistics.totalIdps || 0}
-                                            description="Total number of IDPs"
+                                            description={(
+                                                <div className={styles.description}>
+                                                    Total number of IDPs
+                                                    {countryMetadata?.conflictIDPTooltip && (
+                                                        <IoInformationCircleOutline
+                                                            title={countryMetadata
+                                                                .conflictIDPTooltip}
+                                                        />
+                                                    )}
+                                                </div>
+                                            )}
                                             date={`As of end of ${conflictTimeRange[1]}`}
                                             chart={(
                                                 <ResponsiveContainer>
@@ -782,7 +803,18 @@ function CountryProfile(props: Props) {
                                         <Infographic
                                             totalValue={disasterData
                                                 ?.disasterStatistics.newDisplacements || 0}
-                                            description="Internal Displacements"
+                                            description={(
+                                                <div className={styles.description}>
+                                                    Internal Displacements
+                                                    {countryMetadata
+                                                        ?.disasterInternalDisplacementTooltip && (
+                                                        <IoInformationCircleOutline
+                                                            title={countryMetadata
+                                                                .disasterInternalDisplacementTooltip} // eslint-disable-line max-len
+                                                        />
+                                                    )}
+                                                </div>
+                                            )}
                                             date={`${disasterTimeRange[0]} - ${disasterTimeRange[1]}`}
                                             chart={(
                                                 <ResponsiveContainer>
@@ -822,7 +854,17 @@ function CountryProfile(props: Props) {
                                         <Infographic
                                             totalValue={disasterData
                                                 ?.disasterStatistics.totalEvents || 0}
-                                            description="Disaster events reported"
+                                            description={(
+                                                <div className={styles.description}>
+                                                    Disaster events reported
+                                                    {countryMetadata?.disasterEventTooltip && (
+                                                        <IoInformationCircleOutline
+                                                            title={countryMetadata
+                                                                .disasterEventTooltip}
+                                                        />
+                                                    )}
+                                                </div>
+                                            )}
                                             date={`${disasterTimeRange[0]} - ${disasterTimeRange[1]}`}
                                             chart={(
                                                 <ResponsiveContainer>
