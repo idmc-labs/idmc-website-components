@@ -28,6 +28,9 @@ import {
     IoInformationCircleOutline,
 } from 'react-icons/io5';
 import { _cs, isDefined, isNotDefined } from '@togglecorp/fujs';
+import { saveAs } from 'file-saver';
+import stringify from 'csv-stringify/lib/browser/sync';
+
 import {
     ResponsiveContainer,
     BarChart,
@@ -73,6 +76,9 @@ import GoodPracticeItem from '#components/GoodPracticeItem';
 import SliderInput from '#components/SliderInput';
 import { goodPracticesList as relatedMaterials } from '#views/GoodPractices/data';
 import { formatNumber } from '#utils/common';
+import Conflict from '../../resources/icons/Conflict.svg';
+import Disaster from '../../resources/icons/Cyclone.svg';
+import Other from '../../resources/icons/Other.svg';
 
 import {
     countryMetadata,
@@ -92,6 +98,12 @@ type IduGeoJSON = GeoJSON.FeatureCollection<
     GeoJSON.Point,
     { type: 'Disaster' | 'Conflict' | 'Other', value: number, description: string | null | undefined }
 >;
+
+const displacementTypeMap: { [key in DisplacementType]: string } = {
+    Conflict,
+    Disaster,
+    Other,
+};
 
 const REST_ENDPOINT = process.env.REACT_APP_REST_ENDPOINT as string;
 const categoryKeySelector = (d: CategoryStatisticsType) => d.label;
@@ -424,6 +436,21 @@ function CountryProfile(props: Props) {
 
     const idus = iduData?.idu;
     const countryInfo = countryProfileData?.country;
+
+    const handleExportIduClick = React.useCallback(() => {
+        if (idus && idus.length > 0) {
+            const headers = Object.keys(idus[0]);
+            const dataString = stringify(idus, {
+                columns: headers,
+            });
+            const fullCsvString = `${headers}\n${dataString}`;
+            const blob = new Blob(
+                [fullCsvString],
+                { type: 'text/csv;charset=utf-8' },
+            );
+            saveAs(blob, 'idu_export.csv');
+        }
+    }, [idus]);
 
     const iduGeojson: IduGeoJSON = React.useMemo(
         () => ({
@@ -921,6 +948,13 @@ function CountryProfile(props: Props) {
                                     key={idu.id}
                                     className={styles.idu}
                                 >
+                                    {idu.displacement_type && (
+                                        <img
+                                            className={styles.icon}
+                                            src={displacementTypeMap[idu.displacement_type]}
+                                            alt={idu.displacement_type}
+                                        />
+                                    )}
                                     <HTMLOutput
                                         value={idu.standard_popup_text}
                                     />
@@ -1100,6 +1134,15 @@ function CountryProfile(props: Props) {
                                 )}
                             </MapSource>
                         </Map>
+                        <div>
+                            <Button
+                                name={undefined}
+                                // variant="secondary"
+                                onClick={handleExportIduClick}
+                            >
+                                Dowload Displacement Data
+                            </Button>
+                        </div>
                     </section>
                 )}
                 {relatedMaterials.length > 0 && (
