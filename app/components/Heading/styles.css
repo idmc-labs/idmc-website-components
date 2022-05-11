@@ -3,7 +3,7 @@
     margin: 0;
     color: var(--dui-color-brand);
     font-family: var(--dui-font-family-heading);
-    font-weight: 400;
+    font-weight: var(--dui-font-weight-heading);
 
     &.extra-large {
         font-size: var(--dui-font-size-mega-large);

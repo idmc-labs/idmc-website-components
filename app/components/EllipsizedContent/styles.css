@@ -9,7 +9,14 @@
     }
 
     .ellipsize-toggle-button {
-        color: var(--dui-color-accent);
+        display: flex;
+        align-items: center;
+        margin-top: var(--dui-spacing-medium);
+        gap: var(--dui-spacing-small);
+
+        .icon {
+            color: var(--dui-color-accent);
+        }
     }
 }
 

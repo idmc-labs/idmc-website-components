@@ -59,6 +59,7 @@ interface Props<T extends number | number[]> {
     onChange: (value: T) => void;
     step: number;
     minDistance: number;
+    hideValues?: boolean;
 }
 
 function Slider<T extends number | number[]>(props: Props<T>) {
@@ -70,6 +71,7 @@ function Slider<T extends number | number[]>(props: Props<T>) {
         onChange,
         step,
         minDistance,
+        hideValues,
     } = props;
 
     const marks = Array.from(
@@ -79,6 +81,11 @@ function Slider<T extends number | number[]>(props: Props<T>) {
 
     return (
         <div className={_cs(styles.slider, className)}>
+            {typeof value !== 'number' && !hideValues && (
+                <div className={styles.value}>
+                    {value[0]}
+                </div>
+            )}
             <ReactSlider
                 className={styles.reactSlider}
                 min={min}
@@ -93,9 +100,9 @@ function Slider<T extends number | number[]>(props: Props<T>) {
                 renderTrack={Track}
                 renderMark={Mark}
             />
-            {typeof value !== 'number' && (
-                <div className={styles.selectedRange}>
-                    {`${value[0]} - ${value[1]}`}
+            {typeof value !== 'number' && !hideValues && (
+                <div className={styles.value}>
+                    {value[1]}
                 </div>
             )}
         </div>

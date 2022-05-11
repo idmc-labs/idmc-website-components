@@ -6,6 +6,10 @@
         .heading-container {
             flex-grow: 1;
 
+            .heading-title {
+                line-height: 1;
+            }
+
             .heading {
                 flex-grow: 1;
 
@@ -13,18 +17,24 @@
                     padding: 0 var(--dui-spacing-small);
                     vertical-align: middle;
                     line-height: 1;
+                    font-size: max(1.2rem, 0.5em);
                 }
             }
 
             &.inline-heading-description {
                 display: flex;
+                align-items: center;
+                flex-wrap: wrap;
                 gap: var(--dui-spacing-small);
-                flex-shrink: 0;
+
+                .heading {
+                    flex-grow: unset;
+                }
 
                 .heading-description {
                     display: flex;
-                    gap: var(--dui-spacing-large);
                     flex-direction: row;
+                    gap: var(--dui-spacing-large);
                 }
             }
         }

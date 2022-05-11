@@ -15,6 +15,7 @@ interface Props {
     headingDescription?: React.ReactNode;
     headingSize?: HeadingSizeType,
     inlineHeadingDescription?: boolean,
+    headingTitle?: React.ReactNode;
 }
 
 function Header(props: Props) {
@@ -28,6 +29,7 @@ function Header(props: Props) {
         headingSize,
         headingInfo,
         inlineHeadingDescription,
+        headingTitle,
     } = props;
 
     return (
@@ -44,6 +46,11 @@ function Header(props: Props) {
                         inlineHeadingDescription && styles.inlineHeadingDescription,
                     )}
                 >
+                    {headingTitle && (
+                        <div className={styles.headingTitle}>
+                            {headingTitle}
+                        </div>
+                    )}
                     {heading && (
                         <Heading
                             size={headingSize}

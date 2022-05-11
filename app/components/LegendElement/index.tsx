@@ -1,22 +1,35 @@
 import React from 'react';
+import { _cs } from '@togglecorp/fujs';
+
+import Button from '#components/RawButton';
 
 import styles from './styles.css';
 
-interface LegendElementProps {
+interface BaseLegendElementProps {
     color: string;
     size?: number;
     label: React.ReactNode;
 }
 
-function LegendElement(props: LegendElementProps) {
+type Props<N> = BaseLegendElementProps & ({
+    name: N;
+    onClick: (name: N) => void;
+    isActive: boolean;
+} | {
+    name?: never;
+    onClick?: never;
+    isActive?: never;
+})
+
+function LegendElement<N>(props: Props<N>) {
     const {
         color,
         size = 16,
         label,
     } = props;
 
-    return (
-        <div className={styles.legendElement}>
+    const children = React.useMemo(() => (
+        <>
             <div className={styles.circleContainer}>
                 <div
                     className={styles.circle}
@@ -30,6 +43,28 @@ function LegendElement(props: LegendElementProps) {
             <div className={styles.label}>
                 {label}
             </div>
+        </>
+    ), [label, color, size]);
+
+    if (props.name) {
+        return (
+            <Button
+                className={_cs(
+                    styles.legendElement,
+                    styles.clickable,
+                    props.isActive && styles.isActive,
+                )}
+                name={props.name}
+                onClick={props.onClick}
+            >
+                {children}
+            </Button>
+        );
+    }
+
+    return (
+        <div className={styles.legendElement}>
+            {children}
         </div>
     );
 }

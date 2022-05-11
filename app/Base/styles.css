@@ -7,7 +7,7 @@
     --dui-font-weight-light: 300;
     --dui-font-weight-medium: 400;
     --dui-font-weight-bold: 700;
-    --dui-font-size-heading: 400;
+    --dui-font-weight-heading: 900;
 
     --dui-font-size-extra-small: 0.7rem;
     --dui-font-size-small: 0.8rem;
@@ -29,7 +29,8 @@
     --dui-color-watermark: rgb(100,99,99);
     */
 
-    --dui-color-background: #f5f8fb;
+    --dui-color-background: #eff4fa;
+    --color-background: #eff4fa;
 
     --color-orange: rgb(239, 125, 0);
     --color-blue: rgb(1, 142, 202);
@@ -39,21 +40,18 @@
     --color-disaster: var(--color-blue);
     --color-other: var(--color-green);
 
-    --width-page-max: 60rem;
+    --width-page-max: 68rem;
+    --width-readable-content-max: 44rem;
 }
 
 .base {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
     line-height: 1.5;
-    gap: var(--dui-spacing-extra-large);
+    font-family: 'proxima-nova', sans-serif;
 
     .view {
         flex-grow: 1;
     }
 
-    font-family: 'proxima-nova', sans-serif;
 }
 
 a {

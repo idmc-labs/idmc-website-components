@@ -1,5 +1,9 @@
 import React from 'react';
 import { _cs } from '@togglecorp/fujs';
+import {
+    IoArrowDown,
+    IoArrowUp,
+} from 'react-icons/io5';
 
 import RawButton from '#components/RawButton';
 import styles from './styles.css';
@@ -75,7 +79,21 @@ function EllipsizedContent(props: Props) {
                     name={!shouldEllipsize}
                     onClick={setShouldEllipsize}
                 >
-                    {shouldEllipsize ? '... Read More' : 'Collapse'}
+                    {shouldEllipsize ? (
+                        <>
+                            <div>
+                                Read More
+                            </div>
+                            <IoArrowDown className={styles.icon} />
+                        </>
+                    ) : (
+                        <>
+                            <div>
+                                See Less
+                            </div>
+                            <IoArrowUp className={styles.icon} />
+                        </>
+                    )}
                 </RawButton>
             )}
         </div>
