@@ -51,8 +51,6 @@ import {
     IduDataQuery,
     IduDataQueryVariables,
     DisasterDataQuery,
-    DisasterCategoryQuery,
-    DisasterCategoryQueryVariables,
     DisasterDataQueryVariables,
     CategoryStatisticsType,
     ConflictDataQuery,
@@ -178,8 +176,21 @@ const COUNTRY_PROFILE = gql`
                 name
             }
             essentialLinks
+            displacementDataDescription
             internalDisplacementDescription
             latestNewDisplacementsDescription
+        }
+        conflictStatistics(filters: { countriesIso3: [$iso3] }) {
+            newDisplacements
+            totalIdps
+        }
+        disasterStatistics(filters: { countriesIso3: [$iso3] }) {
+            newDisplacements
+
+            categories {
+                label
+                total
+            }
         }
     }
 `;
@@ -210,17 +221,6 @@ const DISASTER_DATA = gql`
             timeseries {
                 total
                 year
-            }
-        }
-    }
-`;
-
-const COUNTRY_DISASTER_CATEGORIES = gql`
-    query DisasterCategory($countryIso3: String!) {
-        disasterStatistics(filters: { countriesIso3: [$countryIso3] }) {
-            categories {
-                label
-                total
             }
         }
     }
@@ -294,8 +294,14 @@ function CountryProfile(props: Props) {
     // Overview section
     const [activeYear, setActiveYear] = React.useState<string>(String(endYear));
 
+    // Conflict section
+    // FIXME: debounce this value
+    const [conflictTimeRange, setConflictTimeRange] = React.useState([startYear, endYear]);
+
     // Disaster section
     const [categories, setCategories] = React.useState<string[] | undefined>();
+    // FIXME: debounce this value
+    const [disasterTimeRange, setDisasterTimeRange] = React.useState([startYear, endYear]);
 
     // IDU list section
     const [iduPage, setIduPage] = React.useState(1);
@@ -303,8 +309,6 @@ function CountryProfile(props: Props) {
     // IDU map section
     const [timerangeBounds, setTimerangeBounds] = React.useState([startYear, endYear]);
     const [timerange, setTimerange] = React.useState([startYear, endYear]);
-    const [conflictTimeRange, setConflictTimeRange] = React.useState([startYear, endYear]);
-    const [disasterTimeRange, setDisasterTimeRange] = React.useState([startYear, endYear]);
 
     const [
         typeOfDisplacements,
@@ -356,20 +360,6 @@ function CountryProfile(props: Props) {
                 if (overviews && overviews.length > 0) {
                     setActiveYear(overviews[0].year.toString());
                 }
-            },
-        },
-    );
-
-    const {
-        previousData: previousDisasterCategories,
-        data: disasterCategories = previousDisasterCategories,
-        loading: disasterCategoriesLoading,
-        error: disasterCategoriesError,
-    } = useQuery<DisasterCategoryQuery, DisasterCategoryQueryVariables>(
-        COUNTRY_DISASTER_CATEGORIES,
-        {
-            variables: {
-                countryIso3: currentCountry,
             },
         },
     );
@@ -450,6 +440,12 @@ function CountryProfile(props: Props) {
             saveAs(blob, 'idu_export.csv');
         }
     }, [idus]);
+
+    const conflictShown = (
+        (countryProfileData?.conflictStatistics?.newDisplacements ?? 0)
+        + (countryProfileData?.conflictStatistics?.totalIdps ?? 0)
+    ) > 0;
+    const disasterShown = (countryProfileData?.disasterStatistics?.newDisplacements ?? 0) > 0;
 
     const iduGeojson: IduGeoJSON = React.useMemo(
         () => ({
@@ -601,10 +597,9 @@ function CountryProfile(props: Props) {
                     </section>
                 )}
                 {(
-                    conflictData?.conflictStatistics
-                    || disasterData?.disasterStatistics
-                    // FIXME: we should not use description here
-                    || countryInfo.description
+                    conflictShown
+                    || disasterShown
+                    || countryInfo.displacementDataDescription
                 ) && (
                     <section className={styles.displacementData}>
                         <Header
@@ -618,11 +613,11 @@ function CountryProfile(props: Props) {
                         />
                         <EllipsizedContent>
                             <HTMLOutput
-                                value={countryInfo.description}
+                                value={countryInfo.displacementDataDescription}
                             />
                         </EllipsizedContent>
                         <div className={styles.infographics}>
-                            {conflictData?.conflictStatistics && (
+                            {conflictShown && (
                                 <div className={styles.conflictInfographics}>
                                     <Header
                                         heading="Conflict and Violence Data"
@@ -769,7 +764,7 @@ function CountryProfile(props: Props) {
                                     </div>
                                 </div>
                             )}
-                            {disasterData?.disasterStatistics && (
+                            {disasterShown && (
                                 <div className={styles.disasterInfographics}>
                                     <Header
                                         heading="Disaster Data"
@@ -817,13 +812,11 @@ function CountryProfile(props: Props) {
                                             name="disasterCategory"
                                             value={categories}
                                             options={
-                                                disasterCategories?.disasterStatistics.categories
+                                                countryProfileData?.disasterStatistics.categories
                                             }
                                             keySelector={categoryKeySelector}
                                             labelSelector={categoryKeySelector}
                                             onChange={setCategories}
-                                            disabled={disasterCategoriesLoading
-                                                || isDefined(disasterCategoriesError)}
                                         />
                                     </div>
                                     <div className={styles.infographicList}>
@@ -906,7 +899,7 @@ function CountryProfile(props: Props) {
                                                             dataKey="total"
                                                             nameKey="label"
                                                         >
-                                                            {disasterCategories
+                                                            {disasterData
                                                                 ?.disasterStatistics?.categories?.map(({ label }, index) => ( // eslint-disable-line max-len
                                                                     <Cell
                                                                         key={label}

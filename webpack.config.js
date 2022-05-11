@@ -150,6 +150,8 @@ module.exports = () => {
                 template: getPath('app/index.html'),
                 filename: 'index.html',
                 title: pkg.name,
+                // NOTE: we do not need to use this html on production
+                minify: false,
                 meta: {
                     charset: 'UTF-8',
                     viewport: 'width=device-width, initial-scale=1.0',

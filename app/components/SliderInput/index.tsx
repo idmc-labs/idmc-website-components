@@ -1,11 +1,16 @@
-import React from 'react';
+import React, { RefCallback, HTMLProps } from 'react';
 import ReactSlider from 'react-slider';
 import { _cs } from '@togglecorp/fujs';
 
 import styles from './styles.css';
 
-// FIXME: set appropriate typings
-function Thumb(props) {
+interface HTMLPropsWithRefCallback<T> extends HTMLProps<T> {
+    ref: RefCallback<T>;
+}
+
+function Thumb(
+    props: HTMLPropsWithRefCallback<HTMLDivElement>,
+) {
     return (
         <div
             {...props}
@@ -14,13 +19,15 @@ function Thumb(props) {
     );
 }
 
-// FIXME: set appropriate typings
-function Track(props, state) {
+function Track<T extends number | number[]>(
+    props: HTMLPropsWithRefCallback<HTMLDivElement>,
+    state: { index: number; value: T },
+) {
     const { index } = state;
     return (
         <div
             {...props}
-            index={index}
+            // index={index}
             className={_cs(
                 styles.track,
                 index === 1 && styles.center,

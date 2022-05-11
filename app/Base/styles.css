@@ -46,8 +46,7 @@
     line-height: 1.5;
     gap: var(--dui-spacing-extra-large);
 
-    .view,
-    .init {
+    .view {
         flex-grow: 1;
     }
 }

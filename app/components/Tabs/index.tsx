@@ -6,7 +6,7 @@ import {
     TabContext,
 } from '#components/Tabs/TabContext';
 
-export interface Props<T> {
+export interface Props<T extends TabKey> {
     children: React.ReactNode;
     variant?: TabVariant;
     disabled?: boolean;
@@ -23,7 +23,7 @@ export function Tabs<T extends TabKey>(props: Props<T>) {
         onChange,
     } = props;
 
-    const [tabs, setTabs] = React.useState<TabKey[]>([]);
+    const [tabs, setTabs] = React.useState<T[]>([]);
     const [step, setStep] = React.useState(0);
 
     const registerTab = React.useCallback((name) => {
