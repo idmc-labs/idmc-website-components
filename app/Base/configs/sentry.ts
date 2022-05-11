@@ -1,9 +1,12 @@
-import { matchPath } from 'react-router-dom';
-import { reactRouterV5Instrumentation, BrowserOptions } from '@sentry/react';
-import { Integrations } from '@sentry/tracing';
+// import { matchPath } from 'react-router-dom';
+import {
+    // reactRouterV5Instrumentation,
+    BrowserOptions,
+} from '@sentry/react';
+// import { Integrations } from '@sentry/tracing';
 
-import browserHistory from '#base/configs/history';
-import routes from '#base/configs/routes';
+// import browserHistory from '#base/configs/history';
+// import routes from '#base/configs/routes';
 
 const appCommitHash = process.env.REACT_APP_COMMITHASH;
 const appName = process.env.MY_APP_ID;
@@ -18,6 +21,7 @@ const sentryConfig: BrowserOptions | undefined = sentryDsn ? {
     environment: env,
     // sendDefaultPii: true,
     normalizeDepth: 5,
+    /*
     integrations: [
         new Integrations.BrowserTracing({
             routingInstrumentation: reactRouterV5Instrumentation(
@@ -27,6 +31,7 @@ const sentryConfig: BrowserOptions | undefined = sentryDsn ? {
             ),
         }),
     ],
+    */
 } : undefined;
 
 export default sentryConfig;

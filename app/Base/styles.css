@@ -46,30 +46,9 @@
     line-height: 1.5;
     gap: var(--dui-spacing-extra-large);
 
-    .navbar {
-        flex-shrink: 0;
-
-        &.hidden {
-            display: none;
-        }
-    }
-
     .view,
     .init {
         flex-grow: 1;
-    }
-
-    .alert-container {
-        position: fixed;
-        top: var(--dui-spacing-large);
-        right: var(--dui-spacing-large);
-        z-index: 1;
-        width: 20rem;
-    }
-
-    .footer {
-        background-color: var(--dui-color-brand);
-        height: 30rem;
     }
 }
 

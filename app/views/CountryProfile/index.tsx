@@ -1,5 +1,4 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
 import {
     MultiSelectInput,
     useInputState,
@@ -84,6 +83,10 @@ import {
     countryMetadata,
 } from './data';
 import styles from './styles.css';
+
+const currentCountry = (window as { iso3?: string }).iso3
+    || window.location.hash.substring(1)
+    || 'NPL';
 
 type DisplacementType = 'Conflict' | 'Disaster' | 'Other';
 type DisplacementNumber = 'less-than-100' | 'less-than-1000' | 'more-than-1000';
@@ -287,10 +290,6 @@ function CountryProfile(props: Props) {
     const {
         className,
     } = props;
-
-    const {
-        id: currentCountry = 'NPL',
-    } = useParams<{ id: string }>();
 
     // Overview section
     const [activeYear, setActiveYear] = React.useState<string>(String(endYear));
@@ -604,6 +603,7 @@ function CountryProfile(props: Props) {
                 {(
                     conflictData?.conflictStatistics
                     || disasterData?.disasterStatistics
+                    // FIXME: we should not use description here
                     || countryInfo.description
                 ) && (
                     <section className={styles.displacementData}>

@@ -2,9 +2,6 @@
 <html lang="en" translate="no">
     <head>
         <title><%= process.env.MY_APP_NAME %></title>
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Lora:wght@400;700&display=swap" rel="stylesheet">
         <style>
             html, body {
                 position: relative;
@@ -39,69 +36,22 @@
                 position: relative;
             }
         </style>
-        <style id="anti-click-jacking">
-            body {
-                display:none !important;
-            }
-        </style>
     </head>
 
     <body>
         <noscript>
             <%= process.env.MY_APP_NAME %> needs JS.
         </noscript>
+
+        <!--
+        <script>
+            window.iso3 = 'MMR';
+        </script>
+        -->
         <div id="app-container"></div>
 
-        <link href="https://fonts.googleapis.com/css?family=Oxygen+Mono|Source+Sans+Pro:300,400,600" rel="stylesheet">
-
-        <!-- Start of anti-click-jacking -->
-        <script type="text/javascript">
-            if (self === top) {
-                var antiClickjack = document.getElementById("anti-click-jacking");
-                antiClickjack.parentNode.removeChild(antiClickjack);
-            } else {
-                top.location = self.location;
-            }
-        </script>
-        <!-- End of anti-click-jacking -->
-
-        <!-- Start of service-worker -->
-        <script>
-            if ('serviceWorker' in navigator && '<%= process.env.NODE_ENV %>' === 'production') {
-                window.addEventListener('load', () => {
-                    navigator.serviceWorker
-                        .register('/service-worker.js')
-                        .then((registration) => {
-                            console.info('SW registered: ', registration);
-                            registration.onupdatefound = () => {
-                                const installingWorker = registration.installing;
-                                installingWorker.onstatechange = () => {
-                                    switch (installingWorker.state) {
-                                        case 'installed':
-                                            if (navigator.serviceWorker.controller) {
-                                                // New update is available
-                                                console.info('SW: New update is available!');
-                                                const shouldUpdate = window.confirm('New update is available. Do you want to update now?');
-                                                if (shouldUpdate) {
-                                                    window.location.reload(true);
-                                                }
-                                            } else {
-                                                // No new update
-                                                console.info('SW: No new updates!');
-                                            }
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                };
-                            };
-                        })
-                        .catch((registrationError) => {
-                            console.error('SW registration failed: ', registrationError);
-                        });
-                });
-            }
-        </script>
-        <!-- End of service-worker -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Lora:wght@400;700&display=swap" rel="stylesheet">
     </body>
 </html>

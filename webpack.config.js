@@ -4,7 +4,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { HotModuleReplacementPlugin, EnvironmentPlugin } = require('webpack');
 const Dotenv = require('dotenv-webpack');
 const { GitRevisionPlugin } = require('git-revision-webpack-plugin');
-const WebpackPwaManifest = require('webpack-pwa-manifest');
+// const WebpackPwaManifest = require('webpack-pwa-manifest');
 const { merge } = require('webpack-merge');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
@@ -157,6 +157,7 @@ module.exports = () => {
                     referrer: 'origin',
                 },
             }),
+            /*
             new WebpackPwaManifest({
                 name: pkg.name,
                 short_name: pkg.name,
@@ -175,6 +176,7 @@ module.exports = () => {
                     },
                 ],
             }),
+            */
             new CircularDependencyPlugin({
                 exclude: /node_modules/,
                 failOnError: false,
@@ -214,6 +216,7 @@ module.exports = () => {
                         }),
                         // new CssMinimizerWebpackPlugin(),
                     ],
+                    /*
                     splitChunks: {
                         cacheGroups: {
                             defaultVendors: {
@@ -224,6 +227,7 @@ module.exports = () => {
                             },
                         },
                     },
+                    */
                 },
                 plugins: [
                     new ResourceHintWebpackPlugin(),
