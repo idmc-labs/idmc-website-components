@@ -1,29 +1,39 @@
+.thumb {
+    border: 1px solid var(--dui-color-brand);
+    border-radius: 50%;
+    background-color: #fff;
+    cursor: grab;
+    width: 2ch;
+    height: 2ch;
+    text-align: center;
+}
+
+.track {
+    top: 1ch;
+    background-color: var(--dui-color-separator);
+    height: 1px;
+
+    &.center {
+        background-color: var(--dui-color-brand);
+    }
+}
+
+.mark {
+    transform: translate(calc((2ch - 1px) / 2), calc(1ch - 0.5ch));
+    background-color: var(--dui-color-separator);
+    width: 1px;
+    height: 0.5ch;
+}
+
 .slider {
     position: relative;
+
+
 
     .react-slider {
         width: 100%;
         height: 2ch;
 
-        .thumb {
-            border: 1px solid var(--dui-color-brand);
-            border-radius: 50%;
-            background-color: #fff;
-            cursor: grab;
-            width: 2ch;
-            height: 2ch;
-            text-align: center;
-        }
-
-        .track {
-            top: 1ch;
-            background-color: var(--dui-color-separator);
-            height: 1px;
-
-            &.center {
-                background-color: var(--dui-color-brand);
-            }
-        }
     }
 
     .selected-range {

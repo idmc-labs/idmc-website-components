@@ -428,7 +428,10 @@ function CountryProfile(props: Props) {
 
     const handleExportIduClick = React.useCallback(() => {
         if (idus && idus.length > 0) {
+            // FIXME: we may need to manually set headers (first data may not
+            // always have all the keys)
             const headers = Object.keys(idus[0]);
+
             const dataString = stringify(idus, {
                 columns: headers,
             });
@@ -1128,12 +1131,19 @@ function CountryProfile(props: Props) {
                             </MapSource>
                         </Map>
                         <div>
+                            <Link
+                                to={giddLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                View GIDD dashboard
+                            </Link>
                             <Button
                                 name={undefined}
                                 // variant="secondary"
                                 onClick={handleExportIduClick}
                             >
-                                Dowload Displacement Data
+                                Download Displacement Data
                             </Button>
                         </div>
                     </section>

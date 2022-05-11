@@ -8,6 +8,21 @@ interface HTMLPropsWithRefCallback<T> extends HTMLProps<T> {
     ref: RefCallback<T>;
 }
 
+function Mark(
+    props: HTMLPropsWithRefCallback<HTMLDivElement>,
+) {
+    return (
+        <span
+            {...props}
+            className={styles.mark}
+        />
+    );
+}
+
+interface HTMLPropsWithRefCallback<T> extends HTMLProps<T> {
+    ref: RefCallback<T>;
+}
+
 function Thumb(
     props: HTMLPropsWithRefCallback<HTMLDivElement>,
 ) {
@@ -57,6 +72,11 @@ function Slider<T extends number | number[]>(props: Props<T>) {
         minDistance,
     } = props;
 
+    const marks = Array.from(
+        { length: max - min + 1 },
+        (_, i) => i + min,
+    );
+
     return (
         <div className={_cs(styles.slider, className)}>
             <ReactSlider
@@ -64,12 +84,14 @@ function Slider<T extends number | number[]>(props: Props<T>) {
                 min={min}
                 max={max}
                 step={step}
+                marks={marks}
                 minDistance={minDistance}
                 pearling
                 value={value}
                 onChange={onChange}
                 renderThumb={Thumb}
                 renderTrack={Track}
+                renderMark={Mark}
             />
             {typeof value !== 'number' && (
                 <div className={styles.selectedRange}>
