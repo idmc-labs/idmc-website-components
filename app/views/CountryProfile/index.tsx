@@ -644,7 +644,7 @@ function CountryProfile(props: Props) {
                                             totalValue={conflictData
                                                 ?.conflictStatistics.newDisplacements || 0}
                                             description="Internal Displacements"
-                                            date={`${startYear} - ${endYear}`}
+                                            date={`${conflictTimeRange[0]} - ${conflictTimeRange[1]}`}
                                             chart={(
                                                 <ResponsiveContainer>
                                                     <LineChart
@@ -684,7 +684,7 @@ function CountryProfile(props: Props) {
                                             totalValue={conflictData
                                                 ?.conflictStatistics.totalIdps || 0}
                                             description="Total number of IDPs"
-                                            date={`As of end of ${endYear}`}
+                                            date={`As of end of ${conflictTimeRange[1]}`}
                                             chart={(
                                                 <ResponsiveContainer>
                                                     <BarChart
@@ -783,7 +783,7 @@ function CountryProfile(props: Props) {
                                             totalValue={disasterData
                                                 ?.disasterStatistics.newDisplacements || 0}
                                             description="Internal Displacements"
-                                            date={`${startYear} - ${endYear}`}
+                                            date={`${disasterTimeRange[0]} - ${disasterTimeRange[1]}`}
                                             chart={(
                                                 <ResponsiveContainer>
                                                     <LineChart
@@ -823,7 +823,7 @@ function CountryProfile(props: Props) {
                                             totalValue={disasterData
                                                 ?.disasterStatistics.totalEvents || 0}
                                             description="Disaster events reported"
-                                            date={`${startYear} - ${endYear}`}
+                                            date={`${disasterTimeRange[0]} - ${disasterTimeRange[1]}`}
                                             chart={(
                                                 <ResponsiveContainer>
                                                     <PieChart>
