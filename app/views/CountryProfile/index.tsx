@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import React from 'react';
 import {
     MultiSelectInput,
@@ -132,7 +131,10 @@ const disasterMap: { [key: string]: string } = {
     Unknown: OtherIcon,
 };
 
-function getIcon(displacementType: string | undefined | null, disasterType: string | undefined | null) {
+function getIcon(
+    displacementType: string | undefined | null,
+    disasterType: string | undefined | null,
+) {
     if (displacementType === 'Conflict') {
         return ConflictIcon;
     }
@@ -550,10 +552,19 @@ function CountryProfile(props: Props) {
     const relatedMaterials = data?.relatedMaterials?.rows;
     const offset = relatedMaterials?.length ?? 0;
 
-    const remainingRelatedMaterials = Math.max(0, Number(data?.relatedMaterials?.pager?.total_items || '0') - pageSize);
+    const remainingRelatedMaterials = Math.max(
+        0,
+        Number(data?.relatedMaterials?.pager?.total_items || '0') - pageSize,
+    );
 
     const idus = iduData?.idu;
     const countryInfo = countryProfileData?.country;
+
+    const conflictShown = (
+        (countryProfileData?.conflictStatistics?.newDisplacements ?? 0)
+        + (countryProfileData?.conflictStatistics?.totalIdps ?? 0)
+    ) > 0;
+    const disasterShown = (countryProfileData?.disasterStatistics?.newDisplacements ?? 0) > 0;
 
     const handleExportIduClick = React.useCallback(() => {
         if (idus && idus.length > 0) {
@@ -609,12 +620,6 @@ function CountryProfile(props: Props) {
         offset,
         fetchMore,
     ]);
-
-    const conflictShown = (
-        (countryProfileData?.conflictStatistics?.newDisplacements ?? 0)
-        + (countryProfileData?.conflictStatistics?.totalIdps ?? 0)
-    ) > 0;
-    const disasterShown = (countryProfileData?.disasterStatistics?.newDisplacements ?? 0) > 0;
 
     const countryOverviewSortedByYear = React.useMemo(() => {
         if (countryInfo?.overviews) {
@@ -703,6 +708,784 @@ function CountryProfile(props: Props) {
         );
     }
 
+    const profileSection = (
+        <section className={styles.profile}>
+            <Header
+                headingSize="extraLarge"
+                headingInfo={countryMetadata.countryProfileTooltip && (
+                    <IoInformationCircleOutline
+                        title={countryMetadata.countryProfileTooltip}
+                    />
+                )}
+                headingTitle="Country Profile"
+                heading={countryInfo.name}
+            />
+            <EllipsizedContent>
+                <HTMLOutput
+                    value={countryInfo.description}
+                />
+            </EllipsizedContent>
+        </section>
+    );
+
+    const navbar = (
+        <nav className={styles.navbar}>
+            <a
+                href="#overview"
+                className={styles.navLink}
+            >
+                Overview
+            </a>
+            <a
+                href="#displacement-data"
+                className={styles.navLink}
+            >
+                Displacement Data
+            </a>
+            <a
+                href="#latest-displacement"
+                className={styles.navLink}
+            >
+                Latest Displacement
+            </a>
+            <a
+                href="#displacement-updates"
+                className={styles.navLink}
+            >
+                Displacement Updates
+            </a>
+            <a
+                href="#related-materials"
+                className={styles.navLink}
+            >
+                Related Materials
+            </a>
+            <a
+                href="#contact"
+                className={styles.navLink}
+            >
+                Contact
+            </a>
+        </nav>
+    );
+
+    const overviewSection = (
+        countryOverviewSortedByYear && countryOverviewSortedByYear.length > 0
+    ) && (
+        <section className={styles.overview}>
+            <Header
+                headingSize="large"
+                heading="Overview"
+            />
+            <div className={styles.overviewContent}>
+                <Tabs
+                    value={activeYear}
+                    onChange={setActiveYear}
+                    variant="secondary"
+                >
+                    <TabList className={styles.tabList}>
+                        {countryOverviewSortedByYear.map((countryOverview) => (
+                            <Tab
+                                className={styles.tab}
+                                key={countryOverview.year}
+                                name={countryOverview.year.toString()}
+                            >
+                                {countryOverview.year}
+                            </Tab>
+                        ))}
+                    </TabList>
+                    {countryInfo.overviews.map((countryOverview) => (
+                        <TabPanel
+                            key={countryOverview.year}
+                            name={countryOverview.year.toString()}
+                        >
+                            <EllipsizedContent>
+                                <HTMLOutput
+                                    value={countryOverview.description}
+                                />
+                                <TextOutput
+                                    label="Last modified"
+                                    value={countryOverview.updatedAt}
+                                    valueType="date"
+                                />
+                            </EllipsizedContent>
+                        </TabPanel>
+                    ))}
+                </Tabs>
+            </div>
+        </section>
+    );
+
+    const disasterSection = disasterShown && (
+        <Container
+            heading="Disaster Data"
+            headingSize="small"
+            headingInfo={countryMetadata.disasterTooltip && (
+                <IoInformationCircleOutline
+                    title={countryMetadata.disasterTooltip}
+                />
+            )}
+            footerActions={(
+                <>
+                    <Link
+                        to={`${REST_ENDPOINT}/countries/${currentCountry}/disaster-export/`}
+                        icons={(
+                            <IoDownloadOutline />
+                        )}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        Download data
+                    </Link>
+                    <Link
+                        to={giddLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        View GIDD dashboard
+                    </Link>
+                </>
+            )}
+            filters={(
+                <>
+                    <Header
+                        heading="Disaster Category"
+                        headingSize="extraSmall"
+                        description={(
+                            <MultiSelectInput
+                                variant="general"
+                                placeholder="Disaster Category"
+                                name="disasterCategory"
+                                value={categories}
+                                options={
+                                    countryProfileData?.disasterStatistics.categories
+                                }
+                                keySelector={categoryKeySelector}
+                                labelSelector={categoryKeySelector}
+                                onChange={setCategories}
+                            />
+                        )}
+                    />
+                    <div className={styles.separator} />
+                    <Header
+                        heading="Timescale"
+                        headingSize="extraSmall"
+                        headingDescription={`${disasterTimeRange[0]} - ${disasterTimeRange[1]}`}
+                        inlineHeadingDescription
+                        description={(
+                            <SliderInput
+                                hideValues
+                                min={startYear}
+                                max={endYear}
+                                step={1}
+                                minDistance={0}
+                                value={disasterTimeRange}
+                                onChange={setDisasterTimeRange}
+                            />
+                        )}
+                    />
+                    <div />
+                </>
+            )}
+        >
+            <div className={styles.infographicList}>
+                <Infographic
+                    className={styles.disasterInfographic}
+                    totalValue={disasterData
+                        ?.disasterStatistics.newDisplacements || 0}
+                    description={(
+                        <div className={styles.description}>
+                            Internal Displacements
+                            {countryMetadata?.disasterInternalDisplacementTooltip && (
+                                <IoInformationCircleOutline
+                                    title={countryMetadata.disasterInternalDisplacementTooltip}
+                                />
+                            )}
+                        </div>
+                    )}
+                    date={`${disasterTimeRange[0]} - ${disasterTimeRange[1]}`}
+                    chart={(
+                        <ResponsiveContainer>
+                            <LineChart
+                                data={disasterData
+                                    ?.disasterStatistics.timeseries}
+                            >
+                                <XAxis
+                                    dataKey="year"
+                                    axisLine={false}
+                                />
+                                <CartesianGrid
+                                    vertical={false}
+                                    strokeDasharray="3 3"
+                                />
+                                <YAxis
+                                    axisLine={false}
+                                    tickFormatter={formatNumber}
+                                />
+                                <Tooltip
+                                    formatter={formatNumber}
+                                />
+                                <Legend />
+                                <Line
+                                    dataKey="total"
+                                    key="total"
+                                    fill="var(--color-disaster)"
+                                    name="Disaster internal displacements"
+                                    strokeWidth={2}
+                                    connectNulls
+                                    dot
+                                />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    )}
+                />
+                <Infographic
+                    className={styles.disasterInfographic}
+                    totalValue={disasterData
+                        ?.disasterStatistics.totalEvents || 0}
+                    description={(
+                        <div className={styles.description}>
+                            Disaster events reported
+                            {countryMetadata?.disasterEventTooltip && (
+                                <IoInformationCircleOutline
+                                    title={countryMetadata
+                                        .disasterEventTooltip}
+                                />
+                            )}
+                        </div>
+                    )}
+                    date={`${disasterTimeRange[0]} - ${disasterTimeRange[1]}`}
+                    chart={(
+                        <ResponsiveContainer>
+                            <PieChart>
+                                <Tooltip
+                                    formatter={formatNumber}
+                                />
+                                <Legend />
+                                <Pie
+                                    data={disasterData
+                                        ?.disasterStatistics.categories}
+                                    dataKey="total"
+                                    nameKey="label"
+                                >
+                                    {disasterData
+                                        ?.disasterStatistics
+                                        ?.categories
+                                        ?.map(({ label }, index) => (
+                                            <Cell
+                                                key={label}
+                                                fill={colorScheme[
+                                                    index % colorScheme.length
+                                                ]}
+                                            />
+                                        ))}
+                                </Pie>
+                            </PieChart>
+                        </ResponsiveContainer>
+                    )}
+                />
+            </div>
+        </Container>
+    );
+
+    const conflictSection = conflictShown && (
+        <Container
+            heading="Conflict and Violence Data"
+            headingSize="small"
+            headingInfo={countryMetadata.conflictAndViolenceTooltip && (
+                <IoInformationCircleOutline
+                    title={countryMetadata.conflictAndViolenceTooltip}
+                />
+            )}
+            filters={(
+                <>
+                    <Header
+                        heading="Timescale"
+                        headingSize="extraSmall"
+                        headingDescription={`${conflictTimeRange[0]} - ${conflictTimeRange[1]}`}
+                        inlineHeadingDescription
+                        description={(
+                            <SliderInput
+                                hideValues
+                                className={styles.timeRangeFilter}
+                                min={startYear}
+                                max={endYear}
+                                step={1}
+                                minDistance={0}
+                                value={conflictTimeRange}
+                                onChange={setConflictTimeRange}
+                            />
+                        )}
+                    />
+                    <div />
+                    <div />
+                </>
+            )}
+            footerActions={(
+                <>
+                    <Link
+                        to={`${REST_ENDPOINT}/countries/${currentCountry}/conflict-export/`}
+                        icons={(
+                            <IoDownloadOutline />
+                        )}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        Download data
+                    </Link>
+                    <Link
+                        to={giddLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        View GIDD dashboard
+                    </Link>
+                </>
+            )}
+        >
+            <div className={styles.infographicList}>
+                <Infographic
+                    className={styles.conflictInfographic}
+                    totalValue={conflictData
+                        ?.conflictStatistics.newDisplacements || 0}
+                    description={(
+                        <div className={styles.description}>
+                            Internal Displacements
+                            {countryMetadata?.conflictInternalDisplacementTooltip && (
+                                <IoInformationCircleOutline
+                                    title={countryMetadata.conflictInternalDisplacementTooltip}
+                                />
+                            )}
+                        </div>
+                    )}
+                    date={`${conflictTimeRange[0]} - ${conflictTimeRange[1]}`}
+                    chart={(
+                        <ResponsiveContainer>
+                            <LineChart
+                                data={conflictData
+                                    ?.conflictStatistics.timeseries}
+                            >
+                                <XAxis
+                                    dataKey="year"
+                                    axisLine={false}
+                                />
+                                <CartesianGrid
+                                    vertical={false}
+                                    strokeDasharray="3 3"
+                                />
+                                <YAxis
+                                    axisLine={false}
+                                    tickFormatter={formatNumber}
+                                />
+                                <Tooltip
+                                    formatter={formatNumber}
+                                />
+                                <Legend />
+                                <Line
+                                    dataKey="totalNewDisplacement"
+                                    key="totalNewDisplacement"
+                                    stroke="var(--color-conflict)"
+                                    name="Conflict internal displacements"
+                                    strokeWidth={2}
+                                    connectNulls
+                                    dot
+                                />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    )}
+                />
+                <Infographic
+                    className={styles.conflictInfographic}
+                    totalValue={conflictData
+                        ?.conflictStatistics.totalIdps || 0}
+                    description={(
+                        <div className={styles.description}>
+                            Total number of IDPs
+                            {countryMetadata?.conflictIDPTooltip && (
+                                <IoInformationCircleOutline
+                                    title={countryMetadata
+                                        .conflictIDPTooltip}
+                                />
+                            )}
+                        </div>
+                    )}
+                    date={`As of end of ${conflictTimeRange[1]}`}
+                    chart={(
+                        <ResponsiveContainer>
+                            <BarChart
+                                data={conflictData
+                                    ?.conflictStatistics.timeseries}
+                            >
+                                <XAxis
+                                    dataKey="year"
+                                    axisLine={false}
+                                />
+                                <CartesianGrid
+                                    vertical={false}
+                                    strokeDasharray="3 3"
+                                />
+                                <YAxis
+                                    axisLine={false}
+                                    tickFormatter={formatNumber}
+                                />
+                                <Tooltip
+                                    formatter={formatNumber}
+                                />
+                                <Legend />
+                                <Bar
+                                    dataKey="totalIdps"
+                                    name="Conflict total number of IDPs"
+                                    fill="var(--color-conflict)"
+                                    shape={<RoundedBar />}
+                                    maxBarSize={6}
+                                />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    )}
+                />
+            </div>
+        </Container>
+    );
+
+    const displacementSection = (
+        conflictSection
+        || disasterSection
+        || countryInfo.displacementDataDescription
+    ) && (
+        <section className={styles.displacementData}>
+            <Header
+                headingSize="large"
+                heading="Displacement Data"
+                headingInfo={countryMetadata.displacementDataTooltip && (
+                    <IoInformationCircleOutline
+                        title={countryMetadata.displacementDataTooltip}
+                    />
+                )}
+            />
+            <EllipsizedContent>
+                <HTMLOutput
+                    value={countryInfo.displacementDataDescription}
+                />
+            </EllipsizedContent>
+            <div className={styles.infographics}>
+                {conflictSection}
+                {disasterSection}
+            </div>
+        </section>
+    );
+
+    const latestNewDisplacementSection = (
+        (idus && idus.length > 0)
+        || countryInfo.latestNewDisplacementsDescription
+    ) && (
+        <section className={styles.latestNewDisplacements}>
+            <Header
+                headingSize="large"
+                heading="Latest Internal Displacements"
+                headingInfo={countryMetadata.latestNewDisplacementsTooltip && (
+                    <IoInformationCircleOutline
+                        title={countryMetadata.latestNewDisplacementsTooltip}
+                    />
+                )}
+            />
+            <EllipsizedContent>
+                <HTMLOutput
+                    value={countryInfo.latestNewDisplacementsDescription}
+                />
+            </EllipsizedContent>
+            <div className={styles.iduContainer}>
+                {idus && idus.slice(0, iduPage * initialIduItems)?.map((idu) => (
+                    <div
+                        key={idu.id}
+                        className={styles.idu}
+                    >
+                        <img
+                            className={styles.icon}
+                            src={getIcon(idu.displacement_type, idu.type)}
+                            alt="type"
+                        />
+                        <HTMLOutput
+                            value={idu.standard_popup_text}
+                        />
+                    </div>
+                ))}
+            </div>
+            <div className={styles.iduPager}>
+                {idus && idus.length > (iduPage * initialIduItems) && (
+                    <Button
+                        name={undefined}
+                        onClick={() => {
+                            setIduPage((val) => val + 1);
+                        }}
+                        actions={<IoArrowDown />}
+                    >
+                        View Older Displacements
+                    </Button>
+                )}
+                {iduPage > 1 && (
+                    <Button
+                        name={undefined}
+                        onClick={() => {
+                            setIduPage(1);
+                        }}
+                        actions={<IoArrowUp />}
+                    >
+                        See Less
+                    </Button>
+                )}
+            </div>
+        </section>
+    );
+
+    const internalDisplacementSection = (
+        countryInfo.internalDisplacementDescription
+        || (idus && idus.length > 0)
+    ) && (
+        <section className={styles.internalDisplacementUpdates}>
+            <Header
+                headingSize="large"
+                heading="Internal Displacement Updates"
+                headingInfo={countryMetadata.internalDisplacementUpdatesTooltip && (
+                    <IoInformationCircleOutline
+                        title={countryMetadata.internalDisplacementUpdatesTooltip}
+                    />
+                )}
+            />
+            <EllipsizedContent>
+                <HTMLOutput
+                    value={countryInfo.internalDisplacementDescription}
+                />
+            </EllipsizedContent>
+            <div>
+                Hover over and click on the coloured bubbles to see near real-time
+                snapshots of situations of internal displacement across the globe.
+            </div>
+            <Map
+                mapStyle={lightStyle}
+                mapOptions={{
+                    logoPosition: 'bottom-left',
+                    scrollZoom: false,
+                }}
+                scaleControlShown
+                navControlShown
+            >
+                <div className={styles.mapWrapper}>
+                    <div className={styles.legendList}>
+                        <div className={styles.legend}>
+                            <Header
+                                headingSize="extraSmall"
+                                heading="Type of displacement"
+                            />
+                            <div className={styles.legendElementList}>
+                                <LegendElement
+                                    name="Conflict"
+                                    onClick={handleTypeOfDisplacementsChange}
+                                    isActive={typeOfDisplacements.includes('Conflict')}
+                                    color="var(--color-conflict)"
+                                    label="Conflict"
+                                />
+                                <LegendElement
+                                    name="Disaster"
+                                    onClick={handleTypeOfDisplacementsChange}
+                                    isActive={typeOfDisplacements.includes('Disaster')}
+                                    color="var(--color-disaster)"
+                                    label="Disaster"
+                                />
+                            </div>
+                        </div>
+                        <div className={styles.separator} />
+                        <div className={styles.legend}>
+                            <Header
+                                headingSize="extraSmall"
+                                heading="No. of Displacement"
+                            />
+                            <div className={styles.legendElementList}>
+                                <LegendElement
+                                    name="less-than-100"
+                                    onClick={handleNoOfDisplacementsChange}
+                                    isActive={noOfDisplacements.includes('less-than-100')}
+                                    color="grey"
+                                    size={10}
+                                    label="< 100"
+                                />
+                                <LegendElement
+                                    name="less-than-1000"
+                                    onClick={handleNoOfDisplacementsChange}
+                                    isActive={noOfDisplacements.includes('less-than-1000')}
+                                    color="grey"
+                                    size={18}
+                                    label="< 1000"
+                                />
+                                <LegendElement
+                                    name="more-than-1000"
+                                    onClick={handleNoOfDisplacementsChange}
+                                    isActive={noOfDisplacements.includes('more-than-1000')}
+                                    color="grey"
+                                    size={26}
+                                    label="> 1000"
+                                />
+                            </div>
+                        </div>
+                        <div className={styles.separator} />
+                        <div className={styles.timeRangeContainer}>
+                            <Header
+                                headingSize="extraSmall"
+                                heading="Timescale"
+                                headingDescription={`${timerange[0]} - ${timerange[1]}`}
+                                inlineHeadingDescription
+                            />
+                            <SliderInput
+                                hideValues
+                                className={styles.timeRangeInput}
+                                // NOTE: timescale
+                                min={timerangeBounds[0]}
+                                max={timerangeBounds[1]}
+                                step={1}
+                                minDistance={0}
+                                value={timerange}
+                                onChange={setTimerange}
+                            />
+                        </div>
+                    </div>
+                    <MapContainer
+                        className={styles.mapContainer}
+                    />
+                </div>
+                <MapBounds
+                    bounds={countryInfo.boundingBox as LngLatBounds | undefined}
+                    padding={50}
+                />
+                <MapSource
+                    sourceKey="idu-points"
+                    sourceOptions={sourceOption}
+                    geoJson={iduGeojson}
+                >
+                    <MapLayer
+                        layerKey="idu-point"
+                        // onClick={handlePointClick}
+                        layerOptions={{
+                            type: 'circle',
+                            paint: iduPointColor,
+                        }}
+                        onClick={handlePointClick}
+                    />
+                    {hoverLngLat && hoverFeatureProperties && (
+                        <MapTooltip
+                            coordinates={hoverLngLat}
+                            tooltipOptions={popupOptions}
+                            onHide={handlePopupClose}
+                        >
+                            <HTMLOutput
+                                value={hoverFeatureProperties.description}
+                            />
+                        </MapTooltip>
+                    )}
+                </MapSource>
+            </Map>
+            <div>
+                <Link
+                    to={giddLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    View GIDD dashboard
+                </Link>
+                <Button
+                    name={undefined}
+                    // variant="secondary"
+                    onClick={handleExportIduClick}
+                >
+                    Download Displacement Data
+                </Button>
+            </div>
+        </section>
+    );
+
+    const relatedMaterialsSection = (
+        relatedMaterials && relatedMaterials.length > 0
+    ) && (
+        <section className={styles.relatedMaterial}>
+            <Header
+                headingSize="large"
+                heading="Related Material"
+                headingInfo={countryMetadata.relatedMaterialTooltip && (
+                    <IoInformationCircleOutline
+                        title={countryMetadata.relatedMaterialTooltip}
+                    />
+                )}
+            />
+            <div className={styles.materialList}>
+                {relatedMaterials.map((gp) => (
+                    <GoodPracticeItem
+                        key={gp.metatag.value.canonical_url}
+                        className={styles.material}
+                        coverImageUrl={getProxyDrupalUrl(gp.metatag.value.og_image_0)}
+                        url={gp.metatag.value.canonical_url}
+                        heading={gp.metatag.value.title}
+                        description={gp.metatag.value.description}
+                        date="2021-05-20"
+                    />
+                ))}
+            </div>
+            {remainingRelatedMaterials > 0 && (
+                <Button
+                    // FIXME: need to hide this if there is no more data
+                    name={undefined}
+                    onClick={handleShowMoreButtonClick}
+                    actions={<IoArrowDown />}
+                >
+                    <span>Show more</span>
+                </Button>
+            )}
+        </section>
+    );
+
+    const essentialLinksSection = (
+        countryInfo.essentialLinks
+    ) && (
+        <div className={styles.essentialReading}>
+            <Header
+                heading="Essential Reading"
+                headingSize="large"
+                headingInfo={countryMetadata.essentialReadingTooltip && (
+                    <IoInformationCircleOutline
+                        title={countryMetadata.essentialReadingTooltip}
+                    />
+                )}
+            />
+            <HTMLOutput
+                value={countryInfo.essentialLinks}
+            />
+        </div>
+    );
+
+    const contactSection = (
+        countryInfo.contactPersonDescription
+        || countryInfo.contactPersonImage
+    ) && (
+        <div className={styles.contact}>
+            <Header
+                heading="For more information please contact:"
+                headingSize="medium"
+                headingInfo={countryMetadata.contactTooltip && (
+                    <IoInformationCircleOutline
+                        title={countryMetadata.contactTooltip}
+                    />
+                )}
+            />
+            {countryInfo.contactPersonImage && (
+                <img
+                    className={styles.preview}
+                    src={countryInfo.contactPersonImage.url}
+                    alt={countryInfo.contactPersonImage.name}
+                />
+            )}
+            <HTMLOutput
+                value={countryInfo.contactPersonDescription}
+            />
+        </div>
+    );
+
     return (
         <div className={_cs(styles.countryProfile, className)}>
             {countryInfo.backgroundImage && (
@@ -715,765 +1498,20 @@ function CountryProfile(props: Props) {
             <div className={styles.mainContent}>
                 <div className={styles.headerContainer}>
                     <div className={styles.content}>
-                        <section className={styles.profile}>
-                            <Header
-                                headingSize="extraLarge"
-                                headingInfo={countryMetadata.countryProfileTooltip && (
-                                    <IoInformationCircleOutline
-                                        title={countryMetadata.countryProfileTooltip}
-                                    />
-                                )}
-                                headingTitle="Country Profile"
-                                heading={countryInfo.name}
-                            />
-                            <EllipsizedContent>
-                                <HTMLOutput
-                                    value={countryInfo.description}
-                                />
-                            </EllipsizedContent>
-                        </section>
-                        <nav className={styles.navbar}>
-                            <a
-                                href="#overview"
-                                className={styles.navLink}
-                            >
-                                Overview
-                            </a>
-                            <a
-                                href="#displacement-data"
-                                className={styles.navLink}
-                            >
-                                Displacement Data
-                            </a>
-                            <a
-                                href="#latest-displacement"
-                                className={styles.navLink}
-                            >
-                                Latest Displacement
-                            </a>
-                            <a
-                                href="#displacement-updates"
-                                className={styles.navLink}
-                            >
-                                Displacement Updates
-                            </a>
-                            <a
-                                href="#related-materials"
-                                className={styles.navLink}
-                            >
-                                Related Materials
-                            </a>
-                            <a
-                                href="#contact"
-                                className={styles.navLink}
-                            >
-                                Contact
-                            </a>
-                        </nav>
+                        {profileSection}
+                        {navbar}
                     </div>
                 </div>
                 <div className={styles.bodyContainer}>
                     <div className={styles.content}>
-                        {countryOverviewSortedByYear && countryOverviewSortedByYear.length > 0 && (
-                            <section className={styles.overview}>
-                                <Header
-                                    headingSize="large"
-                                    heading="Overview"
-                                />
-                                <div className={styles.overviewContent}>
-                                    <Tabs
-                                        value={activeYear}
-                                        onChange={setActiveYear}
-                                        variant="secondary"
-                                    >
-                                        <TabList className={styles.tabList}>
-                                            {countryOverviewSortedByYear.map((countryOverview) => (
-                                                <Tab
-                                                    className={styles.tab}
-                                                    key={countryOverview.year}
-                                                    name={countryOverview.year.toString()}
-                                                >
-                                                    {countryOverview.year}
-                                                </Tab>
-                                            ))}
-                                        </TabList>
-                                        {countryInfo.overviews.map((countryOverview) => (
-                                            <TabPanel
-                                                key={countryOverview.year}
-                                                name={countryOverview.year.toString()}
-                                            >
-                                                <EllipsizedContent>
-                                                    <HTMLOutput
-                                                        value={countryOverview.description}
-                                                    />
-                                                    <TextOutput
-                                                        label="Last modified"
-                                                        value={countryOverview.updatedAt}
-                                                        valueType="date"
-                                                    />
-                                                </EllipsizedContent>
-                                            </TabPanel>
-                                        ))}
-                                    </Tabs>
-                                </div>
-                            </section>
-                        )}
-                        {(
-                            conflictShown
-                            || disasterShown
-                            || countryInfo.displacementDataDescription
-                        ) && (
-                            <section className={styles.displacementData}>
-                                <Header
-                                    headingSize="large"
-                                    heading="Displacement Data"
-                                    headingInfo={countryMetadata.displacementDataTooltip && (
-                                        <IoInformationCircleOutline
-                                            title={countryMetadata.displacementDataTooltip}
-                                        />
-                                    )}
-                                />
-                                <EllipsizedContent>
-                                    <HTMLOutput
-                                        value={countryInfo.displacementDataDescription}
-                                    />
-                                </EllipsizedContent>
-                                <div className={styles.infographics}>
-                                    {conflictShown && (
-                                        <Container
-                                            heading="Conflict and Violence Data"
-                                            headingSize="small"
-                                            headingInfo={countryMetadata.conflictAndViolenceTooltip && (
-                                                <IoInformationCircleOutline
-                                                    title={countryMetadata.conflictAndViolenceTooltip}
-                                                />
-                                            )}
-                                            filters={(
-                                                <>
-                                                    <Header
-                                                        heading="Timescale"
-                                                        headingSize="extraSmall"
-                                                        headingDescription={`${conflictTimeRange[0]} - ${conflictTimeRange[1]}`}
-                                                        inlineHeadingDescription
-                                                        description={(
-                                                            <SliderInput
-                                                                hideValues
-                                                                className={styles.timeRangeFilter}
-                                                                min={startYear}
-                                                                max={endYear}
-                                                                step={1}
-                                                                minDistance={0}
-                                                                value={conflictTimeRange}
-                                                                onChange={setConflictTimeRange}
-                                                            />
-                                                        )}
-                                                    />
-                                                    <div />
-                                                    <div />
-                                                </>
-                                            )}
-                                            footerActions={(
-                                                <>
-                                                    <Link
-                                                        to={`${REST_ENDPOINT}/countries/${currentCountry}/conflict-export/`}
-                                                        icons={(
-                                                            <IoDownloadOutline />
-                                                        )}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                    >
-                                                        Download data
-                                                    </Link>
-                                                    <Link
-                                                        to={giddLink}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                    >
-                                                        View GIDD dashboard
-                                                    </Link>
-                                                </>
-                                            )}
-                                        >
-                                            <div className={styles.infographicList}>
-                                                <Infographic
-                                                    className={styles.conflictInfographic}
-                                                    totalValue={conflictData
-                                                        ?.conflictStatistics.newDisplacements || 0}
-                                                    description={(
-                                                        <div className={styles.description}>
-                                                            Internal Displacements
-                                                            {countryMetadata
-                                                                ?.conflictInternalDisplacementTooltip && (
-                                                                <IoInformationCircleOutline
-                                                                    title={countryMetadata
-                                                                        .conflictInternalDisplacementTooltip} // eslint-disable-line max-len
-                                                                />
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                    date={`${conflictTimeRange[0]} - ${conflictTimeRange[1]}`}
-                                                    chart={(
-                                                        <ResponsiveContainer>
-                                                            <LineChart
-                                                                data={conflictData
-                                                                    ?.conflictStatistics.timeseries}
-                                                            >
-                                                                <XAxis
-                                                                    dataKey="year"
-                                                                    axisLine={false}
-                                                                />
-                                                                <CartesianGrid
-                                                                    vertical={false}
-                                                                    strokeDasharray="3 3"
-                                                                />
-                                                                <YAxis
-                                                                    axisLine={false}
-                                                                    tickFormatter={formatNumber}
-                                                                />
-                                                                <Tooltip
-                                                                    formatter={formatNumber}
-                                                                />
-                                                                <Legend />
-                                                                <Line
-                                                                    dataKey="totalNewDisplacement"
-                                                                    key="totalNewDisplacement"
-                                                                    stroke="var(--color-conflict)"
-                                                                    name="Conflict internal displacements"
-                                                                    strokeWidth={2}
-                                                                    connectNulls
-                                                                    dot
-                                                                />
-                                                            </LineChart>
-                                                        </ResponsiveContainer>
-                                                    )}
-                                                />
-                                                <Infographic
-                                                    className={styles.conflictInfographic}
-                                                    totalValue={conflictData
-                                                        ?.conflictStatistics.totalIdps || 0}
-                                                    description={(
-                                                        <div className={styles.description}>
-                                                            Total number of IDPs
-                                                            {countryMetadata?.conflictIDPTooltip && (
-                                                                <IoInformationCircleOutline
-                                                                    title={countryMetadata
-                                                                        .conflictIDPTooltip}
-                                                                />
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                    date={`As of end of ${conflictTimeRange[1]}`}
-                                                    chart={(
-                                                        <ResponsiveContainer>
-                                                            <BarChart
-                                                                data={conflictData
-                                                                    ?.conflictStatistics.timeseries}
-                                                            >
-                                                                <XAxis
-                                                                    dataKey="year"
-                                                                    axisLine={false}
-                                                                />
-                                                                <CartesianGrid
-                                                                    vertical={false}
-                                                                    strokeDasharray="3 3"
-                                                                />
-                                                                <YAxis
-                                                                    axisLine={false}
-                                                                    tickFormatter={formatNumber}
-                                                                />
-                                                                <Tooltip
-                                                                    formatter={formatNumber}
-                                                                />
-                                                                <Legend />
-                                                                <Bar
-                                                                    dataKey="totalIdps"
-                                                                    name="Conflict total number of IDPs"
-                                                                    fill="var(--color-conflict)"
-                                                                    shape={<RoundedBar />}
-                                                                    maxBarSize={6}
-                                                                />
-                                                            </BarChart>
-                                                        </ResponsiveContainer>
-                                                    )}
-                                                />
-                                            </div>
-                                        </Container>
-                                    )}
-                                    {disasterShown && (
-                                        <Container
-                                            heading="Disaster Data"
-                                            headingSize="small"
-                                            headingInfo={countryMetadata.disasterTooltip && (
-                                                <IoInformationCircleOutline
-                                                    title={countryMetadata.disasterTooltip}
-                                                />
-                                            )}
-                                            footerActions={(
-                                                <>
-                                                    <Link
-                                                        to={`${REST_ENDPOINT}/countries/${currentCountry}/disaster-export/`}
-                                                        icons={(
-                                                            <IoDownloadOutline />
-                                                        )}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                    >
-                                                        Download data
-                                                    </Link>
-                                                    <Link
-                                                        to={giddLink}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                    >
-                                                        View GIDD dashboard
-                                                    </Link>
-                                                </>
-                                            )}
-                                            filters={(
-                                                <>
-                                                    <Header
-                                                        heading="Disaster Category"
-                                                        headingSize="extraSmall"
-                                                        description={(
-                                                            <MultiSelectInput
-                                                                variant="general"
-                                                                placeholder="Disaster Category"
-                                                                name="disasterCategory"
-                                                                value={categories}
-                                                                options={
-                                                                    countryProfileData?.disasterStatistics.categories
-                                                                }
-                                                                keySelector={categoryKeySelector}
-                                                                labelSelector={categoryKeySelector}
-                                                                onChange={setCategories}
-                                                            />
-                                                        )}
-                                                    />
-                                                    <div className={styles.separator} />
-                                                    <Header
-                                                        heading="Timescale"
-                                                        headingSize="extraSmall"
-                                                        headingDescription={`${disasterTimeRange[0]} - ${disasterTimeRange[1]}`}
-                                                        inlineHeadingDescription
-                                                        description={(
-                                                            <SliderInput
-                                                                hideValues
-                                                                min={startYear}
-                                                                max={endYear}
-                                                                step={1}
-                                                                minDistance={0}
-                                                                value={disasterTimeRange}
-                                                                onChange={setDisasterTimeRange}
-                                                            />
-                                                        )}
-                                                    />
-                                                    <div />
-                                                </>
-                                            )}
-                                        >
-                                            <div className={styles.infographicList}>
-                                                <Infographic
-                                                    className={styles.disasterInfographic}
-                                                    totalValue={disasterData
-                                                        ?.disasterStatistics.newDisplacements || 0}
-                                                    description={(
-                                                        <div className={styles.description}>
-                                                            Internal Displacements
-                                                            {countryMetadata
-                                                                ?.disasterInternalDisplacementTooltip && (
-                                                                <IoInformationCircleOutline
-                                                                    title={countryMetadata
-                                                                        .disasterInternalDisplacementTooltip} // eslint-disable-line max-len
-                                                                />
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                    date={`${disasterTimeRange[0]} - ${disasterTimeRange[1]}`}
-                                                    chart={(
-                                                        <ResponsiveContainer>
-                                                            <LineChart
-                                                                data={disasterData
-                                                                    ?.disasterStatistics.timeseries}
-                                                            >
-                                                                <XAxis
-                                                                    dataKey="year"
-                                                                    axisLine={false}
-                                                                />
-                                                                <CartesianGrid
-                                                                    vertical={false}
-                                                                    strokeDasharray="3 3"
-                                                                />
-                                                                <YAxis
-                                                                    axisLine={false}
-                                                                    tickFormatter={formatNumber}
-                                                                />
-                                                                <Tooltip
-                                                                    formatter={formatNumber}
-                                                                />
-                                                                <Legend />
-                                                                <Line
-                                                                    dataKey="total"
-                                                                    key="total"
-                                                                    fill="var(--color-disaster)"
-                                                                    name="Disaster internal displacements"
-                                                                    strokeWidth={2}
-                                                                    connectNulls
-                                                                    dot
-                                                                />
-                                                            </LineChart>
-                                                        </ResponsiveContainer>
-                                                    )}
-                                                />
-                                                <Infographic
-                                                    className={styles.disasterInfographic}
-                                                    totalValue={disasterData
-                                                        ?.disasterStatistics.totalEvents || 0}
-                                                    description={(
-                                                        <div className={styles.description}>
-                                                            Disaster events reported
-                                                            {countryMetadata?.disasterEventTooltip && (
-                                                                <IoInformationCircleOutline
-                                                                    title={countryMetadata
-                                                                        .disasterEventTooltip}
-                                                                />
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                    date={`${disasterTimeRange[0]} - ${disasterTimeRange[1]}`}
-                                                    chart={(
-                                                        <ResponsiveContainer>
-                                                            <PieChart>
-                                                                <Tooltip
-                                                                    formatter={formatNumber}
-                                                                />
-                                                                <Legend />
-                                                                <Pie
-                                                                    data={disasterData
-                                                                        ?.disasterStatistics.categories}
-                                                                    dataKey="total"
-                                                                    nameKey="label"
-                                                                >
-                                                                    {disasterData
-                                                                        ?.disasterStatistics?.categories?.map(({ label }, index) => ( // eslint-disable-line max-len
-                                                                            <Cell
-                                                                                key={label}
-                                                                                fill={colorScheme[
-                                                                                    index % colorScheme.length // eslint-disable-line max-len
-                                                                                ]}
-                                                                            />
-                                                                        ))}
-                                                                </Pie>
-                                                            </PieChart>
-                                                        </ResponsiveContainer>
-                                                    )}
-                                                />
-                                            </div>
-                                        </Container>
-                                    )}
-                                </div>
-                            </section>
-                        )}
-                        {((idus && idus.length > 0) || countryInfo.latestNewDisplacementsDescription) && (
-                            <section className={styles.latestNewDisplacements}>
-                                <Header
-                                    headingSize="large"
-                                    heading="Latest Internal Displacements"
-                                    headingInfo={countryMetadata.latestNewDisplacementsTooltip && (
-                                        <IoInformationCircleOutline
-                                            title={countryMetadata.latestNewDisplacementsTooltip}
-                                        />
-                                    )}
-                                />
-                                <EllipsizedContent>
-                                    <HTMLOutput
-                                        value={countryInfo.latestNewDisplacementsDescription}
-                                    />
-                                </EllipsizedContent>
-                                <div className={styles.iduContainer}>
-                                    {idus && idus.slice(0, iduPage * initialIduItems)?.map((idu) => (
-                                        <div
-                                            key={idu.id}
-                                            className={styles.idu}
-                                        >
-                                            <img
-                                                className={styles.icon}
-                                                src={getIcon(idu.displacement_type, idu.type)}
-                                                alt="type"
-                                            />
-                                            <HTMLOutput
-                                                value={idu.standard_popup_text}
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className={styles.iduPager}>
-                                    {idus && idus.length > (iduPage * initialIduItems) && (
-                                        <Button
-                                            name={undefined}
-                                            onClick={() => {
-                                                setIduPage((val) => val + 1);
-                                            }}
-                                            actions={<IoArrowDown />}
-                                        >
-                                            View Older Displacements
-                                        </Button>
-                                    )}
-                                    {iduPage > 1 && (
-                                        <Button
-                                            name={undefined}
-                                            onClick={() => {
-                                                setIduPage(1);
-                                            }}
-                                            actions={<IoArrowUp />}
-                                        >
-                                            See Less
-                                        </Button>
-                                    )}
-                                </div>
-                            </section>
-                        )}
-                        {(
-                            countryInfo.internalDisplacementDescription
-                            || (idus && idus.length > 0)
-                        ) && (
-                            <section className={styles.internalDisplacementUpdates}>
-                                <Header
-                                    headingSize="large"
-                                    heading="Internal Displacement Updates"
-                                    headingInfo={countryMetadata.internalDisplacementUpdatesTooltip && (
-                                        <IoInformationCircleOutline
-                                            title={countryMetadata.internalDisplacementUpdatesTooltip}
-                                        />
-                                    )}
-                                />
-                                <EllipsizedContent>
-                                    <HTMLOutput
-                                        value={countryInfo.internalDisplacementDescription}
-                                    />
-                                </EllipsizedContent>
-                                <div>
-                                    Hover over and click on the coloured bubbles to see near real-time
-                                    snapshots of situations of internal displacement across the globe.
-                                </div>
-                                <Map
-                                    mapStyle={lightStyle}
-                                    mapOptions={{
-                                        logoPosition: 'bottom-left',
-                                        scrollZoom: false,
-                                    }}
-                                    scaleControlShown
-                                    navControlShown
-                                >
-                                    <div className={styles.mapWrapper}>
-                                        <div className={styles.legendList}>
-                                            <div className={styles.legend}>
-                                                <Header
-                                                    headingSize="extraSmall"
-                                                    heading="Type of displacement"
-                                                />
-                                                <div className={styles.legendElementList}>
-                                                    <LegendElement
-                                                        name="Conflict"
-                                                        onClick={handleTypeOfDisplacementsChange}
-                                                        isActive={typeOfDisplacements.includes('Conflict')}
-                                                        color="var(--color-conflict)"
-                                                        label="Conflict"
-                                                    />
-                                                    <LegendElement
-                                                        name="Disaster"
-                                                        onClick={handleTypeOfDisplacementsChange}
-                                                        isActive={typeOfDisplacements.includes('Disaster')}
-                                                        color="var(--color-disaster)"
-                                                        label="Disaster"
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div className={styles.separator} />
-                                            <div className={styles.legend}>
-                                                <Header
-                                                    headingSize="extraSmall"
-                                                    heading="No. of Displacement"
-                                                />
-                                                <div className={styles.legendElementList}>
-                                                    <LegendElement
-                                                        name="less-than-100"
-                                                        onClick={handleNoOfDisplacementsChange}
-                                                        isActive={noOfDisplacements.includes('less-than-100')}
-                                                        color="grey"
-                                                        size={10}
-                                                        label="< 100"
-                                                    />
-                                                    <LegendElement
-                                                        name="less-than-1000"
-                                                        onClick={handleNoOfDisplacementsChange}
-                                                        isActive={noOfDisplacements.includes('less-than-1000')}
-                                                        color="grey"
-                                                        size={18}
-                                                        label="< 1000"
-                                                    />
-                                                    <LegendElement
-                                                        name="more-than-1000"
-                                                        onClick={handleNoOfDisplacementsChange}
-                                                        isActive={noOfDisplacements.includes('more-than-1000')}
-                                                        color="grey"
-                                                        size={26}
-                                                        label="> 1000"
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div className={styles.separator} />
-                                            <div className={styles.timeRangeContainer}>
-                                                <Header
-                                                    headingSize="extraSmall"
-                                                    heading="Timescale"
-                                                    headingDescription={`${timerange[0]} - ${timerange[1]}`}
-                                                    inlineHeadingDescription
-                                                />
-                                                <SliderInput
-                                                    hideValues
-                                                    className={styles.timeRangeInput}
-                                                    // NOTE: timescale
-                                                    min={timerangeBounds[0]}
-                                                    max={timerangeBounds[1]}
-                                                    step={1}
-                                                    minDistance={0}
-                                                    value={timerange}
-                                                    onChange={setTimerange}
-                                                />
-                                            </div>
-                                        </div>
-                                        <MapContainer
-                                            className={styles.mapContainer}
-                                        />
-                                    </div>
-                                    <MapBounds
-                                        bounds={countryInfo.boundingBox as LngLatBounds | undefined}
-                                        padding={50}
-                                    />
-                                    <MapSource
-                                        sourceKey="idu-points"
-                                        sourceOptions={sourceOption}
-                                        geoJson={iduGeojson}
-                                    >
-                                        <MapLayer
-                                            layerKey="idu-point"
-                                            // onClick={handlePointClick}
-                                            layerOptions={{
-                                                type: 'circle',
-                                                paint: iduPointColor,
-                                            }}
-                                            onClick={handlePointClick}
-                                        />
-                                        {hoverLngLat && hoverFeatureProperties && (
-                                            <MapTooltip
-                                                coordinates={hoverLngLat}
-                                                tooltipOptions={popupOptions}
-                                                onHide={handlePopupClose}
-                                            >
-                                                <HTMLOutput
-                                                    value={hoverFeatureProperties.description}
-                                                />
-                                            </MapTooltip>
-                                        )}
-                                    </MapSource>
-                                </Map>
-                                <div>
-                                    <Link
-                                        to={giddLink}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        View GIDD dashboard
-                                    </Link>
-                                    <Button
-                                        name={undefined}
-                                        // variant="secondary"
-                                        onClick={handleExportIduClick}
-                                    >
-                                        Download Displacement Data
-                                    </Button>
-                                </div>
-                            </section>
-                        )}
-                        {relatedMaterials && relatedMaterials.length > 0 && (
-                            <section className={styles.relatedMaterial}>
-                                <Header
-                                    headingSize="large"
-                                    heading="Related Material"
-                                    headingInfo={countryMetadata.relatedMaterialTooltip && (
-                                        <IoInformationCircleOutline
-                                            title={countryMetadata.relatedMaterialTooltip}
-                                        />
-                                    )}
-                                />
-                                <div className={styles.materialList}>
-                                    {relatedMaterials.map((gp) => (
-                                        <GoodPracticeItem
-                                            key={gp.metatag.value.canonical_url}
-                                            className={styles.material}
-                                            coverImageUrl={getProxyDrupalUrl(gp.metatag.value.og_image_0)}
-                                            url={gp.metatag.value.canonical_url}
-                                            heading={gp.metatag.value.title}
-                                            description={gp.metatag.value.description}
-                                            date="2021-05-20"
-                                        />
-                                    ))}
-                                </div>
-                                {remainingRelatedMaterials > 0 && (
-                                    <Button
-                                        // FIXME: need to hide this if there is no more data
-                                        name={undefined}
-                                        onClick={handleShowMoreButtonClick}
-                                        actions={<IoArrowDown />}
-                                    >
-                                        <span>Show more</span>
-                                    </Button>
-                                )}
-                            </section>
-                        )}
+                        {overviewSection}
+                        {displacementSection}
+                        {latestNewDisplacementSection}
+                        {internalDisplacementSection}
+                        {relatedMaterialsSection}
                         <section className={styles.misc}>
-                            {countryInfo.essentialLinks && (
-                                <div className={styles.essentialReading}>
-                                    <Header
-                                        heading="Essential Reading"
-                                        headingSize="large"
-                                        headingInfo={countryMetadata.essentialReadingTooltip && (
-                                            <IoInformationCircleOutline
-                                                title={countryMetadata.essentialReadingTooltip}
-                                            />
-                                        )}
-                                    />
-                                    <HTMLOutput
-                                        value={countryInfo.essentialLinks}
-                                    />
-                                </div>
-                            )}
-                            {(
-                                countryInfo.contactPersonDescription
-                                || countryInfo.contactPersonImage
-                            ) && (
-                                <div className={styles.contact}>
-                                    <Header
-                                        heading="For more information please contact:"
-                                        headingSize="medium"
-                                        headingInfo={countryMetadata.contactTooltip && (
-                                            <IoInformationCircleOutline
-                                                title={countryMetadata.contactTooltip}
-                                            />
-                                        )}
-                                    />
-                                    {countryInfo.contactPersonImage && (
-                                        <img
-                                            className={styles.preview}
-                                            src={countryInfo.contactPersonImage.url}
-                                            alt={countryInfo.contactPersonImage.name}
-                                        />
-                                    )}
-                                    <HTMLOutput
-                                        value={countryInfo.contactPersonDescription}
-                                    />
-                                </div>
-                            )}
+                            {essentialLinksSection}
+                            {contactSection}
                         </section>
                     </div>
                 </div>
@@ -1483,4 +1521,3 @@ function CountryProfile(props: Props) {
 }
 
 export default CountryProfile;
-/* eslint-enable max-len */

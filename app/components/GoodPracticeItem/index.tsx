@@ -5,9 +5,9 @@ import Header from '#components/Header';
 import DateOutput from '#components/DateOutput';
 import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
-// import SmartLink from '#base/components/SmartLink';
 
-import route from '#base/configs/routes';
+// import SmartLink from '#base/components/SmartLink';
+// import route from '#base/configs/routes';
 
 import styles from './styles.css';
 
