@@ -36,7 +36,7 @@ if (trackingId) {
 
 const apolloClient = new ApolloClient(apolloConfig);
 
-function parseQueryString(value: string) {
+export function parseQueryString(value: string) {
     const val = value.substring(1);
     return listToMap(
         val.split('&').map((token) => token.split('=')),

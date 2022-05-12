@@ -63,6 +63,8 @@ import {
     ConflictDataQuery,
     ConflictDataQueryVariables,
 } from '#generated/types';
+
+import CountrySelectInput, { SearchCountryType } from '#components/CountrySelectInput';
 import RoundedBar from '#components/RoundedBar';
 import Tabs from '#components/Tabs';
 import Tab from '#components/Tabs/Tab';
@@ -83,7 +85,7 @@ import { formatNumber } from '#utils/common';
 
 import useDebouncedValue from '../../hooks/useDebouncedValue';
 import useInputState from '../../hooks/useInputState';
-
+import { parseQueryString } from '../../Base';
 import ConflictIcon from '../../resources/icons/Icon_Conflict-Conflict.svg';
 import DroughtIcon from '../../resources/icons/Icon_Disaster-Drought.svg';
 import DryMassMovementIcon from '../../resources/icons/Icon_Disaster-Dry_Mass_Movements.svg';
@@ -408,6 +410,14 @@ function CountryProfile(props: Props) {
 
     // Overview section
     const [overviewActiveYear, setOverviewActiveYear] = useState<string>(String(endYear));
+    const [countryFilter, setCountryFilter] = React.useState<string | undefined>(currentCountry);
+    const [
+        countryOptions,
+        setCountryOptions,
+    ] = React.useState<SearchCountryType[] | undefined | null>([{
+        name: countryName ?? '',
+        iso3: currentCountry,
+    }]);
 
     // Conflict section
     const [conflictTimeRangeActual, setConflictTimeRange] = useState([startYear, endYear]);
@@ -676,7 +686,18 @@ function CountryProfile(props: Props) {
         [idus, mapNoOfDisplacements, mapTypeOfDisplacements, mapTimeRange],
     );
 
-    const handleExportIduClick = useCallback(() => {
+    const handleSelectCountry = React.useCallback((selectedIso3: string | undefined) => {
+        setCountryFilter(selectedIso3);
+        const country = countryOptions?.find((v) => v.iso3 === selectedIso3);
+        if (country) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('iso3', country.iso3);
+            url.searchParams.set('countryName', country.name);
+            window.location.href = url.href;
+        }
+    }, [countryOptions]);
+
+    const handleExportIduClick = React.useCallback(() => {
         if (idus && idus.length > 0) {
             // FIXME: we may need to manually set headers (first data may not
             // always have all the keys)
@@ -755,9 +776,20 @@ function CountryProfile(props: Props) {
             <Header
                 headingSize="extraLarge"
                 headingInfo={(
-                    <TooltipIcon>
-                        {countryMetadata.countryProfileTooltip }
-                    </TooltipIcon>
+                    <>
+                        <TooltipIcon>
+                            {countryMetadata.countryProfileTooltip }
+                        </TooltipIcon>
+                        <CountrySelectInput
+                            name="country"
+                            label="Country"
+                            variant="general"
+                            onChange={handleSelectCountry}
+                            value={countryFilter}
+                            options={countryOptions}
+                            onOptionsChange={setCountryOptions}
+                        />
+                    </>
                 )}
                 headingTitle={countryMetadata.countryProfileHeader}
                 heading={countryInfo.name}
