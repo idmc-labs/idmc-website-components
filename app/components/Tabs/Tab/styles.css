@@ -1,6 +1,5 @@
 .tab {
     border: 0;
-    border-radius: 0;
     padding: var(--dui-spacing-medium) var(--dui-spacing-large);
     color: var(--dui-color-text);
     font-weight: var(--dui-font-weight-bold);
@@ -18,7 +17,7 @@
             position: absolute;
             bottom: 0;
             left: var(--dui-spacing-small);
-            background-color: var(--dui-color-brand);
+            background-color: var(--dui-color-);
             width: calc(100% - #{var(--dui-spacing-medium)});
             height: var(--dui-width-separator-thin);
             animation: grow-h .2s ease-in;
@@ -39,12 +38,15 @@
     }
 
     &.secondary {
-        border-radius: calc(1em + #{var(--dui-spacing-medium)});
+        /* border-radius: calc(1em + #{var(--dui-spacing-medium)}); */
+        border-radius: 0.25rem;
+
         background-color: var(--dui-color-background);
+        text-align: left;
         text-transform: uppercase;
 
         &.active {
-            background-color: var(--dui-color-primary);
+            background-color: var(--dui-color-brand);
             color: var(--dui-color-text-on-dark);
 
         }
@@ -52,7 +54,6 @@
         &.disabled {
             color: var(--dui-color-text-disabled);
         }
-
     }
 
     &.step {

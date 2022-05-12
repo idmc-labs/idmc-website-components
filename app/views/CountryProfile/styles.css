@@ -179,16 +179,26 @@
                     flex-direction: column;
                     gap: var(--dui-spacing-large);
 
-                    .filter {
+                    .legend {
                         display: flex;
-                        flex-wrap: wrap;
-                        font-size: 1rem;
+                        flex-direction: column;
                         gap: var(--dui-spacing-medium);
 
-                        >* {
-                            flex-basis: 0;
-                            flex-grow: 1;
-                            min-width: 16rem;
+                        .legend-element-list {
+                            display: flex;
+                            gap: var(--dui-spacing-small);
+                        }
+                    }
+
+                    .time-range-container {
+                        display: flex;
+                        flex-direction: column;
+                        flex-grow: 1;
+                        padding: var(--dui-spacing-medium) var(--dui-spacing-large);
+                        gap: var(--dui-spacing-medium);
+
+                        .time-range-input {
+                            width: 100%;
                         }
                     }
 
@@ -198,35 +208,6 @@
                         .map-container {
                             width: 100%;
                             min-height: 44rem;
-                        }
-
-                        .legend-list {
-                            display: flex;
-                            padding: var(--dui-spacing-small) 0;
-
-                            .legend {
-                                display: flex;
-                                flex-direction: column;
-                                padding: var(--dui-spacing-medium) var(--dui-spacing-large);
-                                gap: var(--dui-spacing-medium);
-
-                                .legend-element-list {
-                                    display: flex;
-                                    gap: var(--dui-spacing-small);
-                                }
-                            }
-
-                            .time-range-container {
-                                display: flex;
-                                flex-direction: column;
-                                flex-grow: 1;
-                                padding: var(--dui-spacing-medium) var(--dui-spacing-large);
-                                gap: var(--dui-spacing-medium);
-
-                                .time-range-input {
-                                    width: 100%;
-                                }
-                            }
                         }
                     }
                 }

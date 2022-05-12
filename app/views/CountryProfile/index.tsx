@@ -64,7 +64,7 @@ import {
     ConflictDataQueryVariables,
 } from '#generated/types';
 
-import CountrySelectInput, { SearchCountryType } from '#components/CountrySelectInput';
+// import CountrySelectInput, { SearchCountryType } from '#components/CountrySelectInput';
 import RoundedBar from '#components/RoundedBar';
 import Tabs from '#components/Tabs';
 import Tab from '#components/Tabs/Tab';
@@ -85,7 +85,6 @@ import { formatNumber } from '#utils/common';
 
 import useDebouncedValue from '../../hooks/useDebouncedValue';
 import useInputState from '../../hooks/useInputState';
-import { parseQueryString } from '../../Base';
 import ConflictIcon from '../../resources/icons/Icon_Conflict-Conflict.svg';
 import DroughtIcon from '../../resources/icons/Icon_Disaster-Drought.svg';
 import DryMassMovementIcon from '../../resources/icons/Icon_Disaster-Dry_Mass_Movements.svg';
@@ -408,16 +407,19 @@ function CountryProfile(props: Props) {
         countryName,
     } = props;
 
-    // Overview section
-    const [overviewActiveYear, setOverviewActiveYear] = useState<string>(String(endYear));
-    const [countryFilter, setCountryFilter] = React.useState<string | undefined>(currentCountry);
+    /*
+    const [countryFilter, setCountryFilter] = useState<string | undefined>(currentCountry);
     const [
         countryOptions,
         setCountryOptions,
-    ] = React.useState<SearchCountryType[] | undefined | null>([{
+    ] = useState<SearchCountryType[] | undefined | null>([{
         name: countryName ?? '',
         iso3: currentCountry,
     }]);
+    */
+
+    // Overview section
+    const [overviewActiveYear, setOverviewActiveYear] = useState<string>(String(endYear));
 
     // Conflict section
     const [conflictTimeRangeActual, setConflictTimeRange] = useState([startYear, endYear]);
@@ -686,6 +688,7 @@ function CountryProfile(props: Props) {
         [idus, mapNoOfDisplacements, mapTypeOfDisplacements, mapTimeRange],
     );
 
+    /*
     const handleSelectCountry = React.useCallback((selectedIso3: string | undefined) => {
         setCountryFilter(selectedIso3);
         const country = countryOptions?.find((v) => v.iso3 === selectedIso3);
@@ -696,6 +699,7 @@ function CountryProfile(props: Props) {
             window.location.href = url.href;
         }
     }, [countryOptions]);
+    */
 
     const handleExportIduClick = React.useCallback(() => {
         if (idus && idus.length > 0) {
@@ -780,6 +784,7 @@ function CountryProfile(props: Props) {
                         <TooltipIcon>
                             {countryMetadata.countryProfileTooltip }
                         </TooltipIcon>
+                        {/*
                         <CountrySelectInput
                             name="country"
                             label="Country"
@@ -789,6 +794,7 @@ function CountryProfile(props: Props) {
                             options={countryOptions}
                             onOptionsChange={setCountryOptions}
                         />
+                        */}
                     </>
                 )}
                 headingTitle={countryMetadata.countryProfileHeader}
@@ -840,14 +846,14 @@ function CountryProfile(props: Props) {
                             key={countryOverview.year}
                             name={countryOverview.year.toString()}
                         >
+                            <TextOutput
+                                label="Last modified"
+                                value={countryOverview.updatedAt}
+                                valueType="date"
+                            />
                             <EllipsizedContent>
                                 <HTMLOutput
                                     value={countryOverview.description}
-                                />
-                                <TextOutput
-                                    label="Last modified"
-                                    value={countryOverview.updatedAt}
-                                    valueType="date"
                                 />
                             </EllipsizedContent>
                         </TabPanel>
@@ -875,7 +881,7 @@ function CountryProfile(props: Props) {
                         target="_blank"
                         rel="noopener noreferrer"
                     >
-                        Download data
+                        Download disaster data
                     </a>
                     <a
                         href={giddLink}
@@ -1073,7 +1079,7 @@ function CountryProfile(props: Props) {
                         target="_blank"
                         rel="noopener noreferrer"
                     >
-                        Download data
+                        Download conflict data
                     </a>
                     <a
                         href={giddLink}
@@ -1310,17 +1316,9 @@ function CountryProfile(props: Props) {
                 Hover over and click on the coloured bubbles to see near real-time
                 snapshots of situations of internal displacement across the globe.
             </div>
-            <Map
-                mapStyle={lightStyle}
-                mapOptions={{
-                    logoPosition: 'bottom-left',
-                    scrollZoom: false,
-                }}
-                scaleControlShown
-                navControlShown
-            >
-                <div className={styles.mapWrapper}>
-                    <div className={styles.legendList}>
+            <Container
+                filters={(
+                    <>
                         <div className={styles.legend}>
                             <Header
                                 headingSize="extraSmall"
@@ -1396,58 +1394,73 @@ function CountryProfile(props: Props) {
                                 onChange={setMapTimeRange}
                             />
                         </div>
-                    </div>
-                    <MapContainer
-                        className={styles.mapContainer}
-                    />
-                </div>
-                <MapBounds
-                    bounds={countryInfo.boundingBox as LngLatBounds | undefined}
-                    padding={50}
-                />
-                <MapSource
-                    sourceKey="idu-points"
-                    sourceOptions={sourceOption}
-                    geoJson={iduGeojson}
-                >
-                    <MapLayer
-                        layerKey="idu-point"
-                        // onClick={handlePointClick}
-                        layerOptions={{
-                            type: 'circle',
-                            paint: iduPointColor,
-                        }}
-                        onClick={handleMapPointClick}
-                    />
-                    {mapHoverLngLat && mapHoverFeatureProperties && (
-                        <MapTooltip
-                            coordinates={mapHoverLngLat}
-                            tooltipOptions={popupOptions}
-                            onHide={handleMapPopupClose}
+                    </>
+                )}
+                footerActions={(
+                    <>
+                        <Button
+                            name={undefined}
+                            // variant="secondary"
+                            onClick={handleExportIduClick}
                         >
-                            <HTMLOutput
-                                value={mapHoverFeatureProperties.description}
-                            />
-                        </MapTooltip>
-                    )}
-                </MapSource>
-            </Map>
-            <div>
-                <a
-                    href={giddLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                            Download displacement data
+                        </Button>
+                        <a
+                            href={giddLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            View GIDD dashboard
+                        </a>
+                    </>
+                )}
+            >
+                <Map
+                    mapStyle={lightStyle}
+                    mapOptions={{
+                        logoPosition: 'bottom-left',
+                        scrollZoom: false,
+                    }}
+                    scaleControlShown
+                    navControlShown
                 >
-                    View GIDD dashboard
-                </a>
-                <Button
-                    name={undefined}
-                    // variant="secondary"
-                    onClick={handleExportIduClick}
-                >
-                    Download Displacement Data
-                </Button>
-            </div>
+                    <div className={styles.mapWrapper}>
+                        <MapContainer
+                            className={styles.mapContainer}
+                        />
+                    </div>
+                    <MapBounds
+                        bounds={countryInfo.boundingBox as LngLatBounds | undefined}
+                        padding={50}
+                    />
+                    <MapSource
+                        sourceKey="idu-points"
+                        sourceOptions={sourceOption}
+                        geoJson={iduGeojson}
+                    >
+                        <MapLayer
+                            layerKey="idu-point"
+                            // onClick={handlePointClick}
+                            layerOptions={{
+                                type: 'circle',
+                                paint: iduPointColor,
+                            }}
+                            onClick={handleMapPointClick}
+                        />
+                        {mapHoverLngLat && mapHoverFeatureProperties && (
+                            <MapTooltip
+                                coordinates={mapHoverLngLat}
+                                tooltipOptions={popupOptions}
+                                onHide={handleMapPopupClose}
+                            >
+                                <HTMLOutput
+                                    value={mapHoverFeatureProperties.description}
+                                />
+                            </MapTooltip>
+                        )}
+                    </MapSource>
+                </Map>
+            </Container>
         </section>
     );
 

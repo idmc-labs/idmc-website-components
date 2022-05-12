@@ -36,14 +36,16 @@ function Container(props: Props) {
 
     return (
         <div className={_cs(styles.container, className)}>
-            <Header
-                className={styles.header}
-                heading={heading}
-                headingSize={headingSize}
-                headingInfo={headingInfo}
-                actions={headingActions}
-                description={headerDescription}
-            />
+            {heading && (
+                <Header
+                    className={styles.header}
+                    heading={heading}
+                    headingSize={headingSize}
+                    headingInfo={headingInfo}
+                    actions={headingActions}
+                    description={headerDescription}
+                />
+            )}
             {filters && (
                 <div className={styles.filters}>
                     {filters}
