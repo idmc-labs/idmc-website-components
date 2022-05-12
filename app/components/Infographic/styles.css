@@ -10,14 +10,21 @@
         font-weight: var(--dui-font-weight-bold);
     }
 
-    .description {
-        color: currentColor;
-        font-size: var(--dui-font-size-large);
-        font-weight: var(--dui-font-weight-bold);
-    }
+    .description-and-date {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: var(--dui-spacing-medium);
 
-    .date {
-        color: rgba(0, 0, 0, .5);
+        .description {
+            color: currentColor;
+            font-size: var(--dui-font-size-large);
+            font-weight: var(--dui-font-weight-bold);
+        }
+
+        .date {
+            color: rgba(0, 0, 0, .5);
+        }
     }
 
     .chart {

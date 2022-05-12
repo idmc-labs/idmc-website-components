@@ -66,7 +66,6 @@ import Tabs from '#components/Tabs';
 import Tab from '#components/Tabs/Tab';
 import TabList from '#components/Tabs/TabList';
 import TabPanel from '#components/Tabs/TabPanel';
-
 import LegendElement from '#components/LegendElement';
 import Button from '#components/Button';
 import Header from '#components/Header';
@@ -76,6 +75,8 @@ import TextOutput from '#components/TextOutput';
 import Infographic from '#components/Infographic';
 import GoodPracticeItem from '#components/GoodPracticeItem';
 import SliderInput from '#components/SliderInput';
+import Container from '#components/Container';
+
 import { goodPracticesList as relatedMaterials } from '#views/GoodPractices/data';
 import { formatNumber } from '#utils/common';
 
@@ -546,6 +547,14 @@ function CountryProfile(props: Props) {
     ) > 0;
     const disasterShown = (countryProfileData?.disasterStatistics?.newDisplacements ?? 0) > 0;
 
+    const countryOverviewSortedByYear = React.useMemo(() => {
+        if (countryInfo?.overviews) {
+            return [...countryInfo.overviews].sort((c1, c2) => c2.year - c1.year);
+        }
+
+        return undefined;
+    }, [countryInfo]);
+
     const iduGeojson: IduGeoJSON = React.useMemo(
         () => ({
             type: 'FeatureCollection',
@@ -700,44 +709,48 @@ function CountryProfile(props: Props) {
                 </div>
                 <div className={styles.bodyContainer}>
                     <div className={styles.content}>
-                        {countryInfo.overviews && countryInfo.overviews.length > 0 && (
+                        {countryOverviewSortedByYear && countryOverviewSortedByYear.length > 0 && (
                             <section className={styles.overview}>
                                 <Header
                                     headingSize="large"
                                     heading="Overview"
                                 />
-                                <Tabs
-                                    value={activeYear}
-                                    onChange={setActiveYear}
-                                >
-                                    <TabList>
+                                <div className={styles.overviewContent}>
+                                    <Tabs
+                                        value={activeYear}
+                                        onChange={setActiveYear}
+                                        variant="secondary"
+                                    >
+                                        <TabList className={styles.tabList}>
+                                            {countryOverviewSortedByYear.map((countryOverview) => (
+                                                <Tab
+                                                    className={styles.tab}
+                                                    key={countryOverview.year}
+                                                    name={countryOverview.year.toString()}
+                                                >
+                                                    {countryOverview.year}
+                                                </Tab>
+                                            ))}
+                                        </TabList>
                                         {countryInfo.overviews.map((countryOverview) => (
-                                            <Tab
+                                            <TabPanel
                                                 key={countryOverview.year}
                                                 name={countryOverview.year.toString()}
                                             >
-                                                {countryOverview.year}
-                                            </Tab>
+                                                <EllipsizedContent>
+                                                    <HTMLOutput
+                                                        value={countryOverview.description}
+                                                    />
+                                                    <TextOutput
+                                                        label="Last modified"
+                                                        value={countryOverview.updatedAt}
+                                                        valueType="date"
+                                                    />
+                                                </EllipsizedContent>
+                                            </TabPanel>
                                         ))}
-                                    </TabList>
-                                    {countryInfo.overviews.map((countryOverview) => (
-                                        <TabPanel
-                                            key={countryOverview.year}
-                                            name={countryOverview.year.toString()}
-                                        >
-                                            <TextOutput
-                                                label="Last modified"
-                                                value={countryOverview.updatedAt}
-                                                valueType="date"
-                                            />
-                                            <EllipsizedContent>
-                                                <HTMLOutput
-                                                    value={countryOverview.description}
-                                                />
-                                            </EllipsizedContent>
-                                        </TabPanel>
-                                    ))}
-                                </Tabs>
+                                    </Tabs>
+                                </div>
                             </section>
                         )}
                         {(
@@ -762,52 +775,63 @@ function CountryProfile(props: Props) {
                                 </EllipsizedContent>
                                 <div className={styles.infographics}>
                                     {conflictShown && (
-                                        <div className={styles.conflictInfographics}>
-                                            <Header
-                                                className={styles.header}
-                                                heading="Conflict and Violence Data"
-                                                headingSize="small"
-                                                headingDescription={(
-                                                    <>
-                                                        <Link
-                                                            to={`${REST_ENDPOINT}/countries/${currentCountry}/conflict-export/`}
-                                                            icons={(
-                                                                <IoDownloadOutline />
-                                                            )}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                        >
-                                                            Download data
-                                                        </Link>
-                                                        <Link
-                                                            to={giddLink}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                        >
-                                                            View GIDD dashboard
-                                                        </Link>
-                                                    </>
-                                                )}
-                                                headingInfo={countryMetadata.conflictAndViolenceTooltip && (
-                                                    <IoInformationCircleOutline
-                                                        title={countryMetadata.conflictAndViolenceTooltip}
+                                        <Container
+                                            heading="Conflict and Violence Data"
+                                            headingSize="small"
+                                            headingInfo={countryMetadata.conflictAndViolenceTooltip && (
+                                                <IoInformationCircleOutline
+                                                    title={countryMetadata.conflictAndViolenceTooltip}
+                                                />
+                                            )}
+                                            filters={(
+                                                <>
+                                                    <Header
+                                                        heading="Timescale"
+                                                        headingSize="extraSmall"
+                                                        headingDescription={`${conflictTimeRange[0]} - ${conflictTimeRange[1]}`}
+                                                        inlineHeadingDescription
+                                                        description={(
+                                                            <SliderInput
+                                                                hideValues
+                                                                className={styles.timeRangeFilter}
+                                                                min={startYear}
+                                                                max={endYear}
+                                                                step={1}
+                                                                minDistance={0}
+                                                                value={conflictTimeRange}
+                                                                onChange={setConflictTimeRange}
+                                                            />
+                                                        )}
                                                     />
-                                                )}
-                                                inlineHeadingDescription
-                                                actions={(
-                                                    <SliderInput
-                                                        className={styles.timeRangeFilter}
-                                                        min={startYear}
-                                                        max={endYear}
-                                                        step={1}
-                                                        minDistance={0}
-                                                        value={conflictTimeRange}
-                                                        onChange={setConflictTimeRange}
-                                                    />
-                                                )}
-                                            />
+                                                    <div />
+                                                    <div />
+                                                </>
+                                            )}
+                                            footerActions={(
+                                                <>
+                                                    <Link
+                                                        to={`${REST_ENDPOINT}/countries/${currentCountry}/conflict-export/`}
+                                                        icons={(
+                                                            <IoDownloadOutline />
+                                                        )}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                    >
+                                                        Download data
+                                                    </Link>
+                                                    <Link
+                                                        to={giddLink}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                    >
+                                                        View GIDD dashboard
+                                                    </Link>
+                                                </>
+                                            )}
+                                        >
                                             <div className={styles.infographicList}>
                                                 <Infographic
+                                                    className={styles.conflictInfographic}
                                                     totalValue={conflictData
                                                         ?.conflictStatistics.newDisplacements || 0}
                                                     description={(
@@ -859,6 +883,7 @@ function CountryProfile(props: Props) {
                                                     )}
                                                 />
                                                 <Infographic
+                                                    className={styles.conflictInfographic}
                                                     totalValue={conflictData
                                                         ?.conflictStatistics.totalIdps || 0}
                                                     description={(
@@ -907,71 +932,83 @@ function CountryProfile(props: Props) {
                                                     )}
                                                 />
                                             </div>
-                                        </div>
+                                        </Container>
                                     )}
                                     {disasterShown && (
-                                        <div className={styles.disasterInfographics}>
-                                            <Header
-                                                className={styles.header}
-                                                heading="Disaster Data"
-                                                headingSize="small"
-                                                headingDescription={(
-                                                    <>
-                                                        <Link
-                                                            to={`${REST_ENDPOINT}/countries/${currentCountry}/disaster-export/`}
-                                                            icons={(
-                                                                <IoDownloadOutline />
-                                                            )}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                        >
-                                                            Download data
-                                                        </Link>
-                                                        <Link
-                                                            to={giddLink}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                        >
-                                                            View GIDD dashboard
-                                                        </Link>
-                                                    </>
-                                                )}
-                                                headingInfo={countryMetadata.disasterTooltip && (
-                                                    <IoInformationCircleOutline
-                                                        title={countryMetadata.disasterTooltip}
-                                                    />
-                                                )}
-                                                inlineHeadingDescription
-                                                actions={(
-                                                    <SliderInput
-                                                        className={styles.timeRangeFilter}
-                                                        min={startYear}
-                                                        max={endYear}
-                                                        step={1}
-                                                        minDistance={0}
-                                                        value={disasterTimeRange}
-                                                        onChange={setDisasterTimeRange}
-                                                    />
-                                                )}
-                                            />
-                                            <div className={styles.disasterFilter}>
-                                                <MultiSelectInput
-                                                    variant="general"
-                                                    placeholder="Disaster Category"
-                                                    name="disasterCategory"
-                                                    value={categories}
-                                                    options={
-                                                        countryProfileData?.disasterStatistics.categories
-                                                    }
-                                                    keySelector={categoryKeySelector}
-                                                    labelSelector={categoryKeySelector}
-                                                    onChange={setCategories}
+                                        <Container
+                                            heading="Disaster Data"
+                                            headingSize="small"
+                                            headingInfo={countryMetadata.disasterTooltip && (
+                                                <IoInformationCircleOutline
+                                                    title={countryMetadata.disasterTooltip}
                                                 />
-                                                <div />
-                                                <div />
-                                            </div>
+                                            )}
+                                            footerActions={(
+                                                <>
+                                                    <Link
+                                                        to={`${REST_ENDPOINT}/countries/${currentCountry}/disaster-export/`}
+                                                        icons={(
+                                                            <IoDownloadOutline />
+                                                        )}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                    >
+                                                        Download data
+                                                    </Link>
+                                                    <Link
+                                                        to={giddLink}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                    >
+                                                        View GIDD dashboard
+                                                    </Link>
+                                                </>
+                                            )}
+                                            filters={(
+                                                <>
+                                                    <Header
+                                                        heading="Disaster Category"
+                                                        headingSize="extraSmall"
+                                                        description={(
+                                                            <MultiSelectInput
+                                                                variant="general"
+                                                                placeholder="Disaster Category"
+                                                                name="disasterCategory"
+                                                                value={categories}
+                                                                options={
+                                                                    countryProfileData?.disasterStatistics.categories
+                                                                }
+                                                                keySelector={categoryKeySelector}
+                                                                labelSelector={categoryKeySelector}
+                                                                onChange={setCategories}
+                                                            />
+                                                        )}
+                                                    />
+                                                    <div className={styles.separator} />
+                                                    <Header
+                                                        heading="Timescale"
+                                                        headingSize="extraSmall"
+                                                        headingDescription={`${disasterTimeRange[0]} - ${disasterTimeRange[1]}`}
+                                                        inlineHeadingDescription
+                                                        description={(
+                                                            <SliderInput
+                                                                hideValues
+                                                                min={startYear}
+                                                                max={endYear}
+                                                                step={1}
+                                                                minDistance={0}
+                                                                value={disasterTimeRange}
+                                                                onChange={setDisasterTimeRange}
+                                                            />
+                                                        )}
+                                                    />
+                                                    <div />
+                                                </>
+                                            )}
+                                        >
                                             <div className={styles.infographicList}>
                                                 <Infographic
+                                                    className={styles.disasterInfographic}
                                                     totalValue={disasterData
                                                         ?.disasterStatistics.newDisplacements || 0}
                                                     description={(
@@ -1023,6 +1060,7 @@ function CountryProfile(props: Props) {
                                                     )}
                                                 />
                                                 <Infographic
+                                                    className={styles.disasterInfographic}
                                                     totalValue={disasterData
                                                         ?.disasterStatistics.totalEvents || 0}
                                                     description={(
@@ -1065,7 +1103,7 @@ function CountryProfile(props: Props) {
                                                     )}
                                                 />
                                             </div>
-                                        </div>
+                                        </Container>
                                     )}
                                 </div>
                             </section>

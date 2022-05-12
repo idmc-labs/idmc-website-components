@@ -47,6 +47,17 @@
             align-items: center;
             flex-direction: column;
 
+            .separator {
+                align-self: stretch;
+                flex-basis: unset;
+                flex-grow: unset;
+                flex-shrink: 0;
+                margin: var(--dui-spacing-small) 0;
+                background-color: var(--dui-color-separator);
+                width: var(--dui-width-separator-medium);
+            }
+
+
             .content {
                 display: flex;
                 flex-direction: column;
@@ -58,8 +69,27 @@
                 .overview {
                     display: flex;
                     flex-direction: column;
-                    gap: var(--dui-spacing-medium);
                     padding: var(--dui-spacing-super-large) 0;
+                    gap: var(--dui-spacing-large);
+
+                    .overview-content {
+                        display: flex;
+                        align-items: flex-start;
+                        gap: var(--dui-spacing-medium);
+
+                        .tab-list {
+                            display: flex;
+                            flex-direction: column;
+                            flex-shrink: 0;
+                            background-color: transparent;
+                            width: 10rem;
+                            gap: var(--dui-spacing-small);
+
+                            .tab {
+                                width: 100%;
+                            }
+                        }
+                    }
                 }
 
                 .displacement-data {
@@ -70,7 +100,7 @@
 
                     .infographics {
                         display: flex;
-                        flex-wrap: wrap;
+                        flex-direction: column;
                         gap: var(--dui-spacing-large);
 
                         :global {
@@ -83,87 +113,23 @@
                             }
                         }
 
-                        .conflict-infographics {
+                        .infographic-list {
                             display: flex;
-                            flex-basis: 0;
-                            flex-direction: column;
-                            flex-grow: 1;
-                            border: var(--dui-width-separator-thin) solid var(--dui-color-separator);
-                            min-width: 36rem;
+                            flex-wrap: wrap;
 
-                            .header {
-                                background-color: var(--dui-color-background);
+                            >* {
+                                flex-basis: 0;
+                                flex-grow: 1;
                                 padding: var(--dui-spacing-medium);
-
-                                .time-range-filter {
-                                    min-width: 20rem;
-                                }
+                                min-width: 20rem;
                             }
 
-                            .infographic-list {
-                                display: flex;
+                            .conflict-infographic {
                                 color: var(--color-conflict);
-
-                                >* {
-                                    flex-basis: 0;
-                                    flex-grow: 1;
-                                    padding: var(--dui-spacing-medium);
-                                }
-
-                                .description {
-                                    display: flex;
-                                    align-items: center;
-                                    gap: var(--dui-spacing-extra-small);
-                                }
-                            }
-                        }
-
-                        .disaster-infographics {
-                            display: flex;
-                            flex-basis: 0;
-                            flex-direction: column;
-                            flex-grow: 1;
-                            border: var(--dui-width-separator-thin) solid var(--dui-color-separator);
-                            min-width: 36rem;
-
-                            .header {
-                                background-color: var(--dui-color-background);
-                                padding: var(--dui-spacing-medium);
-
-                                .time-range-filter {
-                                    min-width: 20rem;
-                                }
                             }
 
-                            .disaster-filter {
-                                display: flex;
-                                flex-wrap: wrap;
-                                padding: var(--dui-spacing-medium);
-                                font-size: 1rem;
-                                gap: var(--dui-spacing-medium);
-
-                                >* {
-                                    flex-basis: 0;
-                                    flex-grow: 1;
-                                    min-width: 16rem;
-                                }
-                            }
-
-                            .infographic-list {
-                                display: flex;
+                            .disaster-infographic {
                                 color: var(--color-disaster);
-
-                                >* {
-                                    flex-basis: 0;
-                                    flex-grow: 1;
-                                    padding: var(--dui-spacing-medium);
-                                }
-
-                                .description {
-                                    display: flex;
-                                    align-items: center;
-                                    gap: var(--dui-spacing-extra-small);
-                                }
                             }
                         }
                     }
@@ -240,13 +206,6 @@
                                     display: flex;
                                     gap: var(--dui-spacing-small);
                                 }
-                            }
-
-                            .separator {
-                                align-self: stretch;
-                                margin: var(--dui-spacing-small) 0;
-                                background-color: var(--dui-color-separator);
-                                width: var(--dui-width-separator-medium);
                             }
 
                             .time-range-container {

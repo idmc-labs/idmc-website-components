@@ -5,7 +5,7 @@ import Heading, { HeadingSizeType } from '#components/Heading';
 
 import styles from './styles.css';
 
-interface Props {
+export interface Props {
     className?: string;
     heading?: React.ReactNode;
     headingInfo?: React.ReactNode;
