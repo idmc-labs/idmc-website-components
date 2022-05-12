@@ -46,15 +46,18 @@ function LegendElement<N>(props: Props<N>) {
         </>
     ), [label, color, size]);
 
+    // eslint-disable-next-line react/destructuring-assignment
     if (props.name) {
         return (
             <Button
                 className={_cs(
                     styles.legendElement,
                     styles.clickable,
+                    // eslint-disable-next-line react/destructuring-assignment
                     props.isActive && styles.isActive,
                 )}
                 name={props.name}
+                // eslint-disable-next-line react/destructuring-assignment
                 onClick={props.onClick}
             >
                 {children}

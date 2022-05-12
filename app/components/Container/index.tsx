@@ -51,7 +51,7 @@ function Container(props: Props) {
                     {filters}
                 </div>
             )}
-            <div className={styles.content}>
+            <div>
                 {children}
             </div>
             {(footerActions || footer) && (
