@@ -579,8 +579,8 @@ function CountryProfile(props: Props) {
     const {
         data,
         fetchMore,
+        loading: loadingRelatedMaterials,
         // FIXME: handle loading and error
-        // loading,
         // error,
     } = useQuery<RelatedMaterialsQuery, RelatedMaterialsQueryVariables>(
         RELATED_MATERIALS,
@@ -698,10 +698,11 @@ function CountryProfile(props: Props) {
         fetchMore({
             variables: {
                 countryName,
-                relatedMaterialsOffset,
+                offset: relatedMaterialsOffset,
                 itemsPerPage: relatedMaterialPageSize,
             },
             updateQuery: (previousResult, { fetchMoreResult }) => {
+                console.warn(previousResult, fetchMoreResult);
                 if (!previousResult.relatedMaterials) {
                     return previousResult;
                 }
@@ -758,7 +759,7 @@ function CountryProfile(props: Props) {
                         {countryMetadata.countryProfileTooltip }
                     </TooltipIcon>
                 )}
-                headingTitle="Country Profile"
+                headingTitle={countryMetadata.countryProfileHeader}
                 heading={countryInfo.name}
             />
             <EllipsizedContent>
@@ -769,54 +770,21 @@ function CountryProfile(props: Props) {
         </section>
     );
 
-    const navbar = (
-        <nav className={styles.navbar}>
-            <a
-                href="#overview"
-                className={styles.navLink}
-            >
-                Overview
-            </a>
-            <a
-                href="#displacement-data"
-                className={styles.navLink}
-            >
-                Displacement Data
-            </a>
-            <a
-                href="#latest-displacement"
-                className={styles.navLink}
-            >
-                Latest Displacement
-            </a>
-            <a
-                href="#displacement-updates"
-                className={styles.navLink}
-            >
-                Displacement Updates
-            </a>
-            <a
-                href="#related-materials"
-                className={styles.navLink}
-            >
-                Related Materials
-            </a>
-            <a
-                href="#contact"
-                className={styles.navLink}
-            >
-                Contact
-            </a>
-        </nav>
-    );
-
     const overviewSection = (
         countryOverviewSortedByYear && countryOverviewSortedByYear.length > 0
     ) && (
-        <section className={styles.overview}>
+        <section
+            id="overview"
+            className={styles.overview}
+        >
             <Header
                 headingSize="large"
-                heading="Overview"
+                heading={countryMetadata.overviewHeader}
+                headingInfo={(
+                    <TooltipIcon>
+                        {countryMetadata.overviewTooltip}
+                    </TooltipIcon>
+                )}
             />
             <div className={styles.overviewContent}>
                 <Tabs
@@ -861,11 +829,11 @@ function CountryProfile(props: Props) {
         (countryProfileData?.disasterStatistics?.newDisplacements ?? 0) > 0
     ) && (
         <Container
-            heading="Disaster Data"
+            heading={countryMetadata.disasterHeader}
             headingSize="small"
             headingInfo={(
                 <TooltipIcon>
-                    {countryMetadata.disasterTooltip }
+                    {countryMetadata.disasterTooltip}
                 </TooltipIcon>
             )}
             footerActions={(
@@ -991,7 +959,7 @@ function CountryProfile(props: Props) {
                             headingSize="extraSmall"
                             headingInfo={(
                                 <TooltipIcon>
-                                    {countryMetadata?.disasterEventTooltip }
+                                    {countryMetadata?.disasterEventTooltip}
                                 </TooltipIcon>
                             )}
                         />
@@ -1035,11 +1003,11 @@ function CountryProfile(props: Props) {
         + (countryProfileData?.conflictStatistics?.totalIdps ?? 0)
     ) > 0) && (
         <Container
-            heading="Conflict and Violence Data"
+            heading={countryMetadata.conflictAndViolenceHeader}
             headingSize="small"
             headingInfo={(
                 <TooltipIcon>
-                    {countryMetadata.conflictAndViolenceTooltip }
+                    {countryMetadata.conflictAndViolenceTooltip}
                 </TooltipIcon>
             )}
             filters={(
@@ -1193,10 +1161,13 @@ function CountryProfile(props: Props) {
         || disasterSection
         || countryInfo.displacementDataDescription
     ) && (
-        <section className={styles.displacementData}>
+        <section
+            id="displacement-data"
+            className={styles.displacementData}
+        >
             <Header
                 headingSize="large"
-                heading="Displacement Data"
+                heading={countryMetadata.displacementDataHeader}
                 headingInfo={(
                     <TooltipIcon>
                         {countryMetadata.displacementDataTooltip}
@@ -1219,13 +1190,16 @@ function CountryProfile(props: Props) {
         (idus && idus.length > 0)
         || countryInfo.latestNewDisplacementsDescription
     ) && (
-        <section className={styles.latestNewDisplacements}>
+        <section
+            id="latest-displacement"
+            className={styles.latestNewDisplacements}
+        >
             <Header
                 headingSize="large"
-                heading="Latest Internal Displacements"
+                heading={countryMetadata.latestNewDisplacementsHeader}
                 headingInfo={(
                     <TooltipIcon>
-                        {countryMetadata.latestNewDisplacementsTooltip }
+                        {countryMetadata.latestNewDisplacementsTooltip}
                     </TooltipIcon>
                 )}
             />
@@ -1260,7 +1234,7 @@ function CountryProfile(props: Props) {
                         }}
                         actions={<IoArrowDown />}
                     >
-                        View Older Displacements
+                        Show more
                     </Button>
                 )}
                 {/* iduActivePage > 1 && (
@@ -1282,13 +1256,16 @@ function CountryProfile(props: Props) {
         countryInfo.internalDisplacementDescription
         || (idus && idus.length > 0)
     ) && (
-        <section className={styles.internalDisplacementUpdates}>
+        <section
+            id="displacement-updates"
+            className={styles.internalDisplacementUpdates}
+        >
             <Header
                 headingSize="large"
-                heading="Internal Displacement Updates"
+                heading={countryMetadata.internalDisplacementUpdatesHeader}
                 headingInfo={(
                     <TooltipIcon>
-                        {countryMetadata.internalDisplacementUpdatesTooltip }
+                        {countryMetadata.internalDisplacementUpdatesTooltip}
                     </TooltipIcon>
                 )}
             />
@@ -1445,13 +1422,16 @@ function CountryProfile(props: Props) {
     const relatedMaterialsSection = (
         relatedMaterials && relatedMaterials.length > 0
     ) && (
-        <section className={styles.relatedMaterial}>
+        <section
+            id="related-materials"
+            className={styles.relatedMaterial}
+        >
             <Header
                 headingSize="large"
-                heading="Related Material"
+                heading={countryMetadata.relatedMaterialHeader}
                 headingInfo={(
                     <TooltipIcon>
-                        {countryMetadata.relatedMaterialTooltip }
+                        {countryMetadata.relatedMaterialTooltip}
                     </TooltipIcon>
                 )}
             />
@@ -1475,6 +1455,7 @@ function CountryProfile(props: Props) {
                     // FIXME: need to hide this if there is no more data
                     name={undefined}
                     onClick={handleShowMoreButtonClick}
+                    disabled={loadingRelatedMaterials}
                     actions={<IoArrowDown />}
                 >
                     <span>Show more</span>
@@ -1486,9 +1467,12 @@ function CountryProfile(props: Props) {
     const essentialLinksSection = (
         countryInfo.essentialLinks
     ) && (
-        <div className={styles.essentialReading}>
+        <div
+            id="contact"
+            className={styles.essentialReading}
+        >
             <Header
-                heading="Essential Reading"
+                heading={countryMetadata.essentialReadingHeader}
                 headingSize="large"
                 headingInfo={(
                     <TooltipIcon>
@@ -1508,11 +1492,11 @@ function CountryProfile(props: Props) {
     ) && (
         <div className={styles.contact}>
             <Header
-                heading="For more information please contact:"
+                heading={countryMetadata.contactHeader}
                 headingSize="medium"
                 headingInfo={(
                     <TooltipIcon>
-                        {countryMetadata.contactTooltip }
+                        {countryMetadata.contactTooltip}
                     </TooltipIcon>
                 )}
             />
@@ -1527,6 +1511,59 @@ function CountryProfile(props: Props) {
                 value={countryInfo.contactPersonDescription}
             />
         </div>
+    );
+
+    const navbar = (
+        <nav className={styles.navbar}>
+            {!!overviewSection && (
+                <a
+                    href="#overview"
+                    className={styles.navLink}
+                >
+                    {countryMetadata.overviewHeader}
+                </a>
+            )}
+            {!!displacementSection && (
+                <a
+                    href="#displacement-data"
+                    className={styles.navLink}
+                >
+                    {countryMetadata.displacementDataHeader}
+                </a>
+            )}
+            {!!latestNewDisplacementSection && (
+                <a
+                    href="#latest-displacement"
+                    className={styles.navLink}
+                >
+                    {countryMetadata.latestNewDisplacementsHeader}
+                </a>
+            )}
+            {!!internalDisplacementSection && (
+                <a
+                    href="#displacement-updates"
+                    className={styles.navLink}
+                >
+                    {countryMetadata.internalDisplacementUpdatesHeader}
+                </a>
+            )}
+            {!!relatedMaterialsSection && (
+                <a
+                    href="#related-materials"
+                    className={styles.navLink}
+                >
+                    {countryMetadata.relatedMaterialHeader}
+                </a>
+            )}
+            {!!contactSection && (
+                <a
+                    href="#contact"
+                    className={styles.navLink}
+                >
+                    {countryMetadata.contactHeader}
+                </a>
+            )}
+        </nav>
     );
 
     return (
