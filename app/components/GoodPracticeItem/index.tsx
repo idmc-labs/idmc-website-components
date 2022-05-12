@@ -5,7 +5,7 @@ import Header from '#components/Header';
 import DateOutput from '#components/DateOutput';
 import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
-import SmartLink from '#base/components/SmartLink';
+// import SmartLink from '#base/components/SmartLink';
 
 import route from '#base/configs/routes';
 
@@ -13,41 +13,44 @@ import styles from './styles.css';
 
 interface Props {
     className?: string;
-    dataId?: number;
-    coverImageUrl: string;
+    // dataId?: number;
+    coverImageUrl: string | undefined | null;
     heading: string;
     date: string;
-    description: string;
+    url: string;
+    description: string | undefined | null;
 }
 
 function GoodPracticeItem(props: Props) {
     const {
-        dataId,
+        // dataId,
         className,
         coverImageUrl,
         heading,
         date,
         description,
+        url,
     } = props;
 
     return (
         <div className={_cs(styles.goodPracticeItem, className)}>
-            <img
-                src={coverImageUrl}
-                className={styles.coverImage}
-                alt="Cover"
-            />
+            {coverImageUrl && (
+                <img
+                    src={coverImageUrl}
+                    className={styles.coverImage}
+                    alt="Cover"
+                />
+            )}
             <div className={styles.content}>
                 <Header
                     heading={(
-                        <SmartLink
-                            route={route.goodPractice}
-                            attrs={{
-                                id: dataId,
-                            }}
+                        <a
+                            href={url}
+                            target="_blank"
+                            rel="noreferrer"
                         >
                             {heading}
-                        </SmartLink>
+                        </a>
                     )}
                     headingSize="extraSmall"
                     description={(

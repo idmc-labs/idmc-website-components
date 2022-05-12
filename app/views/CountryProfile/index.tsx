@@ -77,7 +77,6 @@ import GoodPracticeItem from '#components/GoodPracticeItem';
 import SliderInput from '#components/SliderInput';
 import Container from '#components/Container';
 
-import { goodPracticesList as relatedMaterials } from '#views/GoodPractices/data';
 import { formatNumber } from '#utils/common';
 
 import ConflictIcon from '../../resources/icons/Icon_Conflict-Conflict.svg';
@@ -98,6 +97,20 @@ import OtherIcon from '../../resources/icons/Icon_Other.svg';
 import { countryMetadata } from './data';
 
 import styles from './styles.css';
+
+const DRUPAL_ENDPOINT = process.env.REACT_APP_DRUPAL_ENDPOINT as string;
+
+function getProxyDrupalUrl(image: null): null;
+function getProxyDrupalUrl(image: undefined): undefined;
+function getProxyDrupalUrl(image: string): string;
+function getProxyDrupalUrl(image: string | null | undefined): string | null | undefined;
+function getProxyDrupalUrl(image: string | null | undefined) {
+    if (!image || !DRUPAL_ENDPOINT) {
+        return image;
+    }
+    const path = new URL(image).pathname;
+    return `${DRUPAL_ENDPOINT}${path}`;
+}
 
 const disasterMap: { [key: string]: string } = {
     // Disaster type we get from helix
@@ -269,7 +282,7 @@ const IDU_DATA = gql`
             type: "[IduData]",
             method: "GET",
             endpoint: "helix",
-            path: "data/idus_view_flat_cached?iso3=eq.:country&order=displacement_start_date.desc,displacement_end_date.desc"
+            path: "/data/idus_view_flat_cached?iso3=eq.:country&order=displacement_start_date.desc,displacement_end_date.desc"
         ) {
             id
             country
@@ -298,12 +311,12 @@ const IDU_DATA = gql`
 `;
 
 const RELATED_MATERIALS = gql`
-    query RelatedMaterials($countryName: String!) {
-        relatedMaterials(countryName: $countryName) @rest(
+    query RelatedMaterials($countryName: String!, $offset: Int!, $itemsPerPage: Int!) {
+        relatedMaterials(countryName: $countryName, offset: $offset, itemsPerPage: $itemsPerPage) @rest(
             type: "RelatedMaterials!",
             method: "GET",
             endpoint: "drupal",
-            path: "previous-information/rest?_format=json&tags=:countryName"
+            path: "/previous-information/rest?_format=json&tags=:countryName&offset=:offset&items_per_page=:itemsPerPage"
         ) {
             rows {
                 type {
@@ -337,12 +350,14 @@ const giddLink = 'https://www.internal-displacement.org/database/displacement-da
 interface Props {
     className?: string;
     iso3: string;
+    countryName?: string;
 }
 
 function CountryProfile(props: Props) {
     const {
         className,
         iso3: currentCountry,
+        countryName,
     } = props;
 
     // Overview section
@@ -356,6 +371,9 @@ function CountryProfile(props: Props) {
     const [categories, setCategories] = React.useState<string[] | undefined>();
     // FIXME: debounce this value
     const [disasterTimeRange, setDisasterTimeRange] = React.useState([startYear, endYear]);
+
+    // Related material section
+    const pageSize = 4;
 
     // IDU list section
     const [iduPage, setIduPage] = React.useState(1);
@@ -426,6 +444,7 @@ function CountryProfile(props: Props) {
     const {
         previousData,
         data: countryProfileData = previousData,
+        // FIXME: handle loading and error
         loading: countryProfileLoading,
         error: countryProfileError,
     } = useQuery<CountryProfileQuery, CountryProfileQueryVariables>(
@@ -451,6 +470,7 @@ function CountryProfile(props: Props) {
     const {
         previousData: previousDisasterData,
         data: disasterData = previousDisasterData,
+        // FIXME: handle loading and error
         // loading: disasterDataLoading,
         // error: disasterDataError,
     } = useQuery<DisasterDataQuery, DisasterDataQueryVariables>(
@@ -468,6 +488,7 @@ function CountryProfile(props: Props) {
     const {
         previousData: previousConflictData,
         data: conflictData = previousConflictData,
+        // FIXME: handle loading and error
         // loading: conflictDataLoading,
         // error: conflictDataError,
     } = useQuery<ConflictDataQuery, ConflictDataQueryVariables>(
@@ -484,6 +505,7 @@ function CountryProfile(props: Props) {
     const {
         previousData: previousIduData,
         data: iduData = previousIduData,
+        // FIXME: handle loading and error
         loading: iduDataLoading,
         error: iduDataError,
     } = useQuery<IduDataQuery, IduDataQueryVariables>(
@@ -509,16 +531,26 @@ function CountryProfile(props: Props) {
 
     const {
         data,
+        fetchMore,
+        // FIXME: handle loading and error
+        // loading,
+        // error,
     } = useQuery<RelatedMaterialsQuery, RelatedMaterialsQueryVariables>(
         RELATED_MATERIALS,
         {
-            variables: {
-                // FIXME: pass country name here
-                countryName: 'Nepal',
-            },
+            skip: !countryName,
+            variables: countryName ? {
+                countryName,
+                offset: 0,
+                itemsPerPage: pageSize,
+            } : undefined,
         },
     );
-    console.log(data);
+
+    const relatedMaterials = data?.relatedMaterials?.rows;
+    const offset = relatedMaterials?.length ?? 0;
+
+    const remainingRelatedMaterials = Math.max(0, Number(data?.relatedMaterials?.pager?.total_items || '0') - pageSize);
 
     const idus = iduData?.idu;
     const countryInfo = countryProfileData?.country;
@@ -540,6 +572,43 @@ function CountryProfile(props: Props) {
             saveAs(blob, 'idu_export.csv');
         }
     }, [idus]);
+
+    const handleShowMoreButtonClick = React.useCallback(() => {
+        fetchMore({
+            variables: {
+                countryName,
+                offset,
+                itemsPerPage: pageSize,
+            },
+            updateQuery: (previousResult, { fetchMoreResult }) => {
+                if (!previousResult.relatedMaterials) {
+                    return previousResult;
+                }
+                const newRows = fetchMoreResult?.relatedMaterials?.rows;
+                const newPager = fetchMoreResult?.relatedMaterials?.pager;
+                const oldRows = previousResult.relatedMaterials?.rows;
+
+                if (!newRows || !newPager) {
+                    return previousResult;
+                }
+                return ({
+                    ...previousResult,
+                    relatedMaterials: {
+                        ...previousResult.relatedMaterials,
+                        rows: [
+                            ...(oldRows ?? []),
+                            ...(newRows ?? []),
+                        ],
+                        pager: newPager,
+                    },
+                });
+            },
+        });
+    }, [
+        countryName,
+        offset,
+        fetchMore,
+    ]);
 
     const conflictShown = (
         (countryProfileData?.conflictStatistics?.newDisplacements ?? 0)
@@ -626,11 +695,7 @@ function CountryProfile(props: Props) {
         );
     }
 
-    if (
-        iduDataError
-        || countryProfileError
-        || !countryInfo
-    ) {
+    if (iduDataError || countryProfileError || !countryInfo) {
         return (
             <div className={_cs(styles.countryProfile, className)}>
                 Error fetching country profile....
@@ -1330,7 +1395,7 @@ function CountryProfile(props: Props) {
                                 </div>
                             </section>
                         )}
-                        {relatedMaterials.length > 0 && (
+                        {relatedMaterials && relatedMaterials.length > 0 && (
                             <section className={styles.relatedMaterial}>
                                 <Header
                                     headingSize="large"
@@ -1344,16 +1409,26 @@ function CountryProfile(props: Props) {
                                 <div className={styles.materialList}>
                                     {relatedMaterials.map((gp) => (
                                         <GoodPracticeItem
-                                            dataId={gp.id}
-                                            key={gp.id}
+                                            key={gp.metatag.value.canonical_url}
                                             className={styles.material}
-                                            coverImageUrl={gp.image}
-                                            heading={gp.title}
-                                            description={gp.description}
+                                            coverImageUrl={getProxyDrupalUrl(gp.metatag.value.og_image_0)}
+                                            url={gp.metatag.value.canonical_url}
+                                            heading={gp.metatag.value.title}
+                                            description={gp.metatag.value.description}
                                             date="2021-05-20"
                                         />
                                     ))}
                                 </div>
+                                {remainingRelatedMaterials > 0 && (
+                                    <Button
+                                        // FIXME: need to hide this if there is no more data
+                                        name={undefined}
+                                        onClick={handleShowMoreButtonClick}
+                                        actions={<IoArrowDown />}
+                                    >
+                                        <span>Show more</span>
+                                    </Button>
+                                )}
                             </section>
                         )}
                         <section className={styles.misc}>

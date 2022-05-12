@@ -48,8 +48,9 @@ function parseQueryString(value: string) {
 const query = parseQueryString(window.location.search);
 
 const currentCountry = (window as { iso3?: string }).iso3
-    || query.iso3
-    || 'NPL';
+    || query.iso3;
+const currentCountryName = (window as { countryName?: string }).countryName
+    || query.countryName;
 
 function Base() {
     return (
@@ -66,7 +67,9 @@ function Base() {
                 <ApolloProvider client={apolloClient}>
                     <CountryProfile
                         className={styles.view}
-                        iso3={currentCountry}
+                        // NOTE: setting default country as nepal
+                        iso3={currentCountry || 'MMR'}
+                        countryName={currentCountry ? currentCountryName : 'Myanmar'}
                     />
                 </ApolloProvider>
             </ErrorBoundary>

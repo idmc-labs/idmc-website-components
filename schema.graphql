@@ -59,7 +59,7 @@ type RelatedMaterials {
 
 type Query {
   idu(country: String!): [IduData!]!
-  relatedMaterials(countryName: String!): RelatedMaterials!
+  relatedMaterials(countryName: String!, offset: Int!, itemsPerPage: Int!): RelatedMaterials!
 }
 
 directive @rest(
