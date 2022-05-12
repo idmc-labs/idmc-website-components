@@ -65,6 +65,7 @@
         "react-ga": "^3.3.0",
         "react-icons": "^4.3.1",
         "react-slider": "^2.0.0",
+        "react-tooltip": "^4.2.21",
         "recharts": "^2.1.9",
         "sanitize-html": "^2.7.0"
     },

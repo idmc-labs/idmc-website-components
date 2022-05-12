@@ -274,3 +274,7 @@
         }
     }
 }
+
+.tooltip {
+    max-width: 30rem;
+}
