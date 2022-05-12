@@ -28,7 +28,7 @@ import {
     IoArrowDown,
     IoArrowUp,
 } from 'react-icons/io5';
-import { _cs, isDefined, isNotDefined } from '@togglecorp/fujs';
+import { _cs, isDefined, isNotDefined, randomString } from '@togglecorp/fujs';
 import { saveAs } from 'file-saver';
 import stringify from 'csv-stringify/lib/browser/sync';
 import ReactTooltip from 'react-tooltip';
@@ -100,6 +100,11 @@ import styles from './styles.css';
 
 const DRUPAL_ENDPOINT = process.env.REACT_APP_DRUPAL_ENDPOINT as string;
 
+function useId() {
+    const id = React.useMemo(() => randomString(), []);
+    return id;
+}
+
 function getProxyDrupalUrl(image: null): null;
 function getProxyDrupalUrl(image: undefined): undefined;
 function getProxyDrupalUrl(image: string): string;
@@ -110,6 +115,39 @@ function getProxyDrupalUrl(image: string | null | undefined) {
     }
     const path = new URL(image).pathname;
     return `${DRUPAL_ENDPOINT}${path}`;
+}
+
+interface TooltipIconProps {
+    children?: React.ReactNode;
+}
+function TooltipIcon(props: TooltipIconProps) {
+    const {
+        children,
+    } = props;
+    const id = useId();
+
+    if (!children) {
+        return null;
+    }
+    return (
+        <>
+            <span
+                data-tip
+                data-for={id}
+            >
+                <IoInformationCircleOutline />
+            </span>
+            <ReactTooltip
+                id={id}
+                place="top"
+                type="dark"
+                effect="solid"
+                className={styles.tooltip}
+            >
+                {children}
+            </ReactTooltip>
+        </>
+    );
 }
 
 const disasterMap: { [key: string]: string } = {
@@ -713,24 +751,10 @@ function CountryProfile(props: Props) {
         <section className={styles.profile}>
             <Header
                 headingSize="extraLarge"
-                headingInfo={countryMetadata.countryProfileTooltip && (
-                    <>
-                        <span
-                            data-tip
-                            data-for="countryProfileTooltip"
-                        >
-                            <IoInformationCircleOutline />
-                        </span>
-                        <ReactTooltip
-                            id="countryProfileTooltip"
-                            place="top"
-                            type="info"
-                            effect="solid"
-                            className={styles.tooltip}
-                        >
-                            { countryMetadata.countryProfileTooltip }
-                        </ReactTooltip>
-                    </>
+                headingInfo={(
+                    <TooltipIcon>
+                        {countryMetadata.countryProfileTooltip }
+                    </TooltipIcon>
                 )}
                 headingTitle="Country Profile"
                 heading={countryInfo.name}
@@ -835,24 +859,10 @@ function CountryProfile(props: Props) {
         <Container
             heading="Disaster Data"
             headingSize="small"
-            headingInfo={countryMetadata.disasterTooltip && (
-                <>
-                    <span
-                        data-tip
-                        data-for="disasterTooltip"
-                    >
-                        <IoInformationCircleOutline />
-                    </span>
-                    <ReactTooltip
-                        id="disasterTooltip"
-                        place="top"
-                        type="info"
-                        effect="solid"
-                        className={styles.tooltip}
-                    >
-                        { countryMetadata.disasterTooltip }
-                    </ReactTooltip>
-                </>
+            headingInfo={(
+                <TooltipIcon>
+                    {countryMetadata.disasterTooltip }
+                </TooltipIcon>
             )}
             footerActions={(
                 <>
@@ -886,9 +896,7 @@ function CountryProfile(props: Props) {
                                 placeholder="Disaster Category"
                                 name="disasterCategory"
                                 value={categories}
-                                options={
-                                    countryProfileData?.disasterStatistics.categories
-                                }
+                                options={countryProfileData?.disasterStatistics.categories}
                                 keySelector={categoryKeySelector}
                                 labelSelector={categoryKeySelector}
                                 onChange={setCategories}
@@ -924,34 +932,23 @@ function CountryProfile(props: Props) {
                         ?.disasterStatistics.newDisplacements || 0}
                     description={(
                         <div className={styles.description}>
-                            Internal Displacements
-                            {countryMetadata?.disasterInternalDisplacementTooltip && (
-                                <>
-                                    <span
-                                        data-tip
-                                        data-for="disasterInternalDisplacementTooltip"
-                                    >
-                                        <IoInformationCircleOutline />
-                                    </span>
-                                    <ReactTooltip
-                                        id="disasterInternalDisplacementTooltip"
-                                        place="top"
-                                        type="info"
-                                        effect="solid"
-                                        className={styles.tooltip}
-                                    >
-                                        { countryMetadata.disasterInternalDisplacementTooltip }
-                                    </ReactTooltip>
-                                </>
-                            )}
+                            <Header
+                                headingClassName={styles.heading}
+                                heading="Internal Displacements"
+                                headingSize="extraSmall"
+                                headingInfo={(
+                                    <TooltipIcon>
+                                        {countryMetadata?.disasterInternalDisplacementTooltip}
+                                    </TooltipIcon>
+                                )}
+                            />
                         </div>
                     )}
                     date={`${disasterTimeRange[0]} - ${disasterTimeRange[1]}`}
                     chart={(
                         <ResponsiveContainer>
                             <LineChart
-                                data={disasterData
-                                    ?.disasterStatistics.timeseries}
+                                data={disasterData?.disasterStatistics.timeseries}
                             >
                                 <XAxis
                                     dataKey="year"
@@ -987,28 +984,16 @@ function CountryProfile(props: Props) {
                     totalValue={disasterData
                         ?.disasterStatistics.totalEvents || 0}
                     description={(
-                        <div className={styles.description}>
-                            Disaster events reported
-                            {countryMetadata?.disasterEventTooltip && (
-                                <>
-                                    <span
-                                        data-tip
-                                        data-for="disasterEventTooltip"
-                                    >
-                                        <IoInformationCircleOutline />
-                                    </span>
-                                    <ReactTooltip
-                                        id="disasterEventTooltip"
-                                        place="top"
-                                        type="info"
-                                        effect="solid"
-                                        className={styles.tooltip}
-                                    >
-                                        { countryMetadata.disasterEventTooltip }
-                                    </ReactTooltip>
-                                </>
+                        <Header
+                            headingClassName={styles.heading}
+                            heading="Disaster events reported"
+                            headingSize="extraSmall"
+                            headingInfo={(
+                                <TooltipIcon>
+                                    {countryMetadata?.disasterEventTooltip }
+                                </TooltipIcon>
                             )}
-                        </div>
+                        />
                     )}
                     date={`${disasterTimeRange[0]} - ${disasterTimeRange[1]}`}
                     chart={(
@@ -1048,24 +1033,10 @@ function CountryProfile(props: Props) {
         <Container
             heading="Conflict and Violence Data"
             headingSize="small"
-            headingInfo={countryMetadata.conflictAndViolenceTooltip && (
-                <>
-                    <span
-                        data-tip
-                        data-for="conflictAndViolenceTooltip"
-                    >
-                        <IoInformationCircleOutline />
-                    </span>
-                    <ReactTooltip
-                        id="conflictAndViolenceTooltip"
-                        place="top"
-                        type="info"
-                        effect="solid"
-                        className={styles.tooltip}
-                    >
-                        { countryMetadata.conflictAndViolenceTooltip }
-                    </ReactTooltip>
-                </>
+            headingInfo={(
+                <TooltipIcon>
+                    {countryMetadata.conflictAndViolenceTooltip }
+                </TooltipIcon>
             )}
             filters={(
                 <>
@@ -1116,38 +1087,24 @@ function CountryProfile(props: Props) {
             <div className={styles.infographicList}>
                 <Infographic
                     className={styles.conflictInfographic}
-                    totalValue={conflictData
-                        ?.conflictStatistics.newDisplacements || 0}
+                    totalValue={conflictData?.conflictStatistics.newDisplacements || 0}
                     description={(
-                        <div className={styles.description}>
-                            Internal Displacements
-                            {countryMetadata?.conflictInternalDisplacementTooltip && (
-                                <>
-                                    <span
-                                        data-tip
-                                        data-for="conflictInternalDisplacementTooltip"
-                                    >
-                                        <IoInformationCircleOutline />
-                                    </span>
-                                    <ReactTooltip
-                                        id="conflictInternalDisplacementTooltip"
-                                        place="top"
-                                        type="info"
-                                        effect="solid"
-                                        className={styles.tooltip}
-                                    >
-                                        { countryMetadata.conflictInternalDisplacementTooltip }
-                                    </ReactTooltip>
-                                </>
+                        <Header
+                            headingClassName={styles.heading}
+                            heading="Internal Displacements"
+                            headingSize="extraSmall"
+                            headingInfo={(
+                                <TooltipIcon>
+                                    {countryMetadata?.conflictInternalDisplacementTooltip }
+                                </TooltipIcon>
                             )}
-                        </div>
+                        />
                     )}
                     date={`${conflictTimeRange[0]} - ${conflictTimeRange[1]}`}
                     chart={(
                         <ResponsiveContainer>
                             <LineChart
-                                data={conflictData
-                                    ?.conflictStatistics.timeseries}
+                                data={conflictData?.conflictStatistics.timeseries}
                             >
                                 <XAxis
                                     dataKey="year"
@@ -1180,38 +1137,24 @@ function CountryProfile(props: Props) {
                 />
                 <Infographic
                     className={styles.conflictInfographic}
-                    totalValue={conflictData
-                        ?.conflictStatistics.totalIdps || 0}
+                    totalValue={conflictData?.conflictStatistics.totalIdps || 0}
                     description={(
-                        <div className={styles.description}>
-                            Total number of IDPs
-                            {countryMetadata?.conflictIDPTooltip && (
-                                <>
-                                    <span
-                                        data-tip
-                                        data-for="conflictIDPTooltip"
-                                    >
-                                        <IoInformationCircleOutline />
-                                    </span>
-                                    <ReactTooltip
-                                        id="conflictIDPTooltip"
-                                        place="top"
-                                        type="info"
-                                        effect="solid"
-                                        className={styles.tooltip}
-                                    >
-                                        { countryMetadata.conflictIDPTooltip }
-                                    </ReactTooltip>
-                                </>
+                        <Header
+                            headingClassName={styles.heading}
+                            heading="Total number of IDPs"
+                            headingSize="extraSmall"
+                            headingInfo={(
+                                <TooltipIcon>
+                                    {countryMetadata?.conflictIDPTooltip }
+                                </TooltipIcon>
                             )}
-                        </div>
+                        />
                     )}
                     date={`As of end of ${conflictTimeRange[1]}`}
                     chart={(
                         <ResponsiveContainer>
                             <BarChart
-                                data={conflictData
-                                    ?.conflictStatistics.timeseries}
+                                data={conflictData?.conflictStatistics.timeseries}
                             >
                                 <XAxis
                                     dataKey="year"
@@ -1253,24 +1196,10 @@ function CountryProfile(props: Props) {
             <Header
                 headingSize="large"
                 heading="Displacement Data"
-                headingInfo={countryMetadata.displacementDataTooltip && (
-                    <>
-                        <span
-                            data-tip
-                            data-for="displacementDataTooltip"
-                        >
-                            <IoInformationCircleOutline />
-                        </span>
-                        <ReactTooltip
-                            id="displacementDataTooltip"
-                            place="top"
-                            type="info"
-                            effect="solid"
-                            className={styles.tooltip}
-                        >
-                            { countryMetadata.displacementDataTooltip }
-                        </ReactTooltip>
-                    </>
+                headingInfo={(
+                    <TooltipIcon>
+                        {countryMetadata.displacementDataTooltip}
+                    </TooltipIcon>
                 )}
             />
             <EllipsizedContent>
@@ -1293,24 +1222,10 @@ function CountryProfile(props: Props) {
             <Header
                 headingSize="large"
                 heading="Latest Internal Displacements"
-                headingInfo={countryMetadata.latestNewDisplacementsTooltip && (
-                    <>
-                        <span
-                            data-tip
-                            data-for="latestNewDisplacementsTooltip"
-                        >
-                            <IoInformationCircleOutline />
-                        </span>
-                        <ReactTooltip
-                            id="latestNewDisplacementsTooltip"
-                            place="top"
-                            type="info"
-                            effect="solid"
-                            className={styles.tooltip}
-                        >
-                            { countryMetadata.latestNewDisplacementsTooltip }
-                        </ReactTooltip>
-                    </>
+                headingInfo={(
+                    <TooltipIcon>
+                        {countryMetadata.latestNewDisplacementsTooltip }
+                    </TooltipIcon>
                 )}
             />
             <EllipsizedContent>
@@ -1370,24 +1285,10 @@ function CountryProfile(props: Props) {
             <Header
                 headingSize="large"
                 heading="Internal Displacement Updates"
-                headingInfo={countryMetadata.internalDisplacementUpdatesTooltip && (
-                    <>
-                        <span
-                            data-tip
-                            data-for="internalDisplacementUpdatesTooltip"
-                        >
-                            <IoInformationCircleOutline />
-                        </span>
-                        <ReactTooltip
-                            id="internalDisplacementUpdatesTooltip"
-                            place="top"
-                            type="info"
-                            effect="solid"
-                            className={styles.tooltip}
-                        >
-                            { countryMetadata.internalDisplacementUpdatesTooltip }
-                        </ReactTooltip>
-                    </>
+                headingInfo={(
+                    <TooltipIcon>
+                        {countryMetadata.internalDisplacementUpdatesTooltip }
+                    </TooltipIcon>
                 )}
             />
             <EllipsizedContent>
@@ -1547,24 +1448,10 @@ function CountryProfile(props: Props) {
             <Header
                 headingSize="large"
                 heading="Related Material"
-                headingInfo={countryMetadata.relatedMaterialTooltip && (
-                    <>
-                        <span
-                            data-tip
-                            data-for="relatedMaterialTooltip"
-                        >
-                            <IoInformationCircleOutline />
-                        </span>
-                        <ReactTooltip
-                            id="relatedMaterialTooltip"
-                            place="top"
-                            type="info"
-                            effect="solid"
-                            className={styles.tooltip}
-                        >
-                            { countryMetadata.relatedMaterialTooltip }
-                        </ReactTooltip>
-                    </>
+                headingInfo={(
+                    <TooltipIcon>
+                        {countryMetadata.relatedMaterialTooltip }
+                    </TooltipIcon>
                 )}
             />
             <div className={styles.materialList}>
@@ -1576,6 +1463,8 @@ function CountryProfile(props: Props) {
                         url={gp.metatag.value.canonical_url}
                         heading={gp.metatag.value.title}
                         description={gp.metatag.value.description}
+                        // FIXME: pass date
+                        // FIXME: pass doc type
                         date="2021-05-20"
                     />
                 ))}
@@ -1600,24 +1489,10 @@ function CountryProfile(props: Props) {
             <Header
                 heading="Essential Reading"
                 headingSize="large"
-                headingInfo={countryMetadata.essentialReadingTooltip && (
-                    <>
-                        <span
-                            data-tip
-                            data-for="essentialReadingTooltip"
-                        >
-                            <IoInformationCircleOutline />
-                        </span>
-                        <ReactTooltip
-                            id="essentialReadingTooltip"
-                            place="top"
-                            type="info"
-                            effect="solid"
-                            className={styles.tooltip}
-                        >
-                            { countryMetadata.essentialReadingTooltip }
-                        </ReactTooltip>
-                    </>
+                headingInfo={(
+                    <TooltipIcon>
+                        {countryMetadata.essentialReadingTooltip }
+                    </TooltipIcon>
                 )}
             />
             <HTMLOutput
@@ -1634,24 +1509,10 @@ function CountryProfile(props: Props) {
             <Header
                 heading="For more information please contact:"
                 headingSize="medium"
-                headingInfo={countryMetadata.contactTooltip && (
-                    <>
-                        <span
-                            data-tip
-                            data-for="contactTooltip"
-                        >
-                            <IoInformationCircleOutline />
-                        </span>
-                        <ReactTooltip
-                            id="contactTooltip"
-                            place="top"
-                            type="info"
-                            effect="solid"
-                            className={styles.tooltip}
-                        >
-                            { countryMetadata.contactTooltip }
-                        </ReactTooltip>
-                    </>
+                headingInfo={(
+                    <TooltipIcon>
+                        {countryMetadata.contactTooltip }
+                    </TooltipIcon>
                 )}
             />
             {countryInfo.contactPersonImage && (

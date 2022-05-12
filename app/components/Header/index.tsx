@@ -7,6 +7,7 @@ import styles from './styles.css';
 
 export interface Props {
     className?: string;
+    headingClassName?: string;
     heading?: React.ReactNode;
     headingInfo?: React.ReactNode;
     icons?: React.ReactNode;
@@ -21,6 +22,7 @@ export interface Props {
 function Header(props: Props) {
     const {
         className,
+        headingClassName,
         heading,
         icons,
         actions,
@@ -54,7 +56,7 @@ function Header(props: Props) {
                     {heading && (
                         <Heading
                             size={headingSize}
-                            className={styles.heading}
+                            className={_cs(styles.heading, headingClassName)}
                         >
                             {heading}
                             {headingInfo && (
