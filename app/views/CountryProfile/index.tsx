@@ -98,10 +98,6 @@ import { countryMetadata } from './data';
 
 import styles from './styles.css';
 
-const currentCountry = (window as { iso3?: string }).iso3
-    || window.location.hash.substring(1)
-    || 'NPL';
-
 const disasterMap: { [key: string]: string } = {
     // Disaster type we get from helix
     Storm: StormIcon,
@@ -339,11 +335,13 @@ const giddLink = 'https://www.internal-displacement.org/database/displacement-da
 
 interface Props {
     className?: string;
+    iso3: string;
 }
 
 function CountryProfile(props: Props) {
     const {
         className,
+        iso3: currentCountry,
     } = props;
 
     // Overview section

@@ -3,6 +3,7 @@ import React from 'react';
 import { init, ErrorBoundary } from '@sentry/react';
 import { ApolloClient, ApolloProvider } from '@apollo/client';
 import ReactGA from 'react-ga';
+import { listToMap } from '@togglecorp/fujs';
 
 import '@the-deep/deep-ui/build/index.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -35,6 +36,21 @@ if (trackingId) {
 
 const apolloClient = new ApolloClient(apolloConfig);
 
+function parseQueryString(value: string) {
+    const val = value.substring(1);
+    return listToMap(
+        val.split('&').map((token) => token.split('=')),
+        (item) => item[0],
+        (item) => item[1],
+    );
+}
+
+const query = parseQueryString(window.location.search);
+
+const currentCountry = (window as { iso3?: string }).iso3
+    || query.iso3
+    || 'NPL';
+
 function Base() {
     return (
         <div className={styles.base}>
@@ -50,6 +66,7 @@ function Base() {
                 <ApolloProvider client={apolloClient}>
                     <CountryProfile
                         className={styles.view}
+                        iso3={currentCountry}
                     />
                 </ApolloProvider>
             </ErrorBoundary>
