@@ -25,7 +25,8 @@ export const countryMetadata: CountryMetadata = {
     relatedMaterialTooltip: 'Related Material',
     essentialReadingTooltip: 'Essential Reading',
     contactTooltip: 'Contact',
-    conflictInternalDisplacementTooltip: 'Internal displacements corresponds to the estimated number of internal displacement movements to have taken place during the year. Figures include individuals who have been displaced more than once. In this sense, the number of new displacements does not equal to the number of people displaced during the year.',
-    conflictIDPTooltip: 'Total number of IDPs corresponds to the total number of people living in internal displacement.',
-    disasterInternalDisplacementTooltip: 'Internal displacements corresponds to the estimated number of internal displacement movements to have taken place during the year. Figures include individuals who have been displaced more than once. In this sense, the number of new displacements does not equal to the number of people displaced during the year.',
+
+    conflictInternalDisplacementTooltip: 'New displacements corresponds to the estimated number of internal displacement movements to have taken place during the year. Figures include individuals who have been displaced more than once. In this sense, the number of new displacements does not equal to the number of people displaced during the year.',
+    conflictIDPTooltip: 'Total number of IDPs corresponds to the total number of people living in internal displacement as of 31 December of every year.',
+    disasterInternalDisplacementTooltip: 'New displacements corresponds to the estimated number of internal displacement movements to have taken place during the year. Figures include individuals who have been displaced more than once. In this sense, the number of new displacements does not equal to the number of people displaced during the year.',
 };

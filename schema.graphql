@@ -5,36 +5,66 @@ enum DisplacementType {
 }
 
 type IduData {
-    id: Int!
-    country: String!
-    iso3: String!
-    centroid: [Float!]
-    latitude: Float
-    longitude: Float
-    displacement_type: DisplacementType
-    qualifier: String
-    figure: Int!
-    displacment_date: String
-    displacement_start_date: String
-    displacement_end_date: String
-    year: Int
-    event_name: String
-    event_start_date: String
-    event_end_date: String
-    category: String
-    subcategory: String
-    type: String
-    subtype: String
-    standard_popup_text: String
-    standard_info_text: String
+  id: Int!
+  country: String!
+  iso3: String!
+  centroid: [Float!]
+  latitude: Float
+  longitude: Float
+  displacement_type: DisplacementType
+  qualifier: String
+  figure: Int!
+  displacment_date: String
+  displacement_start_date: String
+  displacement_end_date: String
+  year: Int
+  event_name: String
+  event_start_date: String
+  event_end_date: String
+  category: String
+  subcategory: String
+  type: String
+  subtype: String
+  standard_popup_text: String
+  standard_info_text: String
+}
+type Value {
+  canonical_url: String!
+  title: String!
+  description: String
+  og_type: String
+  og_image_0: String
+}
+type Metatag {
+  value: Value!
+}
+type Type {
+  target_id: String!
+}
+type RelatedMaterialsRow {
+  type: [Type!]
+  metatag: Metatag!
+}
+type RelatedMaterialsPager {
+  current_page: Int!
+  total_items: String!
+  total_pages: Int!
+  items_per_page: Int!
+}
+
+type RelatedMaterials {
+  rows: [RelatedMaterialsRow!]!
+  pager: RelatedMaterialsPager!
 }
 
 type Query {
-    idu(country: String!): [IduData!]!
+  idu(country: String!): [IduData!]!
+  relatedMaterials(countryName: String!): RelatedMaterials!
 }
 
 directive @rest(
-    type: String!
-    path: String!
-    method: String
+  type: String!
+  path: String!
+  endpoint: String!
+  method: String
 ) on FIELD

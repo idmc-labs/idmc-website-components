@@ -53,6 +53,8 @@ import {
     CountryProfileQueryVariables,
     IduDataQuery,
     IduDataQueryVariables,
+    RelatedMaterialsQuery,
+    RelatedMaterialsQueryVariables,
     DisasterDataQuery,
     DisasterDataQueryVariables,
     CategoryStatisticsType,
@@ -76,18 +78,59 @@ import GoodPracticeItem from '#components/GoodPracticeItem';
 import SliderInput from '#components/SliderInput';
 import { goodPracticesList as relatedMaterials } from '#views/GoodPractices/data';
 import { formatNumber } from '#utils/common';
-import Conflict from '../../resources/icons/Conflict.svg';
-import Disaster from '../../resources/icons/Cyclone.svg';
-import Other from '../../resources/icons/Other.svg';
 
-import {
-    countryMetadata,
-} from './data';
+import ConflictIcon from '../../resources/icons/Icon_Conflict-Conflict.svg';
+import DroughtIcon from '../../resources/icons/Icon_Disaster-Drought.svg';
+import DryMassMovementIcon from '../../resources/icons/Icon_Disaster-Dry_Mass_Movements.svg';
+import EarthquakeIcon from '../../resources/icons/Icon_Disaster-Earthquake.svg';
+import ExtremeTemperatureIcon from '../../resources/icons/Icon_Disaster-Extreme_Temperature.svg';
+import FloodIcon from '../../resources/icons/Icon_Disaster-Flood.svg';
+import MassMovementIcon from '../../resources/icons/Icon_Disaster-Mass_Movement.svg';
+import SevereWinterConditionsIcon from '../../resources/icons/Icon_Disaster-Sever_Winter_Conditions.svg';
+import StormIcon from '../../resources/icons/Icon_Disaster-Storm.svg';
+import VolcanicActivityIcon from '../../resources/icons/Icon_Disaster-Volcanic_Activity.svg';
+import VolcanicEruptionIcon from '../../resources/icons/Icon_Disaster-Volcanic_Eruption.svg';
+import WetMassMovementIcon from '../../resources/icons/Icon_Disaster-Wet_Mass_Movements.svg';
+import WildfireIcon from '../../resources/icons/Icon_Disaster-Wildfire.svg';
+import OtherIcon from '../../resources/icons/Icon_Other.svg';
+
+import { countryMetadata } from './data';
+
 import styles from './styles.css';
 
 const currentCountry = (window as { iso3?: string }).iso3
     || window.location.hash.substring(1)
     || 'NPL';
+
+const disasterMap: { [key: string]: string } = {
+    // Disaster type we get from helix
+    Storm: StormIcon,
+    Flood: FloodIcon,
+    Earthquake: EarthquakeIcon,
+    Drought: DroughtIcon,
+    'Wet mass movement': WetMassMovementIcon,
+    Wildfire: WildfireIcon,
+    'Dry mass movement': DryMassMovementIcon,
+    'Volcanic eruption': VolcanicEruptionIcon,
+    'Extreme temperature': ExtremeTemperatureIcon,
+
+    // Disaster type we have on gidd but did not get from helix
+    'Mass movement': MassMovementIcon,
+    'Severe winter condition': SevereWinterConditionsIcon,
+    'Volcanic activity': VolcanicActivityIcon,
+
+    Unknown: OtherIcon,
+};
+
+function getIcon(displacementType: string | undefined | null, disasterType: string | undefined | null) {
+    if (displacementType === 'Conflict') {
+        return ConflictIcon;
+    }
+    if (displacementType === 'Disaster' && disasterType) {
+        return disasterMap[disasterType] ?? OtherIcon;
+    }
+    return OtherIcon;
+}
 
 type DisplacementType = 'Conflict' | 'Disaster' | 'Other';
 type DisplacementNumber = 'less-than-100' | 'less-than-1000' | 'more-than-1000';
@@ -102,12 +145,6 @@ type IduGeoJSON = GeoJSON.FeatureCollection<
     GeoJSON.Point,
     { type: 'Disaster' | 'Conflict' | 'Other', value: number, description: string | null | undefined }
 >;
-
-const displacementTypeMap: { [key in DisplacementType]: string } = {
-    Conflict,
-    Disaster,
-    Other,
-};
 
 const REST_ENDPOINT = process.env.REACT_APP_REST_ENDPOINT as string;
 const categoryKeySelector = (d: CategoryStatisticsType) => d.label;
@@ -234,6 +271,7 @@ const IDU_DATA = gql`
         idu(country: $country) @rest(
             type: "[IduData]",
             method: "GET",
+            endpoint: "helix",
             path: "data/idus_view_flat_cached?iso3=eq.:country&order=displacement_start_date.desc,displacement_end_date.desc"
         ) {
             id
@@ -262,20 +300,42 @@ const IDU_DATA = gql`
     }
 `;
 
+const RELATED_MATERIALS = gql`
+    query RelatedMaterials($countryName: String!) {
+        relatedMaterials(countryName: $countryName) @rest(
+            type: "RelatedMaterials!",
+            method: "GET",
+            endpoint: "drupal",
+            path: "previous-information/rest?_format=json&tags=:countryName"
+        ) {
+            rows {
+                type {
+                    target_id
+                }
+                metatag {
+                    value {
+                        canonical_url
+                        title
+                        description
+                        og_type
+                        og_image_0
+                    }
+                }
+            }
+            pager {
+                total_items
+                total_pages
+                items_per_page
+            }
+        }
+    }
+`;
+
 // constant
 const initialIduItems = 2;
 const startYear = 2008;
 const endYear = (new Date()).getFullYear();
 const giddLink = 'https://www.internal-displacement.org/database/displacement-data';
-
-const noOfDisplacementOptions: {
-    key: DisplacementNumber;
-    label: string;
-}[] = [
-    { key: 'less-than-100', label: '< 100' },
-    { key: 'less-than-1000', label: '< 1000' },
-    { key: 'more-than-1000', label: '> 1000' },
-];
 
 interface Props {
     className?: string;
@@ -447,6 +507,19 @@ function CountryProfile(props: Props) {
             },
         },
     );
+
+    const {
+        data,
+    } = useQuery<RelatedMaterialsQuery, RelatedMaterialsQueryVariables>(
+        RELATED_MATERIALS,
+        {
+            variables: {
+                // FIXME: pass country name here
+                countryName: 'Nepal',
+            },
+        },
+    );
+    console.log(data);
 
     const idus = iduData?.idu;
     const countryInfo = countryProfileData?.country;
@@ -1021,13 +1094,11 @@ function CountryProfile(props: Props) {
                                             key={idu.id}
                                             className={styles.idu}
                                         >
-                                            {idu.displacement_type && (
-                                                <img
-                                                    className={styles.icon}
-                                                    src={displacementTypeMap[idu.displacement_type]}
-                                                    alt={idu.displacement_type}
-                                                />
-                                            )}
+                                            <img
+                                                className={styles.icon}
+                                                src={getIcon(idu.displacement_type, idu.type)}
+                                                alt="type"
+                                            />
                                             <HTMLOutput
                                                 value={idu.standard_popup_text}
                                             />
