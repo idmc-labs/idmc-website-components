@@ -1,7 +1,7 @@
 import React from 'react';
 import { _cs } from '@togglecorp/fujs';
 
-import NumberOutput, { Props as NumberOutputProps } from '#components/NumberOutput';
+import Numeral, { Props as NumeralProps } from '#components/Numeral';
 import DateOutput, { Props as DateOutputProps } from '#components/DateOutput';
 
 import styles from './styles.css';
@@ -31,8 +31,8 @@ const displayTypeToStyleMap: {
 
 export type Props = BaseProps & ({
     valueType: 'number';
-    valueProps?: Omit<NumberOutputProps, 'value'>;
-    value?: NumberOutputProps['value'] | null;
+    valueProps?: Omit<NumeralProps, 'value'>;
+    value?: NumeralProps['value'] | null;
 } | {
     valueType: 'date';
     valueProps?: Omit<DateOutputProps, 'value'>;
@@ -62,7 +62,7 @@ function TextOutput(props: Props) {
     // eslint-disable-next-line react/destructuring-assignment
     if (props.valueType === 'number') {
         value = (
-            <NumberOutput
+            <Numeral
                 // eslint-disable-next-line react/destructuring-assignment
                 value={props.value}
                 // eslint-disable-next-line react/destructuring-assignment

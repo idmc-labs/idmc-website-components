@@ -2,7 +2,6 @@ import React from 'react';
 import {
     TextInput,
     SelectInput,
-    NumberOutput,
 } from '@the-deep/deep-ui';
 import Map, {
     MapContainer,
@@ -16,6 +15,7 @@ import {
     IoListOutline,
 } from 'react-icons/io5';
 
+import TextOutput from '#components/TextOutput';
 import Tabs from '#components/Tabs';
 import Tab from '#components/Tabs/Tab';
 import TabList from '#components/Tabs/TabList';
@@ -110,10 +110,10 @@ function GoodPractices(props: Props) {
                             />
                         </EllipsizedContent>
                         <div className={styles.numberBlock}>
-                            <NumberOutput
+                            <TextOutput
                                 className={styles.count}
                                 value={goodPracticeMeta.totalCount}
-                                precision={0}
+                                valueType="number"
                             />
                             <div className={styles.countLabel}>
                                 Good Practices

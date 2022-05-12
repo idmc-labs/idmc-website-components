@@ -1,7 +1,5 @@
 import React from 'react';
-import {
-    NumberOutput,
-} from '@the-deep/deep-ui';
+import Numeral from '#components/Numeral';
 import { _cs } from '@togglecorp/fujs';
 
 import styles from './styles.css';
@@ -26,11 +24,11 @@ function Infographic(props: InfoGraphicProps) {
     return (
         <div className={_cs(styles.infographic, className)}>
             <div>
-                <NumberOutput
+                <Numeral
                     className={styles.totalValue}
                     value={totalValue}
-                    precision={1}
-                    normal
+                    abbreviate
+                    largeNumberForAbbreviation={1000000}
                 />
                 <div className={styles.descriptionAndDate}>
                     <div className={styles.description}>

@@ -1,8 +1,10 @@
-import React from 'react';
+import React, {
+    useMemo,
+    useCallback,
+    useState,
+} from 'react';
 import {
     MultiSelectInput,
-    useInputState,
-    Link,
 } from '@the-deep/deep-ui';
 import {
     gql,
@@ -23,16 +25,15 @@ import Map, {
     MapTooltip,
 } from '@togglecorp/re-map';
 import {
-    IoDownloadOutline,
+    // IoDownloadOutline,
+    // IoArrowUp,
     IoInformationCircleOutline,
     IoArrowDown,
-    IoArrowUp,
 } from 'react-icons/io5';
 import { _cs, isDefined, isNotDefined, randomString } from '@togglecorp/fujs';
 import { saveAs } from 'file-saver';
 import stringify from 'csv-stringify/lib/browser/sync';
 import ReactTooltip from 'react-tooltip';
-
 import {
     ResponsiveContainer,
     BarChart,
@@ -48,6 +49,7 @@ import {
     Pie,
     Cell,
 } from 'recharts';
+
 import {
     CountryProfileQuery,
     CountryProfileQueryVariables,
@@ -79,6 +81,9 @@ import Container from '#components/Container';
 
 import { formatNumber } from '#utils/common';
 
+import useDebouncedValue from '../../hooks/useDebouncedValue';
+import useInputState from '../../hooks/useInputState';
+
 import ConflictIcon from '../../resources/icons/Icon_Conflict-Conflict.svg';
 import DroughtIcon from '../../resources/icons/Icon_Disaster-Drought.svg';
 import DryMassMovementIcon from '../../resources/icons/Icon_Disaster-Dry_Mass_Movements.svg';
@@ -101,7 +106,7 @@ import styles from './styles.css';
 const DRUPAL_ENDPOINT = process.env.REACT_APP_DRUPAL_ENDPOINT as string;
 
 function useId() {
-    const id = React.useMemo(() => randomString(), []);
+    const id = useMemo(() => randomString(), []);
     return id;
 }
 
@@ -386,7 +391,7 @@ const RELATED_MATERIALS = gql`
 const initialIduItems = 2;
 const startYear = 2008;
 const endYear = (new Date()).getFullYear();
-const giddLink = 'https://www.internal-displacement.org/database/displacement-data';
+const giddLink = `${DRUPAL_ENDPOINT}/database/displacement-data`;
 
 interface Props {
     className?: string;
@@ -402,53 +407,46 @@ function CountryProfile(props: Props) {
     } = props;
 
     // Overview section
-    const [activeYear, setActiveYear] = React.useState<string>(String(endYear));
+    const [overviewActiveYear, setOverviewActiveYear] = useState<string>(String(endYear));
 
     // Conflict section
-    // FIXME: debounce this value
-    const [conflictTimeRange, setConflictTimeRange] = React.useState([startYear, endYear]);
+    const [conflictTimeRangeActual, setConflictTimeRange] = useState([startYear, endYear]);
+    const conflictTimeRange = useDebouncedValue(conflictTimeRangeActual);
 
     // Disaster section
-    const [categories, setCategories] = React.useState<string[] | undefined>();
-    // FIXME: debounce this value
-    const [disasterTimeRange, setDisasterTimeRange] = React.useState([startYear, endYear]);
+    const [disasterCategories, setDisasterCategories] = useState<string[] | undefined>();
+    const [disasterTimeRangeActual, setDisasterTimeRange] = useState([startYear, endYear]);
+    const disasterTimeRange = useDebouncedValue(disasterTimeRangeActual);
 
     // Related material section
-    const pageSize = 4;
+    // NOTE: we cannot use any page size for related material
+    // It should be defined on drupal rest view
+    const relatedMaterialPageSize = 4;
 
     // IDU list section
-    const [iduPage, setIduPage] = React.useState(1);
+    const [iduActivePage, setIduActivePage] = useState(1);
 
     // IDU map section
-    const [timerangeBounds, setTimerangeBounds] = React.useState([startYear, endYear]);
-    const [timerange, setTimerange] = React.useState([startYear, endYear]);
+    const [mapTimeRangeBounds, setMapTimeRangeBounds] = useState([startYear, endYear]);
 
+    const [mapTimeRangeActual, setMapTimeRange] = useState([startYear, endYear]);
+    const mapTimeRange = useDebouncedValue(mapTimeRangeActual);
+    const [mapHoverLngLat, setMapHoverLngLat] = useState<LngLatLike>();
     const [
-        typeOfDisplacements,
-        setTypeOfDisplacements,
+        mapHoverFeatureProperties,
+        setMapHoverFeatureProperties,
+    ] = useState<PopupProperties | undefined>(undefined);
+    const [
+        mapTypeOfDisplacements,
+        setMapTypeOfDisplacements,
     ] = useInputState<DisplacementType[]>([]);
-
-    const handleTypeOfDisplacementsChange = React.useCallback((value: DisplacementType) => {
-        setTypeOfDisplacements((oldValue: DisplacementType[]) => {
-            const newValue = [...oldValue];
-            const oldIndex = oldValue.findIndex((d) => d === value);
-            if (oldIndex !== -1) {
-                newValue.splice(oldIndex, 1);
-            } else {
-                newValue.push(value);
-            }
-
-            return newValue;
-        });
-    }, [setTypeOfDisplacements]);
-
     const [
-        noOfDisplacements,
-        setNoOfDisplacements,
+        mapNoOfDisplacements,
+        setMapNoOfDisplacements,
     ] = useInputState<DisplacementNumber[]>([]);
 
-    const handleNoOfDisplacementsChange = React.useCallback((value: DisplacementNumber) => {
-        setNoOfDisplacements((oldValue: DisplacementNumber[]) => {
+    const handleTypeOfDisplacementsChange = useCallback((value: DisplacementType) => {
+        setMapTypeOfDisplacements((oldValue: DisplacementType[]) => {
             const newValue = [...oldValue];
             const oldIndex = oldValue.findIndex((d) => d === value);
             if (oldIndex !== -1) {
@@ -459,27 +457,35 @@ function CountryProfile(props: Props) {
 
             return newValue;
         });
-    }, [setNoOfDisplacements]);
+    }, [setMapTypeOfDisplacements]);
 
-    const [
-        hoverFeatureProperties,
-        setHoverFeatureProperties,
-    ] = React.useState<PopupProperties | undefined>(undefined);
-    const [hoverLngLat, setHoverLngLat] = React.useState<LngLatLike>();
+    const handleNoOfDisplacementsChange = useCallback((value: DisplacementNumber) => {
+        setMapNoOfDisplacements((oldValue: DisplacementNumber[]) => {
+            const newValue = [...oldValue];
+            const oldIndex = oldValue.findIndex((d) => d === value);
+            if (oldIndex !== -1) {
+                newValue.splice(oldIndex, 1);
+            } else {
+                newValue.push(value);
+            }
 
-    const handlePointClick = React.useCallback((feature: MapboxGeoJSONFeature, lngLat: LngLat) => {
+            return newValue;
+        });
+    }, [setMapNoOfDisplacements]);
+
+    const handleMapPointClick = useCallback((feature: MapboxGeoJSONFeature, lngLat: LngLat) => {
         if (feature.properties) {
-            setHoverLngLat(lngLat);
-            setHoverFeatureProperties(feature.properties as PopupProperties);
+            setMapHoverLngLat(lngLat);
+            setMapHoverFeatureProperties(feature.properties as PopupProperties);
         } else {
-            setHoverFeatureProperties(undefined);
+            setMapHoverFeatureProperties(undefined);
         }
         return true;
     }, []);
 
-    const handlePopupClose = React.useCallback(() => {
-        setHoverLngLat(undefined);
-        setHoverFeatureProperties(undefined);
+    const handleMapPopupClose = useCallback(() => {
+        setMapHoverLngLat(undefined);
+        setMapHoverFeatureProperties(undefined);
     }, []);
 
     const {
@@ -502,7 +508,7 @@ function CountryProfile(props: Props) {
                     overviews,
                 } = response.country;
                 if (overviews && overviews.length > 0) {
-                    setActiveYear(overviews[0].year.toString());
+                    setOverviewActiveYear(overviews[0].year.toString());
                 }
             },
         },
@@ -521,7 +527,7 @@ function CountryProfile(props: Props) {
                 countryIso3: currentCountry,
                 startYear: disasterTimeRange[0],
                 endYear: disasterTimeRange[1],
-                categories,
+                categories: disasterCategories,
             },
         },
     );
@@ -564,8 +570,8 @@ function CountryProfile(props: Props) {
                 if (min === max) {
                     min -= 1;
                 }
-                setTimerangeBounds([min, max]);
-                setTimerange([min, max]);
+                setMapTimeRangeBounds([min, max]);
+                setMapTimeRange([min, max]);
             },
         },
     );
@@ -583,29 +589,94 @@ function CountryProfile(props: Props) {
             variables: countryName ? {
                 countryName,
                 offset: 0,
-                itemsPerPage: pageSize,
+                itemsPerPage: relatedMaterialPageSize,
             } : undefined,
         },
     );
 
     const relatedMaterials = data?.relatedMaterials?.rows;
-    const offset = relatedMaterials?.length ?? 0;
+    const relatedMaterialsOffset = relatedMaterials?.length ?? 0;
 
-    const remainingRelatedMaterials = Math.max(
+    const remainingRelatedMaterialsCount = Math.max(
         0,
-        Number(data?.relatedMaterials?.pager?.total_items || '0') - pageSize,
+        Number(data?.relatedMaterials?.pager?.total_items || '0') - relatedMaterialPageSize,
     );
 
     const idus = iduData?.idu;
     const countryInfo = countryProfileData?.country;
 
-    const conflictShown = (
-        (countryProfileData?.conflictStatistics?.newDisplacements ?? 0)
-        + (countryProfileData?.conflictStatistics?.totalIdps ?? 0)
-    ) > 0;
-    const disasterShown = (countryProfileData?.disasterStatistics?.newDisplacements ?? 0) > 0;
+    const countryOverviewSortedByYear = useMemo(() => {
+        if (countryInfo?.overviews) {
+            return [...countryInfo.overviews].sort((c1, c2) => c2.year - c1.year);
+        }
 
-    const handleExportIduClick = React.useCallback(() => {
+        return undefined;
+    }, [countryInfo]);
+
+    const iduGeojson: IduGeoJSON = useMemo(
+        () => ({
+            type: 'FeatureCollection',
+            features: idus
+                ?.map((idu) => {
+                    if (
+                        isNotDefined(idu.longitude)
+                        || isNotDefined(idu.latitude)
+                        || isNotDefined(idu.figure)
+                        || isNotDefined(idu.displacement_type)
+                        // NOTE: filtering out displacement_type Other
+                        || idu.displacement_type === 'Other'
+                    ) {
+                        return undefined;
+                    }
+
+                    if (mapTypeOfDisplacements.length > 0) {
+                        if (!mapTypeOfDisplacements.includes(idu.displacement_type)) {
+                            return undefined;
+                        }
+                    }
+                    if (mapNoOfDisplacements.length > 0) {
+                        let key: DisplacementNumber;
+                        if (idu.figure < 100) {
+                            key = 'less-than-100';
+                        } else if (idu.figure < 1000) {
+                            key = 'less-than-1000';
+                        } else {
+                            key = 'more-than-1000';
+                        }
+
+                        if (!mapNoOfDisplacements.includes(key)) {
+                            return undefined;
+                        }
+                    }
+                    if (mapTimeRange) {
+                        const [min, max] = mapTimeRange;
+                        if (!idu.year || idu.year < min || idu.year > max) {
+                            return undefined;
+                        }
+                    }
+
+                    return {
+                        id: idu.id,
+                        type: 'Feature' as const,
+                        properties: {
+                            type: idu.displacement_type,
+                            value: idu.figure,
+                            description: idu.standard_popup_text,
+                        },
+                        geometry: {
+                            type: 'Point' as const,
+                            coordinates: [
+                                idu.longitude,
+                                idu.latitude,
+                            ],
+                        },
+                    };
+                }).filter(isDefined) ?? [],
+        }),
+        [idus, mapNoOfDisplacements, mapTypeOfDisplacements, mapTimeRange],
+    );
+
+    const handleExportIduClick = useCallback(() => {
         if (idus && idus.length > 0) {
             // FIXME: we may need to manually set headers (first data may not
             // always have all the keys)
@@ -623,12 +694,12 @@ function CountryProfile(props: Props) {
         }
     }, [idus]);
 
-    const handleShowMoreButtonClick = React.useCallback(() => {
+    const handleShowMoreButtonClick = useCallback(() => {
         fetchMore({
             variables: {
                 countryName,
-                offset,
-                itemsPerPage: pageSize,
+                relatedMaterialsOffset,
+                itemsPerPage: relatedMaterialPageSize,
             },
             updateQuery: (previousResult, { fetchMoreResult }) => {
                 if (!previousResult.relatedMaterials) {
@@ -656,93 +727,24 @@ function CountryProfile(props: Props) {
         });
     }, [
         countryName,
-        offset,
+        relatedMaterialsOffset,
         fetchMore,
     ]);
 
-    const countryOverviewSortedByYear = React.useMemo(() => {
-        if (countryInfo?.overviews) {
-            return [...countryInfo.overviews].sort((c1, c2) => c2.year - c1.year);
-        }
-
-        return undefined;
-    }, [countryInfo]);
-
-    const iduGeojson: IduGeoJSON = React.useMemo(
-        () => ({
-            type: 'FeatureCollection',
-            features: idus
-                ?.map((idu) => {
-                    if (
-                        isNotDefined(idu.longitude)
-                        || isNotDefined(idu.latitude)
-                        || isNotDefined(idu.figure)
-                        || isNotDefined(idu.displacement_type)
-                        // NOTE: filtering out displacement_type Other
-                        || idu.displacement_type === 'Other'
-                    ) {
-                        return undefined;
-                    }
-
-                    if (typeOfDisplacements.length > 0) {
-                        if (!typeOfDisplacements.includes(idu.displacement_type)) {
-                            return undefined;
-                        }
-                    }
-                    if (noOfDisplacements.length > 0) {
-                        let key: DisplacementNumber;
-                        if (idu.figure < 100) {
-                            key = 'less-than-100';
-                        } else if (idu.figure < 1000) {
-                            key = 'less-than-1000';
-                        } else {
-                            key = 'more-than-1000';
-                        }
-
-                        if (!noOfDisplacements.includes(key)) {
-                            return undefined;
-                        }
-                    }
-                    if (timerange) {
-                        const [min, max] = timerange;
-                        if (!idu.year || idu.year < min || idu.year > max) {
-                            return undefined;
-                        }
-                    }
-
-                    return {
-                        id: idu.id,
-                        type: 'Feature' as const,
-                        properties: {
-                            type: idu.displacement_type,
-                            value: idu.figure,
-                            description: idu.standard_popup_text,
-                        },
-                        geometry: {
-                            type: 'Point' as const,
-                            coordinates: [
-                                idu.longitude,
-                                idu.latitude,
-                            ],
-                        },
-                    };
-                }).filter(isDefined) ?? [],
-        }),
-        [idus, noOfDisplacements, typeOfDisplacements, timerange],
-    );
-
     if (countryProfileLoading || iduDataLoading) {
+        // FIXME: handle better loading message
         return (
             <div className={_cs(styles.countryProfile, className)}>
-                Loading....
+                Loading
             </div>
         );
     }
 
     if (iduDataError || countryProfileError || !countryInfo) {
+        // FIXME: handle better error message
         return (
             <div className={_cs(styles.countryProfile, className)}>
-                Error fetching country profile....
+                Errored
             </div>
         );
     }
@@ -818,8 +820,8 @@ function CountryProfile(props: Props) {
             />
             <div className={styles.overviewContent}>
                 <Tabs
-                    value={activeYear}
-                    onChange={setActiveYear}
+                    value={overviewActiveYear}
+                    onChange={setOverviewActiveYear}
                     variant="secondary"
                 >
                     <TabList className={styles.tabList}>
@@ -855,7 +857,9 @@ function CountryProfile(props: Props) {
         </section>
     );
 
-    const disasterSection = disasterShown && (
+    const disasterSection = (
+        (countryProfileData?.disasterStatistics?.newDisplacements ?? 0) > 0
+    ) && (
         <Container
             heading="Disaster Data"
             headingSize="small"
@@ -866,23 +870,20 @@ function CountryProfile(props: Props) {
             )}
             footerActions={(
                 <>
-                    <Link
-                        to={`${REST_ENDPOINT}/countries/${currentCountry}/disaster-export/`}
-                        icons={(
-                            <IoDownloadOutline />
-                        )}
+                    <a
+                        href={`${REST_ENDPOINT}/countries/${currentCountry}/disaster-export/`}
                         target="_blank"
                         rel="noopener noreferrer"
                     >
                         Download data
-                    </Link>
-                    <Link
-                        to={giddLink}
+                    </a>
+                    <a
+                        href={giddLink}
                         target="_blank"
                         rel="noopener noreferrer"
                     >
                         View GIDD dashboard
-                    </Link>
+                    </a>
                 </>
             )}
             filters={(
@@ -895,11 +896,11 @@ function CountryProfile(props: Props) {
                                 variant="general"
                                 placeholder="Disaster Category"
                                 name="disasterCategory"
-                                value={categories}
+                                value={disasterCategories}
                                 options={countryProfileData?.disasterStatistics.categories}
                                 keySelector={categoryKeySelector}
                                 labelSelector={categoryKeySelector}
-                                onChange={setCategories}
+                                onChange={setDisasterCategories}
                             />
                         )}
                     />
@@ -907,7 +908,7 @@ function CountryProfile(props: Props) {
                     <Header
                         heading="Timescale"
                         headingSize="extraSmall"
-                        headingDescription={`${disasterTimeRange[0]} - ${disasterTimeRange[1]}`}
+                        headingDescription={`${disasterTimeRangeActual[0]} - ${disasterTimeRangeActual[1]}`}
                         inlineHeadingDescription
                         description={(
                             <SliderInput
@@ -916,7 +917,7 @@ function CountryProfile(props: Props) {
                                 max={endYear}
                                 step={1}
                                 minDistance={0}
-                                value={disasterTimeRange}
+                                value={disasterTimeRangeActual}
                                 onChange={setDisasterTimeRange}
                             />
                         )}
@@ -944,7 +945,7 @@ function CountryProfile(props: Props) {
                             />
                         </div>
                     )}
-                    date={`${disasterTimeRange[0]} - ${disasterTimeRange[1]}`}
+                    date={`${disasterTimeRangeActual[0]} - ${disasterTimeRangeActual[1]}`}
                     chart={(
                         <ResponsiveContainer>
                             <LineChart
@@ -995,7 +996,7 @@ function CountryProfile(props: Props) {
                             )}
                         />
                     )}
-                    date={`${disasterTimeRange[0]} - ${disasterTimeRange[1]}`}
+                    date={`${disasterTimeRangeActual[0]} - ${disasterTimeRangeActual[1]}`}
                     chart={(
                         <ResponsiveContainer>
                             <PieChart>
@@ -1029,7 +1030,10 @@ function CountryProfile(props: Props) {
         </Container>
     );
 
-    const conflictSection = conflictShown && (
+    const conflictSection = ((
+        (countryProfileData?.conflictStatistics?.newDisplacements ?? 0)
+        + (countryProfileData?.conflictStatistics?.totalIdps ?? 0)
+    ) > 0) && (
         <Container
             heading="Conflict and Violence Data"
             headingSize="small"
@@ -1043,7 +1047,7 @@ function CountryProfile(props: Props) {
                     <Header
                         heading="Timescale"
                         headingSize="extraSmall"
-                        headingDescription={`${conflictTimeRange[0]} - ${conflictTimeRange[1]}`}
+                        headingDescription={`${conflictTimeRangeActual[0]} - ${conflictTimeRangeActual[1]}`}
                         inlineHeadingDescription
                         description={(
                             <SliderInput
@@ -1053,7 +1057,7 @@ function CountryProfile(props: Props) {
                                 max={endYear}
                                 step={1}
                                 minDistance={0}
-                                value={conflictTimeRange}
+                                value={conflictTimeRangeActual}
                                 onChange={setConflictTimeRange}
                             />
                         )}
@@ -1064,23 +1068,20 @@ function CountryProfile(props: Props) {
             )}
             footerActions={(
                 <>
-                    <Link
-                        to={`${REST_ENDPOINT}/countries/${currentCountry}/conflict-export/`}
-                        icons={(
-                            <IoDownloadOutline />
-                        )}
+                    <a
+                        href={`${REST_ENDPOINT}/countries/${currentCountry}/conflict-export/`}
                         target="_blank"
                         rel="noopener noreferrer"
                     >
                         Download data
-                    </Link>
-                    <Link
-                        to={giddLink}
+                    </a>
+                    <a
+                        href={giddLink}
                         target="_blank"
                         rel="noopener noreferrer"
                     >
                         View GIDD dashboard
-                    </Link>
+                    </a>
                 </>
             )}
         >
@@ -1100,7 +1101,7 @@ function CountryProfile(props: Props) {
                             )}
                         />
                     )}
-                    date={`${conflictTimeRange[0]} - ${conflictTimeRange[1]}`}
+                    date={`${conflictTimeRangeActual[0]} - ${conflictTimeRangeActual[1]}`}
                     chart={(
                         <ResponsiveContainer>
                             <LineChart
@@ -1150,7 +1151,7 @@ function CountryProfile(props: Props) {
                             )}
                         />
                     )}
-                    date={`As of end of ${conflictTimeRange[1]}`}
+                    date={`As of end of ${conflictTimeRangeActual[1]}`}
                     chart={(
                         <ResponsiveContainer>
                             <BarChart
@@ -1234,7 +1235,7 @@ function CountryProfile(props: Props) {
                 />
             </EllipsizedContent>
             <div className={styles.iduContainer}>
-                {idus && idus.slice(0, iduPage * initialIduItems)?.map((idu) => (
+                {idus && idus.slice(0, iduActivePage * initialIduItems)?.map((idu) => (
                     <div
                         key={idu.id}
                         className={styles.idu}
@@ -1251,28 +1252,28 @@ function CountryProfile(props: Props) {
                 ))}
             </div>
             <div className={styles.iduPager}>
-                {idus && idus.length > (iduPage * initialIduItems) && (
+                {idus && idus.length > (iduActivePage * initialIduItems) && (
                     <Button
                         name={undefined}
                         onClick={() => {
-                            setIduPage((val) => val + 1);
+                            setIduActivePage((val) => val + 1);
                         }}
                         actions={<IoArrowDown />}
                     >
                         View Older Displacements
                     </Button>
                 )}
-                {iduPage > 1 && (
+                {/* iduActivePage > 1 && (
                     <Button
                         name={undefined}
                         onClick={() => {
-                            setIduPage(1);
+                            setIduActivePage(1);
                         }}
                         actions={<IoArrowUp />}
                     >
                         See Less
                     </Button>
-                )}
+                ) */}
             </div>
         </section>
     );
@@ -1320,14 +1321,14 @@ function CountryProfile(props: Props) {
                                 <LegendElement
                                     name="Conflict"
                                     onClick={handleTypeOfDisplacementsChange}
-                                    isActive={typeOfDisplacements.includes('Conflict')}
+                                    isActive={mapTypeOfDisplacements.includes('Conflict')}
                                     color="var(--color-conflict)"
                                     label="Conflict"
                                 />
                                 <LegendElement
                                     name="Disaster"
                                     onClick={handleTypeOfDisplacementsChange}
-                                    isActive={typeOfDisplacements.includes('Disaster')}
+                                    isActive={mapTypeOfDisplacements.includes('Disaster')}
                                     color="var(--color-disaster)"
                                     label="Disaster"
                                 />
@@ -1343,7 +1344,7 @@ function CountryProfile(props: Props) {
                                 <LegendElement
                                     name="less-than-100"
                                     onClick={handleNoOfDisplacementsChange}
-                                    isActive={noOfDisplacements.includes('less-than-100')}
+                                    isActive={mapNoOfDisplacements.includes('less-than-100')}
                                     color="grey"
                                     size={10}
                                     label="< 100"
@@ -1351,7 +1352,7 @@ function CountryProfile(props: Props) {
                                 <LegendElement
                                     name="less-than-1000"
                                     onClick={handleNoOfDisplacementsChange}
-                                    isActive={noOfDisplacements.includes('less-than-1000')}
+                                    isActive={mapNoOfDisplacements.includes('less-than-1000')}
                                     color="grey"
                                     size={18}
                                     label="< 1000"
@@ -1359,7 +1360,7 @@ function CountryProfile(props: Props) {
                                 <LegendElement
                                     name="more-than-1000"
                                     onClick={handleNoOfDisplacementsChange}
-                                    isActive={noOfDisplacements.includes('more-than-1000')}
+                                    isActive={mapNoOfDisplacements.includes('more-than-1000')}
                                     color="grey"
                                     size={26}
                                     label="> 1000"
@@ -1371,19 +1372,19 @@ function CountryProfile(props: Props) {
                             <Header
                                 headingSize="extraSmall"
                                 heading="Timescale"
-                                headingDescription={`${timerange[0]} - ${timerange[1]}`}
+                                headingDescription={`${mapTimeRange[0]} - ${mapTimeRange[1]}`}
                                 inlineHeadingDescription
                             />
                             <SliderInput
                                 hideValues
                                 className={styles.timeRangeInput}
                                 // NOTE: timescale
-                                min={timerangeBounds[0]}
-                                max={timerangeBounds[1]}
+                                min={mapTimeRangeBounds[0]}
+                                max={mapTimeRangeBounds[1]}
                                 step={1}
                                 minDistance={0}
-                                value={timerange}
-                                onChange={setTimerange}
+                                value={mapTimeRange}
+                                onChange={setMapTimeRange}
                             />
                         </div>
                     </div>
@@ -1407,29 +1408,29 @@ function CountryProfile(props: Props) {
                             type: 'circle',
                             paint: iduPointColor,
                         }}
-                        onClick={handlePointClick}
+                        onClick={handleMapPointClick}
                     />
-                    {hoverLngLat && hoverFeatureProperties && (
+                    {mapHoverLngLat && mapHoverFeatureProperties && (
                         <MapTooltip
-                            coordinates={hoverLngLat}
+                            coordinates={mapHoverLngLat}
                             tooltipOptions={popupOptions}
-                            onHide={handlePopupClose}
+                            onHide={handleMapPopupClose}
                         >
                             <HTMLOutput
-                                value={hoverFeatureProperties.description}
+                                value={mapHoverFeatureProperties.description}
                             />
                         </MapTooltip>
                     )}
                 </MapSource>
             </Map>
             <div>
-                <Link
-                    to={giddLink}
+                <a
+                    href={giddLink}
                     target="_blank"
                     rel="noopener noreferrer"
                 >
                     View GIDD dashboard
-                </Link>
+                </a>
                 <Button
                     name={undefined}
                     // variant="secondary"
@@ -1469,7 +1470,7 @@ function CountryProfile(props: Props) {
                     />
                 ))}
             </div>
-            {remainingRelatedMaterials > 0 && (
+            {remainingRelatedMaterialsCount > 0 && (
                 <Button
                     // FIXME: need to hide this if there is no more data
                     name={undefined}
