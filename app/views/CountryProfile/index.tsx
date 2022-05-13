@@ -125,6 +125,8 @@ const categoricalColorScheme = [
     'rgb(94, 217, 238)',
 ];
 
+const chartMargins = { top: 16, left: 5, right: 5, bottom: 5 };
+
 const COUNTRY_PROFILE = gql`
     query CountryProfile($iso3: String!) {
         country(iso3: $iso3) {
@@ -759,6 +761,7 @@ function CountryProfile(props: Props) {
                         <ResponsiveContainer>
                             <LineChart
                                 data={disasterData?.disasterStatistics.timeseries}
+                                margin={chartMargins}
                             >
                                 <XAxis
                                     dataKey="year"
@@ -779,7 +782,7 @@ function CountryProfile(props: Props) {
                                 <Line
                                     dataKey="total"
                                     key="total"
-                                    fill="var(--color-disaster)"
+                                    stroke="var(--color-disaster)"
                                     name="Disaster internal displacements"
                                     strokeWidth={2}
                                     connectNulls
@@ -920,6 +923,7 @@ function CountryProfile(props: Props) {
                         <ResponsiveContainer>
                             <LineChart
                                 data={conflictData?.conflictStatistics.timeseries}
+                                margin={chartMargins}
                             >
                                 <XAxis
                                     dataKey="year"
@@ -970,6 +974,7 @@ function CountryProfile(props: Props) {
                         <ResponsiveContainer>
                             <BarChart
                                 data={conflictData?.conflictStatistics.timeseries}
+                                margin={chartMargins}
                             >
                                 <XAxis
                                     dataKey="year"
