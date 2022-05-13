@@ -8,6 +8,7 @@ import styles from './styles.css';
 export interface Props {
     className?: string;
     headingClassName?: string;
+    headingDescriptionClassName?: string;
     heading?: React.ReactNode;
     headingInfo?: React.ReactNode;
     icons?: React.ReactNode;
@@ -24,6 +25,7 @@ function Header(props: Props) {
     const {
         className,
         headingClassName,
+        headingDescriptionClassName,
         heading,
         icons,
         actions,
@@ -70,7 +72,12 @@ function Header(props: Props) {
                         </Heading>
                     )}
                     {headingDescription && (
-                        <div className={styles.headingDescription}>
+                        <div
+                            className={_cs(
+                                styles.headingDescription,
+                                headingDescriptionClassName,
+                            )}
+                        >
                             {headingDescription}
                         </div>
                     )}

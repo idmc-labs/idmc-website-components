@@ -11,6 +11,8 @@ interface Props {
     className?: string;
     heading?: React.ReactNode;
     headingSize?: HeaderProps['headingSize'];
+    headerClassName?: string;
+    headingClassName?: string;
     headingActions?: React.ReactNode;
     headingInfo?: React.ReactNode;
     headerDescription?: React.ReactNode;
@@ -25,6 +27,8 @@ function Container(props: Props) {
         className,
         heading,
         headingSize,
+        headerClassName,
+        headingClassName,
         headingInfo,
         headingActions,
         headerDescription,
@@ -38,8 +42,9 @@ function Container(props: Props) {
         <div className={_cs(styles.container, className)}>
             {heading && (
                 <Header
-                    className={styles.header}
+                    className={_cs(styles.header, headerClassName)}
                     heading={heading}
+                    headingClassName={headingClassName}
                     headingSize={headingSize}
                     headingInfo={headingInfo}
                     actions={headingActions}

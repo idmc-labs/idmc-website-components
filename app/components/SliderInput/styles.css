@@ -3,12 +3,21 @@
     position: relative;
     gap: var(--dui-spacing-medium);
 
+    .heading {
+        font-size: var(--dui-font-size-small);
+    }
+
+    .heading-description {
+        color: var(--dui-color-text-label);
+        font-size: var(--dui-font-size-small);
+    }
+
     .react-slider {
         width: 100%;
         height: 2ch;
 
         .thumb {
-            border: 1px solid var(--dui-color-brand);
+            border: 2px solid var(--dui-color-brand);
             border-radius: 50%;
             background-color: #fff;
             cursor: grab;
@@ -20,7 +29,7 @@
         .track {
             top: 1ch;
             background-color: var(--dui-color-separator);
-            height: 1px;
+            height: 2px;
 
             &.center {
                 background-color: var(--dui-color-brand);
@@ -30,19 +39,19 @@
         .mark {
             transform: translate(calc(1ch + 0.5px), -0.5ch);
             transition: opacity .2s ease-in-out;
-            opacity: 0;
+            opacity: 0.3;
             border-radius: 50%;
             background-color: var(--dui-color-brand);
             width: var(--dui-width-separator-thin);
-            height: 0.75ch;
+            height: 1.5ch;
         }
-
     }
 
     .value {
         font-family: monospace;
     }
 
+    /*
     &:hover {
         .react-slider {
             .mark {
@@ -50,4 +59,5 @@
             }
         }
     }
+    */
 }

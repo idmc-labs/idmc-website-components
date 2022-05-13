@@ -92,11 +92,19 @@
                         flex-direction: column;
                         flex-shrink: 0;
                         background-color: transparent;
-                        width: 10rem;
+                        width: 12rem;
                         gap: var(--dui-spacing-small);
 
                         .tab {
                             width: 100%;
+                        }
+                    }
+
+                    .text-output {
+                        gap: var(--dui-spacing-small);
+
+                        .value {
+                            color: var(--dui-color-text-label);
                         }
                     }
                 }
@@ -107,6 +115,30 @@
                 flex-direction: column;
                 gap: var(--dui-spacing-extra-large);
                 padding: var(--dui-spacing-super-large) 0;
+
+                .conflict-header {
+                    background-color: var(--color-conflict);
+
+                    .conflict-heading {
+                        color: var(--color-text-on-dark);
+                    }
+                }
+
+                .conflict-button {
+                    background-color: var(--color-conflict);
+                }
+
+                .disaster-header {
+                    background-color: var(--color-disaster);
+
+                    .disaster-heading {
+                        color: var(--color-text-on-dark);
+                    }
+                }
+
+                .disaster-button {
+                    background-color: var(--color-disaster);
+                }
 
                 .infographics {
                     display: flex;
@@ -182,6 +214,10 @@
                 display: flex;
                 flex-wrap: wrap;
                 gap: var(--dui-spacing-small);
+
+                .idu-pager-button {
+                    padding: 0;
+                }
             }
 
             .internal-displacement-updates {
@@ -253,10 +289,21 @@
                     flex-direction: column;
                     gap: var(--dui-spacing-large);
 
-                    .preview {
-                        width: 14rem;
-                        height: 16rem;
-                        object-fit: cover;
+                    .contact-item {
+                        display: flex;
+                        background-color: var(--color-background);
+                        width: 30rem;
+                        gap: var(--dui-spacing-large);
+
+                        .preview {
+                            width: 10rem;
+                            height: 10rem;
+                            object-fit: cover;
+                        }
+
+                        .contact-details {
+                            padding: var(--dui-spacing-small);
+                        }
                     }
                 }
             }

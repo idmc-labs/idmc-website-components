@@ -645,8 +645,10 @@ function CountryProfile(props: Props) {
                             <EllipsizedContent
                                 footer={(
                                     <TextOutput
+                                        className={styles.textOutput}
                                         label="Last updated"
                                         value={countryOverview.updatedAt}
+                                        valueContainerClassName={styles.value}
                                         valueType="date"
                                     />
                                 )}
@@ -668,6 +670,8 @@ function CountryProfile(props: Props) {
         <Container
             heading={countryMetadata.disasterHeader}
             headingSize="small"
+            headerClassName={styles.disasterHeader}
+            headingClassName={styles.disasterHeading}
             headingInfo={(
                 <TooltipIcon>
                     {countryMetadata.disasterTooltip}
@@ -678,8 +682,9 @@ function CountryProfile(props: Props) {
                     <ButtonLikeLink
                         href={suffixGiddRestEndpoint(`/countries/${currentCountry}/disaster-export/`)}
                         target="_blank"
+                        className={styles.disasterButton}
                         rel="noopener noreferrer"
-                        actions={(
+                        icons={(
                             <IoDownloadOutline />
                         )}
                     >
@@ -687,9 +692,10 @@ function CountryProfile(props: Props) {
                     </ButtonLikeLink>
                     <ButtonLikeLink
                         href={giddLink}
+                        className={styles.disasterButton}
                         target="_blank"
                         rel="noopener noreferrer"
-                        actions={(
+                        icons={(
                             <IoExitOutline />
                         )}
                     >
@@ -699,6 +705,17 @@ function CountryProfile(props: Props) {
             )}
             filters={(
                 <>
+                    <SliderInput
+                        hideValues
+                        min={START_YEAR}
+                        max={END_YEAR}
+                        labelDescription={`${disasterTimeRangeActual[0]} - ${disasterTimeRangeActual[1]}`}
+                        step={1}
+                        minDistance={0}
+                        value={disasterTimeRangeActual}
+                        onChange={setDisasterTimeRange}
+                    />
+                    <div className={styles.separator} />
                     <Header
                         heading="Disaster Category"
                         headingSize="extraSmall"
@@ -712,24 +729,6 @@ function CountryProfile(props: Props) {
                                 keySelector={disasterCategoryKeySelector}
                                 labelSelector={disasterCategoryKeySelector}
                                 onChange={setDisasterCategories}
-                            />
-                        )}
-                    />
-                    <div className={styles.separator} />
-                    <Header
-                        heading="Timescale"
-                        headingSize="extraSmall"
-                        headingDescription={`${disasterTimeRangeActual[0]} - ${disasterTimeRangeActual[1]}`}
-                        inlineHeadingDescription
-                        description={(
-                            <SliderInput
-                                hideValues
-                                min={START_YEAR}
-                                max={END_YEAR}
-                                step={1}
-                                minDistance={0}
-                                value={disasterTimeRangeActual}
-                                onChange={setDisasterTimeRange}
                             />
                         )}
                     />
@@ -849,6 +848,8 @@ function CountryProfile(props: Props) {
         <Container
             heading={countryMetadata.conflictAndViolenceHeader}
             headingSize="small"
+            headerClassName={styles.conflictHeader}
+            headingClassName={styles.conflictHeading}
             headingInfo={(
                 <TooltipIcon>
                     {countryMetadata.conflictAndViolenceTooltip}
@@ -856,22 +857,15 @@ function CountryProfile(props: Props) {
             )}
             filters={(
                 <>
-                    <Header
-                        heading="Timescale"
-                        headingSize="extraSmall"
-                        headingDescription={`${conflictTimeRangeActual[0]} - ${conflictTimeRangeActual[1]}`}
-                        inlineHeadingDescription
-                        description={(
-                            <SliderInput
-                                hideValues
-                                min={START_YEAR}
-                                max={END_YEAR}
-                                step={1}
-                                minDistance={0}
-                                value={conflictTimeRangeActual}
-                                onChange={setConflictTimeRange}
-                            />
-                        )}
+                    <SliderInput
+                        hideValues
+                        min={START_YEAR}
+                        labelDescription={`${conflictTimeRangeActual[0]} - ${conflictTimeRangeActual[1]}`}
+                        max={END_YEAR}
+                        step={1}
+                        minDistance={0}
+                        value={conflictTimeRangeActual}
+                        onChange={setConflictTimeRange}
                     />
                     <div />
                     <div />
@@ -882,8 +876,9 @@ function CountryProfile(props: Props) {
                     <ButtonLikeLink
                         href={suffixGiddRestEndpoint(`/countries/${currentCountry}/conflict-export/`)}
                         target="_blank"
+                        className={styles.conflictButton}
                         rel="noopener noreferrer"
-                        actions={(
+                        icons={(
                             <IoDownloadOutline />
                         )}
                     >
@@ -891,9 +886,10 @@ function CountryProfile(props: Props) {
                     </ButtonLikeLink>
                     <ButtonLikeLink
                         href={giddLink}
+                        className={styles.conflictButton}
                         target="_blank"
                         rel="noopener noreferrer"
-                        actions={(
+                        icons={(
                             <IoExitOutline />
                         )}
                     >
@@ -1079,6 +1075,7 @@ function CountryProfile(props: Props) {
             <div className={styles.iduPager}>
                 {idus && idus.length > (iduActivePage * iduPageSize) && (
                     <Button
+                        className={styles.iduPagerButton}
                         name={undefined}
                         onClick={() => {
                             setIduActivePage((val) => val + 1);
@@ -1086,7 +1083,7 @@ function CountryProfile(props: Props) {
                         actions={<IoArrowDown />}
                         variant="secondary"
                     >
-                        Show more
+                        View Older Displacements
                     </Button>
                 )}
                 {/* iduActivePage > 1 && (
@@ -1190,18 +1187,13 @@ function CountryProfile(props: Props) {
                         </div>
                         <div className={styles.separator} />
                         <div className={styles.timeRangeContainer}>
-                            <Header
-                                headingSize="extraSmall"
-                                heading="Timescale"
-                                headingDescription={`${mapTimeRange[0]} - ${mapTimeRange[1]}`}
-                                inlineHeadingDescription
-                            />
                             <SliderInput
                                 hideValues
                                 className={styles.timeRangeInput}
                                 // NOTE: timescale
                                 min={mapTimeRangeBounds[0]}
                                 max={mapTimeRangeBounds[1]}
+                                labelDescription={`${mapTimeRange[0]} - ${mapTimeRange[1]}`}
                                 step={1}
                                 minDistance={0}
                                 value={mapTimeRange}
@@ -1216,7 +1208,7 @@ function CountryProfile(props: Props) {
                             name={undefined}
                             // variant="secondary"
                             onClick={handleExportIduClick}
-                            actions={(
+                            icons={(
                                 <IoDownloadOutline />
                             )}
                         >
@@ -1226,7 +1218,7 @@ function CountryProfile(props: Props) {
                             href={giddLink}
                             target="_blank"
                             rel="noopener noreferrer"
-                            actions={(
+                            icons={(
                                 <IoExitOutline />
                             )}
                         >
@@ -1322,23 +1314,26 @@ function CountryProfile(props: Props) {
         <div className={styles.contact}>
             <Header
                 heading={countryMetadata.contactHeader}
-                headingSize="medium"
+                headingSize="large"
                 headingInfo={(
                     <TooltipIcon>
                         {countryMetadata.contactTooltip}
                     </TooltipIcon>
                 )}
             />
-            {countryInfo.contactPersonImage && (
-                <img
-                    className={styles.preview}
-                    src={countryInfo.contactPersonImage.url}
-                    alt={countryInfo.contactPersonImage.name}
+            <div className={styles.contactItem}>
+                {countryInfo.contactPersonImage && (
+                    <img
+                        className={styles.preview}
+                        src={countryInfo.contactPersonImage.url}
+                        alt={countryInfo.contactPersonImage.name}
+                    />
+                )}
+                <HTMLOutput
+                    className={styles.contactDetails}
+                    value={countryInfo.contactPersonDescription}
                 />
-            )}
-            <HTMLOutput
-                value={countryInfo.contactPersonDescription}
-            />
+            </div>
         </div>
     );
 

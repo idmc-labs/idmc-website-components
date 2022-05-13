@@ -2,6 +2,8 @@ import React, { RefCallback, HTMLProps } from 'react';
 import ReactSlider from 'react-slider';
 import { _cs } from '@togglecorp/fujs';
 
+import Header from '#components/Header';
+
 import styles from './styles.css';
 
 interface HTMLPropsWithRefCallback<T> extends HTMLProps<T> {
@@ -55,11 +57,13 @@ interface Props<T extends number | number[]> {
     className?: string;
     min: number;
     max: number;
+    labelDescription?: string;
     value: T;
     onChange: (value: T) => void;
     step: number;
     minDistance: number;
     hideValues?: boolean;
+    label?: string;
 }
 
 function Slider<T extends number | number[]>(props: Props<T>) {
@@ -70,6 +74,8 @@ function Slider<T extends number | number[]>(props: Props<T>) {
         value,
         onChange,
         step,
+        label = 'Timescale',
+        labelDescription,
         minDistance,
         hideValues,
     } = props;
@@ -80,32 +86,43 @@ function Slider<T extends number | number[]>(props: Props<T>) {
     );
 
     return (
-        <div className={_cs(styles.slider, className)}>
-            {typeof value !== 'number' && !hideValues && (
-                <div className={styles.value}>
-                    {value[0]}
-                </div>
+        <Header
+            heading={label}
+            headingSize="extraSmall"
+            headingClassName={styles.heading}
+            headingDescriptionClassName={styles.headingDescription}
+            className={_cs(styles.slider, className)}
+            headingDescription={labelDescription}
+            inlineHeadingDescription
+            description={(
+                <>
+                    {typeof value !== 'number' && !hideValues && (
+                        <div className={styles.value}>
+                            {value[0]}
+                        </div>
+                    )}
+                    <ReactSlider
+                        className={styles.reactSlider}
+                        min={min}
+                        max={max}
+                        step={step}
+                        marks={marks}
+                        minDistance={minDistance}
+                        pearling
+                        value={value}
+                        onChange={onChange}
+                        renderThumb={Thumb}
+                        renderTrack={Track}
+                        renderMark={Mark}
+                    />
+                    {typeof value !== 'number' && !hideValues && (
+                        <div className={styles.value}>
+                            {value[1]}
+                        </div>
+                    )}
+                </>
             )}
-            <ReactSlider
-                className={styles.reactSlider}
-                min={min}
-                max={max}
-                step={step}
-                marks={marks}
-                minDistance={minDistance}
-                pearling
-                value={value}
-                onChange={onChange}
-                renderThumb={Thumb}
-                renderTrack={Track}
-                renderMark={Mark}
-            />
-            {typeof value !== 'number' && !hideValues && (
-                <div className={styles.value}>
-                    {value[1]}
-                </div>
-            )}
-        </div>
+        />
     );
 }
 
