@@ -57,7 +57,7 @@ interface Props<T extends number | number[]> {
     className?: string;
     min: number;
     max: number;
-    labelDescription?: string;
+    labelDescription?: React.ReactNode;
     value: T;
     onChange: (value: T) => void;
     step: number;
@@ -92,7 +92,11 @@ function Slider<T extends number | number[]>(props: Props<T>) {
             headingClassName={styles.heading}
             headingDescriptionClassName={styles.headingDescription}
             className={_cs(styles.slider, className)}
-            headingDescription={labelDescription}
+            headingDescription={(
+                <span className={styles.labelDescription}>
+                    {labelDescription}
+                </span>
+            )}
             inlineHeadingDescription
             description={(
                 <>

@@ -3,6 +3,10 @@
     position: relative;
     gap: var(--dui-spacing-medium);
 
+    .label-description {
+        font-family: monospace;
+    }
+
     .heading {
         font-size: var(--dui-font-size-small);
     }

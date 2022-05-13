@@ -199,10 +199,13 @@
                 .idu {
                     display: flex;
                     align-items: flex-start;
-                    flex-basis: calc(50% - var(--dui-spacing-large));
+                    flex-basis: 0;
                     flex-direction: column;
+                    flex-grow: 1;
                     border: var(--dui-width-separator-thin) solid var(--dui-color-separator);
                     padding: var(--dui-spacing-medium);
+                    min-width: 20rem;
+                    max-width: 30rem;
                     gap: var(--dui-spacing-medium);
 
                     .icon {
@@ -308,6 +311,12 @@
                     }
                 }
             }
+        }
+    }
+
+    .select-input {
+        .input-section {
+            border-radius: 0.25rem;
         }
     }
 }

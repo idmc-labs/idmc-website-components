@@ -697,12 +697,13 @@ function CountryProfile(props: Props) {
                         value={disasterTimeRangeActual}
                         onChange={setDisasterTimeRange}
                     />
-                    <div className={styles.separator} />
                     <Header
                         heading="Disaster Category"
                         headingSize="extraSmall"
                         description={(
                             <MultiSelectInput
+                                className={styles.selectInput}
+                                inputSectionClassName={styles.inputSection}
                                 variant="general"
                                 placeholder="Disaster Category"
                                 name="disasterCategory"
@@ -1134,7 +1135,6 @@ function CountryProfile(props: Props) {
                                 />
                             </div>
                         </div>
-                        <div className={styles.separator} />
                         <div className={styles.legend}>
                             <Header
                                 headingSize="extraSmall"
@@ -1167,7 +1167,6 @@ function CountryProfile(props: Props) {
                                 />
                             </div>
                         </div>
-                        <div className={styles.separator} />
                         <div className={styles.timeRangeContainer}>
                             <SliderInput
                                 hideValues
