@@ -1,6 +1,8 @@
 .heading {
     position: relative;
     margin: 0;
+    text-transform: unset; /* durpal has set text-transform on h2*/
+    line-height: 1.5; /* durpal has set line-height on h1..hn*/
     color: var(--color-text);
     font-family: var(--dui-font-family-heading);
     font-weight: var(--dui-font-weight-heading);
