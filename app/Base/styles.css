@@ -32,6 +32,9 @@
     --dui-color-background: #eff4fa;
 
     --color-background: #eff4fa;
+    --color-background-dark: #193256;
+    --color-text-on-dark: #ffffff;
+    --color-text: #333333;
 
     --color-orange: rgb(239, 125, 0);
     --color-blue: rgb(1, 142, 202);

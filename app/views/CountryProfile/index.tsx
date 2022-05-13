@@ -571,6 +571,7 @@ function CountryProfile(props: Props) {
         <section className={styles.profile}>
             <Header
                 headingSize="extraLarge"
+                headingClassName={styles.profileHeading}
                 headingInfo={(
                     <>
                         <TooltipIcon>
@@ -591,8 +592,9 @@ function CountryProfile(props: Props) {
                 )}
                 headingTitle={countryMetadata.countryProfileHeader}
                 heading={countryInfo.name}
+                hideHeadingBorder
             />
-            <EllipsizedContent>
+            <EllipsizedContent darkMode>
                 <HTMLOutput
                     value={countryInfo.description}
                 />
@@ -638,12 +640,15 @@ function CountryProfile(props: Props) {
                             key={countryOverview.year}
                             name={countryOverview.year.toString()}
                         >
-                            <TextOutput
-                                label="Last modified"
-                                value={countryOverview.updatedAt}
-                                valueType="date"
-                            />
-                            <EllipsizedContent>
+                            <EllipsizedContent
+                                footer={(
+                                    <TextOutput
+                                        label="Last updated"
+                                        value={countryOverview.updatedAt}
+                                        valueType="date"
+                                    />
+                                )}
+                            >
                                 <HTMLOutput
                                     value={countryOverview.description}
                                 />
@@ -1263,8 +1268,8 @@ function CountryProfile(props: Props) {
                         description={gp.metatag.value.description}
                         // FIXME: pass date
                         // FIXME: pass doc type
-                        type={gp.type[0]?.target_id}
-                        date={gp.field_published[0]?.value}
+                        type={gp?.type?.[0]?.target_id}
+                        date={gp?.field_published?.[0]?.value}
                     />
                 ))}
             </div>
@@ -1337,6 +1342,7 @@ function CountryProfile(props: Props) {
             {!!overviewSection && (
                 <a
                     href="#overview"
+                    className={styles.navLink}
                 >
                     {countryMetadata.overviewHeader}
                 </a>
@@ -1344,6 +1350,7 @@ function CountryProfile(props: Props) {
             {!!displacementSection && (
                 <a
                     href="#displacement-data"
+                    className={styles.navLink}
                 >
                     {countryMetadata.displacementDataHeader}
                 </a>
@@ -1351,6 +1358,7 @@ function CountryProfile(props: Props) {
             {!!latestNewDisplacementSection && (
                 <a
                     href="#latest-displacement"
+                    className={styles.navLink}
                 >
                     {countryMetadata.latestNewDisplacementsHeader}
                 </a>
@@ -1358,6 +1366,7 @@ function CountryProfile(props: Props) {
             {!!internalDisplacementSection && (
                 <a
                     href="#displacement-updates"
+                    className={styles.navLink}
                 >
                     {countryMetadata.internalDisplacementUpdatesHeader}
                 </a>
@@ -1365,6 +1374,7 @@ function CountryProfile(props: Props) {
             {!!relatedMaterialsSection && (
                 <a
                     href="#related-materials"
+                    className={styles.navLink}
                 >
                     {countryMetadata.relatedMaterialHeader}
                 </a>
@@ -1372,6 +1382,7 @@ function CountryProfile(props: Props) {
             {!!contactSection && (
                 <a
                     href="#contact"
+                    className={styles.navLink}
                 >
                     {countryMetadata.contactHeader}
                 </a>

@@ -9,6 +9,7 @@ interface Props {
     className?: string;
     children?: React.ReactNode;
     size?: HeadingSizeType;
+    hideBorder?: boolean;
 }
 
 function Heading(props: Props) {
@@ -16,6 +17,7 @@ function Heading(props: Props) {
         className,
         children: childrenFromProps,
         size = 'medium',
+        hideBorder = false,
     } = props;
 
     const children: React.ReactNode = React.useMemo(() => {
@@ -23,13 +25,19 @@ function Heading(props: Props) {
             return (
                 <>
                     {childrenFromProps}
-                    <div className={styles.border} />
+                    {!hideBorder && (
+                        <div className={styles.border} />
+                    )}
                 </>
             );
         }
 
         return childrenFromProps;
-    }, [size, childrenFromProps]);
+    }, [
+        size,
+        childrenFromProps,
+        hideBorder,
+    ]);
 
     return (
         <>

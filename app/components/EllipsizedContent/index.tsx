@@ -6,17 +6,24 @@ import {
 } from 'react-icons/io5';
 
 import Button from '#components/Button';
+
 import styles from './styles.css';
 
 interface Props {
     className?: string;
+    footerClassName?: string;
     children: React.ReactNode;
+    footer?: React.ReactNode;
+    darkMode?: boolean;
 }
 
 function EllipsizedContent(props: Props) {
     const {
         className,
+        footerClassName,
         children,
+        footer,
+        darkMode,
     } = props;
 
     const [isEllipsized, setIsEllipsized] = React.useState(false);
@@ -73,9 +80,17 @@ function EllipsizedContent(props: Props) {
             >
                 {children}
             </div>
+            {footer && (
+                <div className={_cs(styles.footer, footerClassName)}>
+                    {footer}
+                </div>
+            )}
             {isEllipsized && (
                 <Button
-                    className={styles.ellipsizeToggleButton}
+                    className={_cs(
+                        styles.ellipsizeToggleButton,
+                        darkMode && styles.darkButton,
+                    )}
                     name={!shouldEllipsize}
                     onClick={setShouldEllipsize}
                     actions={shouldEllipsize ? <IoArrowDown /> : <IoArrowUp />}

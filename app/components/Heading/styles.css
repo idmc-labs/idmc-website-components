@@ -1,7 +1,7 @@
 .heading {
     position: relative;
     margin: 0;
-    color: var(--dui-color-brand);
+    color: var(--color-text);
     font-family: var(--dui-font-family-heading);
     font-weight: var(--dui-font-weight-heading);
 
@@ -30,8 +30,8 @@
         position: absolute;
         bottom: 0;
         left: 0;
-        background-color: var(--dui-color-accent);
-        width: 6rem;
-        height: var(--dui-width-separator-medium);
+        background-color: var(--color-background-dark);
+        width: 2rem;
+        height: var(--dui-width-separator-thick);
     }
 }

@@ -17,6 +17,7 @@ export interface Props {
     headingSize?: HeadingSizeType,
     inlineHeadingDescription?: boolean,
     headingTitle?: React.ReactNode;
+    hideHeadingBorder?: boolean;
 }
 
 function Header(props: Props) {
@@ -31,6 +32,7 @@ function Header(props: Props) {
         headingSize,
         headingInfo,
         inlineHeadingDescription,
+        hideHeadingBorder,
         headingTitle,
     } = props;
 
@@ -57,6 +59,7 @@ function Header(props: Props) {
                         <Heading
                             size={headingSize}
                             className={_cs(styles.heading, headingClassName)}
+                            hideBorder={hideHeadingBorder}
                         >
                             {heading}
                             {headingInfo && (

@@ -10,14 +10,32 @@
         }
     }
 
+    .footer {
+        display: block;
+        padding: var(--dui-spacing-medium) 0;
+    }
+
     .ellipsize-toggle-button {
         display: flex;
         align-items: center;
         margin-top: var(--dui-spacing-medium);
+        padding: 0;
         gap: var(--dui-spacing-small);
 
         .icon {
             color: var(--dui-color-brand);
+        }
+
+        &.dark-button {
+            color: var(--color-text-on-dark);
+
+            .icon {
+                color: var(--color-text-on-dark);
+            }
+
+            &:hover {
+                background-color: transparent;
+            }
         }
     }
 }
