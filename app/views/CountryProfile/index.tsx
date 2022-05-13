@@ -362,8 +362,8 @@ function CountryProfile(props: Props) {
         previousData,
         data: countryProfileData = previousData,
         // FIXME: handle loading and error
-        loading: countryProfileLoading,
-        error: countryProfileError,
+        // loading: countryProfileLoading,
+        // error: countryProfileError,
     } = useQuery<CountryProfileQuery, CountryProfileQueryVariables>(
         COUNTRY_PROFILE,
         {
@@ -423,8 +423,8 @@ function CountryProfile(props: Props) {
         previousData: previousIduData,
         data: iduData = previousIduData,
         // FIXME: handle loading and error
-        loading: iduDataLoading,
-        error: iduDataError,
+        // loading: iduDataLoading,
+        // error: iduDataError,
     } = useQuery<IduDataQuery, IduDataQueryVariables>(
         IDU_DATA,
         {
@@ -551,24 +551,6 @@ function CountryProfile(props: Props) {
         fetchMore,
     ]);
 
-    if (countryProfileLoading || iduDataLoading) {
-        // FIXME: handle better loading message
-        return (
-            <div className={_cs(styles.countryProfile, className)}>
-                Loading
-            </div>
-        );
-    }
-
-    if (iduDataError || countryProfileError || !countryInfo) {
-        // FIXME: handle better error message
-        return (
-            <div className={_cs(styles.countryProfile, className)}>
-                Errored
-            </div>
-        );
-    }
-
     const profileSection = (
         <section className={styles.profile}>
             <Header
@@ -593,12 +575,12 @@ function CountryProfile(props: Props) {
                     </>
                 )}
                 headingTitle={countryMetadata.countryProfileHeader}
-                heading={countryInfo.name}
+                heading={countryInfo?.name || countryName || currentCountry}
                 hideHeadingBorder
             />
             <EllipsizedContent darkMode>
                 <HTMLOutput
-                    value={countryInfo.description}
+                    value={countryInfo?.description}
                 />
             </EllipsizedContent>
         </section>
@@ -637,7 +619,7 @@ function CountryProfile(props: Props) {
                             </Tab>
                         ))}
                     </TabList>
-                    {countryInfo.overviews.map((countryOverview) => (
+                    {countryInfo?.overviews.map((countryOverview) => (
                         <TabPanel
                             key={countryOverview.year}
                             name={countryOverview.year.toString()}
@@ -1006,7 +988,7 @@ function CountryProfile(props: Props) {
     const displacementSection = (
         conflictSection
         || disasterSection
-        || countryInfo.displacementDataDescription
+        || countryInfo?.displacementDataDescription
     ) && (
         <section
             id="displacement-data"
@@ -1023,7 +1005,7 @@ function CountryProfile(props: Props) {
             />
             <EllipsizedContent>
                 <HTMLOutput
-                    value={countryInfo.displacementDataDescription}
+                    value={countryInfo?.displacementDataDescription}
                 />
             </EllipsizedContent>
             <div className={styles.infographics}>
@@ -1035,7 +1017,7 @@ function CountryProfile(props: Props) {
 
     const latestNewDisplacementSection = (
         (idus && idus.length > 0)
-        || countryInfo.latestNewDisplacementsDescription
+        || countryInfo?.latestNewDisplacementsDescription
     ) && (
         <section
             id="latest-displacement"
@@ -1052,7 +1034,7 @@ function CountryProfile(props: Props) {
             />
             <EllipsizedContent>
                 <HTMLOutput
-                    value={countryInfo.latestNewDisplacementsDescription}
+                    value={countryInfo?.latestNewDisplacementsDescription}
                 />
             </EllipsizedContent>
             <div className={styles.iduContainer}>
@@ -1102,7 +1084,7 @@ function CountryProfile(props: Props) {
     );
 
     const internalDisplacementSection = (
-        countryInfo.internalDisplacementDescription
+        countryInfo?.internalDisplacementDescription
         || (idus && idus.length > 0)
     ) && (
         <section
@@ -1120,7 +1102,7 @@ function CountryProfile(props: Props) {
             />
             <EllipsizedContent>
                 <HTMLOutput
-                    value={countryInfo.internalDisplacementDescription}
+                    value={countryInfo?.internalDisplacementDescription}
                 />
             </EllipsizedContent>
             <div>
@@ -1229,7 +1211,7 @@ function CountryProfile(props: Props) {
             >
                 <IduMap
                     idus={idus}
-                    boundingBox={countryInfo.boundingBox as LngLatBounds | undefined}
+                    boundingBox={countryInfo?.boundingBox as LngLatBounds | undefined}
                     mapTypeOfDisplacements={mapTypeOfDisplacements}
                     mapNoOfDisplacements={mapNoOfDisplacements}
                     mapTimeRange={mapTimeRange}
@@ -1286,7 +1268,7 @@ function CountryProfile(props: Props) {
     );
 
     const essentialLinksSection = (
-        countryInfo.essentialLinks
+        countryInfo?.essentialLinks
     ) && (
         <div
             id="contact"
@@ -1308,8 +1290,8 @@ function CountryProfile(props: Props) {
     );
 
     const contactSection = (
-        countryInfo.contactPersonDescription
-        || countryInfo.contactPersonImage
+        countryInfo?.contactPersonDescription
+        || countryInfo?.contactPersonImage
     ) && (
         <div className={styles.contact}>
             <Header
@@ -1392,13 +1374,11 @@ function CountryProfile(props: Props) {
 
     return (
         <div className={_cs(styles.countryProfile, className)}>
-            {countryInfo.backgroundImage && (
-                <img
-                    className={styles.coverImage}
-                    src={countryInfo.backgroundImage.url}
-                    alt={countryInfo.backgroundImage.name}
-                />
-            )}
+            <img
+                className={styles.coverImage}
+                src={countryInfo?.backgroundImage?.url}
+                alt={countryInfo?.backgroundImage?.name}
+            />
             <div className={styles.headerContainer}>
                 <div className={styles.content}>
                     {profileSection}

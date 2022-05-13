@@ -48,6 +48,10 @@
     --width-readable-content-max: 46rem;
 }
 
+#app-container {
+    min-height: 100vh; /* country profile should take some space initially */
+}
+
 .base {
     display: flex;
     flex-direction: column;

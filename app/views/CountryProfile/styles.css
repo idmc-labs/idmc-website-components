@@ -113,8 +113,8 @@
             .displacement-data {
                 display: flex;
                 flex-direction: column;
-                gap: var(--dui-spacing-extra-large);
                 padding: var(--dui-spacing-super-large) 0;
+                gap: var(--dui-spacing-extra-large);
 
                 .conflict-header {
                     background-color: var(--color-conflict);
