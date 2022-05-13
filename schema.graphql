@@ -41,9 +41,13 @@ type Metatag {
 type Type {
   target_id: String!
 }
+type PublishedValue {
+  value: String!
+}
 type RelatedMaterialsRow {
   type: [Type!]
   metatag: Metatag!
+  field_published: [PublishedValue!]
 }
 type RelatedMaterialsPager {
   current_page: Int!

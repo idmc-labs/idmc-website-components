@@ -1,4 +1,6 @@
 .ellipsized-content {
+    max-width: var(--width-readable-content-max);
+
     .container {
         &.ellipsized {
             display: -webkit-box;

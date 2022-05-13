@@ -108,7 +108,7 @@ module.exports = () => {
                     test: /\.(eot|svg|ttf|woff|woff2|png|jpg|gif)$/i,
                     exclude: /(node_modules)/,
                     include: getPath('app/'),
-                    type: 'asset/resource',
+                    type: 'asset/inline',
                     /*
                     options: {
                         name: isProduction

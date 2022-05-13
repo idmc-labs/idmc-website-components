@@ -41,11 +41,13 @@
     --color-disaster: var(--color-blue);
     --color-other: var(--color-green);
 
-    --width-page-max: 68rem;
+    --width-page-max: 60rem;
     --width-readable-content-max: 44rem;
 }
 
 .base {
+    display: flex;
+    flex-direction: column;
     line-height: 1.5;
     font-family: 'proxima-nova', sans-serif;
 

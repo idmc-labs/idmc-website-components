@@ -253,6 +253,9 @@ const RELATED_MATERIALS = gql`
                         og_image_0
                     }
                 }
+                field_published {
+                    value
+                }
             }
             pager {
                 total_items
@@ -1260,7 +1263,8 @@ function CountryProfile(props: Props) {
                         description={gp.metatag.value.description}
                         // FIXME: pass date
                         // FIXME: pass doc type
-                        date="2021-05-20"
+                        type={gp.type[0]?.target_id}
+                        date={gp.field_published[0]?.value}
                     />
                 ))}
             </div>
@@ -1384,25 +1388,23 @@ function CountryProfile(props: Props) {
                     alt={countryInfo.backgroundImage.name}
                 />
             )}
-            <div className={styles.mainContent}>
-                <div className={styles.headerContainer}>
-                    <div className={styles.content}>
-                        {profileSection}
-                        {navbar}
-                    </div>
+            <div className={styles.headerContainer}>
+                <div className={styles.content}>
+                    {profileSection}
+                    {navbar}
                 </div>
-                <div className={styles.bodyContainer}>
-                    <div className={styles.content}>
-                        {overviewSection}
-                        {displacementSection}
-                        {latestNewDisplacementSection}
-                        {internalDisplacementSection}
-                        {relatedMaterialsSection}
-                        <section className={styles.misc}>
-                            {essentialLinksSection}
-                            {contactSection}
-                        </section>
-                    </div>
+            </div>
+            <div className={styles.bodyContainer}>
+                <div className={styles.content}>
+                    {overviewSection}
+                    {displacementSection}
+                    {latestNewDisplacementSection}
+                    {internalDisplacementSection}
+                    {relatedMaterialsSection}
+                    <section className={styles.misc}>
+                        {essentialLinksSection}
+                        {contactSection}
+                    </section>
                 </div>
             </div>
         </div>

@@ -16,9 +16,10 @@ interface Props {
     // dataId?: number;
     coverImageUrl: string | undefined | null;
     heading: string;
-    date: string;
+    date: string | undefined | null;
     url: string;
     description: string | undefined | null;
+    type: string | undefined | null;
 }
 
 function GoodPracticeItem(props: Props) {
@@ -28,6 +29,7 @@ function GoodPracticeItem(props: Props) {
         coverImageUrl,
         heading,
         date,
+        type,
         description,
         url,
     } = props;
@@ -42,6 +44,7 @@ function GoodPracticeItem(props: Props) {
                 />
             )}
             <div className={styles.content}>
+                {type}
                 <Header
                     heading={(
                         <a
