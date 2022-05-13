@@ -71,3 +71,8 @@ a {
         text-decoration: none;
     }
 }
+
+/* Unset font-size because drupal has set a font-size of 10px */
+html {
+    font-size: unset;
+}
