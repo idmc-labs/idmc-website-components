@@ -1,10 +1,7 @@
 .button {
     display: flex;
     border-radius: 0.25rem;
-    background-color: var(--dui-color-brand);
     padding: var(--dui-spacing-small) var(--dui-spacing-large);
-    color: blue;
-    color: var(--dui-color-text-on-dark);
     gap: var(--dui-spacing-medium);
 
     .icons {
@@ -23,5 +20,35 @@
         align-items: center;
         flex-wrap: wrap;
         gap: var(--dui-spacing-extra-small);
+    }
+
+    &.primary {
+        background-color: var(--dui-color-brand);
+        color: var(--dui-color-text-on-dark);
+    }
+    &.secondary {
+        color: var(--dui-color-text);
+        .icons {
+            color: var(--dui-color-accent);
+        }
+        .actions {
+            color: var(--dui-color-accent);
+        }
+    }
+
+    &:disabled {
+        opacity: 0.2;
+    }
+
+    &:not(:disabled) {
+        &:hover {
+            &.primary {
+                background-color: var(--dui-color-brand-hover);
+            }
+
+            &.secondary {
+                background-color: var(--dui-color-background);
+            }
+        }
     }
 }

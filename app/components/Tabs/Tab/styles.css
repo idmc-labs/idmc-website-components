@@ -48,7 +48,6 @@
         &.active {
             background-color: var(--dui-color-brand);
             color: var(--dui-color-text-on-dark);
-
         }
 
         &.disabled {

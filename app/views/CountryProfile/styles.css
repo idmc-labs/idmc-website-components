@@ -201,15 +201,6 @@
                             width: 100%;
                         }
                     }
-
-                    .map-wrapper {
-                        border: var(--dui-width-separator-thin) solid var(--dui-color-separator);
-
-                        .map-container {
-                            width: 100%;
-                            min-height: 44rem;
-                        }
-                    }
                 }
 
                 .related-material {
@@ -262,11 +253,4 @@
             }
         }
     }
-}
-
-.tooltip {
-    max-width: 30rem;
-    font-family: var(--dui-font-family-sans-serif);
-    font-size: var(--dui-font-size-medium);
-    font-weight: var(--dui-font-weight-light);
 }

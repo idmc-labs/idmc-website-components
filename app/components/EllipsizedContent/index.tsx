@@ -5,7 +5,7 @@ import {
     IoArrowUp,
 } from 'react-icons/io5';
 
-import RawButton from '#components/RawButton';
+import Button from '#components/Button';
 import styles from './styles.css';
 
 interface Props {
@@ -74,27 +74,15 @@ function EllipsizedContent(props: Props) {
                 {children}
             </div>
             {isEllipsized && (
-                <RawButton
+                <Button
                     className={styles.ellipsizeToggleButton}
                     name={!shouldEllipsize}
                     onClick={setShouldEllipsize}
+                    actions={shouldEllipsize ? <IoArrowDown /> : <IoArrowUp />}
+                    variant="secondary"
                 >
-                    {shouldEllipsize ? (
-                        <>
-                            <div>
-                                Read More
-                            </div>
-                            <IoArrowDown className={styles.icon} />
-                        </>
-                    ) : (
-                        <>
-                            <div>
-                                See Less
-                            </div>
-                            <IoArrowUp className={styles.icon} />
-                        </>
-                    )}
-                </RawButton>
+                    {shouldEllipsize ? 'Read More' : 'See Less'}
+                </Button>
             )}
         </div>
     );

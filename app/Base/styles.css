@@ -21,6 +21,7 @@
     --dui-color-primary: rgb(65, 131, 196);
     --dui-color-accent: rgb(65, 131, 196);
     --dui-color-brand: rgb(25, 50, 86);
+    --dui-color-brand-hover: #06179E;
 
     --dui-color-text: rgb(100,99,99);
     /*
@@ -28,8 +29,8 @@
     --dui-color-description: rgb(100,99,99);
     --dui-color-watermark: rgb(100,99,99);
     */
-
     --dui-color-background: #eff4fa;
+
     --color-background: #eff4fa;
 
     --color-orange: rgb(239, 125, 0);
@@ -51,12 +52,15 @@
     .view {
         flex-grow: 1;
     }
-
 }
 
 a {
     text-decoration: none;
     color: var(--dui-color-accent);
+
+    &:hover {
+        color: var(--dui-color-brand);
+    }
 
     &:visited {
         text-decoration: none;

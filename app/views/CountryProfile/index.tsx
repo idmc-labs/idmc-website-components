@@ -11,29 +11,16 @@ import {
     useQuery,
 } from '@apollo/client';
 import {
-    MapboxGeoJSONFeature,
-    LngLat,
-    PopupOptions,
-    LngLatLike,
+    IoArrowDown,
+    IoDownloadOutline,
+    IoExitOutline,
+} from 'react-icons/io5';
+import {
     LngLatBounds,
 } from 'mapbox-gl';
-import Map, {
-    MapContainer,
-    MapBounds,
-    MapSource,
-    MapLayer,
-    MapTooltip,
-} from '@togglecorp/re-map';
-import {
-    // IoDownloadOutline,
-    // IoArrowUp,
-    IoInformationCircleOutline,
-    IoArrowDown,
-} from 'react-icons/io5';
-import { _cs, isDefined, isNotDefined, randomString } from '@togglecorp/fujs';
+import { _cs, isDefined } from '@togglecorp/fujs';
 import { saveAs } from 'file-saver';
 import stringify from 'csv-stringify/lib/browser/sync';
-import ReactTooltip from 'react-tooltip';
 import {
     ResponsiveContainer,
     BarChart,
@@ -72,6 +59,7 @@ import TabList from '#components/Tabs/TabList';
 import TabPanel from '#components/Tabs/TabPanel';
 import LegendElement from '#components/LegendElement';
 import Button from '#components/Button';
+import ButtonLikeLink from '#components/ButtonLikeLink';
 import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
@@ -80,168 +68,55 @@ import Infographic from '#components/Infographic';
 import GoodPracticeItem from '#components/GoodPracticeItem';
 import SliderInput from '#components/SliderInput';
 import Container from '#components/Container';
+import TooltipIcon from '#components/TooltipIcon';
+import DisplacementIcon from '#components/DisplacementIcon';
 
 import { formatNumber } from '#utils/common';
 
 import useDebouncedValue from '../../hooks/useDebouncedValue';
 import useInputState from '../../hooks/useInputState';
-import ConflictIcon from '../../resources/icons/Icon_Conflict-Conflict.svg';
-import DroughtIcon from '../../resources/icons/Icon_Disaster-Drought.svg';
-import DryMassMovementIcon from '../../resources/icons/Icon_Disaster-Dry_Mass_Movements.svg';
-import EarthquakeIcon from '../../resources/icons/Icon_Disaster-Earthquake.svg';
-import ExtremeTemperatureIcon from '../../resources/icons/Icon_Disaster-Extreme_Temperature.svg';
-import FloodIcon from '../../resources/icons/Icon_Disaster-Flood.svg';
-import MassMovementIcon from '../../resources/icons/Icon_Disaster-Mass_Movement.svg';
-import SevereWinterConditionsIcon from '../../resources/icons/Icon_Disaster-Sever_Winter_Conditions.svg';
-import StormIcon from '../../resources/icons/Icon_Disaster-Storm.svg';
-import VolcanicActivityIcon from '../../resources/icons/Icon_Disaster-Volcanic_Activity.svg';
-import VolcanicEruptionIcon from '../../resources/icons/Icon_Disaster-Volcanic_Eruption.svg';
-import WetMassMovementIcon from '../../resources/icons/Icon_Disaster-Wet_Mass_Movements.svg';
-import WildfireIcon from '../../resources/icons/Icon_Disaster-Wildfire.svg';
-import OtherIcon from '../../resources/icons/Icon_Other.svg';
 
+import IduMap from './IduMap';
 import { countryMetadata } from './data';
 
 import styles from './styles.css';
 
 const DRUPAL_ENDPOINT = process.env.REACT_APP_DRUPAL_ENDPOINT as string;
+const REST_ENDPOINT = process.env.REACT_APP_REST_ENDPOINT as string;
 
-function useId() {
-    const id = useMemo(() => randomString(), []);
-    return id;
+function suffixDrupalEndpoing(path: string) {
+    return `${DRUPAL_ENDPOINT}${path}`;
 }
 
-function getProxyDrupalUrl(image: null): null;
-function getProxyDrupalUrl(image: undefined): undefined;
-function getProxyDrupalUrl(image: string): string;
-function getProxyDrupalUrl(image: string | null | undefined): string | null | undefined;
-function getProxyDrupalUrl(image: string | null | undefined) {
+function replaceWithDrupalEndpoint(image: null): null;
+function replaceWithDrupalEndpoint(image: undefined): undefined;
+function replaceWithDrupalEndpoint(image: string): string;
+function replaceWithDrupalEndpoint(image: string | null | undefined): string | null | undefined;
+function replaceWithDrupalEndpoint(image: string | null | undefined) {
     if (!image || !DRUPAL_ENDPOINT) {
         return image;
     }
     const path = new URL(image).pathname;
-    return `${DRUPAL_ENDPOINT}${path}`;
+    return suffixDrupalEndpoing(path);
 }
 
-interface TooltipIconProps {
-    children?: React.ReactNode;
-}
-function TooltipIcon(props: TooltipIconProps) {
-    const {
-        children,
-    } = props;
-    const id = useId();
-
-    if (!children) {
-        return null;
-    }
-    return (
-        <>
-            <span
-                data-tip
-                data-for={id}
-            >
-                <IoInformationCircleOutline />
-            </span>
-            <ReactTooltip
-                id={id}
-                place="top"
-                type="dark"
-                effect="solid"
-                className={styles.tooltip}
-            >
-                {children}
-            </ReactTooltip>
-        </>
-    );
+function suffixGiddRestEndpoint(path: string) {
+    return `${REST_ENDPOINT}${path}`;
 }
 
-const disasterMap: { [key: string]: string } = {
-    // Disaster type we get from helix
-    Storm: StormIcon,
-    Flood: FloodIcon,
-    Earthquake: EarthquakeIcon,
-    Drought: DroughtIcon,
-    'Wet mass movement': WetMassMovementIcon,
-    Wildfire: WildfireIcon,
-    'Dry mass movement': DryMassMovementIcon,
-    'Volcanic eruption': VolcanicEruptionIcon,
-    'Extreme temperature': ExtremeTemperatureIcon,
-
-    // Disaster type we have on gidd but did not get from helix
-    'Mass movement': MassMovementIcon,
-    'Severe winter condition': SevereWinterConditionsIcon,
-    'Volcanic activity': VolcanicActivityIcon,
-
-    Unknown: OtherIcon,
-};
-
-function getIcon(
-    displacementType: string | undefined | null,
-    disasterType: string | undefined | null,
-) {
-    if (displacementType === 'Conflict') {
-        return ConflictIcon;
-    }
-    if (displacementType === 'Disaster' && disasterType) {
-        return disasterMap[disasterType] ?? OtherIcon;
-    }
-    return OtherIcon;
-}
-
+// NOTE: this is repeated
 type DisplacementType = 'Conflict' | 'Disaster' | 'Other';
 type DisplacementNumber = 'less-than-100' | 'less-than-1000' | 'more-than-1000';
 
-interface PopupProperties {
-    type: 'Disaster' | 'Conflict' | 'Other',
-    value: number,
-    description: string,
-}
+const disasterCategoryKeySelector = (d: CategoryStatisticsType) => d.label;
 
-type IduGeoJSON = GeoJSON.FeatureCollection<
-    GeoJSON.Point,
-    { type: 'Disaster' | 'Conflict' | 'Other', value: number, description: string | null | undefined }
->;
+// constants
+const START_YEAR = 2008;
+const END_YEAR = (new Date()).getFullYear();
 
-const REST_ENDPOINT = process.env.REACT_APP_REST_ENDPOINT as string;
-const categoryKeySelector = (d: CategoryStatisticsType) => d.label;
+const giddLink = suffixDrupalEndpoing('/database/displacement-data');
 
-const iduPointColor: mapboxgl.CirclePaint = {
-    'circle-opacity': 0.6,
-    'circle-color': {
-        property: 'type',
-        type: 'categorical',
-        stops: [
-            ['Conflict', 'rgb(239, 125, 0)'],
-            ['Disaster', 'rgb(1, 142, 202)'],
-            ['Other', 'rgb(51, 149, 62)'],
-        ],
-    },
-    'circle-radius': {
-        property: 'value',
-        base: 1.75,
-        stops: [
-            [0, 5],
-            [100, 9],
-            [1000, 13],
-        ],
-    },
-};
-
-const popupOptions: PopupOptions = {
-    closeOnClick: true,
-    closeButton: false,
-    offset: 12,
-    maxWidth: '480px',
-};
-
-const sourceOption: mapboxgl.GeoJSONSourceRaw = {
-    type: 'geojson',
-};
-
-const lightStyle = process.env.REACT_APP_MAPBOX_STYLE || 'mapbox://styles/mapbox/light-v10';
-
-const colorScheme = [
+const categoricalColorScheme = [
     'rgb(6, 23, 158)',
     'rgb(8, 56, 201)',
     'rgb(8, 116, 226)',
@@ -388,12 +263,6 @@ const RELATED_MATERIALS = gql`
     }
 `;
 
-// constant
-const initialIduItems = 2;
-const startYear = 2008;
-const endYear = (new Date()).getFullYear();
-const giddLink = `${DRUPAL_ENDPOINT}/database/displacement-data`;
-
 interface Props {
     className?: string;
     iso3: string;
@@ -419,15 +288,15 @@ function CountryProfile(props: Props) {
     */
 
     // Overview section
-    const [overviewActiveYear, setOverviewActiveYear] = useState<string>(String(endYear));
+    const [overviewActiveYear, setOverviewActiveYear] = useState<string>(String(END_YEAR));
 
     // Conflict section
-    const [conflictTimeRangeActual, setConflictTimeRange] = useState([startYear, endYear]);
+    const [conflictTimeRangeActual, setConflictTimeRange] = useState([START_YEAR, END_YEAR]);
     const conflictTimeRange = useDebouncedValue(conflictTimeRangeActual);
 
     // Disaster section
     const [disasterCategories, setDisasterCategories] = useState<string[] | undefined>();
-    const [disasterTimeRangeActual, setDisasterTimeRange] = useState([startYear, endYear]);
+    const [disasterTimeRangeActual, setDisasterTimeRange] = useState([START_YEAR, END_YEAR]);
     const disasterTimeRange = useDebouncedValue(disasterTimeRangeActual);
 
     // Related material section
@@ -437,17 +306,16 @@ function CountryProfile(props: Props) {
 
     // IDU list section
     const [iduActivePage, setIduActivePage] = useState(1);
+    const iduPageSize = 2;
 
     // IDU map section
-    const [mapTimeRangeBounds, setMapTimeRangeBounds] = useState([startYear, endYear]);
-
-    const [mapTimeRangeActual, setMapTimeRange] = useState([startYear, endYear]);
+    const [mapTimeRangeBounds, setMapTimeRangeBounds] = useState<[number, number]>(
+        [START_YEAR, END_YEAR],
+    );
+    const [mapTimeRangeActual, setMapTimeRange] = useState<[number, number]>(
+        [START_YEAR, END_YEAR],
+    );
     const mapTimeRange = useDebouncedValue(mapTimeRangeActual);
-    const [mapHoverLngLat, setMapHoverLngLat] = useState<LngLatLike>();
-    const [
-        mapHoverFeatureProperties,
-        setMapHoverFeatureProperties,
-    ] = useState<PopupProperties | undefined>(undefined);
     const [
         mapTypeOfDisplacements,
         setMapTypeOfDisplacements,
@@ -484,21 +352,6 @@ function CountryProfile(props: Props) {
             return newValue;
         });
     }, [setMapNoOfDisplacements]);
-
-    const handleMapPointClick = useCallback((feature: MapboxGeoJSONFeature, lngLat: LngLat) => {
-        if (feature.properties) {
-            setMapHoverLngLat(lngLat);
-            setMapHoverFeatureProperties(feature.properties as PopupProperties);
-        } else {
-            setMapHoverFeatureProperties(undefined);
-        }
-        return true;
-    }, []);
-
-    const handleMapPopupClose = useCallback(() => {
-        setMapHoverLngLat(undefined);
-        setMapHoverFeatureProperties(undefined);
-    }, []);
 
     const {
         previousData,
@@ -624,69 +477,6 @@ function CountryProfile(props: Props) {
 
         return undefined;
     }, [countryInfo]);
-
-    const iduGeojson: IduGeoJSON = useMemo(
-        () => ({
-            type: 'FeatureCollection',
-            features: idus
-                ?.map((idu) => {
-                    if (
-                        isNotDefined(idu.longitude)
-                        || isNotDefined(idu.latitude)
-                        || isNotDefined(idu.figure)
-                        || isNotDefined(idu.displacement_type)
-                        // NOTE: filtering out displacement_type Other
-                        || idu.displacement_type === 'Other'
-                    ) {
-                        return undefined;
-                    }
-
-                    if (mapTypeOfDisplacements.length > 0) {
-                        if (!mapTypeOfDisplacements.includes(idu.displacement_type)) {
-                            return undefined;
-                        }
-                    }
-                    if (mapNoOfDisplacements.length > 0) {
-                        let key: DisplacementNumber;
-                        if (idu.figure < 100) {
-                            key = 'less-than-100';
-                        } else if (idu.figure < 1000) {
-                            key = 'less-than-1000';
-                        } else {
-                            key = 'more-than-1000';
-                        }
-
-                        if (!mapNoOfDisplacements.includes(key)) {
-                            return undefined;
-                        }
-                    }
-                    if (mapTimeRange) {
-                        const [min, max] = mapTimeRange;
-                        if (!idu.year || idu.year < min || idu.year > max) {
-                            return undefined;
-                        }
-                    }
-
-                    return {
-                        id: idu.id,
-                        type: 'Feature' as const,
-                        properties: {
-                            type: idu.displacement_type,
-                            value: idu.figure,
-                            description: idu.standard_popup_text,
-                        },
-                        geometry: {
-                            type: 'Point' as const,
-                            coordinates: [
-                                idu.longitude,
-                                idu.latitude,
-                            ],
-                        },
-                    };
-                }).filter(isDefined) ?? [],
-        }),
-        [idus, mapNoOfDisplacements, mapTypeOfDisplacements, mapTimeRange],
-    );
 
     /*
     const handleSelectCountry = React.useCallback((selectedIso3: string | undefined) => {
@@ -875,20 +665,26 @@ function CountryProfile(props: Props) {
             )}
             footerActions={(
                 <>
-                    <a
-                        href={`${REST_ENDPOINT}/countries/${currentCountry}/disaster-export/`}
+                    <ButtonLikeLink
+                        href={suffixGiddRestEndpoint(`/countries/${currentCountry}/disaster-export/`)}
                         target="_blank"
                         rel="noopener noreferrer"
+                        actions={(
+                            <IoDownloadOutline />
+                        )}
                     >
                         Download disaster data
-                    </a>
-                    <a
+                    </ButtonLikeLink>
+                    <ButtonLikeLink
                         href={giddLink}
                         target="_blank"
                         rel="noopener noreferrer"
+                        actions={(
+                            <IoExitOutline />
+                        )}
                     >
                         View GIDD dashboard
-                    </a>
+                    </ButtonLikeLink>
                 </>
             )}
             filters={(
@@ -903,8 +699,8 @@ function CountryProfile(props: Props) {
                                 name="disasterCategory"
                                 value={disasterCategories}
                                 options={countryProfileData?.disasterStatistics.categories}
-                                keySelector={categoryKeySelector}
-                                labelSelector={categoryKeySelector}
+                                keySelector={disasterCategoryKeySelector}
+                                labelSelector={disasterCategoryKeySelector}
                                 onChange={setDisasterCategories}
                             />
                         )}
@@ -918,8 +714,8 @@ function CountryProfile(props: Props) {
                         description={(
                             <SliderInput
                                 hideValues
-                                min={startYear}
-                                max={endYear}
+                                min={START_YEAR}
+                                max={END_YEAR}
                                 step={1}
                                 minDistance={0}
                                 value={disasterTimeRangeActual}
@@ -1021,8 +817,8 @@ function CountryProfile(props: Props) {
                                         ?.map(({ label }, index) => (
                                             <Cell
                                                 key={label}
-                                                fill={colorScheme[
-                                                    index % colorScheme.length
+                                                fill={categoricalColorScheme[
+                                                    index % categoricalColorScheme.length
                                                 ]}
                                             />
                                         ))}
@@ -1057,8 +853,8 @@ function CountryProfile(props: Props) {
                         description={(
                             <SliderInput
                                 hideValues
-                                min={startYear}
-                                max={endYear}
+                                min={START_YEAR}
+                                max={END_YEAR}
                                 step={1}
                                 minDistance={0}
                                 value={conflictTimeRangeActual}
@@ -1072,20 +868,26 @@ function CountryProfile(props: Props) {
             )}
             footerActions={(
                 <>
-                    <a
-                        href={`${REST_ENDPOINT}/countries/${currentCountry}/conflict-export/`}
+                    <ButtonLikeLink
+                        href={suffixGiddRestEndpoint(`/countries/${currentCountry}/conflict-export/`)}
                         target="_blank"
                         rel="noopener noreferrer"
+                        actions={(
+                            <IoDownloadOutline />
+                        )}
                     >
                         Download conflict data
-                    </a>
-                    <a
+                    </ButtonLikeLink>
+                    <ButtonLikeLink
                         href={giddLink}
                         target="_blank"
                         rel="noopener noreferrer"
+                        actions={(
+                            <IoExitOutline />
+                        )}
                     >
                         View GIDD dashboard
-                    </a>
+                    </ButtonLikeLink>
                 </>
             )}
         >
@@ -1245,15 +1047,15 @@ function CountryProfile(props: Props) {
                 />
             </EllipsizedContent>
             <div className={styles.iduContainer}>
-                {idus && idus.slice(0, iduActivePage * initialIduItems)?.map((idu) => (
+                {idus && idus.slice(0, iduActivePage * iduPageSize)?.map((idu) => (
                     <div
                         key={idu.id}
                         className={styles.idu}
                     >
-                        <img
+                        <DisplacementIcon
                             className={styles.icon}
-                            src={getIcon(idu.displacement_type, idu.type)}
-                            alt="type"
+                            displacementType={idu.displacement_type}
+                            disasterType={idu.type}
                         />
                         <HTMLOutput
                             value={idu.standard_popup_text}
@@ -1262,13 +1064,14 @@ function CountryProfile(props: Props) {
                 ))}
             </div>
             <div className={styles.iduPager}>
-                {idus && idus.length > (iduActivePage * initialIduItems) && (
+                {idus && idus.length > (iduActivePage * iduPageSize) && (
                     <Button
                         name={undefined}
                         onClick={() => {
                             setIduActivePage((val) => val + 1);
                         }}
                         actions={<IoArrowDown />}
+                        variant="secondary"
                     >
                         Show more
                     </Button>
@@ -1400,64 +1203,32 @@ function CountryProfile(props: Props) {
                             name={undefined}
                             // variant="secondary"
                             onClick={handleExportIduClick}
+                            actions={(
+                                <IoDownloadOutline />
+                            )}
                         >
                             Download displacement data
                         </Button>
-                        <a
+                        <ButtonLikeLink
                             href={giddLink}
                             target="_blank"
                             rel="noopener noreferrer"
+                            actions={(
+                                <IoExitOutline />
+                            )}
                         >
                             View GIDD dashboard
-                        </a>
+                        </ButtonLikeLink>
                     </>
                 )}
             >
-                <Map
-                    mapStyle={lightStyle}
-                    mapOptions={{
-                        logoPosition: 'bottom-left',
-                        scrollZoom: false,
-                    }}
-                    scaleControlShown
-                    navControlShown
-                >
-                    <div className={styles.mapWrapper}>
-                        <MapContainer
-                            className={styles.mapContainer}
-                        />
-                    </div>
-                    <MapBounds
-                        bounds={countryInfo.boundingBox as LngLatBounds | undefined}
-                        padding={50}
-                    />
-                    <MapSource
-                        sourceKey="idu-points"
-                        sourceOptions={sourceOption}
-                        geoJson={iduGeojson}
-                    >
-                        <MapLayer
-                            layerKey="idu-point"
-                            // onClick={handlePointClick}
-                            layerOptions={{
-                                type: 'circle',
-                                paint: iduPointColor,
-                            }}
-                            onClick={handleMapPointClick}
-                        />
-                        {mapHoverLngLat && mapHoverFeatureProperties && (
-                            <MapTooltip
-                                coordinates={mapHoverLngLat}
-                                tooltipOptions={popupOptions}
-                                onHide={handleMapPopupClose}
-                            >
-                                <HTMLOutput
-                                    value={mapHoverFeatureProperties.description}
-                                />
-                            </MapTooltip>
-                        )}
-                    </MapSource>
-                </Map>
+                <IduMap
+                    idus={idus}
+                    boundingBox={countryInfo.boundingBox as LngLatBounds | undefined}
+                    mapTypeOfDisplacements={mapTypeOfDisplacements}
+                    mapNoOfDisplacements={mapNoOfDisplacements}
+                    mapTimeRange={mapTimeRange}
+                />
             </Container>
         </section>
     );
@@ -1483,7 +1254,7 @@ function CountryProfile(props: Props) {
                     <GoodPracticeItem
                         key={gp.metatag.value.canonical_url}
                         className={styles.material}
-                        coverImageUrl={getProxyDrupalUrl(gp.metatag.value.og_image_0)}
+                        coverImageUrl={replaceWithDrupalEndpoint(gp.metatag.value.og_image_0)}
                         url={gp.metatag.value.canonical_url}
                         heading={gp.metatag.value.title}
                         description={gp.metatag.value.description}
@@ -1500,8 +1271,9 @@ function CountryProfile(props: Props) {
                     onClick={handleShowMoreButtonClick}
                     disabled={loadingRelatedMaterials}
                     actions={<IoArrowDown />}
+                    variant="secondary"
                 >
-                    <span>Show more</span>
+                    Show more
                 </Button>
             )}
         </section>

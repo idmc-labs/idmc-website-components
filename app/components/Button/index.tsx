@@ -5,26 +5,27 @@ import RawButton, { Props as RawButtonProps } from '#components/RawButton';
 
 import styles from './styles.css';
 
-interface Props<N> extends RawButtonProps<N> {
-    onClick?: (name: N, e: React.MouseEvent<HTMLButtonElement>) => void;
+export function useButtonFeatures(props: {
+    variant: 'primary' | 'secondary',
     icons?: React.ReactNode;
     actions?: React.ReactNode;
-}
-
-function Button<N>(props: Props<N>) {
+    children?: React.ReactNode;
+}) {
     const {
-        className,
+        variant,
         icons,
         actions,
         children,
-        ...otherProps
     } = props;
 
-    return (
-        <RawButton
-            className={_cs(styles.button, className)}
-            {...otherProps}
-        >
+    const buttonClassName = _cs(
+        styles.button,
+        variant === 'primary' && styles.primary,
+        variant === 'secondary' && styles.secondary,
+    );
+
+    const childrenForOutput = (
+        <>
             {icons && (
                 <div className={styles.icons}>
                     {icons}
@@ -38,6 +39,49 @@ function Button<N>(props: Props<N>) {
                     {actions}
                 </div>
             )}
+        </>
+    );
+
+    return {
+        buttonClassName,
+        children: childrenForOutput,
+    };
+}
+
+interface Props<N> extends RawButtonProps<N> {
+    onClick?: (name: N, e: React.MouseEvent<HTMLButtonElement>) => void;
+    icons?: React.ReactNode;
+    actions?: React.ReactNode;
+    variant?: 'primary' | 'secondary';
+    disabled?: boolean;
+}
+
+function Button<N>(props: Props<N>) {
+    const {
+        className,
+        icons,
+        actions,
+        children,
+        variant = 'primary',
+        ...otherProps
+    } = props;
+
+    const {
+        buttonClassName,
+        children: childrenFromButtonFeatures,
+    } = useButtonFeatures({
+        variant,
+        icons,
+        actions,
+        children,
+    });
+
+    return (
+        <RawButton
+            className={_cs(className, buttonClassName)}
+            {...otherProps}
+        >
+            {childrenFromButtonFeatures}
         </RawButton>
     );
 }

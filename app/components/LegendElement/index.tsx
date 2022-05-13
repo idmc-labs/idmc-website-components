@@ -56,6 +56,7 @@ function LegendElement<N>(props: Props<N>) {
                     // eslint-disable-next-line react/destructuring-assignment
                     props.isActive && styles.isActive,
                 )}
+                // eslint-disable-next-line react/destructuring-assignment
                 name={props.name}
                 // eslint-disable-next-line react/destructuring-assignment
                 onClick={props.onClick}
