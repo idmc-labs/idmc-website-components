@@ -15,6 +15,7 @@ interface Props {
     children: React.ReactNode;
     footer?: React.ReactNode;
     darkMode?: boolean;
+    expandDisabled?: boolean;
 }
 
 function EllipsizedContent(props: Props) {
@@ -24,6 +25,7 @@ function EllipsizedContent(props: Props) {
         children,
         footer,
         darkMode,
+        expandDisabled = false,
     } = props;
 
     const [isEllipsized, setIsEllipsized] = React.useState(false);
@@ -85,7 +87,7 @@ function EllipsizedContent(props: Props) {
                     {footer}
                 </div>
             )}
-            {isEllipsized && (
+            {isEllipsized && !expandDisabled && (
                 <Button
                     className={_cs(
                         styles.ellipsizeToggleButton,

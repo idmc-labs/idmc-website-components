@@ -44,11 +44,14 @@ function GoodPracticeItem(props: Props) {
                 />
             )}
             <div className={styles.content}>
-                {type}
+                <div className={styles.type}>
+                    {type}
+                </div>
                 <Header
                     heading={(
                         <a
                             href={url}
+                            className={styles.link}
                             target="_blank"
                             rel="noreferrer"
                         >
@@ -56,13 +59,17 @@ function GoodPracticeItem(props: Props) {
                         </a>
                     )}
                     headingSize="extraSmall"
-                    description={(
-                        <DateOutput value={date} />
-                    )}
                 />
-                <EllipsizedContent>
+                <EllipsizedContent
+                    expandDisabled
+                >
                     <HTMLOutput value={description} />
                 </EllipsizedContent>
+                <DateOutput
+                    className={styles.date}
+                    value={date}
+                    format="dd MMM yyyy"
+                />
             </div>
         </div>
     );

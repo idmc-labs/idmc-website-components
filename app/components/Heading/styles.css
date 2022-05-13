@@ -32,8 +32,8 @@
         position: absolute;
         bottom: 0;
         left: 0;
-        background-color: var(--color-background-dark);
-        width: 2rem;
-        height: var(--dui-width-separator-thick);
+        background-color: var(--dui-color-accent);
+        width: 4ch;
+        height: var(--dui-width-separator-medium);
     }
 }

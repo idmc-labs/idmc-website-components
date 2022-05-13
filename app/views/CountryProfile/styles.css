@@ -198,8 +198,9 @@
 
                 .idu {
                     display: flex;
+                    align-items: flex-start;
                     flex-basis: calc(50% - var(--dui-spacing-large));
-                    flex-wrap: wrap;
+                    flex-direction: column;
                     border: var(--dui-width-separator-thin) solid var(--dui-color-separator);
                     padding: var(--dui-spacing-medium);
                     gap: var(--dui-spacing-medium);
@@ -255,7 +256,7 @@
                 gap: var(--dui-spacing-large);
 
                 .material-list {
-                    --gap: 5rem;
+                    --gap: var(--dui-spacing-large);
                     display: flex;
                     flex-wrap: wrap;
                     gap: var(--gap);
@@ -276,7 +277,7 @@
 
             .misc {
                 display: flex;
-                gap: var(--dui-spacing-large);
+                gap: var(--dui-spacing-extra-large);
 
                 .essential-reading {
                     display: flex;
