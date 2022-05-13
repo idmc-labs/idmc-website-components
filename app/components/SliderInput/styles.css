@@ -3,17 +3,8 @@
     position: relative;
     gap: var(--dui-spacing-medium);
 
-    .label-description {
-        font-family: monospace;
-    }
-
-    .heading {
-        font-size: var(--dui-font-size-small);
-    }
-
     .heading-description {
         color: var(--dui-color-text-label);
-        font-size: var(--dui-font-size-small);
     }
 
     .react-slider {
@@ -49,10 +40,6 @@
             width: var(--dui-width-separator-thin);
             height: 1.5ch;
         }
-    }
-
-    .value {
-        font-family: monospace;
     }
 
     /*

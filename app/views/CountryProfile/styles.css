@@ -4,6 +4,7 @@
 
     .cover-image {
         align-self: stretch;
+        background-color: var(--dui-color-background);
         width: 100%;
         height: 18rem;
         object-fit: cover;
@@ -48,6 +49,7 @@
             gap: var(--dui-spacing-extra-large);
 
             .nav-link {
+                text-align: center;
                 color: var(--color-text-on-dark);
             }
         }
@@ -86,10 +88,12 @@
                     display: flex;
                     align-items: flex-start;
                     gap: var(--dui-spacing-medium);
+                    flex-wrap: wrap;
 
                     .tab-list {
                         display: flex;
                         flex-direction: column;
+                        flex-grow: 1;
                         flex-shrink: 0;
                         background-color: transparent;
                         width: 12rem;
@@ -195,11 +199,12 @@
                 display: flex;
                 flex-wrap: wrap;
                 gap: var(--dui-spacing-large);
+                padding: var(--dui-spacing-large) 0;
 
                 .idu {
                     display: flex;
                     align-items: flex-start;
-                    flex-basis: 0;
+                    flex-basis: 50%;
                     flex-direction: column;
                     flex-grow: 1;
                     border: var(--dui-width-separator-thin) solid var(--dui-color-separator);
@@ -212,15 +217,16 @@
                         height: 2rem;
                     }
                 }
-            }
 
-            .idu-pager {
-                display: flex;
-                flex-wrap: wrap;
-                gap: var(--dui-spacing-small);
+                .idu-pager {
+                    display: flex;
+                    flex-basis: 100%;
+                    flex-wrap: wrap;
+                    gap: var(--dui-spacing-small);
 
-                .idu-pager-button {
-                    padding: 0;
+                    .idu-pager-button {
+                        padding: 0;
+                    }
                 }
             }
 
@@ -232,7 +238,7 @@
                 .legend {
                     display: flex;
                     flex-direction: column;
-                    gap: var(--dui-spacing-medium);
+                    gap: var(--dui-spacing-extra-small);
 
                     .legend-element-list {
                         display: flex;
@@ -269,6 +275,7 @@
                         --image-width: 10rem;
                         flex-basis: calc(100% / 2 - var(--gap));
                         flex-direction: row;
+                        flex-grow: 1;
 
                         >* {
                             flex-basis: 0;
@@ -281,6 +288,7 @@
             .misc {
                 display: flex;
                 gap: var(--dui-spacing-extra-large);
+                flex-wrap: wrap;
 
                 .essential-reading {
                     display: flex;

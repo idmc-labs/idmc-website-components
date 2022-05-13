@@ -89,11 +89,12 @@ function Slider<T extends number | number[]>(props: Props<T>) {
         <Header
             heading={label}
             headingSize="extraSmall"
-            headingClassName={styles.heading}
-            headingDescriptionClassName={styles.headingDescription}
+            headingDescriptionClassName={_cs(
+                styles.headingDescription,
+            )}
             className={_cs(styles.slider, className)}
             headingDescription={(
-                <span className={styles.labelDescription}>
+                <span>
                     {labelDescription}
                 </span>
             )}
@@ -101,7 +102,7 @@ function Slider<T extends number | number[]>(props: Props<T>) {
             description={(
                 <>
                     {typeof value !== 'number' && !hideValues && (
-                        <div className={styles.value}>
+                        <div>
                             {value[0]}
                         </div>
                     )}
@@ -120,7 +121,7 @@ function Slider<T extends number | number[]>(props: Props<T>) {
                         renderMark={Mark}
                     />
                     {typeof value !== 'number' && !hideValues && (
-                        <div className={styles.value}>
+                        <div>
                             {value[1]}
                         </div>
                     )}

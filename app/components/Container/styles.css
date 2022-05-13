@@ -33,6 +33,7 @@
         .footer-actions {
             display: flex;
             gap: var(--dui-spacing-medium);
+            flex-wrap: wrap;
         }
     }
 }

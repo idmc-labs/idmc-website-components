@@ -4,7 +4,7 @@ interface CountryMetadata {
     displacementDataHeader: string;
     conflictAndViolenceHeader: string;
     disasterHeader: string;
-    latestNewDisplacementsHeader: string;
+    // latestNewDisplacementsHeader: string;
     internalDisplacementUpdatesHeader: string;
     relatedMaterialHeader: string;
     essentialReadingHeader: string;
@@ -15,7 +15,7 @@ interface CountryMetadata {
     displacementDataTooltip?: string;
     conflictAndViolenceTooltip?: string;
     disasterTooltip?: string;
-    latestNewDisplacementsTooltip?: string;
+    // latestNewDisplacementsTooltip?: string;
     internalDisplacementUpdatesTooltip?: string;
     relatedMaterialTooltip?: string;
     essentialReadingTooltip?: string;
@@ -34,7 +34,7 @@ export const countryMetadata: CountryMetadata = {
     displacementDataHeader: 'Displacement Data',
     conflictAndViolenceHeader: 'Conflict and Violence Data',
     disasterHeader: 'Disaster Data',
-    latestNewDisplacementsHeader: 'Latest Internal Displacements',
+    // latestNewDisplacementsHeader: 'Latest Internal Displacements',
     internalDisplacementUpdatesHeader: 'Internal Displacement Updates',
     relatedMaterialHeader: 'Related Material',
     essentialReadingHeader: 'Essential Reading',

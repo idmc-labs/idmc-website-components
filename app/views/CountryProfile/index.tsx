@@ -152,7 +152,6 @@ const COUNTRY_PROFILE = gql`
             essentialLinks
             displacementDataDescription
             internalDisplacementDescription
-            latestNewDisplacementsDescription
         }
         conflictStatistics(filters: { countriesIso3: [$iso3] }) {
             newDisplacements
@@ -986,7 +985,7 @@ function CountryProfile(props: Props) {
         </Container>
     );
 
-    const displacementSection = (
+    const displacementDataSection = (
         conflictSection
         || disasterSection
         || countryInfo?.displacementDataDescription
@@ -1016,80 +1015,12 @@ function CountryProfile(props: Props) {
         </section>
     );
 
-    const latestNewDisplacementSection = (
+    const internalDisplacementUpdatesSection = (
         (idus && idus.length > 0)
-        || countryInfo?.latestNewDisplacementsDescription
+        || countryInfo?.internalDisplacementDescription
     ) && (
         <section
-            id="latest-displacement"
-            className={styles.latestNewDisplacements}
-        >
-            <Header
-                headingSize="large"
-                heading={countryMetadata.latestNewDisplacementsHeader}
-                headingInfo={(
-                    <TooltipIcon>
-                        {countryMetadata.latestNewDisplacementsTooltip}
-                    </TooltipIcon>
-                )}
-            />
-            <EllipsizedContent>
-                <HTMLOutput
-                    value={countryInfo?.latestNewDisplacementsDescription}
-                />
-            </EllipsizedContent>
-            <div className={styles.iduContainer}>
-                {idus && idus.slice(0, iduActivePage * iduPageSize)?.map((idu) => (
-                    <div
-                        key={idu.id}
-                        className={styles.idu}
-                    >
-                        <DisplacementIcon
-                            className={styles.icon}
-                            displacementType={idu.displacement_type}
-                            disasterType={idu.type}
-                        />
-                        <HTMLOutput
-                            value={idu.standard_popup_text}
-                        />
-                    </div>
-                ))}
-            </div>
-            <div className={styles.iduPager}>
-                {idus && idus.length > (iduActivePage * iduPageSize) && (
-                    <Button
-                        className={styles.iduPagerButton}
-                        name={undefined}
-                        onClick={() => {
-                            setIduActivePage((val) => val + 1);
-                        }}
-                        actions={<IoArrowDown />}
-                        variant="secondary"
-                    >
-                        View Older Displacements
-                    </Button>
-                )}
-                {/* iduActivePage > 1 && (
-                    <Button
-                        name={undefined}
-                        onClick={() => {
-                            setIduActivePage(1);
-                        }}
-                        actions={<IoArrowUp />}
-                    >
-                        See Less
-                    </Button>
-                ) */}
-            </div>
-        </section>
-    );
-
-    const internalDisplacementSection = (
-        countryInfo?.internalDisplacementDescription
-        || (idus && idus.length > 0)
-    ) && (
-        <section
-            id="displacement-updates"
+            id="internal-displacement"
             className={styles.internalDisplacementUpdates}
         >
             <Header
@@ -1106,116 +1037,163 @@ function CountryProfile(props: Props) {
                     value={countryInfo?.internalDisplacementDescription}
                 />
             </EllipsizedContent>
-            <div>
-                Hover over and click on the coloured bubbles to see near real-time
-                snapshots of situations of internal displacement across the globe.
-            </div>
-            <Container
-                filters={(
-                    <>
-                        <div className={styles.legend}>
-                            <Header
-                                headingSize="extraSmall"
-                                heading="Type of displacement"
-                            />
-                            <div className={styles.legendElementList}>
-                                <LegendElement
-                                    name="Conflict"
-                                    onClick={handleTypeOfDisplacementsChange}
-                                    isActive={mapTypeOfDisplacements.includes('Conflict')}
-                                    color="var(--color-conflict)"
-                                    label="Conflict"
+            {idus && idus.length > 0 && (
+                <>
+                    <div className={styles.iduContainer}>
+                        {idus.slice(0, iduActivePage * iduPageSize)?.map((idu) => (
+                            <div
+                                key={idu.id}
+                                className={styles.idu}
+                            >
+                                <DisplacementIcon
+                                    className={styles.icon}
+                                    displacementType={idu.displacement_type}
+                                    disasterType={idu.type}
                                 />
-                                <LegendElement
-                                    name="Disaster"
-                                    onClick={handleTypeOfDisplacementsChange}
-                                    isActive={mapTypeOfDisplacements.includes('Disaster')}
-                                    color="var(--color-disaster)"
-                                    label="Disaster"
+                                <HTMLOutput
+                                    value={idu.standard_popup_text}
                                 />
                             </div>
-                        </div>
-                        <div className={styles.legend}>
-                            <Header
-                                headingSize="extraSmall"
-                                heading="No. of Displacement"
-                            />
-                            <div className={styles.legendElementList}>
-                                <LegendElement
-                                    name="less-than-100"
-                                    onClick={handleNoOfDisplacementsChange}
-                                    isActive={mapNoOfDisplacements.includes('less-than-100')}
-                                    color="grey"
-                                    size={10}
-                                    label="< 100"
-                                />
-                                <LegendElement
-                                    name="less-than-1000"
-                                    onClick={handleNoOfDisplacementsChange}
-                                    isActive={mapNoOfDisplacements.includes('less-than-1000')}
-                                    color="grey"
-                                    size={18}
-                                    label="< 1000"
-                                />
-                                <LegendElement
-                                    name="more-than-1000"
-                                    onClick={handleNoOfDisplacementsChange}
-                                    isActive={mapNoOfDisplacements.includes('more-than-1000')}
-                                    color="grey"
-                                    size={26}
-                                    label="> 1000"
-                                />
-                            </div>
-                        </div>
-                        <div className={styles.timeRangeContainer}>
-                            <SliderInput
-                                hideValues
-                                className={styles.timeRangeInput}
-                                // NOTE: timescale
-                                min={mapTimeRangeBounds[0]}
-                                max={mapTimeRangeBounds[1]}
-                                labelDescription={`${mapTimeRange[0]} - ${mapTimeRange[1]}`}
-                                step={1}
-                                minDistance={0}
-                                value={mapTimeRange}
-                                onChange={setMapTimeRange}
-                            />
-                        </div>
-                    </>
-                )}
-                footerActions={(
-                    <>
-                        <Button
-                            name={undefined}
-                            // variant="secondary"
-                            onClick={handleExportIduClick}
-                            icons={(
-                                <IoDownloadOutline />
+                        ))}
+                        <div className={styles.iduPager}>
+                            {idus.length > (iduActivePage * iduPageSize) && (
+                                <Button
+                                    className={styles.iduPagerButton}
+                                    name={undefined}
+                                    onClick={() => {
+                                        setIduActivePage((val) => val + 1);
+                                    }}
+                                    actions={<IoArrowDown />}
+                                    variant="secondary"
+                                >
+                                    View Older Displacements
+                                </Button>
                             )}
-                        >
-                            Download displacement data
-                        </Button>
-                        <ButtonLikeLink
-                            href={giddLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            icons={(
-                                <IoExitOutline />
-                            )}
-                        >
-                            View GIDD dashboard
-                        </ButtonLikeLink>
-                    </>
-                )}
-            >
-                <IduMap
-                    idus={idus}
-                    boundingBox={countryInfo?.boundingBox as LngLatBounds | undefined}
-                    mapTypeOfDisplacements={mapTypeOfDisplacements}
-                    mapNoOfDisplacements={mapNoOfDisplacements}
-                    mapTimeRange={mapTimeRange}
-                />
-            </Container>
+                            {/* iduActivePage > 1 && (
+                                <Button
+                                name={undefined}
+                                onClick={() => {
+                                setIduActivePage(1);
+                                }}
+                                actions={<IoArrowUp />}
+                                >
+                                See Less
+                                </Button>
+                                ) */}
+                        </div>
+                    </div>
+                    <div>
+                        Hover over and click on the coloured bubbles to see near real-time
+                        snapshots of situations of internal displacement across the globe.
+                    </div>
+                    <Container
+                        filters={(
+                            <>
+                                <div className={styles.legend}>
+                                    <Header
+                                        headingSize="extraSmall"
+                                        heading="Type of displacement"
+                                    />
+                                    <div className={styles.legendElementList}>
+                                        <LegendElement
+                                            name="Conflict"
+                                            onClick={handleTypeOfDisplacementsChange}
+                                            isActive={mapTypeOfDisplacements.includes('Conflict')}
+                                            color="var(--color-conflict)"
+                                            label="Conflict"
+                                        />
+                                        <LegendElement
+                                            name="Disaster"
+                                            onClick={handleTypeOfDisplacementsChange}
+                                            isActive={mapTypeOfDisplacements.includes('Disaster')}
+                                            color="var(--color-disaster)"
+                                            label="Disaster"
+                                        />
+                                    </div>
+                                </div>
+                                <div className={styles.legend}>
+                                    <Header
+                                        headingSize="extraSmall"
+                                        heading="No. of Displacement"
+                                    />
+                                    <div className={styles.legendElementList}>
+                                        <LegendElement
+                                            name="less-than-100"
+                                            onClick={handleNoOfDisplacementsChange}
+                                            isActive={mapNoOfDisplacements.includes('less-than-100')}
+                                            color="grey"
+                                            size={10}
+                                            label="< 100"
+                                        />
+                                        <LegendElement
+                                            name="less-than-1000"
+                                            onClick={handleNoOfDisplacementsChange}
+                                            isActive={mapNoOfDisplacements.includes('less-than-1000')}
+                                            color="grey"
+                                            size={18}
+                                            label="< 1000"
+                                        />
+                                        <LegendElement
+                                            name="more-than-1000"
+                                            onClick={handleNoOfDisplacementsChange}
+                                            isActive={mapNoOfDisplacements.includes('more-than-1000')}
+                                            color="grey"
+                                            size={26}
+                                            label="> 1000"
+                                        />
+                                    </div>
+                                </div>
+                                <div className={styles.timeRangeContainer}>
+                                    <SliderInput
+                                        hideValues
+                                        className={styles.timeRangeInput}
+                                        // NOTE: timescale
+                                        min={mapTimeRangeBounds[0]}
+                                        max={mapTimeRangeBounds[1]}
+                                        labelDescription={`${mapTimeRange[0]} - ${mapTimeRange[1]}`}
+                                        step={1}
+                                        minDistance={0}
+                                        value={mapTimeRange}
+                                        onChange={setMapTimeRange}
+                                    />
+                                </div>
+                            </>
+                        )}
+                        footerActions={(
+                            <>
+                                <Button
+                                    name={undefined}
+                                    // variant="secondary"
+                                    onClick={handleExportIduClick}
+                                    icons={(
+                                        <IoDownloadOutline />
+                                    )}
+                                >
+                                    Download displacement data
+                                </Button>
+                                <ButtonLikeLink
+                                    href={giddLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    icons={(
+                                        <IoExitOutline />
+                                    )}
+                                >
+                                    View GIDD dashboard
+                                </ButtonLikeLink>
+                            </>
+                        )}
+                    >
+                        <IduMap
+                            idus={idus}
+                            boundingBox={countryInfo?.boundingBox as LngLatBounds | undefined}
+                            mapTypeOfDisplacements={mapTypeOfDisplacements}
+                            mapNoOfDisplacements={mapNoOfDisplacements}
+                            mapTimeRange={mapTimeRange}
+                        />
+                    </Container>
+                </>
+            )}
         </section>
     );
 
@@ -1328,7 +1306,7 @@ function CountryProfile(props: Props) {
                     {countryMetadata.overviewHeader}
                 </a>
             )}
-            {!!displacementSection && (
+            {!!displacementDataSection && (
                 <a
                     href="#displacement-data"
                     className={styles.navLink}
@@ -1336,17 +1314,9 @@ function CountryProfile(props: Props) {
                     {countryMetadata.displacementDataHeader}
                 </a>
             )}
-            {!!latestNewDisplacementSection && (
+            {!!internalDisplacementUpdatesSection && (
                 <a
-                    href="#latest-displacement"
-                    className={styles.navLink}
-                >
-                    {countryMetadata.latestNewDisplacementsHeader}
-                </a>
-            )}
-            {!!internalDisplacementSection && (
-                <a
-                    href="#displacement-updates"
+                    href="#internal-displacement"
                     className={styles.navLink}
                 >
                     {countryMetadata.internalDisplacementUpdatesHeader}
@@ -1387,9 +1357,8 @@ function CountryProfile(props: Props) {
             <div className={styles.bodyContainer}>
                 <div className={styles.content}>
                     {overviewSection}
-                    {displacementSection}
-                    {latestNewDisplacementSection}
-                    {internalDisplacementSection}
+                    {displacementDataSection}
+                    {internalDisplacementUpdatesSection}
                     {relatedMaterialsSection}
                     <section className={styles.misc}>
                         {essentialLinksSection}
