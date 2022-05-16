@@ -45,15 +45,9 @@ module.exports = () => {
             path: getPath('build/'),
             publicPath: '/',
             sourceMapFilename: '[file].map',
-            chunkFilename: isProduction
-                ? 'js/[name].[contenthash].chunk.js'
-                : 'js/[name].chunk.js',
-            filename: isProduction
-                ? 'js/[name].[contenthash].bundle.js'
-                : 'js/[name].bundle.js',
-            assetModuleFilename: isProduction
-                ? 'assets/[name].[contenthash][ext]'
-                : 'assets/[name][ext]',
+            chunkFilename: 'js/[name].chunk.js',
+            filename: 'js/[name].bundle.js',
+            assetModuleFilename: 'assets/[name][ext]',
             clean: true,
         },
         module: {
@@ -138,12 +132,8 @@ module.exports = () => {
                 systemvars: !!isProduction, // NOTE: need to filter system variables
             }),
             new MiniCssExtractPlugin({
-                filename: isProduction
-                    ? 'css/[name].[contenthash].css'
-                    : 'css/[name].css',
-                chunkFilename: isProduction
-                    ? 'css/[id].[contenthash].css'
-                    : 'css/[id].css',
+                filename: 'css/[name].css',
+                chunkFilename: 'css/[id].css',
             }),
             new HtmlWebpackPlugin({
                 favicon: getPath('app/favicon.ico'),
