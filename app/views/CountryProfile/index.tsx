@@ -86,7 +86,23 @@ import { countryMetadata } from './data';
 
 import styles from './styles.css';
 
-const DRUPAL_ENDPOINT = process.env.REACT_APP_DRUPAL_ENDPOINT as string || '/';
+const contentTypeLabelMapping: {
+    [key: string]: string,
+} = {
+    media_centre: 'Media Centre',
+    events: 'Events',
+    expert_opinion: 'Expert Opinion',
+    publications: 'Publications',
+};
+
+function getContentTypeLabel(val: string | undefined) {
+    if (!val) {
+        return 'Unknown';
+    }
+    return contentTypeLabelMapping[val] || 'Unknown';
+}
+
+const DRUPAL_ENDPOINT = process.env.REACT_APP_DRUPAL_ENDPOINT as string || '';
 const REST_ENDPOINT = process.env.REACT_APP_REST_ENDPOINT as string;
 
 function suffixDrupalEndpoing(path: string) {
@@ -1281,7 +1297,7 @@ function CountryProfile(props: Props) {
                         description={gp.metatag.value.description}
                         // FIXME: pass date
                         // FIXME: pass doc type
-                        type={gp?.type?.[0]?.target_id}
+                        type={getContentTypeLabel(gp?.type?.[0]?.target_id)}
                         date={gp?.field_published?.[0]?.value}
                     />
                 ))}
