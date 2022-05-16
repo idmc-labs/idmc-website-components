@@ -7,8 +7,8 @@ import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
 import DateOutput from '#components/DateOutput';
 import TextOutput from '#components/TextOutput';
-import SmartLink from '#base/components/SmartLink';
-import route from '#base/configs/routes';
+// import SmartLink from '#base/components/SmartLink';
+// import route from '#base/configs/routes';
 
 import grid2021CoverImage from '../../resources/img/grid2021-cover.png';
 import {
@@ -39,7 +39,8 @@ function GoodPractice(props: Props) {
                     heading={goodPractice.title}
                 />
                 <div className={styles.breadcrumb}>
-                    <SmartLink
+                    {/*
+                    <:SmartLink
                         route={route.home}
                     />
                     ›
@@ -47,6 +48,7 @@ function GoodPractice(props: Props) {
                         route={route.goodPractices}
                     />
                     ›
+                    */}
                     <div>
                         {goodPractice.title}
                     </div>

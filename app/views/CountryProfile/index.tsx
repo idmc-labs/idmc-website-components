@@ -438,6 +438,7 @@ function CountryProfile(props: Props) {
             variables: {
                 country: currentCountry,
             },
+            /*
             onCompleted: (response) => {
                 if (!response.idu || response.idu.length <= 0) {
                     return;
@@ -447,12 +448,10 @@ function CountryProfile(props: Props) {
                 if (min === max) {
                     min -= 1;
                 }
-                console.warn(min, max);
-                /*
                 setMapTimeRangeBounds([min, max]);
                 setMapTimeRange([min, max]);
-                */
             },
+            */
         },
     );
 
