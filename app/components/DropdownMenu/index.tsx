@@ -65,7 +65,7 @@ function DropdownMenu(props) {
             >
                 { label }
             </button>
-            { showDropdown && (
+            {showDropdown && (
                 <Portal>
                     <DropdownContainer
                         elementRef={dropdownRef}
