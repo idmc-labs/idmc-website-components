@@ -5,6 +5,7 @@ const defaultPlacement = {
     right: 'unset',
     bottom: 'unset',
     left: 'unset',
+    width: 'auto',
 };
 
 function useFloatPlacement(parentRef: React.RefObject<HTMLElement>) {
@@ -23,10 +24,17 @@ function useFloatPlacement(parentRef: React.RefObject<HTMLElement>) {
             const horizontalPosition = (cX - parentBCR.x) > 0 ? 'right' : 'left';
             const verticalPosition = (cY - parentBCR.y) > 0 ? 'bottom' : 'top';
 
-            if (horizontalPosition === 'left') {
-                newPlacement.right = `${document.body.clientWidth - x - width}px`;
-            } else if (horizontalPosition === 'right') {
-                newPlacement.left = `${x}px`;
+            if (window.innerWidth > 600) {
+                if (horizontalPosition === 'left') {
+                    newPlacement.right = `${document.body.clientWidth - x - width}px`;
+                } else if (horizontalPosition === 'right') {
+                    newPlacement.left = `${x}px`;
+                }
+            } else {
+                /*
+                newPlacement.left = '10px';
+                newPlacement.right = '10px';
+                */
             }
 
             if (verticalPosition === 'top') {
