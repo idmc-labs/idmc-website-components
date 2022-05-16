@@ -49,11 +49,11 @@ jobs:
         run: |
           docker run --rm --workdir="/code/" $DOCKER_IMAGE sh -c 'yarn lint'
 
-      - name: 🤞 Run Test 🧪
-        env:
-            DOCKER_IMAGE: ${{ steps.prep.outputs.tagged_image }}
-        run: |
-          docker run --rm --workdir="/code/" $DOCKER_IMAGE sh -c 'yarn test'
+      # - name: 🤞 Run Test 🧪
+      #   env:
+      #       DOCKER_IMAGE: ${{ steps.prep.outputs.tagged_image }}
+      #   run: |
+      #     docker run --rm --workdir="/code/" $DOCKER_IMAGE sh -c 'yarn test'
 
       - name: 🤞 Run Build 🧪
         env:
