@@ -126,30 +126,25 @@ function IduMap(props: Props) {
                         return undefined;
                     }
 
-                    if (mapTypeOfDisplacements.length > 0) {
-                        if (!mapTypeOfDisplacements.includes(idu.displacement_type)) {
-                            return undefined;
-                        }
+                    if (!mapTypeOfDisplacements.includes(idu.displacement_type)) {
+                        return undefined;
                     }
-                    if (mapNoOfDisplacements.length > 0) {
-                        let key: DisplacementNumber;
-                        if (idu.figure < 100) {
-                            key = 'less-than-100';
-                        } else if (idu.figure < 1000) {
-                            key = 'less-than-1000';
-                        } else {
-                            key = 'more-than-1000';
-                        }
+                    let key: DisplacementNumber;
+                    if (idu.figure < 100) {
+                        key = 'less-than-100';
+                    } else if (idu.figure < 1000) {
+                        key = 'less-than-1000';
+                    } else {
+                        key = 'more-than-1000';
+                    }
 
-                        if (!mapNoOfDisplacements.includes(key)) {
-                            return undefined;
-                        }
+                    if (!mapNoOfDisplacements.includes(key)) {
+                        return undefined;
                     }
-                    if (mapTimeRange) {
-                        const [min, max] = mapTimeRange;
-                        if (!idu.year || idu.year < min || idu.year > max) {
-                            return undefined;
-                        }
+
+                    const [min, max] = mapTimeRange;
+                    if (idu.year && (idu.year < min || idu.year > max)) {
+                        return undefined;
                     }
 
                     return {

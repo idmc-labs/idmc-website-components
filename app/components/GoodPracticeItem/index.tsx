@@ -37,11 +37,18 @@ function GoodPracticeItem(props: Props) {
     return (
         <div className={_cs(styles.goodPracticeItem, className)}>
             {coverImageUrl && (
-                <img
-                    src={coverImageUrl}
-                    className={styles.coverImage}
-                    alt="Cover"
-                />
+                <a
+                    className={styles.coverWrapper}
+                    href={url}
+                    target="_blank"
+                    rel="noreferrer"
+                >
+                    <img
+                        src={coverImageUrl}
+                        className={styles.coverImage}
+                        alt="Cover"
+                    />
+                </a>
             )}
             <div className={styles.content}>
                 <div className={styles.type}>

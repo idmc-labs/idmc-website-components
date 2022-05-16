@@ -6,11 +6,15 @@
     border: var(--dui-width-separator-thin) solid var(--dui-color-separator);
     gap: var(--dui-spacing-medium);
 
-    .cover-image {
-        background-color: var(--dui-color-background);
+    .cover-wrapper {
         width: var(--image-width);
-        height: var(--image-height);
-        object-fit: cover;
+
+        .cover-image {
+            background-color: var(--dui-color-background);
+            width: 100%;
+            height: var(--image-height);
+            object-fit: cover;
+        }
     }
 
     .content {

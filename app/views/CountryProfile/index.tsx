@@ -12,13 +12,18 @@ import {
 } from '@apollo/client';
 import {
     IoArrowDown,
+    IoArrowUp,
     IoDownloadOutline,
     IoExitOutline,
 } from 'react-icons/io5';
 import {
     LngLatBounds,
 } from 'mapbox-gl';
-import { _cs, isDefined } from '@togglecorp/fujs';
+import {
+    _cs,
+    isNotDefined,
+    isDefined,
+} from '@togglecorp/fujs';
 import { saveAs } from 'file-saver';
 import stringify from 'csv-stringify/lib/browser/sync';
 import {
@@ -81,7 +86,7 @@ import { countryMetadata } from './data';
 
 import styles from './styles.css';
 
-const DRUPAL_ENDPOINT = process.env.REACT_APP_DRUPAL_ENDPOINT as string;
+const DRUPAL_ENDPOINT = process.env.REACT_APP_DRUPAL_ENDPOINT as string || '/';
 const REST_ENDPOINT = process.env.REACT_APP_REST_ENDPOINT as string;
 
 function suffixDrupalEndpoing(path: string) {
@@ -112,7 +117,8 @@ const disasterCategoryKeySelector = (d: CategoryStatisticsType) => d.label;
 
 // constants
 const START_YEAR = 2008;
-const END_YEAR = (new Date()).getFullYear();
+const END_YEAR = 2021;
+const END_YEAR_FOR_IDU = (new Date()).getFullYear();
 
 const giddLink = suffixDrupalEndpoing('/database/displacement-data');
 
@@ -299,7 +305,7 @@ function CountryProfile(props: Props) {
     const conflictTimeRange = useDebouncedValue(conflictTimeRangeActual);
 
     // Disaster section
-    const [disasterCategories, setDisasterCategories] = useState<string[] | undefined>();
+    const [disasterCategories, setDisasterCategories] = useState<string[]>([]);
     const [disasterTimeRangeActual, setDisasterTimeRange] = useState([START_YEAR, END_YEAR]);
     const disasterTimeRange = useDebouncedValue(disasterTimeRangeActual);
 
@@ -313,21 +319,23 @@ function CountryProfile(props: Props) {
     const iduPageSize = 2;
 
     // IDU map section
+    /*
     const [mapTimeRangeBounds, setMapTimeRangeBounds] = useState<[number, number]>(
         [START_YEAR, END_YEAR],
     );
+    */
     const [mapTimeRangeActual, setMapTimeRange] = useState<[number, number]>(
-        [START_YEAR, END_YEAR],
+        [START_YEAR, END_YEAR_FOR_IDU],
     );
     const mapTimeRange = useDebouncedValue(mapTimeRangeActual);
     const [
         mapTypeOfDisplacements,
         setMapTypeOfDisplacements,
-    ] = useInputState<DisplacementType[]>([]);
+    ] = useInputState<DisplacementType[]>(['Conflict', 'Disaster']);
     const [
         mapNoOfDisplacements,
         setMapNoOfDisplacements,
-    ] = useInputState<DisplacementNumber[]>([]);
+    ] = useInputState<DisplacementNumber[]>(['less-than-100', 'less-than-1000', 'more-than-1000']);
 
     const handleTypeOfDisplacementsChange = useCallback((value: DisplacementType) => {
         setMapTypeOfDisplacements((oldValue: DisplacementType[]) => {
@@ -439,8 +447,11 @@ function CountryProfile(props: Props) {
                 if (min === max) {
                     min -= 1;
                 }
+                console.warn(min, max);
+                /*
                 setMapTimeRangeBounds([min, max]);
                 setMapTimeRange([min, max]);
+                */
             },
         },
     );
@@ -448,6 +459,7 @@ function CountryProfile(props: Props) {
     const {
         data,
         fetchMore,
+        refetch,
         loading: loadingRelatedMaterials,
         // FIXME: handle loading and error
         // error,
@@ -496,12 +508,48 @@ function CountryProfile(props: Props) {
     */
 
     const handleExportIduClick = React.useCallback(() => {
-        if (idus && idus.length > 0) {
+        // FIXME: we have duplicate logic for filtering for now
+        const filteredIdus = idus?.map((idu) => {
+            if (
+                isNotDefined(idu.longitude)
+                || isNotDefined(idu.latitude)
+                || isNotDefined(idu.figure)
+                || isNotDefined(idu.displacement_type)
+                // NOTE: filtering out displacement_type Other
+                || idu.displacement_type === 'Other'
+            ) {
+                return undefined;
+            }
+
+            if (!mapTypeOfDisplacements.includes(idu.displacement_type)) {
+                return undefined;
+            }
+
+            let key: DisplacementNumber;
+            if (idu.figure < 100) {
+                key = 'less-than-100';
+            } else if (idu.figure < 1000) {
+                key = 'less-than-1000';
+            } else {
+                key = 'more-than-1000';
+            }
+            if (!mapNoOfDisplacements.includes(key)) {
+                return undefined;
+            }
+
+            const [min, max] = mapTimeRange;
+            if (!idu.year || idu.year < min || idu.year > max) {
+                return undefined;
+            }
+            return idu;
+        }).filter(isDefined);
+
+        if (filteredIdus && filteredIdus.length > 0) {
             // FIXME: we may need to manually set headers (first data may not
             // always have all the keys)
-            const headers = Object.keys(idus[0]);
+            const headers = Object.keys(filteredIdus[0]);
 
-            const dataString = stringify(idus, {
+            const dataString = stringify(filteredIdus, {
                 columns: headers,
             });
             const fullCsvString = `${headers}\n${dataString}`;
@@ -511,7 +559,7 @@ function CountryProfile(props: Props) {
             );
             saveAs(blob, 'idu_export.csv');
         }
-    }, [idus]);
+    }, [idus, mapNoOfDisplacements, mapTypeOfDisplacements, mapTimeRange]);
 
     const handleShowMoreButtonClick = useCallback(() => {
         fetchMore({
@@ -661,7 +709,7 @@ function CountryProfile(props: Props) {
             footerActions={(
                 <>
                     <ButtonLikeLink
-                        href={suffixGiddRestEndpoint(`/countries/${currentCountry}/disaster-export/`)}
+                        href={suffixGiddRestEndpoint(`/countries/${currentCountry}/disaster-export/?start_year=${disasterTimeRange[0]}&end_year=${disasterTimeRange[1]}&hazard_type=${disasterCategories.join(',')}`)}
                         target="_blank"
                         className={styles.disasterButton}
                         rel="noopener noreferrer"
@@ -856,7 +904,7 @@ function CountryProfile(props: Props) {
             footerActions={(
                 <>
                     <ButtonLikeLink
-                        href={suffixGiddRestEndpoint(`/countries/${currentCountry}/conflict-export/`)}
+                        href={suffixGiddRestEndpoint(`/countries/${currentCountry}/conflict-export/?start_year=${conflictTimeRange[0]}&end_year=${conflictTimeRange[1]}`)}
                         target="_blank"
                         className={styles.conflictButton}
                         rel="noopener noreferrer"
@@ -1045,11 +1093,18 @@ function CountryProfile(props: Props) {
                                 key={idu.id}
                                 className={styles.idu}
                             >
-                                <DisplacementIcon
-                                    className={styles.icon}
-                                    displacementType={idu.displacement_type}
-                                    disasterType={idu.type}
-                                />
+                                <div className={styles.displacementIcon}>
+                                    <DisplacementIcon
+                                        className={styles.icon}
+                                        displacementType={idu.displacement_type}
+                                        disasterType={idu.type}
+                                    />
+                                    <div>
+                                        {idu.displacement_type === 'Disaster'
+                                            ? `${idu.displacement_type} - ${idu.type}`
+                                            : idu.displacement_type}
+                                    </div>
+                                </div>
                                 <HTMLOutput
                                     value={idu.standard_popup_text}
                                 />
@@ -1066,20 +1121,22 @@ function CountryProfile(props: Props) {
                                     actions={<IoArrowDown />}
                                     variant="secondary"
                                 >
-                                    View Older Displacements
+                                    Show older displacements
                                 </Button>
                             )}
-                            {/* iduActivePage > 1 && (
+                            {iduActivePage > 1 && (
                                 <Button
-                                name={undefined}
-                                onClick={() => {
-                                setIduActivePage(1);
-                                }}
-                                actions={<IoArrowUp />}
+                                    className={styles.iduPagerButton}
+                                    name={undefined}
+                                    onClick={() => {
+                                        setIduActivePage(1);
+                                    }}
+                                    actions={<IoArrowUp />}
+                                    variant="secondary"
                                 >
-                                See Less
+                                    Show less
                                 </Button>
-                                ) */}
+                            )}
                         </div>
                     </div>
                     <div>
@@ -1092,7 +1149,7 @@ function CountryProfile(props: Props) {
                                 <div className={styles.legend}>
                                     <Header
                                         headingSize="extraSmall"
-                                        heading="Type of displacement"
+                                        heading="Type of Displacement"
                                     />
                                     <div className={styles.legendElementList}>
                                         <LegendElement
@@ -1131,7 +1188,7 @@ function CountryProfile(props: Props) {
                                             isActive={mapNoOfDisplacements.includes('less-than-1000')}
                                             color="grey"
                                             size={18}
-                                            label="< 1000"
+                                            label="100 - 1000"
                                         />
                                         <LegendElement
                                             name="more-than-1000"
@@ -1147,9 +1204,10 @@ function CountryProfile(props: Props) {
                                     <SliderInput
                                         hideValues
                                         className={styles.timeRangeInput}
-                                        // NOTE: timescale
-                                        min={mapTimeRangeBounds[0]}
-                                        max={mapTimeRangeBounds[1]}
+                                        // min={mapTimeRangeBounds[0]}
+                                        // max={mapTimeRangeBounds[1]}
+                                        min={START_YEAR}
+                                        max={END_YEAR_FOR_IDU}
                                         labelDescription={`${mapTimeRange[0]} - ${mapTimeRange[1]}`}
                                         step={1}
                                         minDistance={0}
@@ -1229,18 +1287,34 @@ function CountryProfile(props: Props) {
                     />
                 ))}
             </div>
-            {remainingRelatedMaterialsCount > 0 && (
-                <Button
-                    // FIXME: need to hide this if there is no more data
-                    name={undefined}
-                    onClick={handleShowMoreButtonClick}
-                    disabled={loadingRelatedMaterials}
-                    actions={<IoArrowDown />}
-                    variant="secondary"
-                >
-                    Show more
-                </Button>
-            )}
+            <div className={styles.materialPager}>
+                {remainingRelatedMaterialsCount > 0 && (
+                    <Button
+                        // FIXME: need to hide this if there is no more data
+                        className={styles.materialPagerButton}
+                        name={undefined}
+                        onClick={handleShowMoreButtonClick}
+                        disabled={loadingRelatedMaterials}
+                        actions={<IoArrowDown />}
+                        variant="secondary"
+                    >
+                        Show more
+                    </Button>
+                )}
+                {(data?.relatedMaterials?.rows?.length ?? 0) > relatedMaterialPageSize && (
+                    <Button
+                        // FIXME: need to hide this if there is no more data
+                        className={styles.materialPagerButton}
+                        name={undefined}
+                        onClick={() => refetch()}
+                        disabled={loadingRelatedMaterials}
+                        actions={<IoArrowUp />}
+                        variant="secondary"
+                    >
+                        Show less
+                    </Button>
+                )}
+            </div>
         </section>
     );
 
@@ -1248,7 +1322,6 @@ function CountryProfile(props: Props) {
         countryInfo?.essentialLinks
     ) && (
         <div
-            id="contact"
             className={styles.essentialReading}
         >
             <Header
@@ -1270,7 +1343,10 @@ function CountryProfile(props: Props) {
         countryInfo?.contactPersonDescription
         || countryInfo?.contactPersonImage
     ) && (
-        <div className={styles.contact}>
+        <div
+            className={styles.contact}
+            id="contact"
+        >
             <Header
                 heading={countryMetadata.contactHeader}
                 headingSize="large"

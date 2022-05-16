@@ -3,7 +3,7 @@ import { RestLink } from 'apollo-link-rest';
 
 const GRAPHQL_ENDPOINT = process.env.REACT_APP_GRAPHQL_ENDPOINT as string;
 const HELIX_ENDPOINT = process.env.REACT_APP_HELIX_ENDPOINT as string;
-const DRUPAL_ENDPOINT = process.env.REACT_APP_DRUPAL_ENDPOINT as string;
+const DRUPAL_ENDPOINT = process.env.REACT_APP_DRUPAL_ENDPOINT as string || '/';
 
 const link = new HttpLink({
     uri: GRAPHQL_ENDPOINT,

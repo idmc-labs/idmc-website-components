@@ -213,8 +213,15 @@
                     max-width: 30rem;
                     gap: var(--dui-spacing-medium);
 
-                    .icon {
-                        height: 2rem;
+                    .displacementIcon {
+                        display: flex;
+                        align-items: baseline;
+                        gap: var(--dui-spacing-medium);
+
+                        .icon {
+                            flex-shrink: 0;
+                            height: 2rem;
+                        }
                     }
                 }
 
@@ -222,7 +229,7 @@
                     display: flex;
                     flex-basis: 100%;
                     flex-wrap: wrap;
-                    gap: var(--dui-spacing-small);
+                    gap: var(--dui-spacing-large);
 
                     .idu-pager-button {
                         padding: 0;
@@ -284,6 +291,18 @@
                         }
                     }
                 }
+
+                .material-pager {
+                    display: flex;
+                    flex-basis: 100%;
+                    flex-wrap: wrap;
+                    gap: var(--dui-spacing-large);
+
+                    .material-pager-button {
+                        padding: 0;
+                    }
+                }
+
             }
 
             .misc {
