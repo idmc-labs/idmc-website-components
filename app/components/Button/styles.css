@@ -1,8 +1,11 @@
 .button {
     display: flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 0.25rem;
     padding: var(--dui-spacing-small) var(--dui-spacing-large);
     gap: var(--dui-spacing-medium);
+    text-align: center;
 
     .icons {
         display: flex;
@@ -12,7 +15,7 @@
     }
 
     .children {
-        flex-grow: 1;
+        flex-grow: 0;
     }
 
     .actions {

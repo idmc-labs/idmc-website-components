@@ -243,14 +243,15 @@
                     .legend-element-list {
                         display: flex;
                         gap: var(--dui-spacing-small);
+
                     }
+
                 }
 
                 .time-range-container {
                     display: flex;
                     flex-direction: column;
                     flex-grow: 1;
-                    padding: var(--dui-spacing-medium) var(--dui-spacing-large);
                     gap: var(--dui-spacing-medium);
 
                     .time-range-input {

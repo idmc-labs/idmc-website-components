@@ -1,5 +1,7 @@
 .tooltip {
-    max-width: 30rem;
+    background-color: var(--dui-color-foreground);
+    max-width: 20rem;
+    color: var(--dui-color-text);
     font-family: var(--dui-font-family-sans-serif);
     font-size: var(--dui-font-size-medium);
     font-weight: var(--dui-font-weight-light);

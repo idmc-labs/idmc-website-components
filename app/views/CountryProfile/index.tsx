@@ -686,16 +686,6 @@ function CountryProfile(props: Props) {
             )}
             filters={(
                 <>
-                    <SliderInput
-                        hideValues
-                        min={START_YEAR}
-                        max={END_YEAR}
-                        labelDescription={`${disasterTimeRangeActual[0]} - ${disasterTimeRangeActual[1]}`}
-                        step={1}
-                        minDistance={0}
-                        value={disasterTimeRangeActual}
-                        onChange={setDisasterTimeRange}
-                    />
                     <Header
                         heading="Disaster Category"
                         headingSize="extraSmall"
@@ -713,6 +703,16 @@ function CountryProfile(props: Props) {
                                 onChange={setDisasterCategories}
                             />
                         )}
+                    />
+                    <SliderInput
+                        hideValues
+                        min={START_YEAR}
+                        max={END_YEAR}
+                        labelDescription={`${disasterTimeRangeActual[0]} - ${disasterTimeRangeActual[1]}`}
+                        step={1}
+                        minDistance={0}
+                        value={disasterTimeRangeActual}
+                        onChange={setDisasterTimeRange}
                     />
                     <div />
                 </>
