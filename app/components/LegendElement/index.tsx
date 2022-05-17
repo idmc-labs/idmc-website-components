@@ -40,7 +40,7 @@ function LegendElement<N>(props: Props<N>) {
                     }}
                 />
             </div>
-            <div className={styles.label}>
+            <div>
                 {label}
             </div>
         </>

@@ -20,6 +20,7 @@ interface Props {
     footer?: React.ReactNode;
     children?: React.ReactNode;
     filters?: React.ReactNode;
+    filtersClassName?: string;
 }
 
 function Container(props: Props) {
@@ -36,6 +37,7 @@ function Container(props: Props) {
         footerActions,
         children,
         filters,
+        filtersClassName,
     } = props;
 
     return (
@@ -52,7 +54,7 @@ function Container(props: Props) {
                 />
             )}
             {filters && (
-                <div className={styles.filters}>
+                <div className={_cs(styles.filters, filtersClassName)}>
                     {filters}
                 </div>
             )}

@@ -2,6 +2,9 @@ import React from 'react';
 import { useBooleanState } from '@the-deep/deep-ui';
 import { IoInformationCircleOutline } from 'react-icons/io5';
 
+import Portal from '#components/Portal';
+import HTMLOutput from '#components/HTMLOutput';
+
 import useFloatPlacement from '../../hooks/useFloatPlacement';
 
 import styles from './styles.css';
@@ -9,7 +12,7 @@ import styles from './styles.css';
 interface TooltipIconProps {
     className?: string;
     infoLabel?: React.ReactNode;
-    children?: React.ReactNode;
+    children?: string;
 }
 
 function TooltipIcon(props: TooltipIconProps) {
@@ -45,12 +48,16 @@ function TooltipIcon(props: TooltipIconProps) {
                 {infoLabel}
             </span>
             {showTooltip && (
-                <div
-                    className={styles.tooltip}
-                    style={placement}
-                >
-                    {children }
-                </div>
+                <Portal>
+                    <div
+                        className={styles.tooltip}
+                        style={placement}
+                    >
+                        <HTMLOutput
+                            value={children}
+                        />
+                    </div>
+                </Portal>
             )}
         </>
     );

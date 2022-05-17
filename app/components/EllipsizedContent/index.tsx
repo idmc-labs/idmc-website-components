@@ -89,14 +89,11 @@ function EllipsizedContent(props: Props) {
             )}
             {isEllipsized && !expandDisabled && (
                 <Button
-                    className={_cs(
-                        styles.ellipsizeToggleButton,
-                        darkMode && styles.darkButton,
-                    )}
+                    className={styles.ellipsizeToggleButton}
                     name={!shouldEllipsize}
                     onClick={setShouldEllipsize}
                     actions={shouldEllipsize ? <IoArrowDown /> : <IoArrowUp />}
-                    variant="secondary"
+                    variant={darkMode ? 'primary' : 'secondary'}
                 >
                     {shouldEllipsize ? 'Read More' : 'See Less'}
                 </Button>

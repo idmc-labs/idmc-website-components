@@ -71,5 +71,5 @@ export function formatNumber(value: number) {
         value: number,
         valueSuffix: normalizeSuffix = '',
     } = output;
-    return `${number} ${normalizeSuffix}`;
+    return `${number}${normalizeSuffix}`;
 }

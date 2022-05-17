@@ -32,15 +32,27 @@ export const countryMetadata: CountryMetadata = {
     overviewHeader: 'Overview',
     countryProfileHeader: 'Country Profile',
     displacementDataHeader: 'Displacement Data',
-    conflictAndViolenceHeader: 'Conflict and Violence',
-    disasterHeader: 'Disaster',
+    conflictAndViolenceHeader: 'Conflict and Violence Data',
+    disasterHeader: 'Disaster Data',
     // latestNewDisplacementsHeader: 'Latest Internal Displacements',
     internalDisplacementUpdatesHeader: 'Internal Displacement Updates',
     relatedMaterialHeader: 'Related Material',
     essentialReadingHeader: 'Essential Reading',
     contactHeader: 'Contact',
 
-    conflictInternalDisplacementTooltip: 'New displacements corresponds to the estimated number of internal displacement movements to have taken place during the year. Figures include individuals who have been displaced more than once. In this sense, the number of new displacements does not equal to the number of people displaced during the year.',
-    conflictIDPTooltip: 'Total number of IDPs corresponds to the total number of people living in internal displacement as of 31 December of every year.',
-    disasterInternalDisplacementTooltip: 'New displacements corresponds to the estimated number of internal displacement movements to have taken place during the year. Figures include individuals who have been displaced more than once. In this sense, the number of new displacements does not equal to the number of people displaced during the year.',
+    conflictInternalDisplacementTooltip: `
+        <p><b>Internal displacements</b></p>
+        <p><i>("flows")</i></p>
+        <p>An "internal displacement" refers to each new forced movement of person within the borders of their country recorded during the year.</p>
+    `,
+    conflictIDPTooltip: `
+        <p><b>Total number of IDPs</b></p>
+        <p><i>("stocks")</i></p>
+        <p>The "total number of IDPs" is a snapshot of all the people living in internal displacement at the end of the year.</p>
+    `,
+    disasterInternalDisplacementTooltip: `
+        <p><b>Internal displacements</b></p>
+        <p><i>("flows")</i></p>
+        <p>An "internal displacement" refers to each new forced movement of person within the borders of their country recorded during the year.</p>
+    `,
 };

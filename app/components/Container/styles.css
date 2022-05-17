@@ -10,7 +10,7 @@
         display: flex;
         align-items: flex-start;
         flex-wrap: wrap;
-        gap: var(--dui-spacing-medium);
+        gap: var(--dui-spacing-large);
         border-bottom: var(--dui-width-separator-thin) solid var(--dui-color-separator);
         padding: var(--dui-spacing-medium);
 

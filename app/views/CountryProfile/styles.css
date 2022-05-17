@@ -106,6 +106,7 @@
 
                     .text-output {
                         gap: var(--dui-spacing-small);
+                        flex-grow: 1;
 
                         .value {
                             color: var(--dui-color-text-label);
@@ -242,27 +243,31 @@
                 flex-direction: column;
                 gap: var(--dui-spacing-large);
 
-                .legend {
-                    display: flex;
-                    flex-direction: column;
-                    gap: var(--dui-spacing-extra-small);
+                .filters-container {
+                    align-items: stretch;
 
-                    .legend-element-list {
+                    .legend {
                         display: flex;
-                        gap: var(--dui-spacing-small);
+                        flex-direction: column;
+                        gap: var(--dui-spacing-extra-small);
+
+                        .legend-element-list {
+                            display: flex;
+                            flex-grow: 1;
+                            gap: var(--dui-spacing-small);
+                        }
 
                     }
 
-                }
+                    .time-range-container {
+                        display: flex;
+                        flex-direction: column;
+                        flex-grow: 1;
+                        gap: var(--dui-spacing-medium);
 
-                .time-range-container {
-                    display: flex;
-                    flex-direction: column;
-                    flex-grow: 1;
-                    gap: var(--dui-spacing-medium);
-
-                    .time-range-input {
-                        width: 100%;
+                        .time-range-input {
+                            width: 100%;
+                        }
                     }
                 }
             }

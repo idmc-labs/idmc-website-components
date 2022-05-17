@@ -135,6 +135,7 @@ const disasterCategoryKeySelector = (d: CategoryStatisticsType) => d.label;
 const START_YEAR = 2008;
 const END_YEAR = 2021;
 const END_YEAR_FOR_IDU = (new Date()).getFullYear();
+const MAX_IDU_ITEMS = 8;
 
 const giddLink = suffixDrupalEndpoing('/database/displacement-data');
 
@@ -454,20 +455,13 @@ function CountryProfile(props: Props) {
             variables: {
                 country: currentCountry,
             },
-            /*
             onCompleted: (response) => {
                 if (!response.idu || response.idu.length <= 0) {
                     return;
                 }
                 const max = Math.max(...response.idu.map((item) => item.year).filter(isDefined));
-                let min = Math.min(...response.idu.map((item) => item.year).filter(isDefined));
-                if (min === max) {
-                    min -= 1;
-                }
-                setMapTimeRangeBounds([min, max]);
-                setMapTimeRange([min, max]);
+                setMapTimeRange([max, Math.max(max, END_YEAR_FOR_IDU)]);
             },
-            */
         },
     );
 
@@ -621,7 +615,7 @@ function CountryProfile(props: Props) {
                 headingInfo={(
                     <>
                         <TooltipIcon>
-                            {countryMetadata.countryProfileTooltip }
+                            {countryMetadata.countryProfileTooltip}
                         </TooltipIcon>
                         {/*
                         <CountrySelectInput
@@ -743,12 +737,23 @@ function CountryProfile(props: Props) {
                             <IoExitOutline />
                         )}
                     >
-                        View GIDD dashboard
+                        View Full Database
                     </ButtonLikeLink>
                 </>
             )}
             filters={(
                 <>
+                    <SliderInput
+                        hideValues
+                        min={START_YEAR}
+                        max={END_YEAR}
+                        labelDescription={`${disasterTimeRangeActual[0]} - ${disasterTimeRangeActual[1]}`}
+                        step={1}
+                        minDistance={0}
+                        value={disasterTimeRangeActual}
+                        onChange={setDisasterTimeRange}
+                    />
+                    <div />
                     <Header
                         heading="Disaster Category"
                         headingSize="extraSmall"
@@ -767,17 +772,6 @@ function CountryProfile(props: Props) {
                             />
                         )}
                     />
-                    <SliderInput
-                        hideValues
-                        min={START_YEAR}
-                        max={END_YEAR}
-                        labelDescription={`${disasterTimeRangeActual[0]} - ${disasterTimeRangeActual[1]}`}
-                        step={1}
-                        minDistance={0}
-                        value={disasterTimeRangeActual}
-                        onChange={setDisasterTimeRange}
-                    />
-                    <div />
                 </>
             )}
         >
@@ -830,7 +824,7 @@ function CountryProfile(props: Props) {
                                     dataKey="total"
                                     key="total"
                                     stroke="var(--color-disaster)"
-                                    name="Disaster internal displacements"
+                                    name="Internal Displacements"
                                     strokeWidth={2}
                                     connectNulls
                                     dot
@@ -846,7 +840,7 @@ function CountryProfile(props: Props) {
                     description={(
                         <Header
                             headingClassName={styles.heading}
-                            heading="Disaster events reported"
+                            heading="Disaster Events Reported"
                             headingSize="extraSmall"
                             headingInfo={(
                                 <TooltipIcon>
@@ -930,7 +924,7 @@ function CountryProfile(props: Props) {
                             <IoDownloadOutline />
                         )}
                     >
-                        Download conflict data
+                        Download Conflict Data
                     </ButtonLikeLink>
                     <ButtonLikeLink
                         href={giddLink}
@@ -941,7 +935,7 @@ function CountryProfile(props: Props) {
                             <IoExitOutline />
                         )}
                     >
-                        View GIDD dashboard
+                        View Full Database
                     </ButtonLikeLink>
                 </>
             )}
@@ -992,7 +986,7 @@ function CountryProfile(props: Props) {
                                     dataKey="totalNewDisplacement"
                                     key="totalNewDisplacement"
                                     stroke="var(--color-conflict)"
-                                    name="Conflict internal displacements"
+                                    name="Internal Displacements"
                                     strokeWidth={2}
                                     connectNulls
                                     dot
@@ -1007,7 +1001,7 @@ function CountryProfile(props: Props) {
                     description={(
                         <Header
                             headingClassName={styles.heading}
-                            heading="Total number of IDPs"
+                            heading="Total Number of IDPs"
                             headingSize="extraSmall"
                             headingInfo={(
                                 <TooltipIcon>
@@ -1044,7 +1038,7 @@ function CountryProfile(props: Props) {
                                 <Legend />
                                 <Bar
                                     dataKey="totalIdps"
-                                    name="Conflict total number of IDPs"
+                                    name="Total Number of IDPs"
                                     fill="var(--color-conflict)"
                                     shape={<RoundedBar />}
                                     maxBarSize={6}
@@ -1145,7 +1139,7 @@ function CountryProfile(props: Props) {
                                     actions={<IoArrowDown />}
                                     variant="secondary"
                                 >
-                                    Show older displacements
+                                    Show Older Displacements
                                 </Button>
                             )}
                             {iduActivePage > 1 && (
@@ -1158,18 +1152,34 @@ function CountryProfile(props: Props) {
                                     actions={<IoArrowUp />}
                                     variant="secondary"
                                 >
-                                    Show less
+                                    Show Less
                                 </Button>
                             )}
                         </div>
                     </div>
                     <div>
                         Hover over and click on the coloured bubbles to see near real-time
-                        snapshots of situations of internal displacement across the globe.
+                        snapshots of situations of internal displacement.
                     </div>
                     <Container
+                        filtersClassName={styles.filtersContainer}
                         filters={(
                             <>
+                                <div className={styles.timeRangeContainer}>
+                                    <SliderInput
+                                        hideValues
+                                        className={styles.timeRangeInput}
+                                        // min={mapTimeRangeBounds[0]}
+                                        // max={mapTimeRangeBounds[1]}
+                                        min={START_YEAR}
+                                        max={END_YEAR_FOR_IDU}
+                                        labelDescription={`${mapTimeRangeActual[0]} - ${mapTimeRangeActual[1]}`}
+                                        step={1}
+                                        minDistance={0}
+                                        value={mapTimeRangeActual}
+                                        onChange={setMapTimeRange}
+                                    />
+                                </div>
                                 <div className={styles.legend}>
                                     <Header
                                         headingSize="extraSmall"
@@ -1224,21 +1234,6 @@ function CountryProfile(props: Props) {
                                         />
                                     </div>
                                 </div>
-                                <div className={styles.timeRangeContainer}>
-                                    <SliderInput
-                                        hideValues
-                                        className={styles.timeRangeInput}
-                                        // min={mapTimeRangeBounds[0]}
-                                        // max={mapTimeRangeBounds[1]}
-                                        min={START_YEAR}
-                                        max={END_YEAR_FOR_IDU}
-                                        labelDescription={`${mapTimeRange[0]} - ${mapTimeRange[1]}`}
-                                        step={1}
-                                        minDistance={0}
-                                        value={mapTimeRange}
-                                        onChange={setMapTimeRange}
-                                    />
-                                </div>
                             </>
                         )}
                         footerActions={(
@@ -1251,7 +1246,7 @@ function CountryProfile(props: Props) {
                                         <IoDownloadOutline />
                                     )}
                                 >
-                                    Download displacement data
+                                    Download Displacement Data
                                 </Button>
                                 <ButtonLikeLink
                                     href={giddLink}
@@ -1261,7 +1256,7 @@ function CountryProfile(props: Props) {
                                         <IoExitOutline />
                                     )}
                                 >
-                                    View GIDD dashboard
+                                    View Full Database
                                 </ButtonLikeLink>
                             </>
                         )}
@@ -1312,19 +1307,21 @@ function CountryProfile(props: Props) {
                 ))}
             </div>
             <div className={styles.materialPager}>
-                {remainingRelatedMaterialsCount > 0 && (
-                    <Button
-                        // FIXME: need to hide this if there is no more data
-                        className={styles.materialPagerButton}
-                        name={undefined}
-                        onClick={handleShowMoreButtonClick}
-                        disabled={loadingRelatedMaterials}
-                        actions={<IoArrowDown />}
-                        variant="secondary"
-                    >
-                        Show more
-                    </Button>
-                )}
+                {remainingRelatedMaterialsCount > 0
+                    && (data?.relatedMaterials?.rows?.length ?? 0) < MAX_IDU_ITEMS
+                    && (
+                        <Button
+                            // FIXME: need to hide this if there is no more data
+                            className={styles.materialPagerButton}
+                            name={undefined}
+                            onClick={handleShowMoreButtonClick}
+                            disabled={loadingRelatedMaterials}
+                            actions={<IoArrowDown />}
+                            variant="secondary"
+                        >
+                            Show More
+                        </Button>
+                    )}
                 {(data?.relatedMaterials?.rows?.length ?? 0) > relatedMaterialPageSize && (
                     <Button
                         // FIXME: need to hide this if there is no more data
@@ -1335,7 +1332,7 @@ function CountryProfile(props: Props) {
                         actions={<IoArrowUp />}
                         variant="secondary"
                     >
-                        Show less
+                        Show Less
                     </Button>
                 )}
             </div>
@@ -1353,7 +1350,7 @@ function CountryProfile(props: Props) {
                 headingSize="large"
                 headingInfo={(
                     <TooltipIcon>
-                        {countryMetadata.essentialReadingTooltip }
+                        {countryMetadata.essentialReadingTooltip}
                     </TooltipIcon>
                 )}
             />
@@ -1380,6 +1377,9 @@ function CountryProfile(props: Props) {
                     </TooltipIcon>
                 )}
             />
+            <div>
+                Do you have more questions about this country? Contact our Monitoring Expert
+            </div>
             <div className={styles.contactItem}>
                 {countryInfo.contactPersonImage && (
                     <img

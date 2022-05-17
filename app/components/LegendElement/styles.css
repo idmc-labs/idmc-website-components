@@ -2,6 +2,8 @@
     display: flex;
     align-items: center;
     gap: var(--dui-spacing-small);
+    flex-grow: 1;
+    justify-content: center;
 
     .circle-container {
         display: flex;
@@ -11,10 +13,6 @@
             border-radius: 2rem;
             height: 1rem;
         }
-    }
-
-    .label {
-        flex-grow: 1;
     }
 
     &.clickable {

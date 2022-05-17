@@ -30,12 +30,14 @@
         color: var(--dui-color-text-on-dark);
     }
     &.secondary {
-        color: var(--dui-color-text);
+        color: var(--dui-color-brand);
+        font-weight: var(--dui-font-weight-bold);
+
         .icons {
-            color: var(--dui-color-accent);
+            color: var(--dui-color-brand);
         }
         .actions {
-            color: var(--dui-color-accent);
+            color: var(--dui-color-brand);
         }
     }
 
