@@ -57,6 +57,7 @@ import {
 } from '#generated/types';
 
 // import CountrySelectInput, { SearchCountryType } from '#components/CountrySelectInput';
+import ErrorBoundary from '#components/ErrorBoundary';
 import RoundedBar from '#components/RoundedBar';
 import Tabs from '#components/Tabs';
 import Tab from '#components/Tabs/Tab';
@@ -795,42 +796,44 @@ function CountryProfile(props: Props) {
                         </div>
                     )}
                     date={`${disasterTimeRangeActual[0]} - ${disasterTimeRangeActual[1]}`}
-                    chart={(
-                        <ResponsiveContainer>
-                            <LineChart
-                                data={disasterData?.disasterStatistics.timeseries}
-                                margin={chartMargins}
-                            >
-                                <CartesianGrid
-                                    vertical={false}
-                                    strokeDasharray="3 3"
-                                />
-                                <XAxis
-                                    dataKey="year"
-                                    axisLine={false}
-                                    type="number"
-                                    allowDecimals={false}
-                                    domain={disasterTimeRange}
-                                />
-                                <YAxis
-                                    axisLine={false}
-                                    tickFormatter={formatNumber}
-                                />
-                                <Tooltip
-                                    formatter={formatNumber}
-                                />
-                                <Legend />
-                                <Line
-                                    dataKey="total"
-                                    key="total"
-                                    stroke="var(--color-disaster)"
-                                    name="Internal Displacements"
-                                    strokeWidth={2}
-                                    connectNulls
-                                    dot
-                                />
-                            </LineChart>
-                        </ResponsiveContainer>
+                    chart={disasterData?.disasterStatistics.timeseries && (
+                        <ErrorBoundary>
+                            <ResponsiveContainer>
+                                <LineChart
+                                    data={disasterData.disasterStatistics.timeseries}
+                                    margin={chartMargins}
+                                >
+                                    <CartesianGrid
+                                        vertical={false}
+                                        strokeDasharray="3 3"
+                                    />
+                                    <XAxis
+                                        dataKey="year"
+                                        axisLine={false}
+                                        type="number"
+                                        allowDecimals={false}
+                                        domain={disasterTimeRange}
+                                    />
+                                    <YAxis
+                                        axisLine={false}
+                                        tickFormatter={formatNumber}
+                                    />
+                                    <Tooltip
+                                        formatter={formatNumber}
+                                    />
+                                    <Legend />
+                                    <Line
+                                        dataKey="total"
+                                        key="total"
+                                        stroke="var(--color-disaster)"
+                                        name="Internal Displacements"
+                                        strokeWidth={2}
+                                        connectNulls
+                                        dot
+                                    />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </ErrorBoundary>
                     )}
                 />
                 <Infographic
@@ -850,33 +853,34 @@ function CountryProfile(props: Props) {
                         />
                     )}
                     date={`${disasterTimeRangeActual[0]} - ${disasterTimeRangeActual[1]}`}
-                    chart={(
-                        <ResponsiveContainer>
-                            <PieChart>
-                                <Tooltip
-                                    formatter={formatNumber}
-                                />
-                                <Legend />
-                                <Pie
-                                    data={disasterData
-                                        ?.disasterStatistics.categories}
-                                    dataKey="total"
-                                    nameKey="label"
-                                >
-                                    {disasterData
-                                        ?.disasterStatistics
-                                        ?.categories
-                                        ?.map(({ label }, index) => (
-                                            <Cell
-                                                key={label}
-                                                fill={categoricalColorScheme[
-                                                    index % categoricalColorScheme.length
-                                                ]}
-                                            />
-                                        ))}
-                                </Pie>
-                            </PieChart>
-                        </ResponsiveContainer>
+                    chart={disasterData?.disasterStatistics.categories && (
+                        <ErrorBoundary>
+                            <ResponsiveContainer>
+                                <PieChart>
+                                    <Tooltip
+                                        formatter={formatNumber}
+                                    />
+                                    <Legend />
+                                    <Pie
+                                        data={disasterData.disasterStatistics.categories}
+                                        dataKey="total"
+                                        nameKey="label"
+                                    >
+                                        {disasterData
+                                            ?.disasterStatistics
+                                            ?.categories
+                                            ?.map(({ label }, index) => (
+                                                <Cell
+                                                    key={label}
+                                                    fill={categoricalColorScheme[
+                                                        index % categoricalColorScheme.length
+                                                    ]}
+                                                />
+                                            ))}
+                                    </Pie>
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </ErrorBoundary>
                     )}
                 />
             </div>
@@ -957,42 +961,44 @@ function CountryProfile(props: Props) {
                         />
                     )}
                     date={`${conflictTimeRangeActual[0]} - ${conflictTimeRangeActual[1]}`}
-                    chart={(
-                        <ResponsiveContainer>
-                            <LineChart
-                                data={conflictData?.conflictStatistics.timeseries}
-                                margin={chartMargins}
-                            >
-                                <CartesianGrid
-                                    vertical={false}
-                                    strokeDasharray="3 3"
-                                />
-                                <XAxis
-                                    dataKey="year"
-                                    axisLine={false}
-                                    type="number"
-                                    allowDecimals={false}
-                                    domain={conflictTimeRange}
-                                />
-                                <YAxis
-                                    axisLine={false}
-                                    tickFormatter={formatNumber}
-                                />
-                                <Tooltip
-                                    formatter={formatNumber}
-                                />
-                                <Legend />
-                                <Line
-                                    dataKey="totalNewDisplacement"
-                                    key="totalNewDisplacement"
-                                    stroke="var(--color-conflict)"
-                                    name="Internal Displacements"
-                                    strokeWidth={2}
-                                    connectNulls
-                                    dot
-                                />
-                            </LineChart>
-                        </ResponsiveContainer>
+                    chart={conflictData?.conflictStatistics.timeseries && (
+                        <ErrorBoundary>
+                            <ResponsiveContainer>
+                                <LineChart
+                                    data={conflictData.conflictStatistics.timeseries}
+                                    margin={chartMargins}
+                                >
+                                    <CartesianGrid
+                                        vertical={false}
+                                        strokeDasharray="3 3"
+                                    />
+                                    <XAxis
+                                        dataKey="year"
+                                        axisLine={false}
+                                        type="number"
+                                        allowDecimals={false}
+                                        domain={conflictTimeRange}
+                                    />
+                                    <YAxis
+                                        axisLine={false}
+                                        tickFormatter={formatNumber}
+                                    />
+                                    <Tooltip
+                                        formatter={formatNumber}
+                                    />
+                                    <Legend />
+                                    <Line
+                                        dataKey="totalNewDisplacement"
+                                        key="totalNewDisplacement"
+                                        stroke="var(--color-conflict)"
+                                        name="Internal Displacements"
+                                        strokeWidth={2}
+                                        connectNulls
+                                        dot
+                                    />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </ErrorBoundary>
                     )}
                 />
                 <Infographic
@@ -1011,40 +1017,42 @@ function CountryProfile(props: Props) {
                         />
                     )}
                     date={`As of end of ${conflictTimeRangeActual[1]}`}
-                    chart={(
-                        <ResponsiveContainer>
-                            <BarChart
-                                data={conflictData?.conflictStatistics.timeseries}
-                                margin={chartMargins}
-                            >
-                                <CartesianGrid
-                                    vertical={false}
-                                    strokeDasharray="3 3"
-                                />
-                                <XAxis
-                                    dataKey="year"
-                                    axisLine={false}
-                                    type="number"
-                                    allowDecimals={false}
-                                    domain={conflictTimeRange}
-                                />
-                                <YAxis
-                                    axisLine={false}
-                                    tickFormatter={formatNumber}
-                                />
-                                <Tooltip
-                                    formatter={formatNumber}
-                                />
-                                <Legend />
-                                <Bar
-                                    dataKey="totalIdps"
-                                    name="Total Number of IDPs"
-                                    fill="var(--color-conflict)"
-                                    shape={<RoundedBar />}
-                                    maxBarSize={6}
-                                />
-                            </BarChart>
-                        </ResponsiveContainer>
+                    chart={conflictData?.conflictStatistics.timeseries && (
+                        <ErrorBoundary>
+                            <ResponsiveContainer>
+                                <BarChart
+                                    data={conflictData.conflictStatistics.timeseries}
+                                    margin={chartMargins}
+                                >
+                                    <CartesianGrid
+                                        vertical={false}
+                                        strokeDasharray="3 3"
+                                    />
+                                    <XAxis
+                                        dataKey="year"
+                                        axisLine={false}
+                                        type="number"
+                                        allowDecimals={false}
+                                        domain={conflictTimeRange}
+                                    />
+                                    <YAxis
+                                        axisLine={false}
+                                        tickFormatter={formatNumber}
+                                    />
+                                    <Tooltip
+                                        formatter={formatNumber}
+                                    />
+                                    <Legend />
+                                    <Bar
+                                        dataKey="totalIdps"
+                                        name="Total Number of IDPs"
+                                        fill="var(--color-conflict)"
+                                        shape={<RoundedBar />}
+                                        maxBarSize={6}
+                                    />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </ErrorBoundary>
                     )}
                 />
             </div>
