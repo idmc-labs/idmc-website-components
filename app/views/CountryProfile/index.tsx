@@ -807,13 +807,16 @@ function CountryProfile(props: Props) {
                                 data={disasterData?.disasterStatistics.timeseries}
                                 margin={chartMargins}
                             >
-                                <XAxis
-                                    dataKey="year"
-                                    axisLine={false}
-                                />
                                 <CartesianGrid
                                     vertical={false}
                                     strokeDasharray="3 3"
+                                />
+                                <XAxis
+                                    dataKey="year"
+                                    axisLine={false}
+                                    type="number"
+                                    allowDecimals={false}
+                                    domain={disasterTimeRange}
                                 />
                                 <YAxis
                                     axisLine={false}
@@ -966,13 +969,16 @@ function CountryProfile(props: Props) {
                                 data={conflictData?.conflictStatistics.timeseries}
                                 margin={chartMargins}
                             >
-                                <XAxis
-                                    dataKey="year"
-                                    axisLine={false}
-                                />
                                 <CartesianGrid
                                     vertical={false}
                                     strokeDasharray="3 3"
+                                />
+                                <XAxis
+                                    dataKey="year"
+                                    axisLine={false}
+                                    type="number"
+                                    allowDecimals={false}
+                                    domain={conflictTimeRange}
                                 />
                                 <YAxis
                                     axisLine={false}
@@ -1017,13 +1023,16 @@ function CountryProfile(props: Props) {
                                 data={conflictData?.conflictStatistics.timeseries}
                                 margin={chartMargins}
                             >
-                                <XAxis
-                                    dataKey="year"
-                                    axisLine={false}
-                                />
                                 <CartesianGrid
                                     vertical={false}
                                     strokeDasharray="3 3"
+                                />
+                                <XAxis
+                                    dataKey="year"
+                                    axisLine={false}
+                                    type="number"
+                                    allowDecimals={false}
+                                    domain={conflictTimeRange}
                                 />
                                 <YAxis
                                     axisLine={false}
