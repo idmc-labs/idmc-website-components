@@ -34,7 +34,7 @@ module.exports = () => {
             : 'development',
         devtool: isProduction
             ? 'source-map'
-            : 'eval-cheap-source-map',
+            : 'eval-cheap-source-map', // false
         entry: getPath('app/index.tsx'),
         node: false,
         resolve: {
@@ -93,6 +93,7 @@ module.exports = () => {
                 {
                     test: /\.css$/,
                     include: getPath('node_modules/'),
+                    sideEffects: true,
                     use: [
                         isProduction ? MiniCssExtractPlugin.loader : 'style-loader',
                         'css-loader',
@@ -196,6 +197,11 @@ module.exports = () => {
                 optimization: {
                     moduleIds: 'deterministic', // 'hashed',
                     runtimeChunk: 'single',
+                    /*
+                    usedExports: true,
+                    innerGraph: true,
+                    sideEffects: true,
+                    */
                     minimizer: [
                         // NOTE: Using TerserPlugin instead of UglifyJsPlugin
                         // as es6 support deprecated
@@ -252,6 +258,13 @@ module.exports = () => {
     return merge(
         config,
         {
+            /*
+            optimization: {
+                usedExports: true,
+                innerGraph: true,
+                sideEffects: true,
+            },
+            */
             devServer: {
                 host: '0.0.0.0',
                 port: 3080,

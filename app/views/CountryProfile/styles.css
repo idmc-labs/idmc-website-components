@@ -329,7 +329,7 @@
                     .contact-item {
                         display: flex;
                         background-color: var(--color-background);
-                        width: 30rem;
+                        max-width: 30rem;
                         gap: var(--dui-spacing-large);
 
                         .preview {

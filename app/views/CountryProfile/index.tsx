@@ -727,7 +727,7 @@ function CountryProfile(props: Props) {
                             <IoDownloadOutline />
                         )}
                     >
-                        Download disaster data
+                        Download Disaster Data
                     </ButtonLikeLink>
                     <ButtonLikeLink
                         href={giddLink}

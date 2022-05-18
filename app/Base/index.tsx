@@ -5,8 +5,8 @@ import { ApolloClient, ApolloProvider } from '@apollo/client';
 import ReactGA from 'react-ga';
 import { listToMap } from '@togglecorp/fujs';
 
-import '@the-deep/deep-ui/build/index.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import '@the-deep/deep-ui/build/esm/index.css';
 
 import CountryProfile from '#views/CountryProfile';
 import { setMapboxToken } from '@togglecorp/re-map';
