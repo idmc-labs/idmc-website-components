@@ -197,10 +197,13 @@ const CONFLICT_DATA = gql`
         conflictStatistics(filters: { countriesIso3: [$countryIso3], endYear: $endYear, startYear: $startYear }) {
             newDisplacements
             totalIdps
-            timeseries {
-                totalIdps
-                totalNewDisplacement
+            idpsTimeseries {
                 year
+                total
+            }
+            newDisplacementTimeseries {
+                year
+                total
             }
         }
     }
@@ -961,11 +964,11 @@ function CountryProfile(props: Props) {
                         />
                     )}
                     date={`${conflictTimeRangeActual[0]} - ${conflictTimeRangeActual[1]}`}
-                    chart={conflictData?.conflictStatistics.timeseries && (
+                    chart={conflictData?.conflictStatistics.newDisplacementTimeseries && (
                         <ErrorBoundary>
                             <ResponsiveContainer>
                                 <LineChart
-                                    data={conflictData.conflictStatistics.timeseries}
+                                    data={conflictData.conflictStatistics.newDisplacementTimeseries}
                                     margin={chartMargins}
                                 >
                                     <CartesianGrid
@@ -988,8 +991,7 @@ function CountryProfile(props: Props) {
                                     />
                                     <Legend />
                                     <Line
-                                        dataKey="totalNewDisplacement"
-                                        key="totalNewDisplacement"
+                                        dataKey="total"
                                         stroke="var(--color-conflict)"
                                         name="Internal Displacements"
                                         strokeWidth={2}
@@ -1017,11 +1019,11 @@ function CountryProfile(props: Props) {
                         />
                     )}
                     date={`As of end of ${conflictTimeRangeActual[1]}`}
-                    chart={conflictData?.conflictStatistics.timeseries && (
+                    chart={conflictData?.conflictStatistics.idpsTimeseries && (
                         <ErrorBoundary>
                             <ResponsiveContainer>
                                 <BarChart
-                                    data={conflictData.conflictStatistics.timeseries}
+                                    data={conflictData.conflictStatistics.idpsTimeseries}
                                     margin={chartMargins}
                                 >
                                     <CartesianGrid
@@ -1044,7 +1046,7 @@ function CountryProfile(props: Props) {
                                     />
                                     <Legend />
                                     <Bar
-                                        dataKey="totalIdps"
+                                        dataKey="total"
                                         name="Total Number of IDPs"
                                         fill="var(--color-conflict)"
                                         shape={<RoundedBar />}
