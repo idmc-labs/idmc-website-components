@@ -13,7 +13,6 @@ import styles from './styles.css';
 
 interface Props {
     className?: string;
-    // dataId?: number;
     coverImageUrl: string | undefined | null;
     heading: string;
     date: string | undefined | null;
@@ -24,7 +23,6 @@ interface Props {
 
 function GoodPracticeItem(props: Props) {
     const {
-        // dataId,
         className,
         coverImageUrl,
         heading,

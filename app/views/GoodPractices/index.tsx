@@ -58,12 +58,16 @@ const lightStyle = 'mapbox://styles/mapbox/light-v10';
 
 interface Props {
     className?: string;
+    id?: string;
 }
 
 function GoodPractices(props: Props) {
     const {
         className,
+        id,
     } = props;
+
+    console.warn('Good practice id', id);
 
     const practicesListRef = React.useRef<HTMLDivElement>(null);
 
@@ -343,11 +347,13 @@ function GoodPractices(props: Props) {
                     {goodPracticesList.map((gp) => (
                         <GoodPracticeItem
                             key={gp.id}
-                            dataId={gp.id}
                             coverImageUrl={gp.image}
                             heading={gp.title}
                             date="2021-05-20"
                             description={gp.description}
+                            type={undefined}
+                            // FIXME: define actual url
+                            url="#"
                         />
                     ))}
                 </section>
