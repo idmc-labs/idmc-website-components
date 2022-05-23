@@ -1,0 +1,26 @@
+.ellipsized-content {
+    max-width: var(--width-readable-content-max);
+
+    .container {
+        &.ellipsized {
+            display: -webkit-box;
+            overflow: hidden;
+            -webkit-line-clamp: 6;
+            -webkit-box-orient: vertical;
+        }
+    }
+
+    .footer {
+        display: block;
+        padding: var(--dui-spacing-medium) 0;
+    }
+
+    .ellipsize-toggle-button {
+        display: flex;
+        align-items: center;
+        margin-top: var(--dui-spacing-medium);
+        padding: 0;
+        gap: var(--dui-spacing-small);
+    }
+}
+

@@ -1,29 +1,85 @@
+@import url("https://use.typekit.net/ret0ejy.css");
+
+:root {
+    --dui-font-family-sans-serif: 'proxima-nova', sans-serif;
+    --dui-font-family-heading: 'freight-big-pro', sans-serif;
+
+    --dui-font-weight-light: 300;
+    --dui-font-weight-medium: 400;
+    --dui-font-weight-bold: 700;
+    --dui-font-weight-heading: 900;
+
+    --dui-font-size-extra-small: 0.7rem;
+    --dui-font-size-small: 0.8rem;
+    --dui-font-size-medium: 1rem;
+    --dui-font-size-large: 1.26rem;
+    --dui-font-size-extra-large: 1.6rem;
+    --dui-font-size-super-large: 2.2rem;
+    --dui-font-size-mega-large: 3rem;
+    --dui-font-size-ultra-large: 4rem;
+
+    --dui-color-primary: rgb(65, 131, 196);
+    --dui-color-accent: rgb(65, 131, 196);
+    --dui-color-brand: rgb(25, 50, 86);
+    --dui-color-brand-hover: #06179E;
+
+    --dui-color-text: rgb(100,99,99);
+    /*
+    --dui-color-label: rgb(100,99,99);
+    --dui-color-description: rgb(100,99,99);
+    --dui-color-watermark: rgb(100,99,99);
+    */
+    --dui-color-background: #eff4fa;
+
+    --color-foreground: #ffffff;
+    --color-background: #eff4fa;
+    --color-background-dark: #193256;
+    --color-text-on-dark: #ffffff;
+    --color-text: #333333;
+
+    --color-orange: rgb(239, 125, 0);
+    --color-blue: rgb(1, 142, 202);
+    --color-green: rgb(41, 181, 115);
+
+    --color-conflict: var(--color-orange);
+    --color-disaster: var(--color-blue);
+    --color-other: var(--color-green);
+
+    --width-page-max: 69rem;
+    --width-readable-content-max: 46rem;
+
+    #app-container {
+        min-height: 100vh; /* country profile should take some space initially */
+    }
+}
+
 .base {
     display: flex;
     flex-direction: column;
-    width: 100vw;
-    height: 100vh;
-    font-size: var(--dui-font-size-medium);
+    line-height: 1.5;
+    color: var(--color-text);
+    font-family: 'proxima-nova', sans-serif;
+    font-size: 1rem; /* durpal has set font-size on body */
 
-    .navbar {
-        flex-shrink: 0;
-
-        &.hidden {
-            display: none;
-        }
-    }
-
-    .view,
-    .init {
+    .view {
         flex-grow: 1;
-        overflow: auto;
+    }
+}
+
+a {
+    text-decoration: none;
+    color: var(--dui-color-accent);
+
+    &:hover {
+        color: var(--dui-color-brand);
     }
 
-    .alert-container {
-        position: fixed;
-        top: var(--dui-spacing-large);
-        right: var(--dui-spacing-large);
-        z-index: 1;
-        width: 20rem;
+    &:visited {
+        text-decoration: none;
     }
+}
+
+/* Unset font-size because drupal has set a font-size of 10px */
+html {
+    font-size: unset;
 }

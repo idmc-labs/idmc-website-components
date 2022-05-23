@@ -4,14 +4,14 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { HotModuleReplacementPlugin, EnvironmentPlugin } = require('webpack');
 const Dotenv = require('dotenv-webpack');
 const { GitRevisionPlugin } = require('git-revision-webpack-plugin');
-const WebpackPwaManifest = require('webpack-pwa-manifest');
+// const WebpackPwaManifest = require('webpack-pwa-manifest');
 const { merge } = require('webpack-merge');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
-const CssMinimizerWebpackPlugin = require('css-minimizer-webpack-plugin');
+// const CssMinimizerWebpackPlugin = require('css-minimizer-webpack-plugin');
 const StyleLintPlugin = require('stylelint-webpack-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
-const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
+// const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 const ResourceHintWebpackPlugin = require('resource-hints-webpack-plugin');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
@@ -34,7 +34,7 @@ module.exports = () => {
             : 'development',
         devtool: isProduction
             ? 'source-map'
-            : 'eval-cheap-source-map',
+            : 'eval-cheap-source-map', // false
         entry: getPath('app/index.tsx'),
         node: false,
         resolve: {
@@ -45,15 +45,9 @@ module.exports = () => {
             path: getPath('build/'),
             publicPath: '/',
             sourceMapFilename: '[file].map',
-            chunkFilename: isProduction
-                ? 'js/[name].[contenthash].chunk.js'
-                : 'js/[name].chunk.js',
-            filename: isProduction
-                ? 'js/[name].[contenthash].bundle.js'
-                : 'js/[name].bundle.js',
-            assetModuleFilename: isProduction
-                ? 'assets/[name].[contenthash][ext]'
-                : 'assets/[name][ext]',
+            chunkFilename: 'js/[name].chunk.js',
+            filename: 'js/[name].bundle.js',
+            assetModuleFilename: 'assets/[name][ext]',
             clean: true,
         },
         module: {
@@ -99,6 +93,7 @@ module.exports = () => {
                 {
                     test: /\.css$/,
                     include: getPath('node_modules/'),
+                    sideEffects: true,
                     use: [
                         isProduction ? MiniCssExtractPlugin.loader : 'style-loader',
                         'css-loader',
@@ -108,7 +103,7 @@ module.exports = () => {
                     test: /\.(eot|svg|ttf|woff|woff2|png|jpg|gif)$/i,
                     exclude: /(node_modules)/,
                     include: getPath('app/'),
-                    type: 'asset/resource',
+                    type: 'asset/inline',
                     /*
                     options: {
                         name: isProduction
@@ -138,18 +133,16 @@ module.exports = () => {
                 systemvars: !!isProduction, // NOTE: need to filter system variables
             }),
             new MiniCssExtractPlugin({
-                filename: isProduction
-                    ? 'css/[name].[contenthash].css'
-                    : 'css/[name].css',
-                chunkFilename: isProduction
-                    ? 'css/[id].[contenthash].css'
-                    : 'css/[id].css',
+                filename: 'css/[name].css',
+                chunkFilename: 'css/[id].css',
             }),
             new HtmlWebpackPlugin({
                 favicon: getPath('app/favicon.ico'),
                 template: getPath('app/index.html'),
                 filename: 'index.html',
                 title: pkg.name,
+                // NOTE: we do not need to use this html on production
+                minify: false,
                 meta: {
                     charset: 'UTF-8',
                     viewport: 'width=device-width, initial-scale=1.0',
@@ -157,6 +150,7 @@ module.exports = () => {
                     referrer: 'origin',
                 },
             }),
+            /*
             new WebpackPwaManifest({
                 name: pkg.name,
                 short_name: pkg.name,
@@ -175,6 +169,7 @@ module.exports = () => {
                     },
                 ],
             }),
+            */
             new CircularDependencyPlugin({
                 exclude: /node_modules/,
                 failOnError: false,
@@ -202,6 +197,11 @@ module.exports = () => {
                 optimization: {
                     moduleIds: 'deterministic', // 'hashed',
                     runtimeChunk: 'single',
+                    /*
+                    usedExports: true,
+                    innerGraph: true,
+                    sideEffects: true,
+                    */
                     minimizer: [
                         // NOTE: Using TerserPlugin instead of UglifyJsPlugin
                         // as es6 support deprecated
@@ -212,8 +212,9 @@ module.exports = () => {
                                 compress: { typeofs: false },
                             },
                         }),
-                        new CssMinimizerWebpackPlugin(),
+                        // new CssMinimizerWebpackPlugin(),
                     ],
+                    /*
                     splitChunks: {
                         cacheGroups: {
                             defaultVendors: {
@@ -224,10 +225,12 @@ module.exports = () => {
                             },
                         },
                     },
+                    */
                 },
                 plugins: [
                     new ResourceHintWebpackPlugin(),
                     new CompressionPlugin(),
+                    /*
                     new WorkboxWebpackPlugin.GenerateSW({
                         // these options encourage the ServiceWorkers to get in there fast
                         // and not allow any straggling "old" SWs to hang around
@@ -246,6 +249,7 @@ module.exports = () => {
                         ],
                         exclude: [/\.map$/, /\.map.gz$/, /index.html/, /index.html.gz/],
                     }),
+                    */
                 ],
             },
         );
@@ -254,6 +258,13 @@ module.exports = () => {
     return merge(
         config,
         {
+            /*
+            optimization: {
+                usedExports: true,
+                innerGraph: true,
+                sideEffects: true,
+            },
+            */
             devServer: {
                 host: '0.0.0.0',
                 port: 3080,

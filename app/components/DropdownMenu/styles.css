@@ -1,0 +1,28 @@
+.dropdown-menu {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    border: 0;
+    background-color: transparent;
+    cursor: pointer;
+    padding: var(--dui-spacing-medium);
+    color: inherit;
+    font-family: inherit;
+    font-size: inherit;
+
+    &:focus {
+        outline: none;
+    }
+}
+
+.dropdown-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 11111;
+    border: 1px solid red;
+    padding: var(--dui-spacing-medium);
+    max-width: 50vw;
+    max-height: 50vh;
+    overflow: auto;
+}

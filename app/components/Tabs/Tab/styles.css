@@ -1,0 +1,164 @@
+.tab {
+    border: 0;
+    padding: var(--dui-spacing-medium) var(--dui-spacing-large);
+    color: var(--dui-color-text);
+    font-weight: var(--dui-font-weight-bold);
+
+    &.disabled {
+        pointer-events: none;
+    }
+
+    &.primary {
+        position: relative;
+        background-color: var(--dui-color-background);
+        font-size: var(--dui-font-size-large);
+
+        .active-border {
+            position: absolute;
+            bottom: 0;
+            left: var(--dui-spacing-small);
+            background-color: var(--dui-color-);
+            width: calc(100% - #{var(--dui-spacing-medium)});
+            height: var(--dui-width-separator-thin);
+            animation: grow-h .2s ease-in;
+        }
+
+        &.active {
+            background-color: var(--dui-color-foreground);
+            color: var(--dui-color-brand);
+        }
+
+        &.disabled {
+            color: var(--dui-color-text-disabled);
+
+            .active-border {
+                background-color: var(--dui-color-separator);
+            }
+        }
+    }
+
+    &.secondary {
+        /* border-radius: calc(1em + #{var(--dui-spacing-medium)}); */
+        border-radius: 0.25rem;
+
+        background-color: var(--dui-color-background);
+        text-align: left;
+        text-transform: uppercase;
+
+        &.active {
+            background-color: var(--dui-color-brand);
+            color: var(--dui-color-text-on-dark);
+        }
+
+        &.disabled {
+            color: var(--dui-color-text-disabled);
+        }
+    }
+
+    &.step {
+        position: relative;
+        transition: var(--dui-duration-transition-medium) color, background-color ease-in-out;
+        padding: var(--dui-spacing-medium);
+        text-transform: uppercase;
+        color: var(--dui-color-text-light);
+
+        &:hover {
+            color: var(--dui-color-text);
+        }
+
+        &.active {
+            color: var(--dui-color-brand);
+        }
+
+        &.disabled {
+            color: var(--dui-color-text-disabled);
+        }
+    }
+
+    &.errored {
+        position: relative;
+
+        .error-icon {
+            position: absolute;
+            transform: translate(-100%, -100%);
+            border-radius: 50%;
+            background-color: var(--dui-color-negative);
+            width: .75em;
+            height: .75em;
+        }
+    }
+}
+
+.primary-tab-wrapper {
+    border: var(--dui-width-separator-thin) solid transparent;
+    border-bottom-color: var(--dui-color-separator);
+    padding: 0 var(--dui-spacing-small);
+
+    &.active {
+        border-color: var(--dui-color-separator);
+        border-bottom-color: transparent;
+    }
+}
+
+@keyframes grow-h {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(100%); }
+}
+
+.step-tab-wrapper {
+    display: flex;
+    align-items: center;
+    flex-basis: 0;
+    flex-direction: column;
+    flex-grow: 1;
+    justify-content: flex-start;
+
+    .step-circle {
+        transition: var(--dui-duration-transition-slow) border-color ease-in-out;
+        border: var(--dui-width-separator-medium) solid transparent;
+        border-radius: 50%;
+        background-color: var(--dui-color-background);
+        padding: var(--dui-spacing-extra-small);
+
+        .inner-circle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--dui-duration-transition-slow) background-color ease-in-out;
+            border-radius: 50%;
+            background-color: var(--dui-color-text-disabled);
+            width: 1rem;
+            height: 1rem;
+
+            .icon {
+                padding: 0.1em;
+                color: var(--dui-color-text-on-dark);
+            }
+        }
+    }
+
+    &.completed {
+        .step-circle {
+            .inner-circle {
+                background-color: var(--dui-color-text);
+            }
+        }
+    }
+
+    &.active {
+        .step-circle {
+            border-color: var(--dui-color-brand);
+
+            .inner-circle {
+                background-color: var(--dui-color-brand);
+            }
+        }
+    }
+
+    &.disabled {
+        .step-circle {
+            opacity: 0.5;
+            filter: saturate(50%);
+        }
+    }
+}

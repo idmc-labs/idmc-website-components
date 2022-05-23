@@ -1,28 +1,29 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import { Router } from 'react-router-dom';
-import { init, ErrorBoundary, setUser as setUserOnSentry } from '@sentry/react';
-import { unique, _cs } from '@togglecorp/fujs';
-import { AlertContainer, AlertContext, AlertOptions } from '@the-deep/deep-ui';
+import React, { useMemo } from 'react';
+// import { Router } from 'react-router-dom';
+import { init, ErrorBoundary } from '@sentry/react';
 import { ApolloClient, ApolloProvider } from '@apollo/client';
 import ReactGA from 'react-ga';
+import { listToMap } from '@togglecorp/fujs';
 
-import '@the-deep/deep-ui/build/index.css';
+import 'mapbox-gl/dist/mapbox-gl.css';
+import '@the-deep/deep-ui/build/esm/index.css';
 
-import Init from '#base/components/Init';
+import { setMapboxToken } from '@togglecorp/re-map';
+
+import CountryProfile from '#views/CountryProfile';
+import GoodPractice from '#views/GoodPractice';
+import GoodPractices from '#views/GoodPractices';
+
 import PreloadMessage from '#base/components/PreloadMessage';
 import browserHistory from '#base/configs/history';
 import sentryConfig from '#base/configs/sentry';
-import { UserContext, UserContextInterface } from '#base/context/UserContext';
-import { NavbarContext, NavbarContextInterface } from '#base/context/NavbarContext';
-import AuthPopup from '#base/components/AuthPopup';
-import { sync } from '#base/hooks/useAuthSync';
-import Navbar from '#base/components/Navbar';
-import Routes from '#base/components/Routes';
-import { User } from '#base/types/user';
 import apolloConfig from '#base/configs/apollo';
 import { trackingId, gaConfig } from '#base/configs/googleAnalytics';
+import { mapboxToken } from '#base/configs/env';
 
 import styles from './styles.css';
+
+setMapboxToken(mapboxToken);
 
 if (sentryConfig) {
     init(sentryConfig);
@@ -39,119 +40,88 @@ if (trackingId) {
 
 const apolloClient = new ApolloClient(apolloConfig);
 
+export function parseQueryString(value: string) {
+    const val = value.substring(1);
+    return listToMap(
+        val.split('&').map((token) => token.split('=')),
+        (item) => item[0],
+        (item) => item[1],
+    );
+}
+
+interface Win {
+    page?: string;
+
+    // For country profile
+    iso3?: string;
+    countryName?: string;
+
+    // For good practices
+    id?: string;
+}
+
+const query: Win = parseQueryString(window.location.search);
+
+const currentPage = (window as Win).page || query.page;
+
+const currentCountry = (window as Win).iso3
+    || query.iso3;
+const currentCountryName = (window as Win).countryName
+    || query.countryName;
+
+const currentId = (window as Win).id || query.id;
+
 function Base() {
-    const [user, setUser] = useState<User | undefined>();
-
-    const [navbarVisibility, setNavbarVisibility] = useState(false);
-
-    const authenticated = !!user;
-
-    const setUserWithSentry: typeof setUser = useCallback(
-        (u) => {
-            if (typeof u === 'function') {
-                setUser((oldUser) => {
-                    const newUser = u(oldUser);
-
-                    const sanitizedUser = newUser;
-                    sync(!!sanitizedUser, sanitizedUser?.id);
-                    setUserOnSentry(sanitizedUser ?? null);
-
-                    return newUser;
-                });
-            } else {
-                const sanitizedUser = u;
-                sync(!!sanitizedUser, sanitizedUser?.id);
-                setUserOnSentry(sanitizedUser ?? null);
-                setUser(u);
+    const page = useMemo(
+        () => {
+            if (currentPage === 'country-profile' && currentCountry) {
+                return (
+                    <CountryProfile
+                        className={styles.view}
+                        iso3={currentCountry}
+                        countryName={currentCountryName}
+                    />
+                );
             }
+            if (currentPage === 'good-practices') {
+                return (
+                    <GoodPractice
+                        className={styles.view}
+                    />
+                );
+            }
+            if (currentPage === 'good-practice' && currentId) {
+                return (
+                    <GoodPractices
+                        className={styles.view}
+                        id={currentId}
+                    />
+                );
+            }
+            return (
+                <>
+                    <a href="/?page=country-profile&iso3=NPL&countryName=Nepal">
+                        Country Profile (NPL)
+                    </a>
+                    <a href="/?page=country-profile&iso3=IND&countryName=India">
+                        Country Profile (IND)
+                    </a>
+                    <a href="/?page=country-profile&iso3=MMR&countryName=Myanmar">
+                        Country Profile (MMR)
+                    </a>
+                    <a href="/?page=country-profile&iso3=JPN&countryName=Japan">
+                        Country Profile (JPN)
+                    </a>
+                    <a href="/?page=good-practices">
+                        Good Practices
+                    </a>
+                    <a href="/?page=good-practice&id=1">
+                        Good Practice (1)
+                    </a>
+                </>
+            );
         },
-        [setUser],
-    );
-
-    const userContext: UserContextInterface = useMemo(
-        () => ({
-            authenticated,
-            user,
-            setUser: setUserWithSentry,
-            navbarVisibility,
-            setNavbarVisibility,
-        }),
-        [
-            authenticated,
-            user,
-            setUserWithSentry,
-            navbarVisibility,
-            setNavbarVisibility,
-        ],
-    );
-
-    const navbarContext: NavbarContextInterface = useMemo(
-        () => ({
-            navbarVisibility,
-            setNavbarVisibility,
-        }),
-        [navbarVisibility, setNavbarVisibility],
-    );
-
-    const [alerts, setAlerts] = React.useState<AlertOptions[]>([]);
-
-    const addAlert = React.useCallback(
-        (alert: AlertOptions) => {
-            setAlerts((prevAlerts) => unique(
-                [...prevAlerts, alert],
-                (a) => a.name,
-            ) ?? prevAlerts);
-        },
-        [setAlerts],
-    );
-
-    const removeAlert = React.useCallback(
-        (name: string) => {
-            setAlerts((prevAlerts) => {
-                const i = prevAlerts.findIndex((a) => a.name === name);
-                if (i === -1) {
-                    return prevAlerts;
-                }
-
-                const newAlerts = [...prevAlerts];
-                newAlerts.splice(i, 1);
-
-                return newAlerts;
-            });
-        },
-        [setAlerts],
-    );
-
-    const updateAlertContent = React.useCallback(
-        (name: string, children: React.ReactNode) => {
-            setAlerts((prevAlerts) => {
-                const i = prevAlerts.findIndex((a) => a.name === name);
-                if (i === -1) {
-                    return prevAlerts;
-                }
-
-                const updatedAlert = {
-                    ...prevAlerts[i],
-                    children,
-                };
-
-                const newAlerts = [...prevAlerts];
-                newAlerts.splice(i, 1, updatedAlert);
-
-                return newAlerts;
-            });
-        },
-        [setAlerts],
-    );
-
-    const alertContext = React.useMemo(
-        () => ({
-            alerts,
-            addAlert,
-            updateAlertContent,
-            removeAlert,
-        }),
-        [alerts, addAlert, updateAlertContent, removeAlert],
+        [],
     );
 
     return (
@@ -166,29 +136,7 @@ function Base() {
                 )}
             >
                 <ApolloProvider client={apolloClient}>
-                    <UserContext.Provider value={userContext}>
-                        <NavbarContext.Provider value={navbarContext}>
-                            <AlertContext.Provider value={alertContext}>
-                                <AuthPopup />
-                                <AlertContainer className={styles.alertContainer} />
-                                <Router history={browserHistory}>
-                                    <Init
-                                        className={styles.init}
-                                    >
-                                        <Navbar
-                                            className={_cs(
-                                                styles.navbar,
-                                                !navbarVisibility && styles.hidden,
-                                            )}
-                                        />
-                                        <Routes
-                                            className={styles.view}
-                                        />
-                                    </Init>
-                                </Router>
-                            </AlertContext.Provider>
-                        </NavbarContext.Provider>
-                    </UserContext.Provider>
+                    {page}
                 </ApolloProvider>
             </ErrorBoundary>
         </div>

@@ -10,6 +10,8 @@ services:
     tty: true
     environment:
       NODE_OPTIONS: --openssl-legacy-provider
+      GRAPHQL_CODEGEN_ENDPOINT: ${GRAPHQL_CODEGEN_ENDPOINT:-http://localhost:7000/graphql/}
+      REACT_APP_GRAPHQL_ENDPOINT: ${REACT_APP_GRAPHQL_ENDPOINT:-http://localhost:7000/graphql/}
     env_file:
       - .env
     volumes:
