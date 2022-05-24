@@ -1,4 +1,12 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
+import { gql, useQuery } from '@apollo/client';
+
+import {
+    FaqsQueryVariables,
+    FaqsQuery,
+    GoodPracticesQuery,
+    GoodPracticesQueryVariables,
+} from '#generated/types';
 import {
     TextInput,
     SelectInput,
@@ -26,13 +34,29 @@ import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
 import CollapsibleContent from '#components/CollapsibleContent';
 import GoodPracticeItem from '#components/GoodPracticeItem';
+import TabPanel from '#components/Tabs/TabPanel';
 
-import {
-    goodPracticeMeta,
-    goodPracticesGeoJson,
-    goodPracticesList,
-} from './data';
 import styles from './styles.css';
+
+const FAQS = gql`
+    query Faqs {
+            faqs {
+            answer
+            id
+            question
+        }
+    } 
+`;
+
+const GOODPRACTICES = gql`
+    query GoodPractices {
+        goodPracticies {
+            id
+            title
+            description
+        }
+    }
+`;
 
 const orangePointHaloCirclePaint: mapboxgl.CirclePaint = {
     'circle-opacity': 0.6,
@@ -58,20 +82,18 @@ const lightStyle = 'mapbox://styles/mapbox/light-v10';
 
 interface Props {
     className?: string;
-    id?: string;
+
 }
 
 function GoodPractices(props: Props) {
     const {
         className,
-        id,
     } = props;
-
-    console.warn('Good practice id', id);
 
     const practicesListRef = React.useRef<HTMLDivElement>(null);
 
     const [expandedFaq, setExpandedFaq] = React.useState<number>();
+    const [activeTab, setActiveTab] = useState<'grid' | 'list'>('grid');
 
     const handleFaqExpansionChange = React.useCallback((newValue: boolean, name: number) => {
         if (newValue === false) {
@@ -80,6 +102,18 @@ function GoodPractices(props: Props) {
             setExpandedFaq(name);
         }
     }, []);
+
+    const {
+        data: faqsResponse,
+    } = useQuery<FaqsQuery, FaqsQueryVariables>(
+        FAQS,
+    );
+
+    const {
+        data: goodPracticeResponse,
+    } = useQuery<GoodPracticesQuery, GoodPracticesQueryVariables>(
+        GOODPRACTICES,
+    );
 
     const handleJumpToGoodPractices = React.useCallback(
         () => {
@@ -110,13 +144,15 @@ function GoodPractices(props: Props) {
                             className={styles.description}
                         >
                             <HTMLOutput
-                                value={goodPracticeMeta.description}
+                                // desciption
+                                value={undefined}
                             />
                         </EllipsizedContent>
                         <div className={styles.numberBlock}>
                             <TextOutput
                                 className={styles.count}
-                                value={goodPracticeMeta.totalCount}
+                                // total count
+                                value={undefined}
                                 valueType="number"
                             />
                             <div className={styles.countLabel}>
@@ -147,7 +183,7 @@ function GoodPractices(props: Props) {
                             <MapSource
                                 sourceKey="multi-points"
                                 sourceOptions={sourceOption}
-                                geoJson={goodPracticesGeoJson}
+                                geoJson={undefined}
                             >
                                 <MapLayer
                                     layerKey="points-halo-circle"
@@ -197,7 +233,7 @@ function GoodPractices(props: Props) {
                                 For more information please contact:
                             </div>
                             <div className={styles.contactLinks}>
-                                <a
+                                {/* <a
                                     href={`mailto:${goodPracticeMeta.contactEmail}`}
                                     target="_blank"
                                     rel="noreferrer"
@@ -211,21 +247,21 @@ function GoodPractices(props: Props) {
                                     rel="noreferrer"
                                 >
                                     Online Form
-                                </a>
+                                </a> */}
                             </div>
                         </div>
                     </div>
                 </section>
                 <section className={styles.faqSection}>
-                    {goodPracticeMeta.faqs.map((faq, i) => (
+                    {faqsResponse?.faqs.map((faqs: any, i: any) => (
                         <CollapsibleContent
-                            key={faq.id}
-                            name={faq.id}
+                            key={faqs.id}
+                            name={faqs.id}
                             onExpansionChange={handleFaqExpansionChange}
-                            isExpanded={expandedFaq === faq.id}
-                            header={`Q${i + 1}: ${faq.title}`}
+                            isExpanded={expandedFaq === faqs.id}
+                            header={`Q${i + 1}: ${faqs?.question}`}
                         >
-                            {faq.description || '-'}
+                            {faqs.answer || '-'}
                         </CollapsibleContent>
                     ))}
                 </section>
@@ -304,8 +340,8 @@ function GoodPractices(props: Props) {
                     </div>
                     <div className={styles.searchContainer}>
                         <Tabs
-                            value="grid"
-                            onChange={() => undefined}
+                            value={activeTab}
+                            onChange={setActiveTab}
                         >
                             <TabList
                                 actions={(
@@ -340,22 +376,45 @@ function GoodPractices(props: Props) {
                                     <IoListOutline />
                                 </Tab>
                             </TabList>
+                            <TabPanel
+                                name="grid"
+                            >
+                                <section className={styles.goodPracticeList}>
+                                    {goodPracticeResponse?.goodPracticies.map((gp) => (
+                                        <GoodPracticeItem
+                                            key={gp.id}
+                                            coverImageUrl={undefined}
+                                            heading={gp.title}
+                                            date="2021-05-20"
+                                            description={gp.description}
+                                            type={undefined}
+                                            // FIXME: define actual url
+                                            url="#"
+                                        />
+                                    ))}
+                                </section>
+                            </TabPanel>
+                            <TabPanel
+                                name="list"
+                            >
+                                <section className={styles.goodPracticeGrid}>
+                                    {goodPracticeResponse?.goodPracticies.map((gp) => (
+                                        <GoodPracticeItem
+                                            className={styles.coverImage}
+                                            key={gp.id}
+                                            coverImageUrl={undefined}
+                                            heading={gp.title}
+                                            date="2021-05-20"
+                                            description={gp.description}
+                                            type={undefined}
+                                            // FIXME: define actual url
+                                            url="#"
+                                        />
+                                    ))}
+                                </section>
+                            </TabPanel>
                         </Tabs>
                     </div>
-                </section>
-                <section className={styles.goodPracticeList}>
-                    {goodPracticesList.map((gp) => (
-                        <GoodPracticeItem
-                            key={gp.id}
-                            coverImageUrl={gp.image}
-                            heading={gp.title}
-                            date="2021-05-20"
-                            description={gp.description}
-                            type={undefined}
-                            // FIXME: define actual url
-                            url="#"
-                        />
-                    ))}
                 </section>
             </div>
         </div>

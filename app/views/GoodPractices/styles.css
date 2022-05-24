@@ -41,6 +41,7 @@
                         font-size: var(--dui-font-size-mega-large);
                         font-weight: var(--dui-font-weight-bold);
                     }
+
                     .count-label {
                         font-size: var(--dui-font-size-large);
                         font-weight: var(--dui-font-weight-bold);
@@ -94,6 +95,7 @@
                     background-color: var(--dui-color-background);
                     padding: var(--dui-spacing-medium);
                     gap: var(--dui-spacing-small);
+
                     .contact-links {
                         display: flex;
                         gap: var(--dui-spacing-medium);
@@ -137,6 +139,18 @@
 
             >* {
                 flex-basis: calc(100% / 3 - var(--gap));
+            }
+        }
+
+        .good-practice-grid {
+            --gap: 5rem;
+
+            .cover-image {
+                flex-wrap: wrap;
+                gap: var(--gap);
+                background-color: unset;
+                width: 50%;
+                height: 30rem;
             }
         }
     }
