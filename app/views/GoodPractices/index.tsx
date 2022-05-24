@@ -1,5 +1,8 @@
-import React, { useCallback, useState } from 'react';
-import { gql, useQuery } from '@apollo/client';
+import React, { useState } from 'react';
+import {
+    gql,
+    useQuery,
+} from '@apollo/client';
 
 import {
     FaqsQueryVariables,
