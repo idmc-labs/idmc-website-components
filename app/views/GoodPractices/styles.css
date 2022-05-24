@@ -119,6 +119,10 @@
                 display: flex;
                 flex-wrap: wrap;
                 gap: var(--dui-spacing-medium);
+
+                .options{
+                    width: 45%;
+                }
             }
 
             .search-container {

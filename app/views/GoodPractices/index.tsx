@@ -9,6 +9,8 @@ import {
     FaqsQuery,
     GoodPracticesQuery,
     GoodPracticesQueryVariables,
+    GoodPracticeFiltersQueryVariables,
+    GoodPracticeFiltersQuery,
 } from '#generated/types';
 import {
     TextInput,
@@ -19,7 +21,7 @@ import Map, {
     MapSource,
     MapLayer,
 } from '@togglecorp/re-map';
-import { _cs } from '@togglecorp/fujs';
+import { isNotDefined, _cs } from '@togglecorp/fujs';
 import {
     IoSearch,
     IoGridOutline,
@@ -61,6 +63,30 @@ const GOODPRACTICES = gql`
     }
 `;
 
+const GOOD_PRACTICES_FILTERS = gql`
+    query GoodPracticeFilters(
+        $countries: [ID!],
+        $driversOfDisplacements: [DriversOfDisplacementTypeEnum!],
+        $stages: [StageTypeEnum!],
+        $types: [TypeEnum!]
+    ) {
+        goodPracticies(
+            filters: {
+                countries: $countries,
+                driversOfDisplacements: $driversOfDisplacements,
+                stages: $stages,
+                types: $types
+            }) {
+            id
+            stage
+            title
+            type
+            driversOfDispalcement
+            description
+        }
+    }
+`;
+
 const orangePointHaloCirclePaint: mapboxgl.CirclePaint = {
     'circle-opacity': 0.6,
     'circle-color': {
@@ -75,6 +101,10 @@ const orangePointHaloCirclePaint: mapboxgl.CirclePaint = {
     'circle-radius': 9,
 };
 
+const typeLabelSelector = (d: any) => d.type;
+const driveLabelSelector = (d: any) => d.type;
+const keySelector = (d: any) => d.id;
+
 const options: { key: string; label: string }[] = [];
 
 const sourceOption: mapboxgl.GeoJSONSourceRaw = {
@@ -85,7 +115,6 @@ const lightStyle = 'mapbox://styles/mapbox/light-v10';
 
 interface Props {
     className?: string;
-
 }
 
 function GoodPractices(props: Props) {
@@ -97,14 +126,8 @@ function GoodPractices(props: Props) {
 
     const [expandedFaq, setExpandedFaq] = React.useState<number>();
     const [activeTab, setActiveTab] = useState<'grid' | 'list'>('grid');
-
-    const handleFaqExpansionChange = React.useCallback((newValue: boolean, name: number) => {
-        if (newValue === false) {
-            setExpandedFaq(undefined);
-        } else {
-            setExpandedFaq(name);
-        }
-    }, []);
+    const [selectedTypes, setSelectedTypes] = React.useState<number>();
+    const [selectedDrive, setSelectedDrive] = React.useState<number>();
 
     const {
         data: faqsResponse,
@@ -117,6 +140,33 @@ function GoodPractices(props: Props) {
     } = useQuery<GoodPracticesQuery, GoodPracticesQueryVariables>(
         GOODPRACTICES,
     );
+
+    const {
+        data: goodPracticeOptionResponse,
+    } = useQuery<GoodPracticeFiltersQuery, GoodPracticeFiltersQueryVariables>(
+        GOOD_PRACTICES_FILTERS,
+    );
+
+    const handleInputChange = React.useCallback((d, name: string) => {
+        if (name === 'typeOfGoodPractice') {
+            const practice = goodPracticeOptionResponse?.goodPracticies?.filter((x: any,
+            ) => d.includes(x.id));
+            setSelectedTypes(d);
+        }
+        if (name === 'driversOfDisplacement') {
+            const practice = goodPracticeOptionResponse?.goodPracticies?.filter((x: any,
+            ) => d.includes(x.id));
+            setSelectedDrive(d);
+        }
+    }, []);
+
+    const handleFaqExpansionChange = React.useCallback((newValue: boolean, name: number) => {
+        if (newValue === false) {
+            setExpandedFaq(undefined);
+        } else {
+            setExpandedFaq(name);
+        }
+    }, []);
 
     const handleJumpToGoodPractices = React.useCallback(
         () => {
@@ -270,7 +320,7 @@ function GoodPractices(props: Props) {
                 </section>
                 <section
                     className={styles.filters}
-                    ref={practicesListRef}
+                // ref={practicesListRef}
                 >
                     <Header
                         headingSize="large"
@@ -281,24 +331,26 @@ function GoodPractices(props: Props) {
                     </div>
                     <div className={styles.inputs}>
                         <SelectInput
+                            className={styles.options}
                             variant="general"
                             placeholder="Type of Good Practice"
                             name="typeOfGoodPractice"
-                            value={undefined}
-                            options={options}
-                            keySelector={(item) => item.key}
-                            labelSelector={(item) => item.label}
-                            onChange={() => undefined}
+                            value={selectedTypes}
+                            options={goodPracticeOptionResponse?.goodPracticies}
+                            keySelector={keySelector}
+                            labelSelector={typeLabelSelector}
+                            onChange={handleInputChange}
                         />
                         <SelectInput
+                            className={styles.options}
                             variant="general"
                             placeholder="Drivers of Displacement"
                             name="driversOfDisplacement"
-                            value={undefined}
-                            options={options}
-                            keySelector={(item) => item.key}
-                            labelSelector={(item) => item.label}
-                            onChange={() => undefined}
+                            value={selectedDrive}
+                            options={goodPracticeOptionResponse?.goodPracticies}
+                            keySelector={keySelector}
+                            labelSelector={driveLabelSelector}
+                            onChange={handleInputChange}
                         />
                         <SelectInput
                             variant="general"
@@ -315,9 +367,9 @@ function GoodPractices(props: Props) {
                             placeholder="State"
                             name="stage"
                             value={undefined}
-                            options={options}
-                            keySelector={(item) => item.key}
-                            labelSelector={(item) => item.label}
+                            options={goodPracticeOptionResponse?.goodPracticies}
+                            keySelector={(item) => item.stage}
+                            labelSelector={(item) => item.stage}
                             onChange={() => undefined}
                         />
                         <SelectInput
