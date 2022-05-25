@@ -135,17 +135,6 @@
             }
         }
 
-        .good-practice-list {
-            --gap: 5rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: var(--gap);
-
-            >* {
-                flex-basis: calc(100% / 3 - var(--gap));
-            }
-        }
-
         .good-practice-grid {
             --gap: 5rem;
 
@@ -157,5 +146,15 @@
                 height: 30rem;
             }
         }
+    }
+}
+.good-practice-list {
+    --gap: 5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap);
+
+    >* {
+        flex-basis: calc(100% / 3 - var(--gap));
     }
 }

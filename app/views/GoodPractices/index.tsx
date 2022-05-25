@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
     gql,
     useQuery,
@@ -9,19 +9,19 @@ import {
     FaqsQuery,
     GoodPracticesQuery,
     GoodPracticesQueryVariables,
-    GoodPracticeFiltersQueryVariables,
-    GoodPracticeFiltersQuery,
 } from '#generated/types';
 import {
     TextInput,
     SelectInput,
+    MultiSelectInput,
+    ListView,
 } from '@the-deep/deep-ui';
 import Map, {
     MapContainer,
     MapSource,
     MapLayer,
 } from '@togglecorp/re-map';
-import { isNotDefined, _cs } from '@togglecorp/fujs';
+import { _cs } from '@togglecorp/fujs';
 import {
     IoSearch,
     IoGridOutline,
@@ -38,7 +38,6 @@ import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
 import CollapsibleContent from '#components/CollapsibleContent';
-import GoodPracticeItem from '#components/GoodPracticeItem';
 import TabPanel from '#components/Tabs/TabPanel';
 
 import styles from './styles.css';
@@ -54,35 +53,18 @@ const FAQS = gql`
 `;
 
 const GOODPRACTICES = gql`
-    query GoodPractices {
-        goodPracticies {
+query GoodPractices {
+    goodPractices(pagination: {limit: 10, offset: 1}, ordering: {}, filters: {}) {
+        results {
             id
             title
             description
-        }
-    }
-`;
-
-const GOOD_PRACTICES_FILTERS = gql`
-    query GoodPracticeFilters(
-        $countries: [ID!],
-        $driversOfDisplacements: [DriversOfDisplacementTypeEnum!],
-        $stages: [StageTypeEnum!],
-        $types: [TypeEnum!]
-    ) {
-        goodPracticies(
-            filters: {
-                countries: $countries,
-                driversOfDisplacements: $driversOfDisplacements,
-                stages: $stages,
-                types: $types
-            }) {
-            id
-            stage
-            title
-            type
-            driversOfDispalcement
-            description
+            publishedDate
+            image {
+                name
+                url
+                }
+            }
         }
     }
 `;
@@ -101,8 +83,29 @@ const orangePointHaloCirclePaint: mapboxgl.CirclePaint = {
     'circle-radius': 9,
 };
 
+type goodPracticeList = NonNullable<NonNullable<GoodPracticesQuery['goodPractices']>['results']>[number];
+
+function goodPracticekeySelector(d: goodPracticeList) {
+    return d.id;
+}
+
+function GoodPracticeRenderer({
+    title,
+    description,
+    publishedDate,
+}) {
+    return (
+        <div className={styles.goodPracticeList}>
+            {title}
+            {description}
+            {publishedDate}
+        </div>
+    );
+}
+
 const typeLabelSelector = (d: any) => d.type;
-const driveLabelSelector = (d: any) => d.type;
+const driveLabelSelector = (d: any) => d.driversOfDispalcement;
+const stageLabelSelector = (d: any) => d.stage;
 const keySelector = (d: any) => d.id;
 
 const options: { key: string; label: string }[] = [];
@@ -124,10 +127,11 @@ function GoodPractices(props: Props) {
 
     const practicesListRef = React.useRef<HTMLDivElement>(null);
 
-    const [expandedFaq, setExpandedFaq] = React.useState<number>();
+    const [expandedFaq, setExpandedFaq] = useState<number>();
     const [activeTab, setActiveTab] = useState<'grid' | 'list'>('grid');
-    const [selectedTypes, setSelectedTypes] = React.useState<number>();
-    const [selectedDrive, setSelectedDrive] = React.useState<number>();
+    const [selectedTypes, setSelectedTypes] = useState<number[]>([]);
+    const [selectedDrive, setSelectedDrive] = useState<number[]>([]);
+    const [selectedStage, setSelectedStage] = useState<number[]>([]);
 
     const {
         data: faqsResponse,
@@ -137,30 +141,46 @@ function GoodPractices(props: Props) {
 
     const {
         data: goodPracticeResponse,
+        error: goodPracticeError,
     } = useQuery<GoodPracticesQuery, GoodPracticesQueryVariables>(
         GOODPRACTICES,
     );
 
-    const {
-        data: goodPracticeOptionResponse,
-    } = useQuery<GoodPracticeFiltersQuery, GoodPracticeFiltersQueryVariables>(
-        GOOD_PRACTICES_FILTERS,
-    );
+    // const {
+    //     data: goodPracticeOptionResponse,
+    // } = useQuery<GoodPracticeFiltersQuery, GoodPracticeFiltersQueryVariables>(
+    //     GOOD_PRACTICES_FILTERS,
+    // );
 
-    const handleInputChange = React.useCallback((d, name: string) => {
-        if (name === 'typeOfGoodPractice') {
-            const practice = goodPracticeOptionResponse?.goodPracticies?.filter((x: any,
-            ) => d.includes(x.id));
-            setSelectedTypes(d);
-        }
-        if (name === 'driversOfDisplacement') {
-            const practice = goodPracticeOptionResponse?.goodPracticies?.filter((x: any,
-            ) => d.includes(x.id));
-            setSelectedDrive(d);
-        }
-    }, []);
+    const goodPracticeRendererParams = useCallback((
+        _: string,
+        d: goodPracticeList,
+    ) => ({
+        description: d.description,
+        title: d.title,
+        publishedDate: d.publishedDate,
+        image: d.image,
+    }), []);
 
-    const handleFaqExpansionChange = React.useCallback((newValue: boolean, name: number) => {
+    // const handleInputChange = useCallback((d, name: string) => {
+    //     if (name === 'typeOfGoodPractice') {
+    //         const practice = goodPracticeOptionResponse?.goodPracticies?.filter((x: any,
+    //         ) => d.includes(x.id));
+    //         setSelectedTypes(d);
+    //     }
+    //     if (name === 'driversOfDisplacement') {
+    //         const practice = goodPracticeOptionResponse?.goodPracticies?.filter((x: any,
+    //         ) => d.includes(x.id));
+    //         setSelectedDrive(d);
+    //     }
+    //     if (name === 'stage') {
+    //         const practice = goodPracticeOptionResponse?.goodPracticies?.filter((x: any,
+    //         ) => d.includes(x.id));
+    //         setSelectedStage(d);
+    //     }
+    // }, []);
+
+    const handleFaqExpansionChange = useCallback((newValue: boolean, name: number) => {
         if (newValue === false) {
             setExpandedFaq(undefined);
         } else {
@@ -168,7 +188,7 @@ function GoodPractices(props: Props) {
         }
     }, []);
 
-    const handleJumpToGoodPractices = React.useCallback(
+    const handleJumpToGoodPractices = useCallback(
         () => {
             if (practicesListRef.current) {
                 practicesListRef.current.scrollIntoView({
@@ -320,7 +340,7 @@ function GoodPractices(props: Props) {
                 </section>
                 <section
                     className={styles.filters}
-                // ref={practicesListRef}
+                    ref={practicesListRef}
                 >
                     <Header
                         headingSize="large"
@@ -330,46 +350,46 @@ function GoodPractices(props: Props) {
                         Filter or search for the Good Practices using the options below.
                     </div>
                     <div className={styles.inputs}>
-                        <SelectInput
+                        <MultiSelectInput
                             className={styles.options}
                             variant="general"
                             placeholder="Type of Good Practice"
                             name="typeOfGoodPractice"
                             value={selectedTypes}
-                            options={goodPracticeOptionResponse?.goodPracticies}
+                            options={undefined}
                             keySelector={keySelector}
                             labelSelector={typeLabelSelector}
-                            onChange={handleInputChange}
+                            onChange={() => undefined}
                         />
-                        <SelectInput
+                        <MultiSelectInput
                             className={styles.options}
                             variant="general"
                             placeholder="Drivers of Displacement"
                             name="driversOfDisplacement"
                             value={selectedDrive}
-                            options={goodPracticeOptionResponse?.goodPracticies}
+                            options={undefined}
                             keySelector={keySelector}
                             labelSelector={driveLabelSelector}
-                            onChange={handleInputChange}
+                            onChange={() => undefined}
                         />
                         <SelectInput
                             variant="general"
                             placeholder="Focus Area"
                             name="focusArea"
-                            value={undefined}
+                            value={selectedStage}
                             options={options}
-                            keySelector={(item) => item.key}
+                            keySelector={keySelector}
                             labelSelector={(item) => item.label}
                             onChange={() => undefined}
                         />
-                        <SelectInput
+                        <MultiSelectInput
                             variant="general"
-                            placeholder="State"
+                            placeholder="Stage"
                             name="stage"
-                            value={undefined}
-                            options={goodPracticeOptionResponse?.goodPracticies}
-                            keySelector={(item) => item.stage}
-                            labelSelector={(item) => item.stage}
+                            value={selectedStage}
+                            options={undefined}
+                            keySelector={keySelector}
+                            labelSelector={stageLabelSelector}
                             onChange={() => undefined}
                         />
                         <SelectInput
@@ -435,37 +455,32 @@ function GoodPractices(props: Props) {
                                 name="grid"
                             >
                                 <section className={styles.goodPracticeList}>
-                                    {goodPracticeResponse?.goodPracticies.map((gp) => (
-                                        <GoodPracticeItem
-                                            key={gp.id}
-                                            coverImageUrl={undefined}
-                                            heading={gp.title}
-                                            date="2021-05-20"
-                                            description={gp.description}
-                                            type={undefined}
-                                            // FIXME: define actual url
-                                            url="#"
-                                        />
-                                    ))}
+                                    <ListView
+                                        className={styles.goodPracticeList}
+                                        data={goodPracticeResponse?.goodPractices?.results}
+                                        keySelector={goodPracticekeySelector}
+                                        rendererParams={goodPracticeRendererParams}
+                                        renderer={GoodPracticeRenderer}
+                                        errored={!!goodPracticeError}
+                                        pending={false}
+                                        filtered={false}
+                                    />
                                 </section>
                             </TabPanel>
                             <TabPanel
                                 name="list"
                             >
                                 <section className={styles.goodPracticeGrid}>
-                                    {goodPracticeResponse?.goodPracticies.map((gp) => (
-                                        <GoodPracticeItem
-                                            className={styles.coverImage}
-                                            key={gp.id}
-                                            coverImageUrl={undefined}
-                                            heading={gp.title}
-                                            date="2021-05-20"
-                                            description={gp.description}
-                                            type={undefined}
-                                            // FIXME: define actual url
-                                            url="#"
-                                        />
-                                    ))}
+                                    <ListView
+                                        className={styles.goodPracticeList}
+                                        data={goodPracticeResponse?.goodPractices?.results}
+                                        keySelector={goodPracticekeySelector}
+                                        rendererParams={goodPracticeRendererParams}
+                                        renderer={GoodPracticeRenderer}
+                                        errored={!!goodPracticeError}
+                                        pending={false}
+                                        filtered={false}
+                                    />
                                 </section>
                             </TabPanel>
                         </Tabs>
