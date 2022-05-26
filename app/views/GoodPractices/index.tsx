@@ -54,7 +54,7 @@ const FAQS = gql`
 
 const GOODPRACTICES = gql`
 query GoodPractices {
-    goodPractices(pagination: {limit: 10, offset: 1}, ordering: {}, filters: {}) {
+    goodPractices(pagination: {limit: 10, offset: 1}, ordering: {}, filters: {search: ""}) {
         results {
             id
             title
@@ -93,12 +93,18 @@ function GoodPracticeRenderer({
     title,
     description,
     publishedDate,
+    image,
 }) {
     return (
         <div className={styles.goodPracticeList}>
             {title}
             {description}
             {publishedDate}
+            <img
+                className={styles.preview}
+                src={image}
+                alt={image.name}
+            />
         </div>
     );
 }
@@ -159,7 +165,7 @@ function GoodPractices(props: Props) {
         description: d.description,
         title: d.title,
         publishedDate: d.publishedDate,
-        image: d.image,
+        image: d.image?.url,
     }), []);
 
     // const handleInputChange = useCallback((d, name: string) => {
