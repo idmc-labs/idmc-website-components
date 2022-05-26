@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
     gql,
     useQuery,
@@ -15,6 +15,7 @@ import {
     SelectInput,
     MultiSelectInput,
     ListView,
+    SearchSelectInput,
 } from '@the-deep/deep-ui';
 import Map, {
     MapContainer,
@@ -27,7 +28,6 @@ import {
     IoGridOutline,
     IoListOutline,
 } from 'react-icons/io5';
-
 import TextOutput from '#components/TextOutput';
 import Tabs from '#components/Tabs';
 import Tab from '#components/Tabs/Tab';
@@ -39,6 +39,7 @@ import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
 import CollapsibleContent from '#components/CollapsibleContent';
 import TabPanel from '#components/Tabs/TabPanel';
+import useDebouncedValue from '../../hooks/useDebouncedValue';
 
 import styles from './styles.css';
 
@@ -53,8 +54,8 @@ const FAQS = gql`
 `;
 
 const GOODPRACTICES = gql`
-query GoodPractices {
-    goodPractices(pagination: {limit: 10, offset: 1}, ordering: {}, filters: {search: ""}) {
+query GoodPractices($search : String!) {
+    goodPractices(ordering: {}, filters: {search: $search}, pagination: {limit: 10, offset: 0}) {
         results {
             id
             title
@@ -89,6 +90,10 @@ function goodPracticekeySelector(d: goodPracticeList) {
     return d.id;
 }
 
+function goodPracticeLabelSelector(d: goodPracticeList) {
+    return d.title;
+}
+
 function GoodPracticeRenderer({
     title,
     description,
@@ -103,7 +108,7 @@ function GoodPracticeRenderer({
             <img
                 className={styles.preview}
                 src={image}
-                alt={image.name}
+                alt=""
             />
         </div>
     );
@@ -135,6 +140,13 @@ function GoodPractices(props: Props) {
 
     const [expandedFaq, setExpandedFaq] = useState<number>();
     const [activeTab, setActiveTab] = useState<'grid' | 'list'>('grid');
+    const [searchText, setSearchText] = useState<string>('');
+    const debouncedSearchText = useDebouncedValue(searchText);
+
+    const variables = useMemo(() => ({
+        search: debouncedSearchText,
+    }), [debouncedSearchText]);
+
     const [selectedTypes, setSelectedTypes] = useState<number[]>([]);
     const [selectedDrive, setSelectedDrive] = useState<number[]>([]);
     const [selectedStage, setSelectedStage] = useState<number[]>([]);
@@ -148,15 +160,13 @@ function GoodPractices(props: Props) {
     const {
         data: goodPracticeResponse,
         error: goodPracticeError,
+        loading: goodPracticeLoading,
     } = useQuery<GoodPracticesQuery, GoodPracticesQueryVariables>(
         GOODPRACTICES,
+        {
+            variables,
+        },
     );
-
-    // const {
-    //     data: goodPracticeOptionResponse,
-    // } = useQuery<GoodPracticeFiltersQuery, GoodPracticeFiltersQueryVariables>(
-    //     GOOD_PRACTICES_FILTERS,
-    // );
 
     const goodPracticeRendererParams = useCallback((
         _: string,
@@ -167,24 +177,6 @@ function GoodPractices(props: Props) {
         publishedDate: d.publishedDate,
         image: d.image?.url,
     }), []);
-
-    // const handleInputChange = useCallback((d, name: string) => {
-    //     if (name === 'typeOfGoodPractice') {
-    //         const practice = goodPracticeOptionResponse?.goodPracticies?.filter((x: any,
-    //         ) => d.includes(x.id));
-    //         setSelectedTypes(d);
-    //     }
-    //     if (name === 'driversOfDisplacement') {
-    //         const practice = goodPracticeOptionResponse?.goodPracticies?.filter((x: any,
-    //         ) => d.includes(x.id));
-    //         setSelectedDrive(d);
-    //     }
-    //     if (name === 'stage') {
-    //         const practice = goodPracticeOptionResponse?.goodPracticies?.filter((x: any,
-    //         ) => d.includes(x.id));
-    //         setSelectedStage(d);
-    //     }
-    // }, []);
 
     const handleFaqExpansionChange = useCallback((newValue: boolean, name: number) => {
         if (newValue === false) {
@@ -427,12 +419,17 @@ function GoodPractices(props: Props) {
                             <TabList
                                 actions={(
                                     <div className={styles.filter}>
-                                        <TextInput
-                                            variant="general"
-                                            value={undefined}
+                                        <SearchSelectInput
+                                            className={className}
                                             placeholder="Search for Best Practice"
                                             name="search"
-                                            onChange={() => undefined}
+                                            keySelector={keySelector}
+                                            labelSelector={goodPracticeLabelSelector}
+                                            onSearchValueChange={setSearchText}
+                                            searchOptions={
+                                                goodPracticeResponse?.goodPractices?.results
+                                            }
+                                            optionsLoading={goodPracticeLoading}
                                             icons={(
                                                 <IoSearch />
                                             )}

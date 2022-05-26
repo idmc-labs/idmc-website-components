@@ -119,10 +119,6 @@
                 display: flex;
                 flex-wrap: wrap;
                 gap: var(--dui-spacing-medium);
-
-                .options{
-                    width: 45%;
-                }
             }
 
             .search-container {
@@ -131,6 +127,7 @@
                     justify-content: flex-end;
                     padding-bottom: var(--dui-spacing-medium);
                     gap: var(--dui-spacing-medium);
+                    width: 60%;
                 }
             }
         }
