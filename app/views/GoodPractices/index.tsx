@@ -13,6 +13,8 @@ import {
     StaticPagesQueryVariables,
     GoodPracticeQuery,
     GoodPracticeQueryVariables,
+    GoodPracticeFilterChoicesQuery,
+    GoodPracticeFilterChoicesQueryVariables,
 } from '#generated/types';
 import {
     TextInput,
@@ -92,6 +94,22 @@ query StaticPages {
     }
 `;
 
+const GOOD_PRACTICE_FILTER_CHOICES = gql`
+query GoodPracticeFilterChoices {
+    goodPracticeFilterChoices {
+        countries {
+            name
+            id
+        }
+        driversOfDispalcement
+        focusArea
+        regions
+        stage
+        type
+        }
+    }
+`;
+
 const orangePointHaloCirclePaint: mapboxgl.CirclePaint = {
     'circle-opacity': 0.6,
     'circle-color': {
@@ -107,13 +125,21 @@ const orangePointHaloCirclePaint: mapboxgl.CirclePaint = {
 };
 
 type goodPracticeList = NonNullable<NonNullable<GoodPracticesQuery['goodPractices']>['results']>[number];
+type countryFilterList = NonNullable<NonNullable<GoodPracticeFilterChoicesQuery['goodPracticeFilterChoices']>['countries']>[number];
 
-function goodPracticekeySelector(d: goodPracticeList) {
+const keySelector = (d: any) => d.key;
+const labelSelector = (d: any) => d.label;
+
+function countryKeySelector(d: countryFilterList) {
     return d.id;
 }
 
-function goodPracticeLabelSelector(d: goodPracticeList) {
-    return d.title;
+function countryLabelSelector(d: countryFilterList) {
+    return d.name;
+}
+
+function goodPracticekeySelector(d: goodPracticeList) {
+    return d.id;
 }
 
 function GoodPracticeRenderer({
@@ -136,13 +162,6 @@ function GoodPracticeRenderer({
     );
 }
 
-const typeLabelSelector = (d: any) => d.type;
-const driveLabelSelector = (d: any) => d.driversOfDispalcement;
-const stageLabelSelector = (d: any) => d.stage;
-const keySelector = (d: any) => d.id;
-
-const options: { key: string; label: string }[] = [];
-
 const sourceOption: mapboxgl.GeoJSONSourceRaw = {
     type: 'geojson',
 };
@@ -164,13 +183,16 @@ function GoodPractices(props: Props) {
     const [searchText, setSearchText] = useState<string>();
     const debouncedSearchText = useDebouncedValue(searchText);
 
+    const [goodPracticeType, setGoodPracticeType] = useState<string | undefined>();
+    const [goodPracticeArea, setGoodPracticeArea] = useState<string | undefined>();
+    const [goodPracticeDrive, setGoodPracticeDrive] = useState<string | undefined>();
+    const [goodpracticeStage, setGoodPracticeStage] = useState<string | undefined>();
+    const [goodPracticeRegion, setGoodPracticeRegion] = useState<string | undefined>();
+    const [goodPracticeCountry, setGoodPracticeCountry] = useState<string | undefined>();
+
     const variables = useMemo(() => ({
         search: debouncedSearchText,
     }), [debouncedSearchText]);
-
-    const [selectedTypes, setSelectedTypes] = useState<number[]>([]);
-    const [selectedDrive, setSelectedDrive] = useState<number[]>([]);
-    const [selectedStage, setSelectedStage] = useState<number[]>([]);
 
     const {
         data: faqsResponse,
@@ -200,6 +222,30 @@ function GoodPractices(props: Props) {
     } = useQuery<GoodPracticeQuery, GoodPracticeQueryVariables>(
         GOOD_PRACTICE,
     );
+
+    const {
+        data: goodPracticeFilterResponse,
+    } = useQuery<GoodPracticeFilterChoicesQuery, GoodPracticeFilterChoicesQueryVariables>(
+        GOOD_PRACTICE_FILTER_CHOICES,
+    );
+
+    const typeFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.type
+        ?.map((v) => ({ key: v, label: v }));
+
+    const driverFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.driversOfDispalcement
+        ?.map((v) => ({ key: v, label: v }));
+
+    const areaFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.focusArea
+        ?.map((v) => ({ key: v, label: v }));
+
+    const stageFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.stage
+        ?.map((v) => ({ key: v, label: v }));
+
+    const regionFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.regions
+        ?.map((v) => ({ key: v, label: v }));
+
+    const countryFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.countries
+        ?.map((v) => ({ name: v, id: v }));
 
     const goodPracticeLink = `${goodPracticeUrlResponse?.goodPractice?.goodPracticeFormUrl}`;
 
@@ -378,67 +424,65 @@ function GoodPractices(props: Props) {
                         Filter or search for the Good Practices using the options below.
                     </div>
                     <div className={styles.inputs}>
-                        <MultiSelectInput
-                            className={styles.options}
+                        <SelectInput
                             variant="general"
                             placeholder="Type of Good Practice"
-                            name="typeOfGoodPractice"
-                            value={selectedTypes}
-                            options={undefined}
+                            name="type"
+                            value={goodPracticeType}
+                            options={typeFilter}
                             keySelector={keySelector}
-                            labelSelector={typeLabelSelector}
-                            onChange={() => undefined}
+                            labelSelector={labelSelector}
+                            onChange={setGoodPracticeType}
                         />
-                        <MultiSelectInput
-                            className={styles.options}
+                        <SelectInput
                             variant="general"
                             placeholder="Drivers of Displacement"
                             name="driversOfDisplacement"
-                            value={selectedDrive}
-                            options={undefined}
+                            value={goodPracticeDrive}
+                            options={driverFilter}
                             keySelector={keySelector}
-                            labelSelector={driveLabelSelector}
-                            onChange={() => undefined}
+                            labelSelector={labelSelector}
+                            onChange={setGoodPracticeDrive}
                         />
                         <SelectInput
                             variant="general"
                             placeholder="Focus Area"
                             name="focusArea"
-                            value={selectedStage}
-                            options={options}
+                            value={goodPracticeArea}
+                            options={areaFilter}
                             keySelector={keySelector}
-                            labelSelector={(item) => item.label}
-                            onChange={() => undefined}
+                            labelSelector={labelSelector}
+                            onChange={setGoodPracticeArea}
                         />
-                        <MultiSelectInput
+                        <SelectInput
                             variant="general"
                             placeholder="Stage"
                             name="stage"
-                            value={selectedStage}
-                            options={undefined}
+                            value={goodpracticeStage}
+                            options={stageFilter}
                             keySelector={keySelector}
-                            labelSelector={stageLabelSelector}
-                            onChange={() => undefined}
+                            labelSelector={labelSelector}
+                            onChange={setGoodPracticeStage}
                         />
                         <SelectInput
                             variant="general"
                             placeholder="Region"
                             name="region"
-                            value={undefined}
-                            options={options}
-                            keySelector={(item) => item.key}
-                            labelSelector={(item) => item.label}
-                            onChange={() => undefined}
+                            value={goodPracticeRegion}
+                            options={regionFilter}
+                            keySelector={keySelector}
+                            labelSelector={labelSelector}
+                            onChange={setGoodPracticeRegion}
                         />
                         <SelectInput
                             variant="general"
                             placeholder="Country"
                             name="country"
-                            value={undefined}
-                            options={options}
-                            keySelector={(item) => item.key}
-                            labelSelector={(item) => item.label}
-                            onChange={() => undefined}
+                            value={goodPracticeCountry}
+                            options={countryFilter}
+                            keySelector={countryKeySelector}
+                            labelSelector={countryLabelSelector}
+                            onChange={setGoodPracticeCountry}
                         />
                     </div>
                     <div className={styles.searchContainer}>
@@ -460,16 +504,6 @@ function GoodPractices(props: Props) {
                                             icons={(
                                                 <IoSearch />
                                             )}
-                                        />
-                                        <SelectInput
-                                            variant="general"
-                                            placeholder="Most popular"
-                                            name="order"
-                                            value={undefined}
-                                            options={options}
-                                            keySelector={(item) => item.key}
-                                            labelSelector={(item) => item.label}
-                                            onChange={() => undefined}
                                         />
                                     </div>
                                 )}
