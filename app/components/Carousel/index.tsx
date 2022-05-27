@@ -1,8 +1,8 @@
 import React from 'react';
 import {
     _cs,
-    isNotDefined,
     isDefined,
+    isNotDefined,
 } from '@togglecorp/fujs';
 
 import CarouselContext from './CarouselContext';

@@ -130,6 +130,31 @@
                     }
                 }
 
+                .block {
+                    display: flex;
+                    flex-direction: column;
+                    border-radius: 0.25rem;
+                    background-color: var(--dui-color-background);
+                    padding: var(--dui-spacing-large);
+                    gap: var(--dui-spacing-small);
+                    .contact-links {
+                        display: flex;
+                        position: absolute;
+                        top: 16rem;
+                        left: 50%;
+                        align-items: center;
+                        transform: translate(-50%, -100%);
+                        border-radius: 0.25rem;
+                        background-color: rgba(0, 0, 0, .5);
+                        color: var(--dui-color-text-on-dark);
+
+                        >* {
+                            display: flex;
+                            align-items: center;
+                        }
+                    }
+                }
+
                 .block-list {
                     .block {
                         display: flex;

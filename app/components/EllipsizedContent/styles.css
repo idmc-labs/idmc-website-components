@@ -1,6 +1,10 @@
 .ellipsized-content {
     max-width: var(--width-readable-content-max);
 
+    &.dark-mode {
+        color: var(--dui-color-text-on-dark);
+    }
+
     .container {
         &.ellipsized {
             display: -webkit-box;
@@ -19,7 +23,6 @@
         display: flex;
         align-items: center;
         margin-top: var(--dui-spacing-medium);
-        padding: 0;
         gap: var(--dui-spacing-small);
     }
 }

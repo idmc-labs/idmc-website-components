@@ -72,7 +72,13 @@ function EllipsizedContent(props: Props) {
     }
 
     return (
-        <div className={_cs(styles.ellipsizedContent, className)}>
+        <div
+            className={_cs(
+                styles.ellipsizedContent,
+                darkMode && styles.darkMode,
+                className,
+            )}
+        >
             <div
                 ref={containerRef}
                 className={_cs(
@@ -93,7 +99,7 @@ function EllipsizedContent(props: Props) {
                     name={!shouldEllipsize}
                     onClick={setShouldEllipsize}
                     actions={shouldEllipsize ? <IoArrowDown /> : <IoArrowUp />}
-                    variant={darkMode ? 'primary' : 'secondary'}
+                    variant="action"
                 >
                     {shouldEllipsize ? 'Read More' : 'See Less'}
                 </Button>

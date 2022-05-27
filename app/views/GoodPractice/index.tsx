@@ -1,127 +1,176 @@
 import React from 'react';
 import { _cs } from '@togglecorp/fujs';
+import {
+    IoChevronForward,
+    IoChevronBack,
+    IoEllipseOutline,
+} from 'react-icons/io5';
 
 import Button from '#components/Button';
 import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
-import EllipsizedContent from '#components/EllipsizedContent';
-import DateOutput from '#components/DateOutput';
 import TextOutput from '#components/TextOutput';
-// import SmartLink from '#base/components/SmartLink';
-// import route from '#base/configs/routes';
+import Carousel from '#components/Carousel';
+import CarouselItem from '#components/Carousel/CarouselItem';
+import CarouselButton from '#components/Carousel/CarouselButton';
 
 import grid2021CoverImage from '../../resources/img/grid2021-cover.png';
-import {
-    goodPractice,
-    gallery,
-} from './data';
+import { goodPractice } from './data';
 import styles from './styles.css';
 
 interface Props {
     className?: string;
+    id: string | undefined;
 }
 
 function GoodPractice(props: Props) {
     const {
         className,
+        id,
     } = props;
+
+    console.info('good practice id', id);
 
     return (
         <div className={_cs(styles.goodPractices, className)}>
-            <div className={styles.mainContent}>
-                <Header
-                    headingSize="extraLarge"
-                    heading={goodPractice.title}
-                />
-                <div className={styles.breadcrumb}>
-                    {/*
-                    <:SmartLink
-                        route={route.home}
-                    />
-                    ›
-                    <SmartLink
-                        route={route.goodPractices}
-                    />
-                    ›
-                    */}
-                    <div>
-                        {goodPractice.title}
+            <div className={styles.headerSection}>
+                <div
+                    className={styles.basicInfo}
+                    style={{
+                        backgroundImage: 'url("https://images.unsplash.com/photo-1465917566611-efba2904dd8a?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1476&q=80")',
+                    }}
+                >
+                    <div className={styles.container}>
+                        <div className={styles.breadcrumb}>
+                            {/*
+                            <SmartLink
+                                route={route.home}
+                            />
+                            ›
+                            <SmartLink
+                                route={route.goodPractices}
+                            />
+                            ›
+                            */}
+                            <div>
+                                {goodPractice.title}
+                            </div>
+                        </div>
+                        <Header
+                            headingSize="extraLarge"
+                            heading={goodPractice.title}
+                            darkMode
+                        />
                     </div>
                 </div>
-                <section className={styles.meta}>
-                    <TextOutput
-                        label="Last updated at"
-                        value={goodPractice.lastUpdated}
-                        valueType="date"
-                        displayType="table"
-                    />
-                    <TextOutput
-                        label="Region"
-                        value={goodPractice.region}
-                        displayType="table"
-                    />
-                    <TextOutput
-                        label="Country"
-                        value={goodPractice.country}
-                        displayType="table"
-                    />
-                    <TextOutput
-                        label="Implementing Entity"
-                        value={goodPractice.implementingEntity}
-                        displayType="table"
-                    />
-                    <TextOutput
-                        label="CC Driver"
-                        value={goodPractice.ccDriver}
-                        displayType="table"
-                    />
-                    <TextOutput
-                        label="Trigger"
-                        value={goodPractice.trigger}
-                        displayType="table"
-                    />
-                    <TextOutput
-                        label="Displacement Impact"
-                        value={goodPractice.displacementImpact}
-                        displayType="table"
-                    />
-                    <TextOutput
-                        label="Intervention Phase"
-                        value={goodPractice.interventionPhase}
-                        displayType="table"
-                    />
-                    <TextOutput
-                        label="Timeframe"
-                        value={goodPractice.timeframe}
-                        displayType="table"
-                    />
-                </section>
+            </div>
+            <div className={styles.mainContent}>
                 <section className={styles.details}>
-                    <HTMLOutput
-                        value={goodPractice.description}
-                    />
+                    <div className={styles.mainSection}>
+                        <div className={styles.meta}>
+                            <TextOutput
+                                label="Region"
+                                value={goodPractice.region}
+                                strongValue
+                                displayType="block"
+                            />
+                            <TextOutput
+                                label="Country"
+                                value={goodPractice.country}
+                                strongValue
+                                displayType="block"
+                            />
+                            <TextOutput
+                                label="Timeframe"
+                                value={goodPractice.timeframe}
+                                strongValue
+                                displayType="block"
+                            />
+                        </div>
+                        <HTMLOutput
+                            value={goodPractice.description}
+                        />
+                    </div>
                     <div className={styles.sidePane}>
                         <div className={styles.carouselContainer}>
                             <Header
-                                heading="20201 Global Report on Internal Displacement"
+                                heading="Best Practice"
                                 headingSize="small"
-                                description={(
-                                    <DateOutput value="2021-05-20" />
-                                )}
                             />
-                            <img
-                                src={grid2021CoverImage}
-                                alt="GRID 2021"
-                            />
-                            <div>
-                                Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-                                sed do eiusmod tempor incididunt ut labore et
-                                dolore magna aliqua. Ut enim ad minim veniam,
-                                quis nostrud exercitation ullamco laboris nisi
-                            </div>
-                            <Button name={undefined}>
-                                Download Report
-                            </Button>
+                            <Carousel className={styles.carousel}>
+                                <CarouselItem
+                                    order={1}
+                                    className={styles.carouselItem}
+                                >
+                                    <img
+                                        className={styles.image}
+                                        src="https://images.unsplash.com/photo-1653450283266-c788c2ca4ab2?crop=entropy&cs=tinysrgb&fm=jpg&ixlib=rb-1.2.1&q=80&raw_url=true&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=640"
+                                        alt="GRID 2021"
+                                    />
+                                    <div className={styles.description}>
+                                        Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+                                        sed do eiusmod tempor incididunt ut labore et
+                                    </div>
+                                </CarouselItem>
+                                <CarouselItem
+                                    order={2}
+                                    className={styles.carouselItem}
+                                >
+                                    <img
+                                        className={styles.image}
+                                        src="https://images.unsplash.com/photo-1653296744218-5aede802b57d?crop=entropy&cs=tinysrgb&fm=jpg&ixlib=rb-1.2.1&q=80&raw_url=true&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=300"
+                                        alt="GRID 2021"
+                                    />
+                                    <div className={styles.description}>
+                                        Hey there! How&apos;re you doing? All good I hope!
+                                        Anyway, all the best to you!
+                                    </div>
+                                </CarouselItem>
+                                <CarouselItem
+                                    order={3}
+                                    className={styles.carouselItem}
+                                >
+                                    <img
+                                        className={styles.image}
+                                        src={grid2021CoverImage}
+                                        alt="GRID 2021"
+                                    />
+                                    <div className={styles.description}>
+                                        Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+                                        sed do eiusmod tempor incididunt ut labore et
+                                    </div>
+                                </CarouselItem>
+                                <div className={styles.carouselActions}>
+                                    <CarouselButton
+                                        action="prev"
+                                    >
+                                        <IoChevronBack />
+                                    </CarouselButton>
+                                    <CarouselButton
+                                        action="set"
+                                        order={1}
+                                    >
+                                        <IoEllipseOutline />
+                                    </CarouselButton>
+                                    <CarouselButton
+                                        action="set"
+                                        order={2}
+                                    >
+                                        <IoEllipseOutline />
+                                    </CarouselButton>
+                                    <CarouselButton
+                                        action="set"
+                                        order={3}
+                                    >
+                                        <IoEllipseOutline />
+                                    </CarouselButton>
+                                    <CarouselButton
+                                        action="next"
+                                    >
+                                        <IoChevronForward />
+                                    </CarouselButton>
+                                </div>
+                            </Carousel>
                         </div>
                         <div className={styles.blockList}>
                             <div className={styles.block}>
@@ -157,31 +206,6 @@ function GoodPractice(props: Props) {
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </section>
-                <section className={styles.gallery}>
-                    <Header
-                        heading="Gallery"
-                        headingSize="large"
-                    />
-                    <div className={styles.galleryItemList}>
-                        {gallery.map((galleryItem) => (
-                            <div
-                                key={galleryItem.id}
-                                className={styles.galleryItem}
-                            >
-                                <img
-                                    className={styles.image}
-                                    src={galleryItem.image}
-                                    alt="Gallery Item"
-                                />
-                                <EllipsizedContent>
-                                    <HTMLOutput
-                                        value={galleryItem.description}
-                                    />
-                                </EllipsizedContent>
-                            </div>
-                        ))}
                     </div>
                 </section>
             </div>

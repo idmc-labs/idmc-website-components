@@ -29,7 +29,14 @@
         background-color: var(--dui-color-brand);
         color: var(--dui-color-text-on-dark);
     }
+
+    &.action {
+        background-color: transparent;
+        padding: 0;
+    }
+
     &.secondary {
+        background-color: var(--dui-color-foreground);
         color: var(--dui-color-brand);
         font-weight: var(--dui-font-weight-bold);
 
@@ -53,6 +60,14 @@
 
             &.secondary {
                 background-color: var(--dui-color-background);
+            }
+
+            &.action {
+                color: var(--dui-color-brand);
+
+                &.dark-mode {
+                    color: var(--dui-color-background);
+                }
             }
         }
     }

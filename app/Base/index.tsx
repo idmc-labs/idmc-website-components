@@ -85,14 +85,14 @@ function Base() {
             }
             if (currentPage === 'good-practices') {
                 return (
-                    <GoodPractice
+                    <GoodPractices
                         className={styles.view}
                     />
                 );
             }
             if (currentPage === 'good-practice' && currentId) {
                 return (
-                    <GoodPractices
+                    <GoodPractice
                         className={styles.view}
                         id={currentId}
                     />

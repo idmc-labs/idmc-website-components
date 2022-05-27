@@ -10,14 +10,16 @@ interface Props {
     children?: React.ReactNode;
     size?: HeadingSizeType;
     hideBorder?: boolean;
+    darkMode?: boolean;
 }
 
 function Heading(props: Props) {
     const {
-        className,
+        className: classNameFromProps,
         children: childrenFromProps,
         size = 'medium',
         hideBorder = false,
+        darkMode,
     } = props;
 
     const children: React.ReactNode = React.useMemo(() => {
@@ -39,30 +41,36 @@ function Heading(props: Props) {
         hideBorder,
     ]);
 
+    const className = _cs(
+        styles.heading,
+        darkMode && styles.darkMode,
+        classNameFromProps,
+    );
+
     return (
         <>
             {size === 'extraSmall' && (
-                <h5 className={_cs(styles.heading, styles.extraSmall, className)}>
+                <h5 className={_cs(styles.extraSmall, className)}>
                     { children }
                 </h5>
             )}
             {size === 'small' && (
-                <h4 className={_cs(styles.heading, styles.small, className)}>
+                <h4 className={_cs(styles.small, className)}>
                     { children }
                 </h4>
             )}
             {size === 'medium' && (
-                <h3 className={_cs(styles.heading, styles.medium, className)}>
+                <h3 className={_cs(styles.medium, className)}>
                     { children }
                 </h3>
             )}
             {size === 'large' && (
-                <h2 className={_cs(styles.heading, styles.large, className)}>
+                <h2 className={_cs(styles.large, className)}>
                     { children }
                 </h2>
             )}
             {size === 'extraLarge' && (
-                <h1 className={_cs(styles.heading, styles.extraLarge, className)}>
+                <h1 className={_cs(styles.extraLarge, className)}>
                     { children }
                 </h1>
             )}

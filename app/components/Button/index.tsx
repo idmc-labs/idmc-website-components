@@ -6,7 +6,7 @@ import RawButton, { Props as RawButtonProps } from '#components/RawButton';
 import styles from './styles.css';
 
 export function useButtonFeatures(props: {
-    variant: 'primary' | 'secondary',
+    variant: 'primary' | 'secondary' | 'action',
     icons?: React.ReactNode;
     actions?: React.ReactNode;
     children?: React.ReactNode;
@@ -22,6 +22,7 @@ export function useButtonFeatures(props: {
         styles.button,
         variant === 'primary' && styles.primary,
         variant === 'secondary' && styles.secondary,
+        variant === 'action' && styles.action,
     );
 
     const childrenForOutput = (
@@ -52,7 +53,7 @@ interface Props<N> extends RawButtonProps<N> {
     onClick?: (name: N, e: React.MouseEvent<HTMLButtonElement>) => void;
     icons?: React.ReactNode;
     actions?: React.ReactNode;
-    variant?: 'primary' | 'secondary';
+    variant?: 'primary' | 'secondary' | 'action';
     disabled?: boolean;
 }
 

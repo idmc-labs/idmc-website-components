@@ -28,6 +28,7 @@ import {
     IoGridOutline,
     IoListOutline,
 } from 'react-icons/io5';
+
 import Tabs from '#components/Tabs';
 import Tab from '#components/Tabs/Tab';
 import TabList from '#components/Tabs/TabList';
@@ -161,6 +162,19 @@ const sourceOption: mapboxgl.GeoJSONSourceRaw = {
 };
 const lightStyle = 'mapbox://styles/mapbox/light-v10';
 
+const pageDescription = `
+<div>
+<p>
+    One of the aims of the IDMC is to provide platforms for sharing experiences and examples of good practices. This page aims to work as a web-based repository to showcase good practices that can serve as an inspiration on how various stakeholders can work within the IDMC partnership.
+</p>
+<p>
+The examples will be of varying character, some as shorter articles and some as longer case studies undertaken by researchers in IDMC associated countries.
+</p>
+<p>
+The repository is under development and examples and case studies will be added regularly. Partners are encouraged to share good examples that they wish to feature on this page with the IDMC Support Unit on globaldeal@oecd.org.
+</p>
+`;
+
 interface Props {
     className?: string;
 }
@@ -274,39 +288,34 @@ function GoodPractices(props: Props) {
 
     return (
         <div className={_cs(styles.goodPractices, className)}>
-            <img
-                className={styles.coverImage}
-                src="https://images.unsplash.com/photo-1534271057238-c2c170a76672?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
-                alt="good practices"
-            />
-            <div className={styles.mainContent}>
-                <section className={styles.profile}>
-                    <Header
-                        headingSize="extraLarge"
-                        heading="Global Repositories for Good Practices"
-                    />
-                    <div className={styles.content}>
-                        <EllipsizedContent
-                            className={styles.description}
-                        >
-                            {staticPagesResponse?.staticPages.map((value) => (
-                                <HTMLOutput
-                                    // desciption
-                                    value={value.description}
-                                />
-                            ))}
+            <div className={styles.headerSection}>
+                <section
+                    className={styles.profile}
+                    style={{
+                        backgroundImage: 'url("https://images.unsplash.com/photo-1534271057238-c2c170a76672?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80")',
+                    }}
+                >
+                    <div className={styles.container}>
+                        <Header
+                            darkMode
+                            headingSize="extraLarge"
+                            heading="Global Repositories for Good Practices"
+                        />
+
+                        <EllipsizedContent darkMode>
                             <HTMLOutput
-                                // desciption
-                                value={undefined}
+                                // TODO: add actual desciption
+                                value={pageDescription}
                             />
                         </EllipsizedContent>
+                        <Button
+                            onClick={handleJumpToGoodPractices}
+                            name={undefined}
+                            variant="secondary"
+                        >
+                            Find Good Practices
+                        </Button>
                     </div>
-                    <Button
-                        onClick={handleJumpToGoodPractices}
-                        name={undefined}
-                    >
-                        Find Good Practices
-                    </Button>
                 </section>
             </div>
             <div className={styles.mainContent}>

@@ -7,6 +7,10 @@
     font-family: var(--dui-font-family-heading);
     font-weight: var(--dui-font-weight-heading);
 
+    &.dark-mode {
+        color: var(--color-text-on-dark);
+    }
+
     &.extra-large {
         font-size: var(--dui-font-size-mega-large);
     }
