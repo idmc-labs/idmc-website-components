@@ -9,13 +9,16 @@ import {
     FaqsQuery,
     GoodPracticesQuery,
     GoodPracticesQueryVariables,
+    StaticPagesQuery,
+    StaticPagesQueryVariables,
+    GoodPracticeQuery,
+    GoodPracticeQueryVariables,
 } from '#generated/types';
 import {
     TextInput,
     SelectInput,
     MultiSelectInput,
     ListView,
-    SearchSelectInput,
 } from '@the-deep/deep-ui';
 import Map, {
     MapContainer,
@@ -28,7 +31,6 @@ import {
     IoGridOutline,
     IoListOutline,
 } from 'react-icons/io5';
-import TextOutput from '#components/TextOutput';
 import Tabs from '#components/Tabs';
 import Tab from '#components/Tabs/Tab';
 import TabList from '#components/Tabs/TabList';
@@ -36,6 +38,7 @@ import LegendElement from '#components/LegendElement';
 import Button from '#components/Button';
 import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
+import ButtonLikeLink from '#components/ButtonLikeLink';
 import EllipsizedContent from '#components/EllipsizedContent';
 import CollapsibleContent from '#components/CollapsibleContent';
 import TabPanel from '#components/Tabs/TabPanel';
@@ -66,6 +69,25 @@ query GoodPractices($search : String!) {
                 url
                 }
             }
+        }
+    }
+`;
+
+const GOOD_PRACTICE = gql`
+query GoodPractice ($ID: ID!) {
+    goodPractice(pk: $ID) {
+        goodPracticeFormUrl
+        id
+    }
+}  
+`;
+
+const STATIC_PAGES = gql`
+query StaticPages {
+    staticPages(filters: {staticPageTypes: GOOD_PRACTICE_LISTING_PAGE}) {
+        description
+        type
+        id
         }
     }
 `;
@@ -124,7 +146,6 @@ const options: { key: string; label: string }[] = [];
 const sourceOption: mapboxgl.GeoJSONSourceRaw = {
     type: 'geojson',
 };
-
 const lightStyle = 'mapbox://styles/mapbox/light-v10';
 
 interface Props {
@@ -140,7 +161,7 @@ function GoodPractices(props: Props) {
 
     const [expandedFaq, setExpandedFaq] = useState<number>();
     const [activeTab, setActiveTab] = useState<'grid' | 'list'>('grid');
-    const [searchText, setSearchText] = useState<string>('');
+    const [searchText, setSearchText] = useState<string>();
     const debouncedSearchText = useDebouncedValue(searchText);
 
     const variables = useMemo(() => ({
@@ -167,6 +188,20 @@ function GoodPractices(props: Props) {
             variables,
         },
     );
+
+    const {
+        data: staticPagesResponse,
+    } = useQuery<StaticPagesQuery, StaticPagesQueryVariables>(
+        STATIC_PAGES,
+    );
+
+    const {
+        data: goodPracticeUrlResponse,
+    } = useQuery<GoodPracticeQuery, GoodPracticeQueryVariables>(
+        GOOD_PRACTICE,
+    );
+
+    const goodPracticeLink = `${goodPracticeUrlResponse?.goodPractice?.goodPracticeFormUrl}`;
 
     const goodPracticeRendererParams = useCallback((
         _: string,
@@ -214,22 +249,17 @@ function GoodPractices(props: Props) {
                         <EllipsizedContent
                             className={styles.description}
                         >
+                            {staticPagesResponse?.staticPages.map((value) => (
+                                <HTMLOutput
+                                    // desciption
+                                    value={value.description}
+                                />
+                            ))}
                             <HTMLOutput
                                 // desciption
                                 value={undefined}
                             />
                         </EllipsizedContent>
-                        <div className={styles.numberBlock}>
-                            <TextOutput
-                                className={styles.count}
-                                // total count
-                                value={undefined}
-                                valueType="number"
-                            />
-                            <div className={styles.countLabel}>
-                                Good Practices
-                            </div>
-                        </div>
                     </div>
                     <Button
                         onClick={handleJumpToGoodPractices}
@@ -293,11 +323,11 @@ function GoodPractices(props: Props) {
                             <div>
                                 Do you have a Good Practice you would like us to review?
                             </div>
-                            <Button
-                                name={undefined}
+                            <ButtonLikeLink
+                                href={goodPracticeLink}
                             >
                                 Submit a Good Practice
-                            </Button>
+                            </ButtonLikeLink>
                         </div>
                         <div className={styles.block}>
                             <div>
@@ -419,17 +449,14 @@ function GoodPractices(props: Props) {
                             <TabList
                                 actions={(
                                     <div className={styles.filter}>
-                                        <SearchSelectInput
+                                        <TextInput
                                             className={className}
-                                            placeholder="Search for Best Practice"
                                             name="search"
-                                            keySelector={keySelector}
-                                            labelSelector={goodPracticeLabelSelector}
-                                            onSearchValueChange={setSearchText}
-                                            searchOptions={
-                                                goodPracticeResponse?.goodPractices?.results
-                                            }
-                                            optionsLoading={goodPracticeLoading}
+                                            placeholder="Search for Best Practice"
+                                            value={searchText}
+                                            onChange={setSearchText}
+                                            disabled={goodPracticeLoading}
+                                            error={undefined}
                                             icons={(
                                                 <IoSearch />
                                             )}
