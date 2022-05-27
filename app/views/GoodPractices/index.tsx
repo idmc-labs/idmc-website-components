@@ -22,11 +22,6 @@ import {
     MultiSelectInput,
     ListView,
 } from '@the-deep/deep-ui';
-import Map, {
-    MapContainer,
-    MapSource,
-    MapLayer,
-} from '@togglecorp/re-map';
 import { _cs } from '@togglecorp/fujs';
 import {
     IoSearch,
@@ -36,7 +31,6 @@ import {
 import Tabs from '#components/Tabs';
 import Tab from '#components/Tabs/Tab';
 import TabList from '#components/Tabs/TabList';
-import LegendElement from '#components/LegendElement';
 import Button from '#components/Button';
 import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
@@ -178,7 +172,7 @@ function GoodPractices(props: Props) {
 
     const practicesListRef = React.useRef<HTMLDivElement>(null);
 
-    const [expandedFaq, setExpandedFaq] = useState<number>();
+    const [expandedFaq, setExpandedFaq] = useState<string>();
     const [activeTab, setActiveTab] = useState<'grid' | 'list'>('grid');
     const [searchText, setSearchText] = useState<string>();
     const debouncedSearchText = useDebouncedValue(searchText);
@@ -259,7 +253,7 @@ function GoodPractices(props: Props) {
         image: d.image?.url,
     }), []);
 
-    const handleFaqExpansionChange = useCallback((newValue: boolean, name: number) => {
+    const handleFaqExpansionChange = useCallback((newValue: boolean, name: string | undefined) => {
         if (newValue === false) {
             setExpandedFaq(undefined);
         } else {
@@ -314,56 +308,26 @@ function GoodPractices(props: Props) {
                         Find Good Practices
                     </Button>
                 </section>
-                <section className={styles.map}>
-                    <Map
-                        mapStyle={lightStyle}
-                        mapOptions={{
-                            logoPosition: 'bottom-left',
-                            scrollZoom: false,
-                            zoom: 1,
-                        }}
-                        scaleControlShown
-                        navControlShown
-                    >
-                        <div className={styles.mapWrapper}>
-                            <MapContainer className={styles.mapContainer} />
-                            <MapSource
-                                sourceKey="multi-points"
-                                sourceOptions={sourceOption}
-                                geoJson={undefined}
+            </div>
+            <div className={styles.mainContent}>
+                <section className={styles.faqSection}>
+                    <div className={styles.faqList}>
+                        {faqsResponse?.faqs.map((faq, i) => (
+                            <CollapsibleContent
+                                key={faq.id}
+                                name={faq.id}
+                                onExpansionChange={handleFaqExpansionChange}
+                                isExpanded={expandedFaq === faq.id}
+                                header={`Q${i + 1}: ${faq?.question}`}
                             >
-                                <MapLayer
-                                    layerKey="points-halo-circle"
-                                    layerOptions={{
-                                        type: 'circle',
-                                        paint: orangePointHaloCirclePaint,
-                                    }}
-                                />
-                            </MapSource>
-                            <div className={styles.legendList}>
-                                <div className={styles.legend}>
-                                    <Header
-                                        headingSize="extraSmall"
-                                        heading="State"
+                                <EllipsizedContent>
+                                    <HTMLOutput
+                                        value={faq.answer}
                                     />
-                                    <div className={styles.legendElementList}>
-                                        <LegendElement
-                                            color="var(--color-green)"
-                                            label="Approved"
-                                        />
-                                        <LegendElement
-                                            color="var(--color-blue)"
-                                            label="Under Review"
-                                        />
-                                        <LegendElement
-                                            color="var(--color-orange)"
-                                            label="Recently submitted or registered"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </Map>
+                                </EllipsizedContent>
+                            </CollapsibleContent>
+                        ))}
+                    </div>
                     <div className={styles.sidePane}>
                         <div className={styles.block}>
                             <div>
@@ -398,19 +362,6 @@ function GoodPractices(props: Props) {
                             </div>
                         </div>
                     </div>
-                </section>
-                <section className={styles.faqSection}>
-                    {faqsResponse?.faqs.map((faqs: any, i: any) => (
-                        <CollapsibleContent
-                            key={faqs.id}
-                            name={faqs.id}
-                            onExpansionChange={handleFaqExpansionChange}
-                            isExpanded={expandedFaq === faqs.id}
-                            header={`Q${i + 1}: ${faqs?.question}`}
-                        >
-                            {faqs.answer || '-'}
-                        </CollapsibleContent>
-                    ))}
                 </section>
                 <section
                     className={styles.filters}

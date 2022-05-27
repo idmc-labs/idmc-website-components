@@ -2,82 +2,57 @@
     display: flex;
     align-items: center;
     flex-direction: column;
-    padding: var(--dui-spacing-large);
     gap: var(--dui-spacing-super-large);
 
-    .cover-image {
-        align-self: stretch;
-        background-color: var(--dui-color-background);
-        height: 32rem;
-        object-fit: cover;
-        object-position: center center;
+    .header-section {
+        display: flex;
+        position: relative;
+        align-items: stretch;
+        flex-direction: column;
+        justify-content: flex-end;
+        width: 100%;
+
+        .profile {
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            background-color: var(--dui-color-brand);
+            background-position: top center;
+            background-size: cover;
+            width: 100%;
+            color: var(--dui-color-text-on-dark);
+            background-blend-mode: soft-light;
+            gap: var(--dui-spacing-large);
+
+            .container {
+                display: flex;
+                flex-direction: column;
+                padding: var(--dui-spacing-large);
+                width: 100%;
+                max-width: var(--width-page-max);
+                gap: var(--dui-spacing-large);
+            }
+        }
+
     }
 
     .main-content {
         display: flex;
         flex-direction: column;
+        padding: var(--dui-spacing-large);
         width: 100%;
-        max-width: 1200px;
+        max-width: var(--width-page-max);
         gap: var(--dui-spacing-extra-large);
 
-        .profile {
+        .faq-section {
             display: flex;
-            flex-direction: column;
             gap: var(--dui-spacing-large);
 
-            .content {
+            .faq-list {
                 display: flex;
-                gap: var(--dui-spacing-large);
-
-                .description {
-                    flex-grow: 1;
-                }
-
-                .number-block {
-                    flex-shrink: 0;
-                    padding: var(--dui-spacing-large);
-
-                    .count {
-                        font-size: var(--dui-font-size-mega-large);
-                        font-weight: var(--dui-font-weight-bold);
-                    }
-
-                    .count-label {
-                        font-size: var(--dui-font-size-large);
-                        font-weight: var(--dui-font-weight-bold);
-                    }
-                }
-            }
-        }
-
-        .map {
-            display: flex;
-            gap: var(--dui-spacing-large);
-
-            .map-wrapper {
+                flex-direction: column;
                 flex-grow: 1;
-
-                .map-container {
-                    width: 100%;
-                    height: 32rem;
-                }
-
-                .legend-list {
-                    display: flex;
-                    background-color: var(--dui-color-background);
-                    padding: var(--dui-spacing-small) 0;
-
-                    .legend {
-                        display: flex;
-                        padding: var(--dui-spacing-medium) var(--dui-spacing-large);
-                        gap: var(--dui-spacing-medium);
-
-                        .legend-element-list {
-                            display: flex;
-                            gap: var(--dui-spacing-large);
-                        }
-                    }
-                }
+                gap: var(--dui-spacing-small);
             }
 
             .side-pane {
@@ -102,12 +77,6 @@
                     }
                 }
             }
-        }
-
-        .faq-section {
-            display: flex;
-            flex-direction: column;
-            gap: var(--dui-spacing-small);
         }
 
         .filters {
@@ -137,14 +106,15 @@
 
             .cover-image {
                 flex-wrap: wrap;
-                gap: var(--gap);
                 background-color: unset;
                 width: 50%;
                 height: 30rem;
+                gap: var(--gap);
             }
         }
     }
 }
+
 .good-practice-list {
     --gap: 5rem;
     display: flex;
