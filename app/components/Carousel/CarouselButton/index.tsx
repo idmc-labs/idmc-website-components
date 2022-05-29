@@ -28,27 +28,31 @@ function CarouselButton(props: Props) {
         children,
     } = props;
 
-    const {
-        setActiveItem,
-    } = React.useContext(CarouselContext);
+    const { setActiveItem } = React.useContext(CarouselContext);
 
     const handleClick = React.useCallback(() => {
+        // eslint-disable-next-line react/destructuring-assignment
         if (props.action === 'set') {
+            // eslint-disable-next-line react/destructuring-assignment
             setActiveItem(props.order);
         }
 
+        // eslint-disable-next-line react/destructuring-assignment
         if (props.action === 'prev') {
             setActiveItem(
                 (prevItem) => (isDefined(prevItem) ? (prevItem - 1) : undefined),
             );
         }
 
+        // eslint-disable-next-line react/destructuring-assignment
         if (props.action === 'next') {
             setActiveItem(
                 (prevItem) => (isDefined(prevItem) ? (prevItem + 1) : undefined),
             );
         }
-    }, [props.action, props.order]);
+
+        // eslint-disable-next-line react/destructuring-assignment
+    }, [props.action, props.order, setActiveItem]);
 
     return (
         <RawButton

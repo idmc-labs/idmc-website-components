@@ -1,82 +1,78 @@
 import React from 'react';
-import { _cs } from '@togglecorp/fujs';
+import {
+    _cs,
+    isNotDefined,
+} from '@togglecorp/fujs';
 
 import Header from '#components/Header';
-import DateOutput from '#components/DateOutput';
 import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
 
-// import SmartLink from '#base/components/SmartLink';
-// import route from '#base/configs/routes';
+import gridCover from '../../resources/img/grid2021-cover.png';
 
 import styles from './styles.css';
 
 interface Props {
     className?: string;
-    coverImageUrl: string | undefined | null;
-    heading: string;
-    date: string | undefined | null;
-    url: string;
+    goodPracticeId: string | undefined;
     description: string | undefined | null;
-    type: string | undefined | null;
+    image: string | undefined;
+    title: React.ReactNode;
+    startYear: number | undefined | null;
+    endYear: number | undefined | null;
 }
 
 function GoodPracticeItem(props: Props) {
     const {
         className,
-        coverImageUrl,
-        heading,
-        date,
-        type,
+        goodPracticeId,
+        title,
         description,
-        url,
+        image,
+        startYear,
+        endYear,
     } = props;
 
+    // NOTE: Advanced stuff, contact frozenhelium
+    if (isNotDefined(goodPracticeId)) {
+        return <div />;
+    }
+
     return (
-        <div className={_cs(styles.goodPracticeItem, className)}>
-            {coverImageUrl && (
-                <a
-                    className={styles.coverWrapper}
-                    href={url}
-                    target="_blank"
-                    rel="noreferrer"
-                >
-                    <img
-                        src={coverImageUrl}
-                        className={styles.coverImage}
-                        alt="Cover"
-                    />
-                </a>
-            )}
-            <div className={styles.content}>
-                <div className={styles.type}>
-                    {type}
-                </div>
+        <a
+            href={`/?page=good-practice&id=${goodPracticeId}`}
+            className={_cs(styles.goodPracticeItem, className)}
+        >
+            <img
+                className={styles.preview}
+                src={image ?? gridCover}
+                alt=""
+            />
+            <div className={styles.details}>
                 <Header
-                    heading={(
-                        <a
-                            href={url}
-                            className={styles.link}
-                            target="_blank"
-                            rel="noreferrer"
-                        >
-                            {heading}
-                        </a>
-                    )}
                     headingSize="extraSmall"
+                    heading={title}
+                    description={startYear && (
+                        <>
+                            <span>
+                                {startYear}
+                            </span>
+                            <span>
+                                -
+                            </span>
+                            <span>
+                                {endYear ?? 'Ongoing'}
+                            </span>
+                        </>
+                    )}
                 />
-                <EllipsizedContent
-                    expandDisabled
-                >
-                    <HTMLOutput value={description} />
+                <EllipsizedContent>
+                    <HTMLOutput
+                        value={description}
+                    />
                 </EllipsizedContent>
-                <DateOutput
-                    className={styles.date}
-                    value={date}
-                    format="dd MMM yyyy"
-                />
             </div>
-        </div>
+        </a>
     );
 }
 

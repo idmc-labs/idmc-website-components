@@ -10,12 +10,14 @@ export function useButtonFeatures(props: {
     icons?: React.ReactNode;
     actions?: React.ReactNode;
     children?: React.ReactNode;
+    darkMode?: boolean;
 }) {
     const {
         variant,
         icons,
         actions,
         children,
+        darkMode,
     } = props;
 
     const buttonClassName = _cs(
@@ -23,6 +25,7 @@ export function useButtonFeatures(props: {
         variant === 'primary' && styles.primary,
         variant === 'secondary' && styles.secondary,
         variant === 'action' && styles.action,
+        darkMode && styles.darkMode,
     );
 
     const childrenForOutput = (
@@ -55,6 +58,7 @@ interface Props<N> extends RawButtonProps<N> {
     actions?: React.ReactNode;
     variant?: 'primary' | 'secondary' | 'action';
     disabled?: boolean;
+    darkMode?: boolean;
 }
 
 function Button<N>(props: Props<N>) {
@@ -64,6 +68,7 @@ function Button<N>(props: Props<N>) {
         actions,
         children,
         variant = 'primary',
+        darkMode,
         ...otherProps
     } = props;
 
@@ -75,6 +80,7 @@ function Button<N>(props: Props<N>) {
         icons,
         actions,
         children,
+        darkMode,
     });
 
     return (

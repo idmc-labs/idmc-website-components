@@ -3,14 +3,13 @@ import {
     gql,
     useQuery,
 } from '@apollo/client';
-
 import {
     FaqsQueryVariables,
     FaqsQuery,
     GoodPracticesQuery,
     GoodPracticesQueryVariables,
-    StaticPagesQuery,
-    StaticPagesQueryVariables,
+    GoodPracticeListingStaticPageQuery,
+    GoodPracticeListingStaticPageQueryVariables,
     GoodPracticeQuery,
     GoodPracticeQueryVariables,
     GoodPracticeFilterChoicesQuery,
@@ -19,26 +18,20 @@ import {
 import {
     TextInput,
     SelectInput,
-    MultiSelectInput,
     ListView,
+    useInputState,
 } from '@the-deep/deep-ui';
 import { _cs } from '@togglecorp/fujs';
-import {
-    IoSearch,
-    IoGridOutline,
-    IoListOutline,
-} from 'react-icons/io5';
+import { IoSearch } from 'react-icons/io5';
 
-import Tabs from '#components/Tabs';
-import Tab from '#components/Tabs/Tab';
-import TabList from '#components/Tabs/TabList';
 import Button from '#components/Button';
 import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
 import ButtonLikeLink from '#components/ButtonLikeLink';
 import EllipsizedContent from '#components/EllipsizedContent';
 import CollapsibleContent from '#components/CollapsibleContent';
-import TabPanel from '#components/Tabs/TabPanel';
+import GoodPracticeItem from '#components/GoodPracticeItem';
+
 import useDebouncedValue from '../../hooks/useDebouncedValue';
 
 import styles from './styles.css';
@@ -53,7 +46,7 @@ const FAQS = gql`
     } 
 `;
 
-const GOODPRACTICES = gql`
+const GOOD_PRACTICES = gql`
 query GoodPractices($search : String!) {
     goodPractices(ordering: {}, filters: {search: $search}, pagination: {limit: 10, offset: 0}) {
         results {
@@ -61,13 +54,15 @@ query GoodPractices($search : String!) {
             title
             description
             publishedDate
+            startYear
+            endYear
             image {
                 name
                 url
-                }
             }
         }
     }
+}
 `;
 
 const GOOD_PRACTICE = gql`
@@ -76,54 +71,55 @@ query GoodPractice ($ID: ID!) {
         goodPracticeFormUrl
         id
     }
-}  
+}
 `;
 
 const STATIC_PAGES = gql`
-query StaticPages {
+query GoodPracticeListingStaticPage {
     staticPages(filters: {staticPageTypes: GOOD_PRACTICE_LISTING_PAGE}) {
         description
         type
         id
-        }
     }
+}
 `;
 
 const GOOD_PRACTICE_FILTER_CHOICES = gql`
 query GoodPracticeFilterChoices {
     goodPracticeFilterChoices {
         countries {
-            name
             id
+            name
         }
-        driversOfDispalcement
-        focusArea
-        regions
-        stage
-        type
+        driversOfDisplacement {
+            label
+            name
+        }
+        focusArea {
+            label
+            name
+        }
+        regions {
+            label
+            name
+        }
+        stage {
+            label
+            name
+        }
+        type {
+            label
+            name
         }
     }
+}
 `;
 
-const orangePointHaloCirclePaint: mapboxgl.CirclePaint = {
-    'circle-opacity': 0.6,
-    'circle-color': {
-        property: 'status',
-        type: 'categorical',
-        stops: [
-            ['recently_submitted', 'rgb(239, 125, 0)'],
-            ['under_review', 'rgb(1, 142, 202)'],
-            ['approved', 'rgb(51, 149, 62)'],
-        ],
-    },
-    'circle-radius': 9,
-};
-
-type goodPracticeList = NonNullable<NonNullable<GoodPracticesQuery['goodPractices']>['results']>[number];
+type GoodPracticeItemType = NonNullable<NonNullable<GoodPracticesQuery['goodPractices']>['results']>[number];
 type countryFilterList = NonNullable<NonNullable<GoodPracticeFilterChoicesQuery['goodPracticeFilterChoices']>['countries']>[number];
 
-const keySelector = (d: any) => d.key;
-const labelSelector = (d: any) => d.label;
+const keySelector = (d: { key: string }) => d.key;
+const labelSelector = (d: { label: string }) => d.label;
 
 function countryKeySelector(d: countryFilterList) {
     return d.id;
@@ -133,73 +129,38 @@ function countryLabelSelector(d: countryFilterList) {
     return d.name;
 }
 
-function goodPracticekeySelector(d: goodPracticeList) {
-    return d.id;
+function goodPracticekeySelector(d: GoodPracticeItemType | undefined, i: number) {
+    return d?.id ?? String(i);
 }
-
-function GoodPracticeRenderer({
-    title,
-    description,
-    publishedDate,
-    image,
-}) {
-    return (
-        <div className={styles.goodPracticeList}>
-            {title}
-            {description}
-            {publishedDate}
-            <img
-                className={styles.preview}
-                src={image}
-                alt=""
-            />
-        </div>
-    );
-}
-
-const sourceOption: mapboxgl.GeoJSONSourceRaw = {
-    type: 'geojson',
-};
-const lightStyle = 'mapbox://styles/mapbox/light-v10';
-
-const pageDescription = `
-<div>
-<p>
-    One of the aims of the IDMC is to provide platforms for sharing experiences and examples of good practices. This page aims to work as a web-based repository to showcase good practices that can serve as an inspiration on how various stakeholders can work within the IDMC partnership.
-</p>
-<p>
-The examples will be of varying character, some as shorter articles and some as longer case studies undertaken by researchers in IDMC associated countries.
-</p>
-<p>
-The repository is under development and examples and case studies will be added regularly. Partners are encouraged to share good examples that they wish to feature on this page with the IDMC Support Unit on globaldeal@oecd.org.
-</p>
-`;
 
 interface Props {
     className?: string;
 }
 
 function GoodPractices(props: Props) {
-    const {
-        className,
-    } = props;
+    const { className } = props;
 
     const practicesListRef = React.useRef<HTMLDivElement>(null);
 
     const [expandedFaq, setExpandedFaq] = useState<string>();
-    const [activeTab, setActiveTab] = useState<'grid' | 'list'>('grid');
     const [searchText, setSearchText] = useState<string>();
     const debouncedSearchText = useDebouncedValue(searchText);
 
-    const [goodPracticeType, setGoodPracticeType] = useState<string | undefined>();
-    const [goodPracticeArea, setGoodPracticeArea] = useState<string | undefined>();
-    const [goodPracticeDrive, setGoodPracticeDrive] = useState<string | undefined>();
-    const [goodpracticeStage, setGoodPracticeStage] = useState<string | undefined>();
-    const [goodPracticeRegion, setGoodPracticeRegion] = useState<string | undefined>();
-    const [goodPracticeCountry, setGoodPracticeCountry] = useState<string | undefined>();
+    const [goodPracticeType, setGoodPracticeType] = useInputState<string | undefined>(undefined);
+    const [goodPracticeArea, setGoodPracticeArea] = useInputState<string | undefined>(undefined);
+    const [goodPracticeDrive, setGoodPracticeDrive] = useInputState<string | undefined>(undefined);
+    const [goodpracticeStage, setGoodPracticeStage] = useInputState<string | undefined>(undefined);
+    const [
+        goodPracticeRegion,
+        setGoodPracticeRegion,
+    ] = useInputState<string | undefined>(undefined);
+    const [
+        goodPracticeCountry,
+        setGoodPracticeCountry,
+    ] = useInputState<number | undefined>(undefined);
 
     const variables = useMemo(() => ({
-        search: debouncedSearchText,
+        search: debouncedSearchText ?? '',
     }), [debouncedSearchText]);
 
     const {
@@ -213,17 +174,33 @@ function GoodPractices(props: Props) {
         error: goodPracticeError,
         loading: goodPracticeLoading,
     } = useQuery<GoodPracticesQuery, GoodPracticesQueryVariables>(
-        GOODPRACTICES,
-        {
-            variables,
-        },
+        GOOD_PRACTICES,
+        { variables },
     );
 
-    const {
-        data: staticPagesResponse,
-    } = useQuery<StaticPagesQuery, StaticPagesQueryVariables>(
-        STATIC_PAGES,
-    );
+    const goodPracticeList = React.useMemo(() => {
+        const list = goodPracticeResponse?.goodPractices?.results;
+
+        if (!list || list.length === 0) {
+            return undefined;
+        }
+
+        const modifiedList: ((typeof list)[number] | undefined)[] = [...list];
+
+        const remains = list.length % 3;
+        if (remains !== 0) {
+            for (let i = 0; i <= remains; i += 1) {
+                modifiedList.push(undefined);
+            }
+        }
+
+        return modifiedList;
+    }, [goodPracticeResponse]);
+
+    const { data: staticPageResponse } = useQuery<
+        GoodPracticeListingStaticPageQuery,
+        GoodPracticeListingStaticPageQueryVariables
+    >(STATIC_PAGES);
 
     const {
         data: goodPracticeUrlResponse,
@@ -238,33 +215,34 @@ function GoodPractices(props: Props) {
     );
 
     const typeFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.type
-        ?.map((v) => ({ key: v, label: v }));
+        ?.map((v) => ({ key: v.name, label: v.label }));
 
-    const driverFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.driversOfDispalcement
-        ?.map((v) => ({ key: v, label: v }));
+    const driverFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.driversOfDisplacement
+        ?.map((v) => ({ key: v.name, label: v.label }));
 
     const areaFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.focusArea
-        ?.map((v) => ({ key: v, label: v }));
+        ?.map((v) => ({ key: v.name, label: v.label }));
 
     const stageFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.stage
-        ?.map((v) => ({ key: v, label: v }));
+        ?.map((v) => ({ key: v.name, label: v.label }));
 
     const regionFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.regions
-        ?.map((v) => ({ key: v, label: v }));
+        ?.map((v) => ({ key: v.name, label: v.label }));
 
-    const countryFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.countries
-        ?.map((v) => ({ name: v, id: v }));
+    const countryFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.countries;
 
     const goodPracticeLink = `${goodPracticeUrlResponse?.goodPractice?.goodPracticeFormUrl}`;
 
     const goodPracticeRendererParams = useCallback((
         _: string,
-        d: goodPracticeList,
+        d: GoodPracticeItemType | undefined,
     ) => ({
-        description: d.description,
-        title: d.title,
-        publishedDate: d.publishedDate,
-        image: d.image?.url,
+        goodPracticeId: d?.id,
+        description: d?.description,
+        title: d?.title,
+        startYear: d?.startYear,
+        endYear: d?.endYear,
+        image: d?.image?.url,
     }), []);
 
     const handleFaqExpansionChange = useCallback((newValue: boolean, name: string | undefined) => {
@@ -304,8 +282,7 @@ function GoodPractices(props: Props) {
 
                         <EllipsizedContent darkMode>
                             <HTMLOutput
-                                // TODO: add actual desciption
-                                value={pageDescription}
+                                value={staticPageResponse?.staticPages?.[0]?.description}
                             />
                         </EllipsizedContent>
                         <Button
@@ -373,17 +350,28 @@ function GoodPractices(props: Props) {
                     </div>
                 </section>
                 <section
-                    className={styles.filters}
+                    className={styles.goodPracticesContainer}
                     ref={practicesListRef}
                 >
                     <Header
                         headingSize="large"
-                        heading="Filter or search the Good Practices"
+                        heading="Find Good Practices"
                     />
                     <div>
-                        Filter or search for the Good Practices using the options below.
+                        <TextInput
+                            className={className}
+                            name="search"
+                            placeholder="Search Good Practice"
+                            value={searchText}
+                            onChange={setSearchText}
+                            // disabled={goodPracticeLoading}
+                            error={undefined}
+                            icons={(
+                                <IoSearch />
+                            )}
+                        />
                     </div>
-                    <div className={styles.inputs}>
+                    <div className={styles.filterContainer}>
                         <SelectInput
                             variant="general"
                             placeholder="Type of Good Practice"
@@ -393,6 +381,7 @@ function GoodPractices(props: Props) {
                             keySelector={keySelector}
                             labelSelector={labelSelector}
                             onChange={setGoodPracticeType}
+                            inputSectionClassName={styles.inputSection}
                         />
                         <SelectInput
                             variant="general"
@@ -403,6 +392,7 @@ function GoodPractices(props: Props) {
                             keySelector={keySelector}
                             labelSelector={labelSelector}
                             onChange={setGoodPracticeDrive}
+                            inputSectionClassName={styles.inputSection}
                         />
                         <SelectInput
                             variant="general"
@@ -413,6 +403,7 @@ function GoodPractices(props: Props) {
                             keySelector={keySelector}
                             labelSelector={labelSelector}
                             onChange={setGoodPracticeArea}
+                            inputSectionClassName={styles.inputSection}
                         />
                         <SelectInput
                             variant="general"
@@ -423,6 +414,7 @@ function GoodPractices(props: Props) {
                             keySelector={keySelector}
                             labelSelector={labelSelector}
                             onChange={setGoodPracticeStage}
+                            inputSectionClassName={styles.inputSection}
                         />
                         <SelectInput
                             variant="general"
@@ -433,6 +425,7 @@ function GoodPractices(props: Props) {
                             keySelector={keySelector}
                             labelSelector={labelSelector}
                             onChange={setGoodPracticeRegion}
+                            inputSectionClassName={styles.inputSection}
                         />
                         <SelectInput
                             variant="general"
@@ -443,72 +436,21 @@ function GoodPractices(props: Props) {
                             keySelector={countryKeySelector}
                             labelSelector={countryLabelSelector}
                             onChange={setGoodPracticeCountry}
+                            inputSectionClassName={styles.inputSection}
                         />
+                        <div />
+                        <div />
                     </div>
-                    <div className={styles.searchContainer}>
-                        <Tabs
-                            value={activeTab}
-                            onChange={setActiveTab}
-                        >
-                            <TabList
-                                actions={(
-                                    <div className={styles.filter}>
-                                        <TextInput
-                                            className={className}
-                                            name="search"
-                                            placeholder="Search for Best Practice"
-                                            value={searchText}
-                                            onChange={setSearchText}
-                                            disabled={goodPracticeLoading}
-                                            error={undefined}
-                                            icons={(
-                                                <IoSearch />
-                                            )}
-                                        />
-                                    </div>
-                                )}
-                            >
-                                <Tab name="grid">
-                                    <IoGridOutline />
-                                </Tab>
-                                <Tab name="list">
-                                    <IoListOutline />
-                                </Tab>
-                            </TabList>
-                            <TabPanel
-                                name="grid"
-                            >
-                                <section className={styles.goodPracticeList}>
-                                    <ListView
-                                        className={styles.goodPracticeList}
-                                        data={goodPracticeResponse?.goodPractices?.results}
-                                        keySelector={goodPracticekeySelector}
-                                        rendererParams={goodPracticeRendererParams}
-                                        renderer={GoodPracticeRenderer}
-                                        errored={!!goodPracticeError}
-                                        pending={false}
-                                        filtered={false}
-                                    />
-                                </section>
-                            </TabPanel>
-                            <TabPanel
-                                name="list"
-                            >
-                                <section className={styles.goodPracticeGrid}>
-                                    <ListView
-                                        className={styles.goodPracticeList}
-                                        data={goodPracticeResponse?.goodPractices?.results}
-                                        keySelector={goodPracticekeySelector}
-                                        rendererParams={goodPracticeRendererParams}
-                                        renderer={GoodPracticeRenderer}
-                                        errored={!!goodPracticeError}
-                                        pending={false}
-                                        filtered={false}
-                                    />
-                                </section>
-                            </TabPanel>
-                        </Tabs>
-                    </div>
+                    <ListView
+                        className={styles.goodPracticeList}
+                        data={goodPracticeList}
+                        keySelector={goodPracticekeySelector}
+                        rendererParams={goodPracticeRendererParams}
+                        renderer={GoodPracticeItem}
+                        errored={!!goodPracticeError}
+                        pending={goodPracticeLoading}
+                        filtered={false}
+                    />
                 </section>
             </div>
         </div>

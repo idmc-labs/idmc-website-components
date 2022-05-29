@@ -1,22 +1,94 @@
 import React from 'react';
-import { _cs } from '@togglecorp/fujs';
+import {
+    _cs,
+    isNotDefined,
+} from '@togglecorp/fujs';
+import {
+    gql,
+    useQuery,
+} from '@apollo/client';
 import {
     IoChevronForward,
     IoChevronBack,
     IoEllipseOutline,
+    IoMailOutline,
 } from 'react-icons/io5';
 
 import Button from '#components/Button';
 import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
+import EllipsizedContent from '#components/EllipsizedContent';
 import TextOutput from '#components/TextOutput';
 import Carousel from '#components/Carousel';
 import CarouselItem from '#components/Carousel/CarouselItem';
 import CarouselButton from '#components/Carousel/CarouselButton';
+import GoodPracticeItem from '#components/GoodPracticeItem';
 
-import grid2021CoverImage from '../../resources/img/grid2021-cover.png';
-import { goodPractice } from './data';
+import {
+    GoodPracticeDetailsQuery,
+    GoodPracticeDetailsQueryVariables,
+    RelatedGoodPracticeListQuery,
+    RelatedGoodPracticeListQueryVariables,
+} from '#generated/types';
+
 import styles from './styles.css';
+
+const GOOD_PRACTICE = gql`
+query GoodPracticeDetails($id: ID!) {
+    goodPractice(pk: $id) {
+        description
+        endYear
+        driversOfDisplacement
+        focusArea
+        countries {
+            id
+            name
+        }
+        gallery {
+          caption
+          id
+          image {
+            name
+            url
+          }
+          youtubeVideoUrl
+        }
+        goodPracticeFormUrl
+        id
+        image {
+          name
+          url
+        }
+        isPublished
+        mediaAndResourceLinks
+        publishedDate
+        pageViewedCount
+        stage
+        startYear
+        title
+        type
+    }
+}
+`;
+
+const RELATED_GOOD_PRACTICE = gql`
+query RelatedGoodPracticeList($id: ID!) {
+    goodPractices(ordering: {}, filters: { recommendedGoodPractice: $id }, pagination: {limit: 6, offset: 0}) {
+        results {
+            id
+            title
+            description
+            publishedDate
+            startYear
+            endYear
+            image {
+                name
+                url
+            }
+        }
+    }
+}
+`;
 
 interface Props {
     className?: string;
@@ -29,7 +101,46 @@ function GoodPractice(props: Props) {
         id,
     } = props;
 
-    console.info('good practice id', id);
+    const {
+        data,
+    } = useQuery<GoodPracticeDetailsQuery, GoodPracticeDetailsQueryVariables>(
+        GOOD_PRACTICE,
+        {
+            skip: isNotDefined(id),
+            variables: { id: id ?? '' },
+        },
+    );
+
+    const {
+        data: relatedData,
+    } = useQuery<RelatedGoodPracticeListQuery, RelatedGoodPracticeListQueryVariables>(
+        RELATED_GOOD_PRACTICE,
+        {
+            skip: isNotDefined(id),
+            variables: { id: id ?? '' },
+        },
+    );
+
+    const relatedGoodPracticeList = React.useMemo(() => {
+        const list = relatedData?.goodPractices?.results;
+
+        if (!list || list.length === 0) {
+            return undefined;
+        }
+
+        const modifiedList: ((typeof list)[number] | undefined)[] = [...list];
+
+        const remains = list.length % 3;
+        if (remains !== 0) {
+            for (let i = 0; i <= remains; i += 1) {
+                modifiedList.push(undefined);
+            }
+        }
+
+        return modifiedList;
+    }, [relatedData]);
+
+    console.info(data, relatedData);
 
     return (
         <div className={_cs(styles.goodPractices, className)}>
@@ -41,24 +152,19 @@ function GoodPractice(props: Props) {
                     }}
                 >
                     <div className={styles.container}>
-                        <div className={styles.breadcrumb}>
-                            {/*
-                            <SmartLink
-                                route={route.home}
-                            />
+                        <div className={styles.breadcrumbs}>
+                            <a href="/">
+                                Home
+                            </a>
                             ›
-                            <SmartLink
-                                route={route.goodPractices}
-                            />
-                            ›
-                            */}
-                            <div>
-                                {goodPractice.title}
-                            </div>
+                            {/* TODO: use actual link */}
+                            <a href="?page=good-practices">
+                                Good Practices
+                            </a>
                         </div>
                         <Header
                             headingSize="extraLarge"
-                            heading={goodPractice.title}
+                            heading={data?.goodPractice?.title}
                             darkMode
                         />
                     </div>
@@ -70,26 +176,52 @@ function GoodPractice(props: Props) {
                         <div className={styles.meta}>
                             <TextOutput
                                 label="Region"
-                                value={goodPractice.region}
+                                // TODO: add value
+                                value="-"
                                 strongValue
                                 displayType="block"
                             />
                             <TextOutput
                                 label="Country"
-                                value={goodPractice.country}
+                                value={data?.goodPractice.countries.map((c) => c.name).join(', ')}
                                 strongValue
                                 displayType="block"
                             />
                             <TextOutput
                                 label="Timeframe"
-                                value={goodPractice.timeframe}
+                                value={(
+                                    <div>
+                                        <span>
+                                            {data?.goodPractice?.startYear}
+                                        </span>
+                                        <span>
+                                            -
+                                        </span>
+                                        <span>
+                                            {data?.goodPractice?.endYear}
+                                        </span>
+                                    </div>
+                                )}
                                 strongValue
                                 displayType="block"
                             />
                         </div>
-                        <HTMLOutput
-                            value={goodPractice.description}
-                        />
+                        {data?.goodPractice.description && (
+                            <HTMLOutput
+                                value={data?.goodPractice?.description}
+                            />
+                        )}
+                        {data?.goodPractice.mediaAndResourceLinks && (
+                            <div className={styles.mediaAndResourceLinks}>
+                                <Header
+                                    headingSize="large"
+                                    heading="Media and Resources"
+                                />
+                                <HTMLOutput
+                                    value={data?.goodPractice?.mediaAndResourceLinks}
+                                />
+                            </div>
+                        )}
                     </div>
                     <div className={styles.sidePane}>
                         <div className={styles.carouselContainer}>
@@ -98,72 +230,48 @@ function GoodPractice(props: Props) {
                                 headingSize="small"
                             />
                             <Carousel className={styles.carousel}>
-                                <CarouselItem
-                                    order={1}
-                                    className={styles.carouselItem}
-                                >
-                                    <img
-                                        className={styles.image}
-                                        src="https://images.unsplash.com/photo-1653450283266-c788c2ca4ab2?crop=entropy&cs=tinysrgb&fm=jpg&ixlib=rb-1.2.1&q=80&raw_url=true&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=640"
-                                        alt="GRID 2021"
-                                    />
-                                    <div className={styles.description}>
-                                        Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-                                        sed do eiusmod tempor incididunt ut labore et
-                                    </div>
-                                </CarouselItem>
-                                <CarouselItem
-                                    order={2}
-                                    className={styles.carouselItem}
-                                >
-                                    <img
-                                        className={styles.image}
-                                        src="https://images.unsplash.com/photo-1653296744218-5aede802b57d?crop=entropy&cs=tinysrgb&fm=jpg&ixlib=rb-1.2.1&q=80&raw_url=true&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=300"
-                                        alt="GRID 2021"
-                                    />
-                                    <div className={styles.description}>
-                                        Hey there! How&apos;re you doing? All good I hope!
-                                        Anyway, all the best to you!
-                                    </div>
-                                </CarouselItem>
-                                <CarouselItem
-                                    order={3}
-                                    className={styles.carouselItem}
-                                >
-                                    <img
-                                        className={styles.image}
-                                        src={grid2021CoverImage}
-                                        alt="GRID 2021"
-                                    />
-                                    <div className={styles.description}>
-                                        Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-                                        sed do eiusmod tempor incididunt ut labore et
-                                    </div>
-                                </CarouselItem>
+                                {data?.goodPractice?.gallery?.map((ci, i) => (
+                                    <CarouselItem
+                                        key={ci.id}
+                                        order={i + 1}
+                                        className={styles.carouselItem}
+                                    >
+                                        {ci.image && (
+                                            <img
+                                                className={styles.image}
+                                                alt={ci.image.name}
+                                                src={ci.image.url}
+                                            />
+                                        )}
+                                        {!ci.image && ci.youtubeVideoUrl && (
+                                            <iframe
+                                                className={styles.videoEmbed}
+                                                title={ci.caption ?? ci.id}
+                                                src={ci.youtubeVideoUrl}
+                                            />
+                                        )}
+                                        <EllipsizedContent className={styles.description}>
+                                            <HTMLOutput
+                                                value={ci.caption}
+                                            />
+                                        </EllipsizedContent>
+                                    </CarouselItem>
+                                ))}
                                 <div className={styles.carouselActions}>
                                     <CarouselButton
                                         action="prev"
                                     >
                                         <IoChevronBack />
                                     </CarouselButton>
-                                    <CarouselButton
-                                        action="set"
-                                        order={1}
-                                    >
-                                        <IoEllipseOutline />
-                                    </CarouselButton>
-                                    <CarouselButton
-                                        action="set"
-                                        order={2}
-                                    >
-                                        <IoEllipseOutline />
-                                    </CarouselButton>
-                                    <CarouselButton
-                                        action="set"
-                                        order={3}
-                                    >
-                                        <IoEllipseOutline />
-                                    </CarouselButton>
+                                    {data?.goodPractice?.gallery?.map((ci, i) => (
+                                        <CarouselButton
+                                            key={ci.id}
+                                            action="set"
+                                            order={i + 1}
+                                        >
+                                            <IoEllipseOutline />
+                                        </CarouselButton>
+                                    ))}
                                     <CarouselButton
                                         action="next"
                                     >
@@ -189,15 +297,22 @@ function GoodPractice(props: Props) {
                                 </div>
                                 <div className={styles.contactLinks}>
                                     <a
-                                        href={`mailto:${goodPractice.contactEmail}`}
+                                        className={styles.contactEmailLink}
+                                        // TODO: Add actual data
+                                        href="mailto:dev@togglecorp.com"
                                         target="_blank"
                                         rel="noreferrer"
                                     >
-                                        Email
+                                        <IoMailOutline />
+                                        <span>
+                                            Email
+                                        </span>
                                     </a>
-                                    /
+                                    <span>
+                                        /
+                                    </span>
                                     <a
-                                        href={goodPractice.contactFormLink}
+                                        href={data?.goodPractice?.goodPracticeFormUrl}
                                         target="_blank"
                                         rel="noreferrer"
                                     >
@@ -206,6 +321,25 @@ function GoodPractice(props: Props) {
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </section>
+                <section className={styles.relatedSection}>
+                    <Header
+                        headingSize="large"
+                        heading="Related Materials"
+                    />
+                    <div className={styles.relatedGoodPracticeList}>
+                        {relatedGoodPracticeList?.map((gp, i) => (
+                            <GoodPracticeItem
+                                key={gp?.id ?? i}
+                                goodPracticeId={gp?.id}
+                                title={gp?.title}
+                                description={gp?.description}
+                                startYear={gp?.startYear}
+                                endYear={gp?.endYear}
+                                image={gp?.image?.url}
+                            />
+                        ))}
                     </div>
                 </section>
             </div>
