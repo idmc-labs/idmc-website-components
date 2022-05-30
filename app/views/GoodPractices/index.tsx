@@ -16,6 +16,7 @@ import {
 import {
     TextInput,
     SelectInput,
+    MultiSelectInput,
     ListView,
     useInputState,
 } from '@the-deep/deep-ui';
@@ -163,7 +164,9 @@ function GoodPractices(props: Props) {
     const [searchText, setSearchText] = useState<string>();
     const debouncedSearchText = useDebouncedValue(searchText);
 
-    const [goodPracticeType, setGoodPracticeType] = useInputState<string | undefined>(undefined);
+    type GoodPracticeTypeType = NonNullable<GoodPracticeFilter['type']>[number]['name'];
+
+    const [goodPracticeType, setGoodPracticeType] = useInputState<GoodPracticeTypeType[]>([]);
     const [goodPracticeArea, setGoodPracticeArea] = useInputState<string | undefined>(undefined);
     const [goodPracticeDrive, setGoodPracticeDrive] = useInputState<string | undefined>(undefined);
     const [goodpracticeStage, setGoodPracticeStage] = useInputState<string | undefined>(undefined);
@@ -179,7 +182,7 @@ function GoodPractices(props: Props) {
     const goodPracticeVariables = useMemo(() => ({
         search: debouncedSearchText ?? '',
         countries: isDefined(goodPracticeCountry) ? [goodPracticeCountry] : [],
-        types: isDefined(goodPracticeType) ? [goodPracticeType] : [],
+        types: goodPracticeType,
         focusArea: isDefined(goodPracticeArea) ? [goodPracticeArea] : [],
         stages: isDefined(goodpracticeStage) ? [goodpracticeStage] : [],
         regions: isDefined(goodPracticeRegion) ? [goodPracticeRegion] : [],
@@ -255,6 +258,8 @@ function GoodPractices(props: Props) {
     } = useQuery<GoodPracticeFilterChoicesQuery, GoodPracticeFilterChoicesQueryVariables>(
         GOOD_PRACTICE_FILTER_CHOICES,
     );
+
+    type GoodPracticeFilter = NonNullable<(typeof goodPracticeFilterResponse)>['goodPracticeFilterChoices'];
 
     const typeFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.type
         ?.map((v) => ({ key: v.name, label: v.label }));
@@ -426,7 +431,7 @@ function GoodPractices(props: Props) {
                         />
                     </div>
                     <div className={styles.filterContainer}>
-                        <SelectInput
+                        <MultiSelectInput
                             variant="general"
                             placeholder="Type of Good Practice"
                             name="type"
