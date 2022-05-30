@@ -23,6 +23,7 @@ import {
     _cs,
     listToMap,
     unique,
+    isDefined,
 } from '@togglecorp/fujs';
 import { IoSearch } from 'react-icons/io5';
 
@@ -58,6 +59,8 @@ query GoodPractices(
     $stages: [StageTypeEnum!]!,
     $regions: [RegionEnum!],
     $countries: [ID!],
+    $limit: Int!,
+    $offset: Int!,
 ) {
     goodPractices(
         ordering: {},
@@ -71,6 +74,7 @@ query GoodPractices(
             countries: $countries,
         },
         pagination: {limit: $limit, offset: $offset},
+    ) {
         results {
             id
             title
@@ -174,12 +178,12 @@ function GoodPractices(props: Props) {
 
     const goodPracticeVariables = useMemo(() => ({
         search: debouncedSearchText ?? '',
-        countries: goodPracticeCountry,
-        types: goodPracticeType,
-        focusArea: goodPracticeArea,
-        stages: goodpracticeStage,
-        regions: goodPracticeRegion,
-        driversOfDisplacements: goodPracticeDrive,
+        countries: isDefined(goodPracticeCountry) ? [goodPracticeCountry] : [],
+        types: isDefined(goodPracticeType) ? [goodPracticeType] : [],
+        focusArea: isDefined(goodPracticeArea) ? [goodPracticeArea] : [],
+        stages: isDefined(goodpracticeStage) ? [goodpracticeStage] : [],
+        regions: isDefined(goodPracticeRegion) ? [goodPracticeRegion] : [],
+        driversOfDisplacements: isDefined(goodPracticeDrive) ? [goodPracticeDrive] : [],
         limit: GOOD_PRACTICE_PAGE_SIZE,
         offset: 0,
     }), [
