@@ -10,8 +10,6 @@ import {
     GoodPracticesQueryVariables,
     GoodPracticeListingStaticPageQuery,
     GoodPracticeListingStaticPageQueryVariables,
-    GoodPracticeQuery,
-    GoodPracticeQueryVariables,
     GoodPracticeFilterChoicesQuery,
     GoodPracticeFilterChoicesQueryVariables,
 } from '#generated/types';
@@ -21,13 +19,16 @@ import {
     ListView,
     useInputState,
 } from '@the-deep/deep-ui';
-import { _cs } from '@togglecorp/fujs';
+import {
+    _cs,
+    listToMap,
+    unique,
+} from '@togglecorp/fujs';
 import { IoSearch } from 'react-icons/io5';
 
 import Button from '#components/Button';
 import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
-import ButtonLikeLink from '#components/ButtonLikeLink';
 import EllipsizedContent from '#components/EllipsizedContent';
 import CollapsibleContent from '#components/CollapsibleContent';
 import GoodPracticeItem from '#components/GoodPracticeItem';
@@ -35,6 +36,8 @@ import GoodPracticeItem from '#components/GoodPracticeItem';
 import useDebouncedValue from '../../hooks/useDebouncedValue';
 
 import styles from './styles.css';
+
+const GOOD_PRACTICE_PAGE_SIZE = 6;
 
 const FAQS = gql`
     query Faqs {
@@ -47,16 +50,18 @@ const FAQS = gql`
 `;
 
 const GOOD_PRACTICES = gql`
-    query GoodPractices(
-        $search : String!,
-        $types: [TypeEnum!],
-        $driversOfDisplacements : [DriversOfDisplacementTypeEnum!],
-        $focusArea:[FocusAreaEnum!] ,
-        $stages: [StageTypeEnum!]!,
-        $regions: [RegionEnum!],
-        $countries: [ID!],
-    ) {
-        goodPractices(ordering: {}, filters: {
+query GoodPractices(
+    $search : String!,
+    $types: [TypeEnum!],
+    $driversOfDisplacements : [DriversOfDisplacementTypeEnum!],
+    $focusArea:[FocusAreaEnum!] ,
+    $stages: [StageTypeEnum!]!,
+    $regions: [RegionEnum!],
+    $countries: [ID!],
+) {
+    goodPractices(
+        ordering: {},
+        filters: {
             search: $search,
             types: $types,
             driversOfDisplacements: $driversOfDisplacements,
@@ -64,8 +69,8 @@ const GOOD_PRACTICES = gql`
             stages: $stages,
             regions: $regions,
             countries: $countries,
-        }, 
-        pagination: {limit: 10, offset: 0}) {
+        },
+        pagination: {limit: $limit, offset: $offset},
         results {
             id
             title
@@ -84,7 +89,7 @@ const GOOD_PRACTICES = gql`
 
 const STATIC_PAGES = gql`
 query GoodPracticeListingStaticPage {
-    staticPages(filters: {staticPageTypes: GOOD_PRACTICE_LISTING_PAGE}) {
+    staticPages {
         description
         type
         id
@@ -167,7 +172,7 @@ function GoodPractices(props: Props) {
         setGoodPracticeCountry,
     ] = useInputState<string | undefined>(undefined);
 
-    const variables = useMemo(() => ({
+    const goodPracticeVariables = useMemo(() => ({
         search: debouncedSearchText ?? '',
         countries: goodPracticeCountry,
         types: goodPracticeType,
@@ -175,7 +180,17 @@ function GoodPractices(props: Props) {
         stages: goodpracticeStage,
         regions: goodPracticeRegion,
         driversOfDisplacements: goodPracticeDrive,
-    }), [debouncedSearchText]);
+        limit: GOOD_PRACTICE_PAGE_SIZE,
+        offset: 0,
+    }), [
+        debouncedSearchText,
+        goodPracticeCountry,
+        goodPracticeType,
+        goodpracticeStage,
+        goodPracticeRegion,
+        goodPracticeDrive,
+        goodPracticeArea,
+    ]);
 
     const {
         data: faqsResponse,
@@ -184,12 +199,13 @@ function GoodPractices(props: Props) {
     );
 
     const {
+        fetchMore: fetchMoreGoodPractice,
         data: goodPracticeResponse,
         error: goodPracticeError,
         loading: goodPracticeLoading,
     } = useQuery<GoodPracticesQuery, GoodPracticesQueryVariables>(
         GOOD_PRACTICES,
-        { variables },
+        { variables: goodPracticeVariables },
     );
 
     const goodPracticeList = React.useMemo(() => {
@@ -215,6 +231,19 @@ function GoodPractices(props: Props) {
         GoodPracticeListingStaticPageQuery,
         GoodPracticeListingStaticPageQueryVariables
     >(STATIC_PAGES);
+
+    const [
+        goodPracticeDescription,
+        contactInformation,
+        submitDescription,
+    ] = React.useMemo(() => {
+        const staticPageMap = listToMap(staticPageResponse?.staticPages, (d) => d.type);
+        return [
+            staticPageMap?.GOOD_PRACTICE_LISTING_PAGE?.description,
+            staticPageMap?.GOOD_PRACTICE_CONTACT_INFORMATION?.description,
+            staticPageMap?.SUBMIT_GOOD_PRACTICE?.description,
+        ];
+    }, [staticPageResponse]);
 
     const {
         data: goodPracticeFilterResponse,
@@ -270,6 +299,39 @@ function GoodPractices(props: Props) {
         [],
     );
 
+    const goodPractices = goodPracticeResponse?.goodPractices.results;
+    const goodPracticesOffset = goodPractices?.length ?? 0;
+
+    const handleShowMoreButtonClick = useCallback(() => {
+        fetchMoreGoodPractice({
+            variables: {
+                ...goodPracticeVariables,
+                offset: goodPracticesOffset,
+                limit: GOOD_PRACTICE_PAGE_SIZE,
+            },
+            updateQuery: (previousResult, { fetchMoreResult }) => {
+                if (!previousResult.goodPractices) {
+                    return previousResult;
+                }
+
+                return {
+                    ...previousResult,
+                    goodPractices: {
+                        ...previousResult.goodPractices,
+                        results: unique([
+                            ...previousResult.goodPractices.results,
+                            ...fetchMoreResult.goodPractices.results,
+                        ], (d) => d.id),
+                    },
+                };
+            },
+        });
+    }, [
+        goodPracticeVariables,
+        goodPracticesOffset,
+        fetchMoreGoodPractice,
+    ]);
+
     return (
         <div className={_cs(styles.goodPractices, className)}>
             <div className={styles.headerSection}>
@@ -285,10 +347,9 @@ function GoodPractices(props: Props) {
                             headingSize="extraLarge"
                             heading="Global Repositories for Good Practices"
                         />
-
                         <EllipsizedContent darkMode>
                             <HTMLOutput
-                                value={staticPageResponse?.staticPages?.[0]?.description}
+                                value={goodPracticeDescription}
                             />
                         </EllipsizedContent>
                         <Button
@@ -322,36 +383,18 @@ function GoodPractices(props: Props) {
                     </div>
                     <div className={styles.sidePane}>
                         <div className={styles.block}>
-                            <div>
-                                Do you have a Good Practice you would like us to review?
-                            </div>
-                            <ButtonLikeLink
-                                href="#"
-                            >
-                                Submit a Good Practice
-                            </ButtonLikeLink>
+                            <EllipsizedContent>
+                                <HTMLOutput
+                                    value={submitDescription}
+                                />
+                            </EllipsizedContent>
                         </div>
                         <div className={styles.block}>
-                            <div>
-                                For more information please contact:
-                            </div>
-                            <div className={styles.contactLinks}>
-                                {/* <a
-                                    href={`mailto:${goodPracticeMeta.contactEmail}`}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                >
-                                    Email
-                                </a>
-                                /
-                                <a
-                                    href={goodPracticeMeta.contactFormLink}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                >
-                                    Online Form
-                                </a> */}
-                            </div>
+                            <EllipsizedContent>
+                                <HTMLOutput
+                                    value={contactInformation}
+                                />
+                            </EllipsizedContent>
                         </div>
                     </div>
                 </section>
@@ -457,6 +500,13 @@ function GoodPractices(props: Props) {
                         pending={goodPracticeLoading}
                         filtered={false}
                     />
+                    <Button
+                        name={undefined}
+                        onClick={handleShowMoreButtonClick}
+                        disabled={goodPracticeLoading}
+                    >
+                        Show More
+                    </Button>
                 </section>
             </div>
         </div>

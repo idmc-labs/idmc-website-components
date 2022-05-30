@@ -2,6 +2,7 @@ import React from 'react';
 import {
     _cs,
     isNotDefined,
+    listToMap,
 } from '@togglecorp/fujs';
 import {
     gql,
@@ -11,10 +12,8 @@ import {
     IoChevronForward,
     IoChevronBack,
     IoEllipseOutline,
-    IoMailOutline,
 } from 'react-icons/io5';
 
-import Button from '#components/Button';
 import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
@@ -29,6 +28,8 @@ import {
     GoodPracticeDetailsQueryVariables,
     RelatedGoodPracticeListQuery,
     RelatedGoodPracticeListQueryVariables,
+    GoodPracticeListingStaticPageQuery,
+    GoodPracticeListingStaticPageQueryVariables,
 } from '#generated/types';
 
 import styles from './styles.css';
@@ -68,6 +69,13 @@ query GoodPracticeDetails($id: ID!) {
         title
         type
     }
+
+    regionList: __type(name: "RegionEnum") {
+        enumValues {
+            name
+            description
+        }
+    }
 }
 `;
 
@@ -86,6 +94,16 @@ query RelatedGoodPracticeList($id: ID!) {
                 url
             }
         }
+    }
+}
+`;
+
+const STATIC_PAGES = gql`
+query GoodPracticeListingStaticPage {
+    staticPages {
+        description
+        type
+        id
     }
 }
 `;
@@ -120,6 +138,24 @@ function GoodPractice(props: Props) {
             variables: { id: id ?? '' },
         },
     );
+
+    const { data: staticPageResponse } = useQuery<
+        GoodPracticeListingStaticPageQuery,
+        GoodPracticeListingStaticPageQueryVariables
+    >(STATIC_PAGES);
+
+    const [
+        goodPracticeDescription,
+        contactInformation,
+        submitDescription,
+    ] = React.useMemo(() => {
+        const staticPageMap = listToMap(staticPageResponse?.staticPages, (d) => d.type);
+        return [
+            staticPageMap?.GOOD_PRACTICE_LISTING_PAGE?.description,
+            staticPageMap?.GOOD_PRACTICE_CONTACT_INFORMATION?.description,
+            staticPageMap?.SUBMIT_GOOD_PRACTICE?.description,
+        ];
+    }, [staticPageResponse]);
 
     const relatedGoodPracticeList = React.useMemo(() => {
         const list = relatedData?.goodPractices?.results;
@@ -167,6 +203,11 @@ function GoodPractice(props: Props) {
                             heading={data?.goodPractice?.title}
                             darkMode
                         />
+                        <EllipsizedContent darkMode>
+                            <HTMLOutput
+                                value={goodPracticeDescription}
+                            />
+                        </EllipsizedContent>
                     </div>
                 </div>
             </div>
@@ -282,43 +323,18 @@ function GoodPractice(props: Props) {
                         </div>
                         <div className={styles.blockList}>
                             <div className={styles.block}>
-                                <div>
-                                    Do you have a Good Practice you would like us to review?
-                                </div>
-                                <Button
-                                    name={undefined}
-                                >
-                                    Submit a Good Practice
-                                </Button>
+                                <EllipsizedContent>
+                                    <HTMLOutput
+                                        value={submitDescription}
+                                    />
+                                </EllipsizedContent>
                             </div>
                             <div className={styles.block}>
-                                <div>
-                                    For more information please contact:
-                                </div>
-                                <div className={styles.contactLinks}>
-                                    <a
-                                        className={styles.contactEmailLink}
-                                        // TODO: Add actual data
-                                        href="mailto:dev@togglecorp.com"
-                                        target="_blank"
-                                        rel="noreferrer"
-                                    >
-                                        <IoMailOutline />
-                                        <span>
-                                            Email
-                                        </span>
-                                    </a>
-                                    <span>
-                                        /
-                                    </span>
-                                    <a
-                                        href={data?.goodPractice?.goodPracticeFormUrl}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                    >
-                                        Online Form
-                                    </a>
-                                </div>
+                                <EllipsizedContent>
+                                    <HTMLOutput
+                                        value={contactInformation}
+                                    />
+                                </EllipsizedContent>
                             </div>
                         </div>
                     </div>

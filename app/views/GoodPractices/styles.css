@@ -63,18 +63,9 @@
                 gap: var(--dui-spacing-medium);
 
                 .block {
-                    display: flex;
-                    flex-direction: column;
                     border-radius: 0.25rem;
-
                     background-color: var(--dui-color-background);
                     padding: var(--dui-spacing-medium);
-                    gap: var(--dui-spacing-small);
-
-                    .contact-links {
-                        display: flex;
-                        gap: var(--dui-spacing-medium);
-                    }
                 }
             }
         }

@@ -52,13 +52,14 @@ function EllipsizedContent(props: Props) {
             }
         };
 
+        // setTimeout(checkAndSetEllipsize, 200);
         checkAndSetEllipsize();
         window.addEventListener('resize', checkAndSetEllipsize);
 
         return () => {
             window.removeEventListener('resize', checkAndSetEllipsize);
         };
-    }, []);
+    }, [children]);
 
     React.useEffect(() => {
         const el = containerRef.current;
@@ -100,6 +101,7 @@ function EllipsizedContent(props: Props) {
                     onClick={setShouldEllipsize}
                     actions={shouldEllipsize ? <IoArrowDown /> : <IoArrowUp />}
                     variant="action"
+                    darkMode={darkMode}
                 >
                     {shouldEllipsize ? 'Read More' : 'See Less'}
                 </Button>
