@@ -47,8 +47,25 @@ const FAQS = gql`
 `;
 
 const GOOD_PRACTICES = gql`
-query GoodPractices($search : String!) {
-    goodPractices(ordering: {}, filters: {search: $search}, pagination: {limit: 10, offset: 0}) {
+    query GoodPractices(
+        $search : String!,
+        $types: [TypeEnum!],
+        $driversOfDisplacements : [DriversOfDisplacementTypeEnum!],
+        $focusArea:[FocusAreaEnum!] ,
+        $stages: [StageTypeEnum!]!,
+        $regions: [RegionEnum!],
+        $countries: [ID!],
+    ) {
+        goodPractices(ordering: {}, filters: {
+            search: $search,
+            types: $types,
+            driversOfDisplacements: $driversOfDisplacements,
+            focusArea: $focusArea,
+            stages: $stages,
+            regions: $regions,
+            countries: $countries,
+        }, 
+        pagination: {limit: 10, offset: 0}) {
         results {
             id
             title
@@ -61,15 +78,6 @@ query GoodPractices($search : String!) {
                 url
             }
         }
-    }
-}
-`;
-
-const GOOD_PRACTICE = gql`
-query GoodPractice ($ID: ID!) {
-    goodPractice(pk: $ID) {
-        goodPracticeFormUrl
-        id
     }
 }
 `;
@@ -157,10 +165,16 @@ function GoodPractices(props: Props) {
     const [
         goodPracticeCountry,
         setGoodPracticeCountry,
-    ] = useInputState<number | undefined>(undefined);
+    ] = useInputState<string | undefined>(undefined);
 
     const variables = useMemo(() => ({
         search: debouncedSearchText ?? '',
+        countries: goodPracticeCountry,
+        types: goodPracticeType,
+        focusArea: goodPracticeArea,
+        stages: goodpracticeStage,
+        regions: goodPracticeRegion,
+        driversOfDisplacements: goodPracticeDrive,
     }), [debouncedSearchText]);
 
     const {
@@ -203,12 +217,6 @@ function GoodPractices(props: Props) {
     >(STATIC_PAGES);
 
     const {
-        data: goodPracticeUrlResponse,
-    } = useQuery<GoodPracticeQuery, GoodPracticeQueryVariables>(
-        GOOD_PRACTICE,
-    );
-
-    const {
         data: goodPracticeFilterResponse,
     } = useQuery<GoodPracticeFilterChoicesQuery, GoodPracticeFilterChoicesQueryVariables>(
         GOOD_PRACTICE_FILTER_CHOICES,
@@ -230,8 +238,6 @@ function GoodPractices(props: Props) {
         ?.map((v) => ({ key: v.name, label: v.label }));
 
     const countryFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.countries;
-
-    const goodPracticeLink = `${goodPracticeUrlResponse?.goodPractice?.goodPracticeFormUrl}`;
 
     const goodPracticeRendererParams = useCallback((
         _: string,
@@ -320,7 +326,7 @@ function GoodPractices(props: Props) {
                                 Do you have a Good Practice you would like us to review?
                             </div>
                             <ButtonLikeLink
-                                href={goodPracticeLink}
+                                href="#"
                             >
                                 Submit a Good Practice
                             </ButtonLikeLink>
