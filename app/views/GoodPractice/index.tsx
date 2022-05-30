@@ -8,11 +8,6 @@ import {
     gql,
     useQuery,
 } from '@apollo/client';
-import {
-    IoChevronForward,
-    IoChevronBack,
-    IoEllipseOutline,
-} from 'react-icons/io5';
 
 import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
@@ -176,8 +171,6 @@ function GoodPractice(props: Props) {
         return modifiedList;
     }, [relatedData]);
 
-    console.info(data, relatedData);
-
     return (
         <div className={_cs(styles.goodPractices, className)}>
             <div className={styles.headerSection}>
@@ -265,77 +258,78 @@ function GoodPractice(props: Props) {
                         )}
                     </div>
                     <div className={styles.sidePane}>
-                        <div className={styles.carouselContainer}>
-                            <Header
-                                heading="Best Practice"
-                                headingSize="small"
-                            />
-                            <Carousel className={styles.carousel}>
-                                {data?.goodPractice?.gallery?.map((ci, i) => (
-                                    <CarouselItem
-                                        key={ci.id}
-                                        order={i + 1}
-                                        className={styles.carouselItem}
-                                    >
-                                        {ci.image && (
-                                            <img
-                                                className={styles.image}
-                                                alt={ci.image.name}
-                                                src={ci.image.url}
-                                            />
-                                        )}
-                                        {!ci.image && ci.youtubeVideoUrl && (
-                                            <iframe
-                                                className={styles.videoEmbed}
-                                                title={ci.caption ?? ci.id}
-                                                src={ci.youtubeVideoUrl}
-                                            />
-                                        )}
-                                        <EllipsizedContent className={styles.description}>
-                                            <HTMLOutput
-                                                value={ci.caption}
-                                            />
-                                        </EllipsizedContent>
-                                    </CarouselItem>
-                                ))}
-                                <div className={styles.carouselActions}>
-                                    <CarouselButton
-                                        action="prev"
-                                    >
-                                        <IoChevronBack />
-                                    </CarouselButton>
+                        {(data?.goodPractice?.gallery?.length ?? 0) > 0 && (
+                            <div className={styles.carouselContainer}>
+                                <Header
+                                    heading="Best Practice"
+                                    headingSize="small"
+                                />
+                                <Carousel className={styles.carousel}>
                                     {data?.goodPractice?.gallery?.map((ci, i) => (
-                                        <CarouselButton
+                                        <CarouselItem
                                             key={ci.id}
-                                            action="set"
                                             order={i + 1}
+                                            className={styles.carouselItem}
+                                            expandedClassName={styles.expandedCarouselItem}
                                         >
-                                            <IoEllipseOutline />
-                                        </CarouselButton>
+                                            {ci.image && (
+                                                <img
+                                                    className={styles.image}
+                                                    alt={ci.image.name}
+                                                    src={ci.image.url}
+                                                />
+                                            )}
+                                            {!ci.image && ci.youtubeVideoUrl && (
+                                                <iframe
+                                                    className={styles.videoEmbed}
+                                                    title={ci.caption ?? ci.id}
+                                                    src={ci.youtubeVideoUrl}
+                                                />
+                                            )}
+                                            <EllipsizedContent className={styles.description}>
+                                                <HTMLOutput
+                                                    value={ci.caption}
+                                                />
+                                            </EllipsizedContent>
+                                        </CarouselItem>
                                     ))}
-                                    <CarouselButton
-                                        action="next"
-                                    >
-                                        <IoChevronForward />
-                                    </CarouselButton>
-                                </div>
-                            </Carousel>
-                        </div>
+                                    <div className={styles.carouselActions}>
+                                        <CarouselButton
+                                            action="prev"
+                                        />
+                                        {data?.goodPractice?.gallery?.map((ci, i) => (
+                                            <CarouselButton
+                                                key={ci.id}
+                                                action="set"
+                                                order={i + 1}
+                                            />
+                                        ))}
+                                        <CarouselButton
+                                            action="next"
+                                        />
+                                    </div>
+                                </Carousel>
+                            </div>
+                        )}
                         <div className={styles.blockList}>
-                            <div className={styles.block}>
-                                <EllipsizedContent>
-                                    <HTMLOutput
-                                        value={submitDescription}
-                                    />
-                                </EllipsizedContent>
-                            </div>
-                            <div className={styles.block}>
-                                <EllipsizedContent>
-                                    <HTMLOutput
-                                        value={contactInformation}
-                                    />
-                                </EllipsizedContent>
-                            </div>
+                            {submitDescription && (
+                                <div className={styles.block}>
+                                    <EllipsizedContent>
+                                        <HTMLOutput
+                                            value={submitDescription}
+                                        />
+                                    </EllipsizedContent>
+                                </div>
+                            )}
+                            {contactInformation && (
+                                <div className={styles.block}>
+                                    <EllipsizedContent>
+                                        <HTMLOutput
+                                            value={contactInformation}
+                                        />
+                                    </EllipsizedContent>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </section>

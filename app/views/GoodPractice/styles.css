@@ -224,3 +224,22 @@
 
     }
 }
+
+.expanded-carousel-item {
+    .video-embed {
+        border: 0;
+        width: 100%;
+        height: calc(100% - 4rem);
+    }
+
+    .image {
+        width: 100%;
+        height: calc(100% - 4rem);
+        object-fit: cover;
+        object-position: top center;
+    }
+
+    .description {
+        padding: var(--dui-spacing-medium) 0;
+    }
+}

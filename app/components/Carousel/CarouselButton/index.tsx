@@ -3,6 +3,12 @@ import {
     _cs,
     isDefined,
 } from '@togglecorp/fujs';
+import {
+    IoRadioButtonOffOutline,
+    IoRadioButtonOnOutline,
+    IoChevronForward,
+    IoChevronBack,
+} from 'react-icons/io5';
 
 import RawButton from '#components/RawButton';
 import CarouselContext from '../CarouselContext';
@@ -11,7 +17,7 @@ import styles from './styles.css';
 
 type BaseProps = {
     className?: string;
-    children?: React.ReactNode;
+    activeClassName?: string;
 }
 
 type Props = BaseProps & ({
@@ -25,10 +31,13 @@ type Props = BaseProps & ({
 function CarouselButton(props: Props) {
     const {
         className,
-        children,
+        activeClassName,
     } = props;
 
-    const { setActiveItem } = React.useContext(CarouselContext);
+    const {
+        setActiveItem,
+        activeItem,
+    } = React.useContext(CarouselContext);
 
     const handleClick = React.useCallback(() => {
         // eslint-disable-next-line react/destructuring-assignment
@@ -54,13 +63,25 @@ function CarouselButton(props: Props) {
         // eslint-disable-next-line react/destructuring-assignment
     }, [props.action, props.order, setActiveItem]);
 
+    // eslint-disable-next-line react/destructuring-assignment
+    const isActive = props.action === 'set' && activeItem === props.order;
     return (
         <RawButton
-            className={_cs(styles.carouselButton, className)}
+            className={_cs(
+                styles.carouselButton,
+                className,
+            )}
             name={undefined}
             onClick={handleClick}
         >
-            {children}
+            {/* eslint-disable-next-line react/destructuring-assignment */}
+            {props.action === 'next' && <IoChevronForward />}
+            {/* eslint-disable-next-line react/destructuring-assignment */}
+            {props.action === 'prev' && <IoChevronBack />}
+            {/* eslint-disable-next-line react/destructuring-assignment */}
+            {props.action === 'set' && !isActive && <IoRadioButtonOffOutline />}
+            {/* eslint-disable-next-line react/destructuring-assignment */}
+            {props.action === 'set' && isActive && <IoRadioButtonOnOutline />}
         </RawButton>
     );
 }

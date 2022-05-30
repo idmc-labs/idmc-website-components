@@ -15,7 +15,6 @@ import {
 } from '#generated/types';
 import {
     TextInput,
-    SelectInput,
     MultiSelectInput,
     ListView,
     useInputState,
@@ -24,7 +23,6 @@ import {
     _cs,
     listToMap,
     unique,
-    isDefined,
 } from '@togglecorp/fujs';
 import { IoSearch } from 'react-icons/io5';
 
@@ -34,6 +32,7 @@ import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
 import CollapsibleContent from '#components/CollapsibleContent';
 import GoodPracticeItem from '#components/GoodPracticeItem';
+import SliderInput from '#components/SliderInput';
 
 import useDebouncedValue from '../../hooks/useDebouncedValue';
 
@@ -140,7 +139,7 @@ const keySelector = (d: { key: string }) => d.key;
 const labelSelector = (d: { label: string }) => d.label;
 
 function countryKeySelector(d: countryFilterList) {
-    return d.id;
+    return String(d.id);
 }
 
 function countryLabelSelector(d: countryFilterList) {
@@ -164,6 +163,7 @@ function GoodPractices(props: Props) {
     const [searchText, setSearchText] = useState<string>();
     const debouncedSearchText = useDebouncedValue(searchText);
 
+    type GoodPracticeFilter = NonNullable<(typeof goodPracticeFilterResponse)>['goodPracticeFilterChoices'];
     type GoodPracticeTypeType = NonNullable<GoodPracticeFilter['type']>[number]['name'];
     type GoodPracticeAreaType = NonNullable<GoodPracticeFilter['focusArea']>[number]['name'];
     type GoodPracticeDriveType = NonNullable<GoodPracticeFilter['driversOfDisplacement']>[number]['name'];
@@ -171,6 +171,7 @@ function GoodPractices(props: Props) {
     type GoodPracticeRegionType = NonNullable<GoodPracticeFilter['regions']>[number]['name'];
     type GoodPracticeCountryType = NonNullable<GoodPracticeFilter['countries']>[number]['name'];
 
+    const [yearRange, setYearRange] = useInputState<[number, number]>([2008, 2022]);
     const [goodPracticeType, setGoodPracticeType] = useInputState<GoodPracticeTypeType[]>([]);
     const [goodPracticeArea, setGoodPracticeArea] = useInputState<GoodPracticeAreaType[]>([]);
     const [goodPracticeDrive, setGoodPracticeDrive] = useInputState<GoodPracticeDriveType[]>([]);
@@ -192,9 +193,11 @@ function GoodPractices(props: Props) {
         stages: goodpracticeStage,
         regions: goodPracticeRegion,
         driversOfDisplacements: goodPracticeDrive,
+        startYear: yearRange[0],
+        endYear: yearRange[1],
         limit: GOOD_PRACTICE_PAGE_SIZE,
         offset: 0,
-    }), [
+    } as GoodPracticesQueryVariables), [
         debouncedSearchText,
         goodPracticeCountry,
         goodPracticeType,
@@ -202,6 +205,7 @@ function GoodPractices(props: Props) {
         goodPracticeRegion,
         goodPracticeDrive,
         goodPracticeArea,
+        yearRange,
     ]);
 
     const {
@@ -263,8 +267,6 @@ function GoodPractices(props: Props) {
     } = useQuery<GoodPracticeFilterChoicesQuery, GoodPracticeFilterChoicesQueryVariables>(
         GOOD_PRACTICE_FILTER_CHOICES,
     );
-
-    type GoodPracticeFilter = NonNullable<(typeof goodPracticeFilterResponse)>['goodPracticeFilterChoices'];
 
     const typeFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.type
         ?.map((v) => ({ key: v.name, label: v.label }));
@@ -421,8 +423,10 @@ function GoodPractices(props: Props) {
                         headingSize="large"
                         heading="Find Good Practices"
                     />
-                    <div>
+                    <div className={styles.searchAndTimeRangeContainer}>
                         <TextInput
+                            variant="general"
+                            inputSectionClassName={styles.inputSection}
                             className={className}
                             name="search"
                             placeholder="Search Good Practice"
@@ -433,6 +437,15 @@ function GoodPractices(props: Props) {
                             icons={(
                                 <IoSearch />
                             )}
+                        />
+                        <SliderInput
+                            min={2008}
+                            max={2022}
+                            value={yearRange}
+                            step={1}
+                            minDistance={1}
+                            hideValues
+                            onChange={setYearRange}
                         />
                     </div>
                     <div className={styles.filterContainer}>

@@ -66,11 +66,10 @@ function GoodPracticeItem(props: Props) {
                         </>
                     )}
                 />
-                <EllipsizedContent>
-                    <HTMLOutput
-                        value={description}
-                    />
-                </EllipsizedContent>
+                <HTMLOutput
+                    className={styles.description}
+                    value={description}
+                />
             </div>
         </a>
     );

@@ -1,5 +1,12 @@
 import React from 'react';
+import { IoExpand } from 'react-icons/io5';
+import {
+    Modal,
+    useBooleanState,
+} from '@the-deep/deep-ui';
 import { _cs } from '@togglecorp/fujs';
+
+import Button from '#components/Button';
 
 import CarouselContext from '../CarouselContext';
 
@@ -9,6 +16,7 @@ interface Props {
     order: number;
     className?: string;
     children: React.ReactNode;
+    expandedClassName?: string;
 }
 
 function CarouselItem(props: Props) {
@@ -16,6 +24,7 @@ function CarouselItem(props: Props) {
         order,
         className,
         children,
+        expandedClassName,
     } = props;
 
     const {
@@ -23,6 +32,12 @@ function CarouselItem(props: Props) {
         registerItem,
         unregisterItem,
     } = React.useContext(CarouselContext);
+
+    const [
+        isExpanded,
+        setIsExpandedTrue,
+        setIsExpandedFalse,
+    ] = useBooleanState(false);
 
     React.useEffect(() => {
         registerItem(order);
@@ -35,9 +50,29 @@ function CarouselItem(props: Props) {
     }
 
     return (
-        <div className={_cs(styles.carouselItem, className)}>
-            {children}
-        </div>
+        <>
+            <div className={_cs(styles.carouselItem, className)}>
+                <Button
+                    name={undefined}
+                    className={styles.expandButton}
+                    variant="action"
+                    darkMode
+                    onClick={setIsExpandedTrue}
+                >
+                    <IoExpand />
+                </Button>
+                {children}
+            </div>
+            {isExpanded && (
+                <Modal
+                    className={styles.expandedModal}
+                    bodyClassName={expandedClassName}
+                    onCloseButtonClick={setIsExpandedFalse}
+                >
+                    {children}
+                </Modal>
+            )}
+        </>
     );
 }
 
