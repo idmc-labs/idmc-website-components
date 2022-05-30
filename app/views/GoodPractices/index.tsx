@@ -203,8 +203,9 @@ function GoodPractices(props: Props) {
     );
 
     const {
+        previousData,
         fetchMore: fetchMoreGoodPractice,
-        data: goodPracticeResponse,
+        data: goodPracticeResponse = previousData,
         error: goodPracticeError,
         loading: goodPracticeLoading,
     } = useQuery<GoodPracticesQuery, GoodPracticesQueryVariables>(
