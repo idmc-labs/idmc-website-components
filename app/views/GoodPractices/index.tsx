@@ -165,28 +165,33 @@ function GoodPractices(props: Props) {
     const debouncedSearchText = useDebouncedValue(searchText);
 
     type GoodPracticeTypeType = NonNullable<GoodPracticeFilter['type']>[number]['name'];
+    type GoodPracticeAreaType = NonNullable<GoodPracticeFilter['focusArea']>[number]['name'];
+    type GoodPracticeDriveType = NonNullable<GoodPracticeFilter['driversOfDisplacement']>[number]['name'];
+    type GoodPracticeStageType = NonNullable<GoodPracticeFilter['stage']>[number]['name'];
+    type GoodPracticeRegionType = NonNullable<GoodPracticeFilter['regions']>[number]['name'];
+    type GoodPracticeCountryType = NonNullable<GoodPracticeFilter['countries']>[number]['name'];
 
     const [goodPracticeType, setGoodPracticeType] = useInputState<GoodPracticeTypeType[]>([]);
-    const [goodPracticeArea, setGoodPracticeArea] = useInputState<string | undefined>(undefined);
-    const [goodPracticeDrive, setGoodPracticeDrive] = useInputState<string | undefined>(undefined);
-    const [goodpracticeStage, setGoodPracticeStage] = useInputState<string | undefined>(undefined);
+    const [goodPracticeArea, setGoodPracticeArea] = useInputState<GoodPracticeAreaType[]>([]);
+    const [goodPracticeDrive, setGoodPracticeDrive] = useInputState<GoodPracticeDriveType[]>([]);
+    const [goodpracticeStage, setGoodPracticeStage] = useInputState<GoodPracticeStageType[]>([]);
     const [
         goodPracticeRegion,
         setGoodPracticeRegion,
-    ] = useInputState<string | undefined>(undefined);
+    ] = useInputState<GoodPracticeRegionType[]>([]);
     const [
         goodPracticeCountry,
         setGoodPracticeCountry,
-    ] = useInputState<string | undefined>(undefined);
+    ] = useInputState<GoodPracticeCountryType[]>([]);
 
     const goodPracticeVariables = useMemo(() => ({
         search: debouncedSearchText ?? '',
-        countries: isDefined(goodPracticeCountry) ? [goodPracticeCountry] : [],
+        countries: goodPracticeCountry,
         types: goodPracticeType,
-        focusArea: isDefined(goodPracticeArea) ? [goodPracticeArea] : [],
-        stages: isDefined(goodpracticeStage) ? [goodpracticeStage] : [],
-        regions: isDefined(goodPracticeRegion) ? [goodPracticeRegion] : [],
-        driversOfDisplacements: isDefined(goodPracticeDrive) ? [goodPracticeDrive] : [],
+        focusArea: goodPracticeArea,
+        stages: goodpracticeStage,
+        regions: goodPracticeRegion,
+        driversOfDisplacements: goodPracticeDrive,
         limit: GOOD_PRACTICE_PAGE_SIZE,
         offset: 0,
     }), [
@@ -442,7 +447,7 @@ function GoodPractices(props: Props) {
                             onChange={setGoodPracticeType}
                             inputSectionClassName={styles.inputSection}
                         />
-                        <SelectInput
+                        <MultiSelectInput
                             variant="general"
                             placeholder="Drivers of Displacement"
                             name="driversOfDisplacement"
@@ -453,7 +458,7 @@ function GoodPractices(props: Props) {
                             onChange={setGoodPracticeDrive}
                             inputSectionClassName={styles.inputSection}
                         />
-                        <SelectInput
+                        <MultiSelectInput
                             variant="general"
                             placeholder="Focus Area"
                             name="focusArea"
@@ -464,7 +469,7 @@ function GoodPractices(props: Props) {
                             onChange={setGoodPracticeArea}
                             inputSectionClassName={styles.inputSection}
                         />
-                        <SelectInput
+                        <MultiSelectInput
                             variant="general"
                             placeholder="Stage"
                             name="stage"
@@ -475,7 +480,7 @@ function GoodPractices(props: Props) {
                             onChange={setGoodPracticeStage}
                             inputSectionClassName={styles.inputSection}
                         />
-                        <SelectInput
+                        <MultiSelectInput
                             variant="general"
                             placeholder="Region"
                             name="region"
@@ -486,7 +491,7 @@ function GoodPractices(props: Props) {
                             onChange={setGoodPracticeRegion}
                             inputSectionClassName={styles.inputSection}
                         />
-                        <SelectInput
+                        <MultiSelectInput
                             variant="general"
                             placeholder="Country"
                             name="country"
