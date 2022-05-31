@@ -29,6 +29,7 @@ import {
 import {
     IoSearch,
     IoClose,
+    IoArrowDown,
 } from 'react-icons/io5';
 
 import Button from '#components/Button';
@@ -486,9 +487,7 @@ function GoodPractices(props: Props) {
                             heading="Global Repositories for Good Practices"
                         />
                         <EllipsizedContent darkMode>
-                            <HTMLOutput
-                                value={goodPracticeDescription}
-                            />
+                            <HTMLOutput value={goodPracticeDescription} />
                         </EllipsizedContent>
                         <Button
                             onClick={handleJumpToGoodPractices}
@@ -556,6 +555,7 @@ function GoodPractices(props: Props) {
                     />
                     <div className={styles.searchAndTimeRangeContainer}>
                         <TextInput
+                            labelContainerClassName={styles.label}
                             variant="general"
                             inputSectionClassName={styles.inputSection}
                             className={className}
@@ -571,6 +571,7 @@ function GoodPractices(props: Props) {
                             )}
                         />
                         <SliderInput
+                            labelDescription={`${yearRange[0]} - ${yearRange[1]}`}
                             min={minYear}
                             max={maxYear}
                             value={yearRange}
@@ -583,6 +584,7 @@ function GoodPractices(props: Props) {
                     <div className={styles.filterContainer}>
                         {typeFilter && typeFilter.length > 0 && (
                             <MultiSelectInput
+                                labelContainerClassName={styles.label}
                                 label="Type of Good Practice"
                                 variant="general"
                                 placeholder="Type of Good Practice"
@@ -597,6 +599,7 @@ function GoodPractices(props: Props) {
                         )}
                         {regionFilter && regionFilter.length > 0 && (
                             <MultiSelectInput
+                                labelContainerClassName={styles.label}
                                 variant="general"
                                 placeholder="Region"
                                 label="Region"
@@ -611,6 +614,7 @@ function GoodPractices(props: Props) {
                         )}
                         {countryFilter && countryFilter.length > 0 && (
                             <MultiSelectInput
+                                labelContainerClassName={styles.label}
                                 variant="general"
                                 placeholder="Country"
                                 label="Country"
@@ -625,6 +629,7 @@ function GoodPractices(props: Props) {
                         )}
                         {driverFilter && driverFilter.length > 0 && (
                             <MultiSelectInput
+                                labelContainerClassName={styles.label}
                                 variant="general"
                                 placeholder="Drivers of Displacement"
                                 label="Drivers of Displacement"
@@ -639,6 +644,7 @@ function GoodPractices(props: Props) {
                         )}
                         {areaFilter && areaFilter.length > 0 && (
                             <MultiSelectInput
+                                labelContainerClassName={styles.label}
                                 variant="general"
                                 placeholder="Focus Area"
                                 label="Focus Area"
@@ -653,6 +659,7 @@ function GoodPractices(props: Props) {
                         )}
                         {stageFilter && stageFilter.length > 0 && (
                             <MultiSelectInput
+                                labelContainerClassName={styles.label}
                                 variant="general"
                                 placeholder="Stage"
                                 label="Stage"
@@ -669,21 +676,24 @@ function GoodPractices(props: Props) {
                         <div />
                         <div />
                     </div>
-                    <div className={styles.selectedFilters}>
+                    <div className={styles.filterActions}>
                         {isFiltered && (
                             <Button
                                 name={undefined}
                                 onClick={handleClearFilterClick}
                                 variant="action"
-                                icons={<IoClose />}
+                                actions={<IoClose />}
                                 className={styles.clearFilterButton}
                             >
                                 Clear all filters
                             </Button>
                         )}
                         <div />
+                    </div>
+                    <div className={styles.separator} />
+                    <div className={styles.orderingContainer}>
                         <DropdownMenu
-                            className={styles.filterDropdown}
+                            className={styles.orderDropdown}
                             label={`Sort: ${orderingOptions[orderingOptionValue]}`}
                             variant="transparent"
                         >
@@ -712,8 +722,10 @@ function GoodPractices(props: Props) {
                         name={undefined}
                         onClick={handleShowMoreButtonClick}
                         disabled={goodPracticeLoading}
+                        variant="action"
+                        actions={<IoArrowDown />}
                     >
-                        Show More
+                        View more Good Practices
                     </Button>
                 </section>
             </div>

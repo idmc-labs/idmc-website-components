@@ -4,13 +4,15 @@ import {
     isNotDefined,
     listToMap,
     unique,
+    isDefined,
 } from '@togglecorp/fujs';
 import {
     gql,
     useQuery,
+    useMutation,
 } from '@apollo/client';
 
-import { BsChevronCompactRight } from 'react-icons/bs';
+import { IoChevronForward } from 'react-icons/io5';
 
 import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
@@ -28,6 +30,8 @@ import {
     RelatedGoodPracticeListQueryVariables,
     GoodPracticeListingStaticPageQuery,
     GoodPracticeListingStaticPageQueryVariables,
+    IncrementPageViewMutation,
+    IncrementPageViewMutationVariables,
 } from '#generated/types';
 
 import styles from './styles.css';
@@ -110,6 +114,16 @@ query GoodPracticeListingStaticPage {
 }
 `;
 
+const PAGE_COUNT = gql`
+mutation IncrementPageView($id: ID!) {
+    incrementPageViewedCount(input: {id: $id}) {
+        ... on GooodPracticeType {
+            id
+        }
+    }
+}
+`;
+
 interface Props {
     className?: string;
     id: string | undefined;
@@ -120,6 +134,24 @@ function GoodPractice(props: Props) {
         className,
         id,
     } = props;
+
+    const [
+        incrementPageCount,
+    ] = useMutation<IncrementPageViewMutation, IncrementPageViewMutationVariables>(PAGE_COUNT);
+
+    React.useEffect(() => {
+        let timeout: number;
+        if (isDefined(id)) {
+            timeout = window.setTimeout(
+                () => {
+                    incrementPageCount({ variables: { id } });
+                },
+                10000,
+            );
+        }
+
+        return () => { window.clearTimeout(timeout); };
+    }, [incrementPageCount, id]);
 
     const {
         data,
@@ -226,7 +258,7 @@ function GoodPractice(props: Props) {
                             <a href="/">
                                 Home
                             </a>
-                            <BsChevronCompactRight />
+                            <IoChevronForward />
                             {/* TODO: use actual link */}
                             <a href="?page=good-practices">
                                 Good Practices
@@ -250,18 +282,21 @@ function GoodPractice(props: Props) {
                     <div className={styles.mainSection}>
                         <div className={styles.meta}>
                             <TextOutput
+                                hideLabelColon
                                 label="Region"
                                 value={region}
                                 strongValue
                                 displayType="block"
                             />
                             <TextOutput
+                                hideLabelColon
                                 label="Country"
                                 value={data?.goodPractice.countries.map((c) => c.name).join(', ')}
                                 strongValue
                                 displayType="block"
                             />
                             <TextOutput
+                                hideLabelColon
                                 label="Timeframe"
                                 value={(
                                     <div>
@@ -269,7 +304,7 @@ function GoodPractice(props: Props) {
                                             {data?.goodPractice?.startYear}
                                         </span>
                                         <span>
-                                            -
+                                            &nbsp;-&nbsp;
                                         </span>
                                         <span>
                                             {data?.goodPractice?.endYear}
@@ -301,7 +336,7 @@ function GoodPractice(props: Props) {
                         {(data?.goodPractice?.gallery?.length ?? 0) > 0 && (
                             <div className={styles.carouselContainer}>
                                 <Header
-                                    heading="Best Practice"
+                                    heading="Gallery of Best Practice"
                                     headingSize="small"
                                 />
                                 <Carousel className={styles.carousel}>
@@ -334,9 +369,6 @@ function GoodPractice(props: Props) {
                                         </CarouselItem>
                                     ))}
                                     <div className={styles.carouselActions}>
-                                        <CarouselButton
-                                            action="prev"
-                                        />
                                         {data?.goodPractice?.gallery?.map((ci, i) => (
                                             <CarouselButton
                                                 key={ci.id}
@@ -344,9 +376,6 @@ function GoodPractice(props: Props) {
                                                 order={i + 1}
                                             />
                                         ))}
-                                        <CarouselButton
-                                            action="next"
-                                        />
                                     </div>
                                 </Carousel>
                             </div>

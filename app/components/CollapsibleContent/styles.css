@@ -1,6 +1,7 @@
 .collapsible-content {
     .header-container {
         display: flex;
+        align-items: center;
         cursor: pointer;
         padding: var(--dui-spacing-medium);
         font-weight: var(--dui-font-weight-bold);

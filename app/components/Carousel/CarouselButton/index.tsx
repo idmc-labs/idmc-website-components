@@ -8,6 +8,7 @@ import {
     IoRadioButtonOnOutline,
     IoChevronForward,
     IoChevronBack,
+    IoEllipse,
 } from 'react-icons/io5';
 
 import RawButton from '#components/RawButton';
@@ -67,6 +68,7 @@ function CarouselButton(props: Props) {
         <RawButton
             className={_cs(
                 styles.carouselButton,
+                isActive && styles.active,
                 className,
             )}
             name={undefined}
@@ -77,9 +79,7 @@ function CarouselButton(props: Props) {
             {/* eslint-disable-next-line react/destructuring-assignment */}
             {props.action === 'prev' && <IoChevronBack />}
             {/* eslint-disable-next-line react/destructuring-assignment */}
-            {props.action === 'set' && !isActive && <IoRadioButtonOffOutline />}
-            {/* eslint-disable-next-line react/destructuring-assignment */}
-            {props.action === 'set' && isActive && <IoRadioButtonOnOutline />}
+            {props.action === 'set' && <IoEllipse />}
         </RawButton>
     );
 }

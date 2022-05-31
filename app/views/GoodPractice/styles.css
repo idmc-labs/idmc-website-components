@@ -20,6 +20,7 @@
             background-color: var(--dui-color-brand);
             background-position: top center;
             background-size: cover;
+            padding: var(--dui-spacing-extra-large) 0;
             width: 100%;
             min-height: 20rem;
             color: var(--dui-color-text-on-dark);
@@ -32,13 +33,13 @@
                 flex-wrap: wrap;
                 border-radius: 0.25rem;
                 gap: var(--dui-spacing-small);
+                font-size: var(--dui-font-size-large);
 
                 >* {
                     display: inline-block;
                     color: var(--dui-color-text-on-dark);
                 }
             }
-
 
             .container {
                 display: flex;
@@ -129,18 +130,14 @@
 
                     .carousel-actions {
                         display: flex;
-                        position: absolute;
-                        top: 16rem;
-                        left: 50%;
                         align-items: center;
-                        transform: translate(-50%, -100%);
+                        justify-content: center;
                         border-radius: 0.25rem;
-                        background-color: rgba(0, 0, 0, .5);
-                        color: var(--dui-color-text-on-dark);
 
                         >* {
                             display: flex;
                             align-items: center;
+                            padding: var(--dui-spacing-extra-small);
                         }
                     }
                 }
@@ -223,7 +220,7 @@
     .image {
         width: 100%;
         height: calc(100% - 4rem);
-        object-fit: cover;
+        object-fit: contain;
         object-position: top center;
     }
 

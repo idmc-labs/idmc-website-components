@@ -19,6 +19,7 @@
             background-color: var(--dui-color-brand);
             background-position: top center;
             background-size: cover;
+            padding: var(--dui-spacing-extra-large) 0;
             width: 100%;
             color: var(--dui-color-text-on-dark);
             background-blend-mode: soft-light;
@@ -71,6 +72,7 @@
                 flex-direction: column;
                 flex-shrink: 0;
                 gap: var(--dui-spacing-medium);
+                margin-top: 5rem;
 
                 .block {
                     border-radius: 0.25rem;
@@ -87,7 +89,7 @@
 
             .search-and-time-range-container {
                 display: flex;
-                align-items: flex-end;
+                align-items: flex-start;
                 flex-wrap: wrap;
                 gap: var(--dui-spacing-large);
 
@@ -98,6 +100,10 @@
 
                     .input-section {
                         border-radius: 0.25rem;
+                    }
+
+                    .label {
+                        font-size: var(--dui-font-size-medium);
                     }
                 }
             }
@@ -116,10 +122,14 @@
                     .input-section {
                         border-radius: 0.25rem;
                     }
+
+                    .label {
+                        font-size: var(--dui-font-size-medium);
+                    }
                 }
             }
 
-            .selected-filters {
+            .filter-actions {
                 display: flex;
                 justify-content: space-between;
 
@@ -127,7 +137,17 @@
                     color: var(--dui-color-danger);
                 }
 
-                .filter-dropdown {
+            }
+
+            .separator {
+                border: var(--dui-width-separator-thin) solid var(--dui-color-separator);
+            }
+
+            .ordering-container {
+                display: flex;
+                justify-content: flex-end;
+
+                .order-dropdown{
                     color: var(--dui-color-brand);
                 }
             }

@@ -57,7 +57,7 @@ function GoodPracticeItem(props: Props) {
                                 {startYear}
                             </span>
                             <span>
-                                -
+                                &nbsp;-&nbsp;
                             </span>
                             <span>
                                 {endYear ?? 'Ongoing'}
