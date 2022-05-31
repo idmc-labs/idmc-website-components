@@ -268,6 +268,7 @@ function GoodPractice(props: Props) {
                             headingSize="extraLarge"
                             heading={data?.goodPractice?.title}
                             darkMode
+                            hideHeadingBorder
                         />
                         <EllipsizedContent darkMode>
                             <HTMLOutput

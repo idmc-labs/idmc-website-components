@@ -485,6 +485,7 @@ function GoodPractices(props: Props) {
                             darkMode
                             headingSize="extraLarge"
                             heading="Global Repositories for Good Practices"
+                            hideHeadingBorder
                         />
                         <EllipsizedContent darkMode>
                             <HTMLOutput value={goodPracticeDescription} />
