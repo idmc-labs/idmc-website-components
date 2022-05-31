@@ -17,7 +17,6 @@ import styles from './styles.css';
 
 type BaseProps = {
     className?: string;
-    activeClassName?: string;
 }
 
 type Props = BaseProps & ({
@@ -31,7 +30,6 @@ type Props = BaseProps & ({
 function CarouselButton(props: Props) {
     const {
         className,
-        activeClassName,
     } = props;
 
     const {

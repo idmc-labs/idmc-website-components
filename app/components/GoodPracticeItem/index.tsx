@@ -6,7 +6,6 @@ import {
 
 import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
-import EllipsizedContent from '#components/EllipsizedContent';
 
 import gridCover from '../../resources/img/grid2021-cover.png';
 

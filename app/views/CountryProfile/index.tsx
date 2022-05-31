@@ -71,7 +71,7 @@ import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
 import TextOutput from '#components/TextOutput';
 import Infographic from '#components/Infographic';
-import GoodPracticeItem from '#components/GoodPracticeItem';
+import RelatedMaterialItem from '#components/RelatedMaterialItem';
 import SliderInput from '#components/SliderInput';
 import Container from '#components/Container';
 import TooltipIcon from '#components/TooltipIcon';
@@ -1302,7 +1302,7 @@ function CountryProfile(props: Props) {
             />
             <div className={styles.materialList}>
                 {relatedMaterials.map((gp) => (
-                    <GoodPracticeItem
+                    <RelatedMaterialItem
                         key={gp.metatag.value.canonical_url}
                         className={styles.material}
                         coverImageUrl={replaceWithDrupalEndpoint(gp.metatag.value.og_image_0)}
