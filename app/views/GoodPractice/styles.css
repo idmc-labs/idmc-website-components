@@ -28,6 +28,7 @@
 
             .breadcrumbs {
                 display: flex;
+                align-items: center;
                 flex-wrap: wrap;
                 border-radius: 0.25rem;
                 gap: var(--dui-spacing-small);

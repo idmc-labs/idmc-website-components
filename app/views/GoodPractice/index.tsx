@@ -9,6 +9,8 @@ import {
     useQuery,
 } from '@apollo/client';
 
+import { BsChevronCompactRight } from 'react-icons/bs';
+
 import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
@@ -216,7 +218,7 @@ function GoodPractice(props: Props) {
                             <a href="/">
                                 Home
                             </a>
-                            ›
+                            <BsChevronCompactRight />
                             {/* TODO: use actual link */}
                             <a href="?page=good-practices">
                                 Good Practices
