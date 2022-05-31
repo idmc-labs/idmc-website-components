@@ -581,78 +581,91 @@ function GoodPractices(props: Props) {
                         />
                     </div>
                     <div className={styles.filterContainer}>
-                        <MultiSelectInput
-                            label="Type of Good Practice"
-                            variant="general"
-                            placeholder="Type of Good Practice"
-                            name="type"
-                            value={goodPracticeType}
-                            options={typeFilter}
-                            keySelector={keySelector}
-                            labelSelector={labelSelector}
-                            onChange={setGoodPracticeType}
-                            inputSectionClassName={styles.inputSection}
-                        />
-                        <MultiSelectInput
-                            variant="general"
-                            placeholder="Region"
-                            label="Region"
-                            name="region"
-                            value={goodPracticeRegion}
-                            options={regionFilter}
-                            keySelector={keySelector}
-                            labelSelector={labelSelector}
-                            onChange={setGoodPracticeRegion}
-                            inputSectionClassName={styles.inputSection}
-                        />
-                        <MultiSelectInput
-                            variant="general"
-                            placeholder="Country"
-                            label="Country"
-                            name="country"
-                            value={goodPracticeCountry}
-                            options={countryFilter}
-                            keySelector={countryKeySelector}
-                            labelSelector={countryLabelSelector}
-                            onChange={setGoodPracticeCountry}
-                            inputSectionClassName={styles.inputSection}
-                        />
-                        <MultiSelectInput
-                            variant="general"
-                            placeholder="Drivers of Displacement"
-                            label="Drivers of Displacement"
-                            name="driversOfDisplacement"
-                            value={goodPracticeDrive}
-                            options={driverFilter}
-                            keySelector={keySelector}
-                            labelSelector={labelSelector}
-                            onChange={setGoodPracticeDrive}
-                            inputSectionClassName={styles.inputSection}
-                        />
-                        <MultiSelectInput
-                            variant="general"
-                            placeholder="Focus Area"
-                            label="Focus Area"
-                            name="focusArea"
-                            value={goodPracticeArea}
-                            options={areaFilter}
-                            keySelector={keySelector}
-                            labelSelector={labelSelector}
-                            onChange={setGoodPracticeArea}
-                            inputSectionClassName={styles.inputSection}
-                        />
-                        <MultiSelectInput
-                            variant="general"
-                            placeholder="Stage"
-                            label="Stage"
-                            name="stage"
-                            value={goodpracticeStage}
-                            options={stageFilter}
-                            keySelector={keySelector}
-                            labelSelector={labelSelector}
-                            onChange={setGoodPracticeStage}
-                            inputSectionClassName={styles.inputSection}
-                        />
+                        {typeFilter && typeFilter.length > 0 && (
+                            <MultiSelectInput
+                                label="Type of Good Practice"
+                                variant="general"
+                                placeholder="Type of Good Practice"
+                                name="type"
+                                value={goodPracticeType}
+                                options={typeFilter}
+                                keySelector={keySelector}
+                                labelSelector={labelSelector}
+                                onChange={setGoodPracticeType}
+                                inputSectionClassName={styles.inputSection}
+                            />
+                        )}
+                        {regionFilter && regionFilter.length > 0 && (
+                            <MultiSelectInput
+                                variant="general"
+                                placeholder="Region"
+                                label="Region"
+                                name="region"
+                                value={goodPracticeRegion}
+                                options={regionFilter}
+                                keySelector={keySelector}
+                                labelSelector={labelSelector}
+                                onChange={setGoodPracticeRegion}
+                                inputSectionClassName={styles.inputSection}
+                            />
+                        )}
+                        {countryFilter && countryFilter.length > 0 && (
+                            <MultiSelectInput
+                                variant="general"
+                                placeholder="Country"
+                                label="Country"
+                                name="country"
+                                value={goodPracticeCountry}
+                                options={countryFilter}
+                                keySelector={countryKeySelector}
+                                labelSelector={countryLabelSelector}
+                                onChange={setGoodPracticeCountry}
+                                inputSectionClassName={styles.inputSection}
+                            />
+                        )}
+                        {driverFilter && driverFilter.length > 0 && (
+                            <MultiSelectInput
+                                variant="general"
+                                placeholder="Drivers of Displacement"
+                                label="Drivers of Displacement"
+                                name="driversOfDisplacement"
+                                value={goodPracticeDrive}
+                                options={driverFilter}
+                                keySelector={keySelector}
+                                labelSelector={labelSelector}
+                                onChange={setGoodPracticeDrive}
+                                inputSectionClassName={styles.inputSection}
+                            />
+                        )}
+                        {areaFilter && areaFilter.length > 0 && (
+                            <MultiSelectInput
+                                variant="general"
+                                placeholder="Focus Area"
+                                label="Focus Area"
+                                name="focusArea"
+                                value={goodPracticeArea}
+                                options={areaFilter}
+                                keySelector={keySelector}
+                                labelSelector={labelSelector}
+                                onChange={setGoodPracticeArea}
+                                inputSectionClassName={styles.inputSection}
+                            />
+                        )}
+                        {stageFilter && stageFilter.length > 0 && (
+                            <MultiSelectInput
+                                variant="general"
+                                placeholder="Stage"
+                                label="Stage"
+                                name="stage"
+                                value={goodpracticeStage}
+                                options={stageFilter}
+                                keySelector={keySelector}
+                                labelSelector={labelSelector}
+                                onChange={setGoodPracticeStage}
+                                inputSectionClassName={styles.inputSection}
+                            />
+                        )}
+                        {(!stageFilter || stageFilter.length === 0) && <div />}
                         <div />
                         <div />
                     </div>
