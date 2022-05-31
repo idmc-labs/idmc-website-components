@@ -73,7 +73,7 @@
         .good-practices-container {
             display: flex;
             flex-direction: column;
-            gap: var(--dui-spacing-large);
+            gap: var(--dui-spacing-extra-large);
 
             .search-and-time-range-container {
                 display: flex;
@@ -106,6 +106,15 @@
                     .input-section {
                         border-radius: 0.25rem;
                     }
+                }
+            }
+
+            .selected-filters {
+                display: flex;
+                justify-content: space-between;
+
+                .clear-filter-button {
+                    color: var(--dui-color-danger);
                 }
             }
 

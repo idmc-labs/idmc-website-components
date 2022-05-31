@@ -17,6 +17,8 @@ import {
     TextInput,
     MultiSelectInput,
     ListView,
+    DropdownMenu,
+    DropdownMenuItem,
     useInputState,
 } from '@the-deep/deep-ui';
 import {
@@ -24,7 +26,10 @@ import {
     listToMap,
     unique,
 } from '@togglecorp/fujs';
-import { IoSearch } from 'react-icons/io5';
+import {
+    IoSearch,
+    IoClose,
+} from 'react-icons/io5';
 
 import Button from '#components/Button';
 import Header from '#components/Header';
@@ -57,13 +62,16 @@ query GoodPractices(
     $driversOfDisplacements : [DriversOfDisplacementTypeEnum!],
     $focusArea:[FocusAreaEnum!] ,
     $stages: [StageTypeEnum!]!,
-    $regions: [RegionEnum!],
+    $regions: [GoodPracticeRegion!],
     $countries: [ID!],
+    $startYear: Int!,
+    $endYear: Int!,
     $limit: Int!,
     $offset: Int!,
+    $ordering: GoodPracticeOrder!
 ) {
     goodPractices(
-        ordering: {},
+        ordering: $ordering,
         filters: {
             search: $search,
             types: $types,
@@ -72,6 +80,8 @@ query GoodPractices(
             stages: $stages,
             regions: $regions,
             countries: $countries,
+            startYear: $startYear,
+            endYear: $endYear,
         },
         pagination: {limit: $limit, offset: $offset},
     ) {
@@ -104,6 +114,8 @@ query GoodPracticeListingStaticPage {
 const GOOD_PRACTICE_FILTER_CHOICES = gql`
 query GoodPracticeFilterChoices {
     goodPracticeFilterChoices {
+        startYear
+        endYear
         countries {
             id
             name
@@ -150,6 +162,36 @@ function goodPracticekeySelector(d: GoodPracticeItemType | undefined, i: number)
     return d?.id ?? String(i);
 }
 
+type OrderingOptionType = 'recent' | 'oldest' | 'mostPopular' | 'leastPopular';
+const orderingOptions: {
+    [key in OrderingOptionType]: string;
+} = {
+    recent: 'Recent first',
+    oldest: 'Oldest first',
+    mostPopular: 'Most Popular first',
+    leastPopular: 'Least Popular first',
+};
+
+type OrderingType = {
+    [key in 'publishedDate' | 'pageViewedCount']?: 'ASC' | 'DESC'
+}
+function getOrderingFromOption(option: OrderingOptionType): OrderingType {
+    if (option === 'recent') {
+        return { publishedDate: 'DESC' };
+    }
+    if (option === 'oldest') {
+        return { publishedDate: 'ASC' };
+    }
+    if (option === 'mostPopular') {
+        return { pageViewedCount: 'DESC' };
+    }
+    if (option === 'leastPopular') {
+        return { pageViewedCount: 'ASC' };
+    }
+
+    return { publishedDate: 'DESC' };
+}
+
 interface Props {
     className?: string;
 }
@@ -158,10 +200,17 @@ function GoodPractices(props: Props) {
     const { className } = props;
 
     const practicesListRef = React.useRef<HTMLDivElement>(null);
+    const [
+        orderingOptionValue,
+        setOrderingOptionValue,
+    ] = React.useState<OrderingOptionType>('recent');
+
+    const ordering = React.useMemo(() => (
+        getOrderingFromOption(orderingOptionValue)
+    ), [orderingOptionValue]);
 
     const [expandedFaq, setExpandedFaq] = useState<string>();
     const [searchText, setSearchText] = useState<string>();
-    const debouncedSearchText = useDebouncedValue(searchText);
 
     type GoodPracticeFilter = NonNullable<(typeof goodPracticeFilterResponse)>['goodPracticeFilterChoices'];
     type GoodPracticeTypeType = NonNullable<GoodPracticeFilter['type']>[number]['name'];
@@ -171,7 +220,7 @@ function GoodPractices(props: Props) {
     type GoodPracticeRegionType = NonNullable<GoodPracticeFilter['regions']>[number]['name'];
     type GoodPracticeCountryType = NonNullable<GoodPracticeFilter['countries']>[number]['name'];
 
-    const [yearRange, setYearRange] = useInputState<[number, number]>([2008, 2022]);
+    const [yearRange, setYearRange] = useInputState<[number, number]>([0, 0]);
     const [goodPracticeType, setGoodPracticeType] = useInputState<GoodPracticeTypeType[]>([]);
     const [goodPracticeArea, setGoodPracticeArea] = useInputState<GoodPracticeAreaType[]>([]);
     const [goodPracticeDrive, setGoodPracticeDrive] = useInputState<GoodPracticeDriveType[]>([]);
@@ -185,8 +234,77 @@ function GoodPractices(props: Props) {
         setGoodPracticeCountry,
     ] = useInputState<GoodPracticeCountryType[]>([]);
 
+    const {
+        data: goodPracticeFilterResponse,
+    } = useQuery<
+        GoodPracticeFilterChoicesQuery,
+        GoodPracticeFilterChoicesQueryVariables
+    >(
+        GOOD_PRACTICE_FILTER_CHOICES,
+        {
+            onCompleted: (response) => {
+                const {
+                    goodPracticeFilterChoices: {
+                        startYear,
+                        endYear,
+                    },
+                } = response;
+                setYearRange([startYear, endYear]);
+            },
+        },
+    );
+
+    const handleClearFilterClick = React.useCallback(() => {
+        if (goodPracticeFilterResponse) {
+            const {
+                goodPracticeFilterChoices: {
+                    startYear,
+                    endYear,
+                },
+            } = goodPracticeFilterResponse;
+            setYearRange([startYear, endYear]);
+        } else {
+            setYearRange([0, 0]);
+        }
+        setGoodPracticeType([]);
+        setGoodPracticeArea([]);
+        setGoodPracticeDrive([]);
+        setGoodPracticeStage([]);
+        setGoodPracticeRegion([]);
+        setGoodPracticeCountry([]);
+    }, [
+        setYearRange,
+        setGoodPracticeType,
+        setGoodPracticeArea,
+        setGoodPracticeDrive,
+        setGoodPracticeStage,
+        setGoodPracticeRegion,
+        setGoodPracticeCountry,
+        goodPracticeFilterResponse,
+    ]);
+
+    const minYear = goodPracticeFilterResponse?.goodPracticeFilterChoices.startYear ?? 0;
+    const maxYear = goodPracticeFilterResponse?.goodPracticeFilterChoices.endYear ?? 0;
+
+    const typeFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.type
+        ?.map((v) => ({ key: v.name, label: v.label }));
+
+    const driverFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.driversOfDisplacement
+        ?.map((v) => ({ key: v.name, label: v.label }));
+
+    const areaFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.focusArea
+        ?.map((v) => ({ key: v.name, label: v.label }));
+
+    const stageFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.stage
+        ?.map((v) => ({ key: v.name, label: v.label }));
+
+    const regionFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.regions
+        ?.map((v) => ({ key: v.name, label: v.label }));
+
+    const countryFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.countries;
+
     const goodPracticeVariables = useMemo(() => ({
-        search: debouncedSearchText ?? '',
+        search: searchText ?? '',
         countries: goodPracticeCountry,
         types: goodPracticeType,
         focusArea: goodPracticeArea,
@@ -197,8 +315,10 @@ function GoodPractices(props: Props) {
         endYear: yearRange[1],
         limit: GOOD_PRACTICE_PAGE_SIZE,
         offset: 0,
+        ordering,
     } as GoodPracticesQueryVariables), [
-        debouncedSearchText,
+        ordering,
+        searchText,
         goodPracticeCountry,
         goodPracticeType,
         goodpracticeStage,
@@ -208,9 +328,12 @@ function GoodPractices(props: Props) {
         yearRange,
     ]);
 
-    const {
-        data: faqsResponse,
-    } = useQuery<FaqsQuery, FaqsQueryVariables>(
+    const goodPracticeFilterVariables = useDebouncedValue(
+        goodPracticeVariables,
+        500,
+    ) ?? goodPracticeVariables;
+
+    const { data: faqsResponse } = useQuery<FaqsQuery, FaqsQueryVariables>(
         FAQS,
     );
 
@@ -222,7 +345,7 @@ function GoodPractices(props: Props) {
         loading: goodPracticeLoading,
     } = useQuery<GoodPracticesQuery, GoodPracticesQueryVariables>(
         GOOD_PRACTICES,
-        { variables: goodPracticeVariables },
+        { variables: goodPracticeFilterVariables },
     );
 
     const goodPracticeList = React.useMemo(() => {
@@ -261,29 +384,6 @@ function GoodPractices(props: Props) {
             staticPageMap?.SUBMIT_GOOD_PRACTICE?.description,
         ];
     }, [staticPageResponse]);
-
-    const {
-        data: goodPracticeFilterResponse,
-    } = useQuery<GoodPracticeFilterChoicesQuery, GoodPracticeFilterChoicesQueryVariables>(
-        GOOD_PRACTICE_FILTER_CHOICES,
-    );
-
-    const typeFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.type
-        ?.map((v) => ({ key: v.name, label: v.label }));
-
-    const driverFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.driversOfDisplacement
-        ?.map((v) => ({ key: v.name, label: v.label }));
-
-    const areaFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.focusArea
-        ?.map((v) => ({ key: v.name, label: v.label }));
-
-    const stageFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.stage
-        ?.map((v) => ({ key: v.name, label: v.label }));
-
-    const regionFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.regions
-        ?.map((v) => ({ key: v.name, label: v.label }));
-
-    const countryFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.countries;
 
     const goodPracticeRendererParams = useCallback((
         _: string,
@@ -348,6 +448,11 @@ function GoodPractices(props: Props) {
         goodPracticesOffset,
         fetchMoreGoodPractice,
     ]);
+
+    const orderingOptionKeys = React.useMemo(
+        () => (Object.keys(orderingOptions) as OrderingOptionType[]),
+        [],
+    );
 
     return (
         <div className={_cs(styles.goodPractices, className)}>
@@ -439,8 +544,8 @@ function GoodPractices(props: Props) {
                             )}
                         />
                         <SliderInput
-                            min={2008}
-                            max={2022}
+                            min={minYear}
+                            max={maxYear}
                             value={yearRange}
                             step={1}
                             minDistance={1}
@@ -517,6 +622,30 @@ function GoodPractices(props: Props) {
                         />
                         <div />
                         <div />
+                    </div>
+                    <div className={styles.selectedFilters}>
+                        <Button
+                            name={undefined}
+                            onClick={handleClearFilterClick}
+                            variant="action"
+                            icons={<IoClose />}
+                            className={styles.clearFilterButton}
+                        >
+                            Clear all filters
+                        </Button>
+                        <DropdownMenu
+                            label={`Sort: ${orderingOptions[orderingOptionValue]}`}
+                        >
+                            {orderingOptionKeys.map((ok) => (
+                                <DropdownMenuItem
+                                    key={ok}
+                                    name={ok}
+                                    onClick={setOrderingOptionValue}
+                                >
+                                    {orderingOptions[ok]}
+                                </DropdownMenuItem>
+                            ))}
+                        </DropdownMenu>
                     </div>
                     <ListView
                         className={styles.goodPracticeList}

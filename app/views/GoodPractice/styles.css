@@ -166,17 +166,6 @@
                         background-color: var(--dui-color-background);
                         padding: var(--dui-spacing-large);
                         gap: var(--dui-spacing-small);
-
-                        .contact-links {
-                            display: flex;
-                            gap: var(--dui-spacing-medium);
-
-                            .contact-email-link {
-                                display: flex;
-                                align-items: center;
-                                gap: var(--dui-spacing-small);
-                            }
-                        }
                     }
                 }
             }

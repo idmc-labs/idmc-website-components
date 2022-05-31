@@ -39,6 +39,7 @@ query GoodPracticeDetails($id: ID!) {
         countries {
             id
             name
+            goodPracticeRegion
         }
         gallery {
           caption
@@ -65,7 +66,7 @@ query GoodPracticeDetails($id: ID!) {
         type
     }
 
-    regionList: __type(name: "RegionEnum") {
+    regionList: __type(name: "GoodPracticeRegion") {
         enumValues {
             name
             description
@@ -123,6 +124,36 @@ function GoodPractice(props: Props) {
             variables: { id: id ?? '' },
         },
     );
+
+    const region = React.useMemo(() => {
+        if (!data) {
+            return undefined;
+        }
+
+        const format = (name: string) => (
+            name.split('_').join(' ')
+        );
+
+        const regionMap = listToMap(
+            data.regionList?.enumValues,
+            (d) => d.name,
+            (d) => d.description ?? format(d.name),
+        );
+
+        return data.goodPractice.countries.map(
+            (c) => {
+                if (!c) {
+                    return '';
+                }
+
+                if (isNotDefined(c.goodPracticeRegion)) {
+                    return '';
+                }
+
+                return regionMap?.[c.goodPracticeRegion];
+            },
+        ).join(', ');
+    }, [data]);
 
     const {
         data: relatedData,
@@ -210,8 +241,7 @@ function GoodPractice(props: Props) {
                         <div className={styles.meta}>
                             <TextOutput
                                 label="Region"
-                                // TODO: add value
-                                value="-"
+                                value={region}
                                 strongValue
                                 displayType="block"
                             />
