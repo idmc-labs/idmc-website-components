@@ -303,20 +303,34 @@ function GoodPractices(props: Props) {
 
     const countryFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.countries;
 
-    const goodPracticeVariables = useMemo(() => ({
-        search: searchText ?? '',
-        countries: goodPracticeCountry,
-        types: goodPracticeType,
-        focusArea: goodPracticeArea,
-        stages: goodpracticeStage,
-        regions: goodPracticeRegion,
-        driversOfDisplacements: goodPracticeDrive,
-        startYear: yearRange[0],
-        endYear: yearRange[1],
-        limit: GOOD_PRACTICE_PAGE_SIZE,
-        offset: 0,
-        ordering,
-    } as GoodPracticesQueryVariables), [
+    const [
+        isFiltered,
+        goodPracticeVariables,
+    ] = useMemo(() => ([
+        searchText
+            || goodPracticeCountry.length > 0
+            || goodPracticeType.length > 0
+            || goodPracticeArea.length > 0
+            || goodpracticeStage.length > 0
+            || goodPracticeRegion.length > 0
+            || goodPracticeDrive.length > 0
+            || yearRange[0] !== minYear
+            || yearRange[1] !== maxYear,
+        {
+            search: searchText ?? '',
+            countries: goodPracticeCountry,
+            types: goodPracticeType,
+            focusArea: goodPracticeArea,
+            stages: goodpracticeStage,
+            regions: goodPracticeRegion,
+            driversOfDisplacements: goodPracticeDrive,
+            startYear: yearRange[0],
+            endYear: yearRange[1],
+            limit: GOOD_PRACTICE_PAGE_SIZE,
+            offset: 0,
+            ordering,
+        } as GoodPracticesQueryVariables,
+    ]), [
         ordering,
         searchText,
         goodPracticeCountry,
@@ -326,6 +340,8 @@ function GoodPractices(props: Props) {
         goodPracticeDrive,
         goodPracticeArea,
         yearRange,
+        minYear,
+        maxYear,
     ]);
 
     const goodPracticeFilterVariables = useDebouncedValue(
@@ -487,21 +503,31 @@ function GoodPractices(props: Props) {
             <div className={styles.mainContent}>
                 <section className={styles.faqSection}>
                     <div className={styles.faqList}>
-                        {faqsResponse?.faqs.map((faq, i) => (
-                            <CollapsibleContent
-                                key={faq.id}
-                                name={faq.id}
-                                onExpansionChange={handleFaqExpansionChange}
-                                isExpanded={expandedFaq === faq.id}
-                                header={`Q${i + 1}: ${faq?.question}`}
-                            >
-                                <EllipsizedContent>
-                                    <HTMLOutput
-                                        value={faq.answer}
-                                    />
-                                </EllipsizedContent>
-                            </CollapsibleContent>
-                        ))}
+                        <Header
+                            heading="Frequently Asked Questions"
+                            headingSize="large"
+                        />
+                        <div className={styles.content}>
+                            {faqsResponse?.faqs.map((faq, i) => (
+                                <React.Fragment key={faq.id}>
+                                    <CollapsibleContent
+                                        name={faq.id}
+                                        onExpansionChange={handleFaqExpansionChange}
+                                        isExpanded={expandedFaq === faq.id}
+                                        header={`Q${i + 1}: ${faq?.question}`}
+                                    >
+                                        <EllipsizedContent>
+                                            <HTMLOutput
+                                                value={faq.answer}
+                                            />
+                                        </EllipsizedContent>
+                                    </CollapsibleContent>
+                                    {i < (faqsResponse?.faqs.length - 1) && (
+                                        <div className={styles.separator} />
+                                    )}
+                                </React.Fragment>
+                            ))}
+                        </div>
                     </div>
                     <div className={styles.sidePane}>
                         <div className={styles.block}>
@@ -534,6 +560,7 @@ function GoodPractices(props: Props) {
                             inputSectionClassName={styles.inputSection}
                             className={className}
                             name="search"
+                            label="Search Good Practice"
                             placeholder="Search Good Practice"
                             value={searchText}
                             onChange={setSearchText}
@@ -555,6 +582,7 @@ function GoodPractices(props: Props) {
                     </div>
                     <div className={styles.filterContainer}>
                         <MultiSelectInput
+                            label="Type of Good Practice"
                             variant="general"
                             placeholder="Type of Good Practice"
                             name="type"
@@ -567,40 +595,8 @@ function GoodPractices(props: Props) {
                         />
                         <MultiSelectInput
                             variant="general"
-                            placeholder="Drivers of Displacement"
-                            name="driversOfDisplacement"
-                            value={goodPracticeDrive}
-                            options={driverFilter}
-                            keySelector={keySelector}
-                            labelSelector={labelSelector}
-                            onChange={setGoodPracticeDrive}
-                            inputSectionClassName={styles.inputSection}
-                        />
-                        <MultiSelectInput
-                            variant="general"
-                            placeholder="Focus Area"
-                            name="focusArea"
-                            value={goodPracticeArea}
-                            options={areaFilter}
-                            keySelector={keySelector}
-                            labelSelector={labelSelector}
-                            onChange={setGoodPracticeArea}
-                            inputSectionClassName={styles.inputSection}
-                        />
-                        <MultiSelectInput
-                            variant="general"
-                            placeholder="Stage"
-                            name="stage"
-                            value={goodpracticeStage}
-                            options={stageFilter}
-                            keySelector={keySelector}
-                            labelSelector={labelSelector}
-                            onChange={setGoodPracticeStage}
-                            inputSectionClassName={styles.inputSection}
-                        />
-                        <MultiSelectInput
-                            variant="general"
                             placeholder="Region"
+                            label="Region"
                             name="region"
                             value={goodPracticeRegion}
                             options={regionFilter}
@@ -612,6 +608,7 @@ function GoodPractices(props: Props) {
                         <MultiSelectInput
                             variant="general"
                             placeholder="Country"
+                            label="Country"
                             name="country"
                             value={goodPracticeCountry}
                             options={countryFilter}
@@ -620,21 +617,62 @@ function GoodPractices(props: Props) {
                             onChange={setGoodPracticeCountry}
                             inputSectionClassName={styles.inputSection}
                         />
+                        <MultiSelectInput
+                            variant="general"
+                            placeholder="Drivers of Displacement"
+                            label="Drivers of Displacement"
+                            name="driversOfDisplacement"
+                            value={goodPracticeDrive}
+                            options={driverFilter}
+                            keySelector={keySelector}
+                            labelSelector={labelSelector}
+                            onChange={setGoodPracticeDrive}
+                            inputSectionClassName={styles.inputSection}
+                        />
+                        <MultiSelectInput
+                            variant="general"
+                            placeholder="Focus Area"
+                            label="Focus Area"
+                            name="focusArea"
+                            value={goodPracticeArea}
+                            options={areaFilter}
+                            keySelector={keySelector}
+                            labelSelector={labelSelector}
+                            onChange={setGoodPracticeArea}
+                            inputSectionClassName={styles.inputSection}
+                        />
+                        <MultiSelectInput
+                            variant="general"
+                            placeholder="Stage"
+                            label="Stage"
+                            name="stage"
+                            value={goodpracticeStage}
+                            options={stageFilter}
+                            keySelector={keySelector}
+                            labelSelector={labelSelector}
+                            onChange={setGoodPracticeStage}
+                            inputSectionClassName={styles.inputSection}
+                        />
                         <div />
                         <div />
                     </div>
                     <div className={styles.selectedFilters}>
-                        <Button
-                            name={undefined}
-                            onClick={handleClearFilterClick}
-                            variant="action"
-                            icons={<IoClose />}
-                            className={styles.clearFilterButton}
-                        >
-                            Clear all filters
-                        </Button>
+                        {isFiltered && (
+                            <Button
+                                name={undefined}
+                                onClick={handleClearFilterClick}
+                                variant="action"
+                                icons={<IoClose />}
+                                className={styles.clearFilterButton}
+                            >
+                                Clear all filters
+                            </Button>
+                        )}
+                        <div />
                         <DropdownMenu
+                            className={styles.filterDropdown}
                             label={`Sort: ${orderingOptions[orderingOptionValue]}`}
+                            variant="transparent"
                         >
                             {orderingOptionKeys.map((ok) => (
                                 <DropdownMenuItem

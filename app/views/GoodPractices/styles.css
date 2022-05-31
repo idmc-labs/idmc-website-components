@@ -42,17 +42,27 @@
         padding: var(--dui-spacing-large);
         width: 100%;
         max-width: var(--width-page-max);
-        gap: var(--dui-spacing-extra-large);
+        gap: var(--dui-spacing-ultra-large);
 
         .faq-section {
             display: flex;
-            gap: var(--dui-spacing-large);
+            gap: var(--dui-spacing-super-large);
 
             .faq-list {
                 display: flex;
                 flex-direction: column;
                 flex-grow: 1;
-                gap: var(--dui-spacing-small);
+                gap: var(--dui-spacing-large);
+
+                .content {
+                    display: flex;
+                    flex-direction: column;
+                    gap: var(--dui-spacing-small);
+
+                    .separator {
+                        border: var(--dui-width-separator-thin) solid var(--dui-color-separator);
+                    }
+                }
             }
 
             .side-pane {
@@ -79,7 +89,7 @@
                 display: flex;
                 align-items: flex-end;
                 flex-wrap: wrap;
-                gap: var(--dui-spacing-medium);
+                gap: var(--dui-spacing-large);
 
                 >* {
                     flex-basis: 0;
@@ -116,12 +126,16 @@
                 .clear-filter-button {
                     color: var(--dui-color-danger);
                 }
+
+                .filter-dropdown {
+                    color: var(--dui-color-brand);
+                }
             }
 
             .good-practice-list {
                 display: flex;
                 flex-wrap: wrap;
-                gap: var(--dui-spacing-large);
+                gap: var(--dui-spacing-extra-large);
 
                 >* {
                     flex-basis: 0;

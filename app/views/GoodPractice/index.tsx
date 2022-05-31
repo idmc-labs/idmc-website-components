@@ -3,6 +3,7 @@ import {
     _cs,
     isNotDefined,
     listToMap,
+    unique,
 } from '@togglecorp/fujs';
 import {
     gql,
@@ -141,8 +142,7 @@ function GoodPractice(props: Props) {
             (d) => d.name,
             (d) => d.description ?? format(d.name),
         );
-
-        return data.goodPractice.countries.map(
+        const regionList = data?.goodPractice?.countries?.map(
             (c) => {
                 if (!c) {
                     return '';
@@ -152,8 +152,13 @@ function GoodPractice(props: Props) {
                     return '';
                 }
 
-                return regionMap?.[c.goodPracticeRegion];
+                return regionMap?.[c.goodPracticeRegion] ?? '';
             },
+        );
+
+        return unique(
+            regionList,
+            (d) => d,
         ).join(', ');
     }, [data]);
 

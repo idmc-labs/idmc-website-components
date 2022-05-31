@@ -52,14 +52,13 @@
 
     }
 
-
     .main-content {
         display: flex;
         flex-direction: column;
         padding: var(--dui-spacing-large);
         width: 100%;
         max-width: var(--width-page-max);
-        gap: var(--dui-spacing-super-large);
+        gap: var(--dui-spacing-ultra-large);
 
         .details {
             display: flex;
@@ -202,7 +201,7 @@
             .related-good-practice-list {
                 display: flex;
                 flex-wrap: wrap;
-                gap: var(--dui-spacing-large);
+                gap: var(--dui-spacing-extra-large);
 
                 >* {
                     flex-basis: 0;
@@ -211,7 +210,6 @@
                 }
             }
         }
-
     }
 }
 
