@@ -31,6 +31,7 @@ function CarouselItem(props: Props) {
         activeItem,
         registerItem,
         unregisterItem,
+        setShouldAnimate,
     } = React.useContext(CarouselContext);
 
     const [
@@ -38,6 +39,10 @@ function CarouselItem(props: Props) {
         setIsExpandedTrue,
         setIsExpandedFalse,
     ] = useBooleanState(false);
+
+    React.useEffect(() => {
+        setShouldAnimate(!isExpanded);
+    }, [isExpanded, setShouldAnimate]);
 
     React.useEffect(() => {
         registerItem(order);

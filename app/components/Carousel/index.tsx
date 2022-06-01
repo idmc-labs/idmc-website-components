@@ -9,6 +9,8 @@ import CarouselContext from './CarouselContext';
 
 import styles from './styles.css';
 
+const CAROUSEL_ITEM_CHANGE_DURATION = 5; // in seconds
+
 function bound(value: number, min: number, max: number) {
     const bounded = Math.max(Math.min(value, max), min);
     return bounded;
@@ -25,6 +27,9 @@ function Carousel(props: Props) {
         children,
     } = props;
 
+    const autoChangeTimerRef = React.useRef<number>(CAROUSEL_ITEM_CHANGE_DURATION);
+    const [shouldAnimate, setShouldAnimate] = React.useState<boolean>(true);
+
     interface ItemState {
         items: number[];
         activeItem: number | undefined;
@@ -37,6 +42,53 @@ function Carousel(props: Props) {
         items: [],
         activeItem: 1,
     });
+
+    const switchToNextItem = React.useCallback(() => {
+        setItemState((prevState) => {
+            if (prevState.items.length === 0) {
+                return prevState;
+            }
+
+            if (isDefined(prevState.activeItem)) {
+                if (prevState.activeItem >= prevState.items.length) {
+                    return {
+                        ...prevState,
+                        activeItem: 1,
+                    };
+                }
+
+                return {
+                    ...prevState,
+                    activeItem: prevState.activeItem + 1,
+                };
+            }
+
+            return {
+                ...prevState,
+                activeItem: 1,
+            };
+        });
+    }, [setItemState]);
+
+    const decreaseTimer = React.useCallback(() => {
+        if (autoChangeTimerRef.current === 0) {
+            switchToNextItem();
+            autoChangeTimerRef.current = CAROUSEL_ITEM_CHANGE_DURATION;
+        } else if (autoChangeTimerRef.current > 0) {
+            autoChangeTimerRef.current -= 1;
+        }
+    }, [switchToNextItem]);
+
+    React.useEffect(() => {
+        let intervalId: number;
+        if (shouldAnimate) {
+            intervalId = window.setInterval(decreaseTimer, 1000);
+        }
+
+        return () => {
+            window.clearInterval(intervalId);
+        };
+    }, [shouldAnimate, decreaseTimer]);
 
     type setterFn = React.Dispatch<React.SetStateAction<number | undefined>>;
     const setActiveItemSafe: setterFn = React.useCallback((newValueOrSetter) => {
@@ -125,11 +177,15 @@ function Carousel(props: Props) {
         setActiveItem: setActiveItemSafe,
         registerItem,
         unregisterItem,
+        shouldAnimate,
+        setShouldAnimate,
     }), [
         itemState,
         setActiveItemSafe,
         registerItem,
         unregisterItem,
+        shouldAnimate,
+        setShouldAnimate,
     ]);
 
     return (

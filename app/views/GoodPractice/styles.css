@@ -77,12 +77,12 @@
                     flex-wrap: wrap;
                     border-radius: 0.25rem;
                     background-color: var(--dui-color-background);
-                    padding: var(--dui-spacing-medium);
                     gap: var(--dui-spacing-medium);
 
                     >* {
                         flex-basis: 0;
                         flex-grow: 1;
+                        padding: var(--dui-spacing-medium) var(--dui-spacing-large);
                     }
 
                     @media (max-width: 600px) {
@@ -218,10 +218,11 @@
     }
 
     .image {
+        background-color: var(--dui-color-background);
         width: 100%;
         height: calc(100% - 4rem);
         object-fit: contain;
-        object-position: top center;
+        object-position: center center;
     }
 
     .description {

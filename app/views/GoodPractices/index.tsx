@@ -97,6 +97,10 @@ query GoodPractices(
                 name
                 url
             }
+            tags {
+                id
+                name
+            }
         }
     }
 }
@@ -256,6 +260,7 @@ function GoodPractices(props: Props) {
     );
 
     const handleClearFilterClick = React.useCallback(() => {
+        setSearchText(undefined);
         if (goodPracticeFilterResponse) {
             const {
                 goodPracticeFilterChoices: {
@@ -412,6 +417,7 @@ function GoodPractices(props: Props) {
         startYear: d?.startYear,
         endYear: d?.endYear,
         image: d?.image?.url,
+        tags: d?.tags?.map((t) => t.name)?.join(', '),
     }), []);
 
     const handleFaqExpansionChange = useCallback((newValue: boolean, name: string | undefined) => {
@@ -501,51 +507,62 @@ function GoodPractices(props: Props) {
                 </section>
             </div>
             <div className={styles.mainContent}>
-                <section className={styles.faqSection}>
-                    <div className={styles.faqList}>
-                        <Header
-                            heading="Frequently Asked Questions"
-                            headingSize="large"
-                        />
-                        <div className={styles.content}>
-                            {faqsResponse?.faqs.map((faq, i) => (
-                                <React.Fragment key={faq.id}>
-                                    <CollapsibleContent
-                                        name={faq.id}
-                                        onExpansionChange={handleFaqExpansionChange}
-                                        isExpanded={expandedFaq === faq.id}
-                                        header={`Q${i + 1}: ${faq?.question}`}
-                                    >
-                                        <EllipsizedContent>
-                                            <HTMLOutput
-                                                value={faq.answer}
-                                            />
-                                        </EllipsizedContent>
-                                    </CollapsibleContent>
-                                    {i < (faqsResponse?.faqs.length - 1) && (
-                                        <div className={styles.separator} />
-                                    )}
-                                </React.Fragment>
-                            ))}
-                        </div>
-                    </div>
-                    <div className={styles.sidePane}>
-                        <div className={styles.block}>
-                            <EllipsizedContent>
-                                <HTMLOutput
-                                    value={submitDescription}
+                {((faqsResponse && faqsResponse.faqs.length > 0)
+                    || submitDescription || contactInformation) && (
+                    <section className={styles.faqSection}>
+                        {faqsResponse && faqsResponse.faqs.length > 0 ? (
+                            <div className={styles.faqList}>
+                                <Header
+                                    heading="Frequently Asked Questions"
+                                    headingSize="large"
                                 />
-                            </EllipsizedContent>
+                                <div className={styles.content}>
+                                    {faqsResponse?.faqs.map((faq, i) => (
+                                        <React.Fragment key={faq.id}>
+                                            <CollapsibleContent
+                                                name={faq.id}
+                                                onExpansionChange={handleFaqExpansionChange}
+                                                isExpanded={expandedFaq === faq.id}
+                                                header={faq?.question}
+                                            >
+                                                <EllipsizedContent>
+                                                    <HTMLOutput
+                                                        value={faq.answer}
+                                                    />
+                                                </EllipsizedContent>
+                                            </CollapsibleContent>
+                                            {i < (faqsResponse?.faqs.length - 1) && (
+                                                <div className={styles.separator} />
+                                            )}
+                                        </React.Fragment>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className={styles.faqList} />
+                        )}
+                        <div className={styles.sidePane}>
+                            {submitDescription && (
+                                <div className={styles.block}>
+                                    <EllipsizedContent>
+                                        <HTMLOutput
+                                            value={submitDescription}
+                                        />
+                                    </EllipsizedContent>
+                                </div>
+                            )}
+                            {contactInformation && (
+                                <div className={styles.block}>
+                                    <EllipsizedContent>
+                                        <HTMLOutput
+                                            value={contactInformation}
+                                        />
+                                    </EllipsizedContent>
+                                </div>
+                            )}
                         </div>
-                        <div className={styles.block}>
-                            <EllipsizedContent>
-                                <HTMLOutput
-                                    value={contactInformation}
-                                />
-                            </EllipsizedContent>
-                        </div>
-                    </div>
-                </section>
+                    </section>
+                )}
                 <section
                     className={styles.goodPracticesContainer}
                     ref={practicesListRef}
@@ -572,7 +589,7 @@ function GoodPractices(props: Props) {
                             )}
                         />
                         <SliderInput
-                            labelDescription={`${yearRange[0]} - ${yearRange[1]}`}
+                            labelDescription={`(${yearRange[0]} - ${yearRange[1]})`}
                             min={minYear}
                             max={maxYear}
                             value={yearRange}
@@ -723,7 +740,7 @@ function GoodPractices(props: Props) {
                         name={undefined}
                         onClick={handleShowMoreButtonClick}
                         disabled={goodPracticeLoading}
-                        variant="action"
+                        variant="transparent"
                         actions={<IoArrowDown />}
                     >
                         View more Good Practices
