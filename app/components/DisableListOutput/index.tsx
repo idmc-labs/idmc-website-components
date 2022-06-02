@@ -1,46 +1,81 @@
 import React from 'react';
 import { IoClose } from 'react-icons/io5';
+import { listToMap } from '@togglecorp/fujs';
+import { Tag } from '@the-deep/deep-ui';
+
 import Button from '#components/Button';
-import { GoodPracticeFilterChoicesQueryVariables } from '#generated/types';
+
 import styles from './styles.css';
 
-interface Props {
-    className?: string;
-    keySelector?: string;
-    labelSelector?: string;
-    options?: [];
-    value?: string[];
-    onFiltersChange: (filters: Omit<GoodPracticeFilterChoicesQueryVariables, 'goodPracticeFilterChoices'> | undefined) => void;
+type Key = string | number;
+
+interface Props<V, O> {
+    // className?: string;
+    label?: React.ReactNode;
+    keySelector: (item: O) => string | number;
+    labelSelector: (item: O) => React.ReactNode;
+    options?: O[] | null;
+    value?: V[] | null;
+    onChange: (newValue: V[]) => void;
 }
 
-const CountryOptions = [{}];
-
-function DisableListOutput(props: Props) {
+function DisableListOutput<
+    V extends Key | null | undefined,
+    O extends Record<Key, unknown>
+>(props: Props<V, O>) {
     const {
-        className,
-        options,
+        label,
+        options = [],
         keySelector,
         labelSelector,
-        onFiltersChange,
         value,
+        onChange,
     } = props;
 
-    const handleClearFilters = React.useCallback(() => {
-        onFiltersChange({});
-    }, [onFiltersChange]);
+    const optionsMap = React.useMemo(() => (
+        listToMap(options, keySelector, labelSelector)
+    ), [options, keySelector, labelSelector]);
+
+    const handleRemoveButtonClick = React.useCallback((v: V) => {
+        if (value) {
+            const index = value.findIndex((i) => i === v);
+
+            if (index !== -1) {
+                const newValue = [...value];
+                newValue.splice(index, 1);
+
+                if (onChange) {
+                    onChange(newValue);
+                }
+            }
+        }
+    }, [value, onChange]);
 
     return (
-        <div className={styles.footer}>
-            <Button
-                value={options}
-                name={undefined}
-                variant="action"
-                actions={<IoClose />}
-                onClick={handleClearFilters}
-                className={styles.clearFilterButton}
-            >
-                clear
-            </Button>
+        <div className={styles.dismissableListOutput}>
+            {label && (
+                <div className={styles.label}>
+                    {label}
+                </div>
+            )}
+            <div className={styles.valueList}>
+                {value?.map((v) => (
+                    <Tag
+                        key={v}
+                        actions={(
+                            <Button
+                                name={v}
+                                variant="action"
+                                onClick={handleRemoveButtonClick}
+                            >
+                                <IoClose />
+                            </Button>
+                        )}
+                    >
+                        {optionsMap?.[v as string]}
+                    </Tag>
+                ))}
+            </div>
         </div>
     );
 }

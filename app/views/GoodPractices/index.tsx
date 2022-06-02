@@ -308,7 +308,7 @@ function GoodPractices(props: Props) {
     const regionFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.regions
         ?.map((v) => ({ key: v.name, label: v.label }));
 
-    const countryFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.countries;
+    const countryFilterOptions = goodPracticeFilterResponse?.goodPracticeFilterChoices.countries;
 
     const [
         isFiltered,
@@ -631,7 +631,7 @@ function GoodPractices(props: Props) {
                                 inputSectionClassName={styles.inputSection}
                             />
                         )}
-                        {countryFilter && countryFilter.length > 0 && (
+                        {countryFilterOptions && countryFilterOptions.length > 0 && (
                             <MultiSelectInput
                                 labelContainerClassName={styles.label}
                                 variant="general"
@@ -639,7 +639,7 @@ function GoodPractices(props: Props) {
                                 label="Country"
                                 name="country"
                                 value={goodPracticeCountry}
-                                options={countryFilter}
+                                options={countryFilterOptions}
                                 keySelector={countryKeySelector}
                                 labelSelector={countryLabelSelector}
                                 onChange={setGoodPracticeCountry}
@@ -707,10 +707,24 @@ function GoodPractices(props: Props) {
                                 >
                                     Clear All Filters
                                 </Button>
-                                {typeFilter && regionFilter && (
+                                {goodPracticeCountry.length > 0 && (
                                     <DisableListOutput
-                                        filters={undefined}
-                                        onFiltersChange={handleClearFilterClick}
+                                        label="Country"
+                                        value={goodPracticeCountry}
+                                        keySelector={countryKeySelector}
+                                        labelSelector={countryLabelSelector}
+                                        options={countryFilterOptions}
+                                        onChange={setGoodPracticeCountry}
+                                    />
+                                )}
+                                {goodPracticeRegion.length > 0 && (
+                                    <DisableListOutput
+                                        label="Region"
+                                        value={goodPracticeRegion}
+                                        keySelector={keySelector}
+                                        labelSelector={labelSelector}
+                                        options={regionFilter}
+                                        onChange={setGoodPracticeRegion}
                                     />
                                 )}
                             </>

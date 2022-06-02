@@ -1,4 +1,10 @@
-.footer {
-    width: auto;
-    height: 100%;
+.dismissable-list-output {
+    display: flex;
+    gap: var(--dui-spacing-small);
+
+    .value-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--dui-spacing-small);
+    }
 }

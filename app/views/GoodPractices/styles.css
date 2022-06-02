@@ -131,7 +131,9 @@
 
             .filter-actions {
                 display: flex;
-                justify-content: space-between;
+                align-items: flex-start;
+                flex-wrap: wrap;
+                justify-content: flex-start;
 
                 .clear-filter-button {
                     color: var(--dui-color-danger);
