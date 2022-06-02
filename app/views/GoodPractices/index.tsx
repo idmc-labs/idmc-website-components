@@ -39,6 +39,7 @@ import EllipsizedContent from '#components/EllipsizedContent';
 import CollapsibleContent from '#components/CollapsibleContent';
 import GoodPracticeItem from '#components/GoodPracticeItem';
 import SliderInput from '#components/SliderInput';
+import DisableListOutput from '#components/DisableListOutput';
 
 import useDebouncedValue from '../../hooks/useDebouncedValue';
 
@@ -167,10 +168,10 @@ type OrderingOptionType = 'recent' | 'oldest' | 'mostPopular' | 'leastPopular';
 const orderingOptions: {
     [key in OrderingOptionType]: string;
 } = {
-    recent: 'Recent first',
-    oldest: 'Oldest first',
-    mostPopular: 'Most Popular first',
-    leastPopular: 'Least Popular first',
+    recent: 'Recent First',
+    oldest: 'Oldest First',
+    mostPopular: 'Most Popular First',
+    leastPopular: 'Least Popular First',
 };
 
 type OrderingType = {
@@ -309,14 +310,14 @@ function GoodPractices(props: Props) {
         goodPracticeVariables,
     ] = useMemo(() => ([
         searchText
-            || goodPracticeCountry.length > 0
-            || goodPracticeType.length > 0
-            || goodPracticeArea.length > 0
-            || goodpracticeStage.length > 0
-            || goodPracticeRegion.length > 0
-            || goodPracticeDrive.length > 0
-            || yearRange[0] !== minYear
-            || yearRange[1] !== maxYear,
+        || goodPracticeCountry.length > 0
+        || goodPracticeType.length > 0
+        || goodPracticeArea.length > 0
+        || goodpracticeStage.length > 0
+        || goodPracticeRegion.length > 0
+        || goodPracticeDrive.length > 0
+        || yearRange[0] !== minYear
+        || yearRange[1] !== maxYear,
         {
             search: searchText ?? '',
             countries: goodPracticeCountry,
@@ -679,15 +680,23 @@ function GoodPractices(props: Props) {
                     </div>
                     <div className={styles.filterActions}>
                         {isFiltered && (
-                            <Button
-                                name={undefined}
-                                onClick={handleClearFilterClick}
-                                variant="action"
-                                actions={<IoClose />}
-                                className={styles.clearFilterButton}
-                            >
-                                Clear all filters
-                            </Button>
+                            <>
+                                <Button
+                                    name={undefined}
+                                    onClick={handleClearFilterClick}
+                                    variant="action"
+                                    actions={<IoClose />}
+                                    className={styles.clearFilterButton}
+                                >
+                                    Clear All Filters
+                                </Button>
+                                {typeFilter && regionFilter && (
+                                    <DisableListOutput
+                                        filters={undefined}
+                                        onFiltersChange={handleClearFilterClick}
+                                    />
+                                )}
+                            </>
                         )}
                         <div />
                     </div>
@@ -726,7 +735,7 @@ function GoodPractices(props: Props) {
                         variant="action"
                         actions={<IoArrowDown />}
                     >
-                        View more Good Practices
+                        View More Good Practices
                     </Button>
                 </section>
             </div>
