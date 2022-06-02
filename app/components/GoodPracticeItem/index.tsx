@@ -19,6 +19,8 @@ interface Props {
     title: React.ReactNode;
     startYear: number | undefined | null;
     endYear: number | undefined | null;
+    tags?: React.ReactNode;
+    type?: React.ReactNode;
 }
 
 function GoodPracticeItem(props: Props) {
@@ -30,6 +32,8 @@ function GoodPracticeItem(props: Props) {
         image,
         startYear,
         endYear,
+        tags,
+        type = 'Report',
     } = props;
 
     // NOTE: Advanced stuff, contact frozenhelium
@@ -48,6 +52,9 @@ function GoodPracticeItem(props: Props) {
                 alt=""
             />
             <div className={styles.details}>
+                <div className={styles.type}>
+                    {type}
+                </div>
                 <Header
                     headingSize="extraSmall"
                     heading={title}
@@ -69,6 +76,11 @@ function GoodPracticeItem(props: Props) {
                     className={styles.description}
                     value={description}
                 />
+                {tags && (
+                    <div className={styles.tags}>
+                        {tags}
+                    </div>
+                )}
             </div>
         </a>
     );

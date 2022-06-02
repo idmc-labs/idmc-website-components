@@ -30,6 +30,7 @@
     --dui-color-watermark: rgb(100,99,99);
     */
     --dui-color-background: #eff4fa;
+    --dui-color-background-information: var(--dui-color-background);
 
     --color-foreground: #ffffff;
     --color-background: #eff4fa;

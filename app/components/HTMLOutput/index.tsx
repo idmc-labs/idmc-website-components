@@ -12,7 +12,24 @@ function useSanitizedHtml(rawHtml: string | null | undefined) {
         return sanitizeHtml(
             rawHtml,
             {
-                allowedTags: ['b', 'h', 'p', 'bold', 'strong', 'li', 'ul', 'a', 'br', 'i'],
+                allowedTags: [
+                    'b',
+                    'h',
+                    'p',
+                    'bold',
+                    'strong',
+                    'li',
+                    'ul',
+                    'a',
+                    'br',
+                    'i',
+                    'h1',
+                    'h2',
+                    'h3',
+                    'h4',
+                    'h5',
+                    'h6',
+                ],
                 // TODO: create comprehensive list of the attributes used
                 // to improve security
                 // allowedAttributes: {

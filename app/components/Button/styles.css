@@ -35,6 +35,13 @@
         padding: 0;
     }
 
+    &.transparent {
+        background-color: transparent;
+        padding: 0;
+        color: var(--dui-color-brand);
+        font-weight: var(--dui-font-weight-bold);
+    }
+
     &.secondary {
         background-color: var(--dui-color-foreground);
         color: var(--dui-color-brand);
@@ -43,6 +50,7 @@
         .icons {
             color: var(--dui-color-brand);
         }
+
         .actions {
             color: var(--dui-color-brand);
         }
@@ -62,6 +70,7 @@
                 background-color: var(--dui-color-background);
             }
 
+            &.transparent,
             &.action {
                 color: var(--dui-color-brand);
 

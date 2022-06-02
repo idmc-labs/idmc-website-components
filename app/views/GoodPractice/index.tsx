@@ -308,7 +308,7 @@ function GoodPractice(props: Props) {
                                             &nbsp;-&nbsp;
                                         </span>
                                         <span>
-                                            {data?.goodPractice?.endYear}
+                                            {data?.goodPractice?.endYear ?? 'Ongoing'}
                                         </span>
                                     </div>
                                 )}
@@ -337,7 +337,7 @@ function GoodPractice(props: Props) {
                         {(data?.goodPractice?.gallery?.length ?? 0) > 0 && (
                             <div className={styles.carouselContainer}>
                                 <Header
-                                    heading="Gallery of Best Practice"
+                                    heading="Best Practice Gallery"
                                     headingSize="small"
                                 />
                                 <Carousel className={styles.carousel}>
