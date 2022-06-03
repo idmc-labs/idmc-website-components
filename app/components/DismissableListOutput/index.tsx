@@ -60,20 +60,21 @@ function DisableListOutput<
             )}
             <div className={styles.valueList}>
                 {value?.map((v) => (
-                    <Tag
+                    <div
+                        className={styles.tag}
                         key={v}
-                        actions={(
-                            <Button
-                                name={v}
-                                variant="action"
-                                onClick={handleRemoveButtonClick}
-                            >
-                                <IoClose />
-                            </Button>
-                        )}
                     >
-                        {optionsMap?.[v as string]}
-                    </Tag>
+                        <div>
+                            {optionsMap?.[v as string]}
+                        </div>
+                        <Button
+                            name={v}
+                            variant="action"
+                            onClick={handleRemoveButtonClick}
+                        >
+                            <IoClose />
+                        </Button>
+                    </div>
                 ))}
             </div>
         </div>

@@ -33,7 +33,7 @@ function GoodPracticeItem(props: Props) {
         startYear,
         endYear,
         tags,
-        type = 'Report',
+        type = 'Good Practice',
     } = props;
 
     // NOTE: Advanced stuff, contact frozenhelium
@@ -56,7 +56,7 @@ function GoodPracticeItem(props: Props) {
                     {type}
                 </div>
                 <Header
-                    headingSize="extraSmall"
+                    headingSize="smallAlt"
                     heading={title}
                     description={startYear && (
                         <>
@@ -75,6 +75,7 @@ function GoodPracticeItem(props: Props) {
                 <HTMLOutput
                     className={styles.description}
                     value={description}
+                    hideHeadings
                 />
                 {tags && (
                     <div className={styles.tags}>

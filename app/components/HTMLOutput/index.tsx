@@ -4,7 +4,32 @@ import { _cs } from '@togglecorp/fujs';
 
 import styles from './styles.css';
 
-function useSanitizedHtml(rawHtml: string | null | undefined) {
+function useSanitizedHtml(rawHtml: string | null | undefined, hideHeading?: boolean) {
+    const baseTags = [
+        'b',
+        'h',
+        'p',
+        'bold',
+        'strong',
+        'li',
+        'ul',
+        'a',
+        'br',
+        'i',
+    ];
+    const headingTags = [
+        'h1',
+        'h2',
+        'h3',
+        'h4',
+        'h5',
+        'h6',
+    ];
+    const allowedTags = [...baseTags];
+    if (!hideHeading) {
+        allowedTags.push(...headingTags);
+    }
+
     const sanitizedHtml = React.useMemo(() => {
         if (!rawHtml) {
             return undefined;
@@ -13,22 +38,6 @@ function useSanitizedHtml(rawHtml: string | null | undefined) {
             rawHtml,
             {
                 allowedTags: [
-                    'b',
-                    'h',
-                    'p',
-                    'bold',
-                    'strong',
-                    'li',
-                    'ul',
-                    'a',
-                    'br',
-                    'i',
-                    'h1',
-                    'h2',
-                    'h3',
-                    'h4',
-                    'h5',
-                    'h6',
                 ],
                 // TODO: create comprehensive list of the attributes used
                 // to improve security
@@ -54,16 +63,18 @@ function useSanitizedHtml(rawHtml: string | null | undefined) {
 
 interface Props extends Omit<React.HTMLProps<HTMLDivElement>, 'dangerouslySetInnerHTML' | 'value'>{
     value: string | null | undefined;
+    hideHeadings?: boolean;
 }
 
 function RichTextOutput(props: Props) {
     const {
         className,
         value,
+        hideHeadings,
         ...otherProps
     } = props;
 
-    const sanitizedValue = useSanitizedHtml(value);
+    const sanitizedValue = useSanitizedHtml(value, hideHeadings);
 
     if (!sanitizedValue) {
         return null;

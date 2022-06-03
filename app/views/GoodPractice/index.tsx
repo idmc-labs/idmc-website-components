@@ -44,8 +44,6 @@ query GoodPracticeDetails($id: ID!) {
     goodPractice(pk: $id) {
         description
         endYear
-        driversOfDisplacement
-        focusArea
         countries {
             id
             name
@@ -60,20 +58,14 @@ query GoodPracticeDetails($id: ID!) {
           }
           youtubeVideoUrl
         }
-        goodPracticeFormUrl
         id
         image {
           name
           url
         }
-        isPublished
         mediaAndResourceLinks
-        publishedDate
-        pageViewedCount
-        stage
         startYear
         title
-        type
     }
 
     regionList: __type(name: "GoodPracticeRegion") {
@@ -92,7 +84,6 @@ query RelatedGoodPracticeList($id: ID!) {
             id
             title
             description
-            publishedDate
             startYear
             endYear
             image {

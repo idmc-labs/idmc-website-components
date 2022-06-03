@@ -39,7 +39,7 @@ import EllipsizedContent from '#components/EllipsizedContent';
 import CollapsibleContent from '#components/CollapsibleContent';
 import GoodPracticeItem from '#components/GoodPracticeItem';
 import SliderInput from '#components/SliderInput';
-import DisableListOutput from '#components/DisableListOutput';
+import DismissableListOutput from '#components/DismissableListOutput';
 
 import useDebouncedValue from '../../hooks/useDebouncedValue';
 
@@ -61,8 +61,8 @@ const GOOD_PRACTICES = gql`
 query GoodPractices(
     $search : String!,
     $types: [TypeEnum!],
-    $driversOfDisplacements : [DriversOfDisplacementTypeEnum!],
-    $focusArea:[FocusAreaEnum!] ,
+    $driversOfDisplacements : [ID!],
+    $focusArea:[ID!] ,
     $stages: [StageTypeEnum!]!,
     $regions: [GoodPracticeRegion!],
     $countries: [ID!],
@@ -127,11 +127,11 @@ query GoodPracticeFilterChoices {
             name
         }
         driversOfDisplacement {
-            label
+            id
             name
         }
         focusArea {
-            label
+            id
             name
         }
         regions {
@@ -151,16 +151,15 @@ query GoodPracticeFilterChoices {
 `;
 
 type GoodPracticeItemType = NonNullable<NonNullable<GoodPracticesQuery['goodPractices']>['results']>[number];
-type countryFilterList = NonNullable<NonNullable<GoodPracticeFilterChoicesQuery['goodPracticeFilterChoices']>['countries']>[number];
 
 const keySelector = (d: { key: string }) => d.key;
 const labelSelector = (d: { label: string }) => d.label;
 
-function countryKeySelector(d: countryFilterList) {
+function idSelector(d: { id: number }) {
     return String(d.id);
 }
 
-function countryLabelSelector(d: countryFilterList) {
+function nameSelector(d: { name: string }) {
     return d.name;
 }
 
@@ -292,23 +291,26 @@ function GoodPractices(props: Props) {
 
     const minYear = goodPracticeFilterResponse?.goodPracticeFilterChoices.startYear ?? 0;
     const maxYear = goodPracticeFilterResponse?.goodPracticeFilterChoices.endYear ?? 0;
+    const filterChoices = goodPracticeFilterResponse?.goodPracticeFilterChoices;
 
-    const typeFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.type
-        ?.map((v) => ({ key: v.name, label: v.label }));
-
-    const driverFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.driversOfDisplacement
-        ?.map((v) => ({ key: v.name, label: v.label }));
-
-    const areaFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.focusArea
-        ?.map((v) => ({ key: v.name, label: v.label }));
-
-    const stageFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.stage
-        ?.map((v) => ({ key: v.name, label: v.label }));
-
-    const regionFilter = goodPracticeFilterResponse?.goodPracticeFilterChoices.regions
-        ?.map((v) => ({ key: v.name, label: v.label }));
-
-    const countryFilterOptions = goodPracticeFilterResponse?.goodPracticeFilterChoices.countries;
+    const [
+        typeFilterOptions,
+        driverFilterOptions,
+        areaFilterOptions,
+        stageFilterOptions,
+        regionFilterOptions,
+        countryFilterOptions,
+    ] = React.useMemo(() => [
+        filterChoices?.type
+            ?.map((v) => ({ key: v.name, label: v.label })),
+        filterChoices?.driversOfDisplacement,
+        filterChoices?.focusArea,
+        filterChoices?.stage
+            ?.map((v) => ({ key: v.name, label: v.label })),
+        filterChoices?.regions
+            ?.map((v) => ({ key: v.name, label: v.label })),
+        filterChoices?.countries,
+    ], [filterChoices]);
 
     const [
         isFiltered,
@@ -601,7 +603,7 @@ function GoodPractices(props: Props) {
                         />
                     </div>
                     <div className={styles.filterContainer}>
-                        {typeFilter && typeFilter.length > 0 && (
+                        {typeFilterOptions && typeFilterOptions.length > 0 && (
                             <MultiSelectInput
                                 labelContainerClassName={styles.label}
                                 label="Type of Good Practice"
@@ -609,14 +611,14 @@ function GoodPractices(props: Props) {
                                 placeholder="Type of Good Practice"
                                 name="type"
                                 value={goodPracticeType}
-                                options={typeFilter}
+                                options={typeFilterOptions}
                                 keySelector={keySelector}
                                 labelSelector={labelSelector}
                                 onChange={setGoodPracticeType}
                                 inputSectionClassName={styles.inputSection}
                             />
                         )}
-                        {regionFilter && regionFilter.length > 0 && (
+                        {regionFilterOptions && regionFilterOptions.length > 0 && (
                             <MultiSelectInput
                                 labelContainerClassName={styles.label}
                                 variant="general"
@@ -624,7 +626,7 @@ function GoodPractices(props: Props) {
                                 label="Region"
                                 name="region"
                                 value={goodPracticeRegion}
-                                options={regionFilter}
+                                options={regionFilterOptions}
                                 keySelector={keySelector}
                                 labelSelector={labelSelector}
                                 onChange={setGoodPracticeRegion}
@@ -640,13 +642,13 @@ function GoodPractices(props: Props) {
                                 name="country"
                                 value={goodPracticeCountry}
                                 options={countryFilterOptions}
-                                keySelector={countryKeySelector}
-                                labelSelector={countryLabelSelector}
+                                keySelector={idSelector}
+                                labelSelector={nameSelector}
                                 onChange={setGoodPracticeCountry}
                                 inputSectionClassName={styles.inputSection}
                             />
                         )}
-                        {driverFilter && driverFilter.length > 0 && (
+                        {driverFilterOptions && driverFilterOptions.length > 0 && (
                             <MultiSelectInput
                                 labelContainerClassName={styles.label}
                                 variant="general"
@@ -654,14 +656,14 @@ function GoodPractices(props: Props) {
                                 label="Drivers of Displacement"
                                 name="driversOfDisplacement"
                                 value={goodPracticeDrive}
-                                options={driverFilter}
-                                keySelector={keySelector}
-                                labelSelector={labelSelector}
+                                options={driverFilterOptions}
+                                keySelector={idSelector}
+                                labelSelector={nameSelector}
                                 onChange={setGoodPracticeDrive}
                                 inputSectionClassName={styles.inputSection}
                             />
                         )}
-                        {areaFilter && areaFilter.length > 0 && (
+                        {areaFilterOptions && areaFilterOptions.length > 0 && (
                             <MultiSelectInput
                                 labelContainerClassName={styles.label}
                                 variant="general"
@@ -669,14 +671,14 @@ function GoodPractices(props: Props) {
                                 label="Focus Area"
                                 name="focusArea"
                                 value={goodPracticeArea}
-                                options={areaFilter}
-                                keySelector={keySelector}
-                                labelSelector={labelSelector}
+                                options={areaFilterOptions}
+                                keySelector={idSelector}
+                                labelSelector={nameSelector}
                                 onChange={setGoodPracticeArea}
                                 inputSectionClassName={styles.inputSection}
                             />
                         )}
-                        {stageFilter && stageFilter.length > 0 && (
+                        {stageFilterOptions && stageFilterOptions.length > 0 && (
                             <MultiSelectInput
                                 labelContainerClassName={styles.label}
                                 variant="general"
@@ -684,20 +686,80 @@ function GoodPractices(props: Props) {
                                 label="Stage"
                                 name="stage"
                                 value={goodpracticeStage}
-                                options={stageFilter}
+                                options={stageFilterOptions}
                                 keySelector={keySelector}
                                 labelSelector={labelSelector}
                                 onChange={setGoodPracticeStage}
                                 inputSectionClassName={styles.inputSection}
                             />
                         )}
-                        {(!stageFilter || stageFilter.length === 0) && <div />}
+                        {(!stageFilterOptions || stageFilterOptions.length === 0) && <div />}
                         <div />
                         <div />
                     </div>
                     <div className={styles.filterActions}>
                         {isFiltered && (
                             <>
+                                {goodPracticeType.length > 0 && (
+                                    <DismissableListOutput
+                                        label="Type of Good Practice"
+                                        value={goodPracticeType}
+                                        keySelector={keySelector}
+                                        labelSelector={labelSelector}
+                                        options={typeFilterOptions}
+                                        onChange={setGoodPracticeType}
+                                    />
+                                )}
+                                {goodPracticeRegion.length > 0 && (
+                                    <DismissableListOutput
+                                        label="Region"
+                                        value={goodPracticeRegion}
+                                        keySelector={keySelector}
+                                        labelSelector={labelSelector}
+                                        options={regionFilterOptions}
+                                        onChange={setGoodPracticeRegion}
+                                    />
+                                )}
+                                {goodPracticeCountry.length > 0 && (
+                                    <DismissableListOutput
+                                        label="Country"
+                                        value={goodPracticeCountry}
+                                        keySelector={idSelector}
+                                        labelSelector={nameSelector}
+                                        options={countryFilterOptions}
+                                        onChange={setGoodPracticeCountry}
+                                    />
+                                )}
+                                {goodPracticeDrive.length > 0 && (
+                                    <DismissableListOutput
+                                        label="Drive Of Displacement"
+                                        value={goodPracticeDrive}
+                                        keySelector={idSelector}
+                                        labelSelector={nameSelector}
+                                        options={driverFilterOptions}
+                                        onChange={setGoodPracticeDrive}
+                                    />
+                                )}
+                                {goodPracticeArea.length > 0 && (
+                                    <DismissableListOutput
+                                        label="Focus Area"
+                                        value={goodPracticeArea}
+                                        keySelector={idSelector}
+                                        labelSelector={nameSelector}
+                                        options={areaFilterOptions}
+                                        onChange={setGoodPracticeArea}
+                                    />
+                                )}
+                                {goodpracticeStage.length > 0 && (
+                                    <DismissableListOutput
+                                        label="Stage"
+                                        value={goodpracticeStage}
+                                        keySelector={keySelector}
+                                        labelSelector={labelSelector}
+                                        options={stageFilterOptions}
+                                        onChange={setGoodPracticeStage}
+                                    />
+                                )}
                                 <Button
                                     name={undefined}
                                     onClick={handleClearFilterClick}
@@ -707,66 +769,6 @@ function GoodPractices(props: Props) {
                                 >
                                     Clear All Filters
                                 </Button>
-                                {goodPracticeCountry.length > 0 && (
-                                    <DisableListOutput
-                                        label="Country"
-                                        value={goodPracticeCountry}
-                                        keySelector={countryKeySelector}
-                                        labelSelector={countryLabelSelector}
-                                        options={countryFilterOptions}
-                                        onChange={setGoodPracticeCountry}
-                                    />
-                                )}
-                                {goodPracticeRegion.length > 0 && (
-                                    <DisableListOutput
-                                        label="Region"
-                                        value={goodPracticeRegion}
-                                        keySelector={keySelector}
-                                        labelSelector={labelSelector}
-                                        options={regionFilter}
-                                        onChange={setGoodPracticeRegion}
-                                    />
-                                )}
-                                {goodPracticeArea.length > 0 && (
-                                    <DisableListOutput
-                                        label="Area"
-                                        value={goodPracticeArea}
-                                        keySelector={keySelector}
-                                        labelSelector={labelSelector}
-                                        options={areaFilter}
-                                        onChange={setGoodPracticeArea}
-                                    />
-                                )}
-                                {goodPracticeDrive.length > 0 && (
-                                    <DisableListOutput
-                                        label="Drive Of Displacement"
-                                        value={goodPracticeDrive}
-                                        keySelector={keySelector}
-                                        labelSelector={labelSelector}
-                                        options={driverFilter}
-                                        onChange={setGoodPracticeDrive}
-                                    />
-                                )}
-                                {goodpracticeStage.length > 0 && (
-                                    <DisableListOutput
-                                        label="Stage"
-                                        value={goodpracticeStage}
-                                        keySelector={keySelector}
-                                        labelSelector={labelSelector}
-                                        options={stageFilter}
-                                        onChange={setGoodPracticeStage}
-                                    />
-                                )}
-                                {goodPracticeType.length > 0 && (
-                                    <DisableListOutput
-                                        label="Type"
-                                        value={goodPracticeType}
-                                        keySelector={keySelector}
-                                        labelSelector={labelSelector}
-                                        options={typeFilter}
-                                        onChange={setGoodPracticeType}
-                                    />
-                                )}
                             </>
                         )}
                         <div />

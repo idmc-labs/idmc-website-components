@@ -3,7 +3,7 @@ import { _cs } from '@togglecorp/fujs';
 
 import styles from './styles.css';
 
-export type HeadingSizeType = 'extraSmall' | 'small' | 'medium' | 'large' | 'extraLarge';
+export type HeadingSizeType = 'extraSmall' | 'small' | 'medium' | 'large' | 'extraLarge' | 'smallAlt';
 
 interface Props {
     className?: string;
@@ -56,6 +56,11 @@ function Heading(props: Props) {
             )}
             {size === 'small' && (
                 <h4 className={_cs(styles.small, className)}>
+                    { children }
+                </h4>
+            )}
+            {size === 'smallAlt' && (
+                <h4 className={_cs(styles.smallAlt, className)}>
                     { children }
                 </h4>
             )}

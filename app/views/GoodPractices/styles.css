@@ -131,9 +131,10 @@
 
             .filter-actions {
                 display: flex;
-                align-items: flex-start;
+                align-items: center;
                 flex-wrap: wrap;
                 justify-content: flex-start;
+                gap: var(--dui-spacing-large);
 
                 .clear-filter-button {
                     color: var(--dui-color-danger);
