@@ -727,6 +727,46 @@ function GoodPractices(props: Props) {
                                         onChange={setGoodPracticeRegion}
                                     />
                                 )}
+                                {goodPracticeArea.length > 0 && (
+                                    <DisableListOutput
+                                        label="Area"
+                                        value={goodPracticeArea}
+                                        keySelector={keySelector}
+                                        labelSelector={labelSelector}
+                                        options={areaFilter}
+                                        onChange={setGoodPracticeArea}
+                                    />
+                                )}
+                                {goodPracticeDrive.length > 0 && (
+                                    <DisableListOutput
+                                        label="Drive Of Displacement"
+                                        value={goodPracticeDrive}
+                                        keySelector={keySelector}
+                                        labelSelector={labelSelector}
+                                        options={driverFilter}
+                                        onChange={setGoodPracticeDrive}
+                                    />
+                                )}
+                                {goodpracticeStage.length > 0 && (
+                                    <DisableListOutput
+                                        label="Stage"
+                                        value={goodpracticeStage}
+                                        keySelector={keySelector}
+                                        labelSelector={labelSelector}
+                                        options={stageFilter}
+                                        onChange={setGoodPracticeStage}
+                                    />
+                                )}
+                                {goodPracticeType.length > 0 && (
+                                    <DisableListOutput
+                                        label="Type"
+                                        value={goodPracticeType}
+                                        keySelector={keySelector}
+                                        labelSelector={labelSelector}
+                                        options={typeFilter}
+                                        onChange={setGoodPracticeType}
+                                    />
+                                )}
                             </>
                         )}
                         <div />
