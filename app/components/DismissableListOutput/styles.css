@@ -1,5 +1,6 @@
 .dismissable-list-output {
     display: flex;
+    align-items: baseline;
     gap: var(--dui-spacing-small);
 
     .label {

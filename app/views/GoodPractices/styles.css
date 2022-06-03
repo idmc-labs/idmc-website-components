@@ -136,10 +136,14 @@
                 justify-content: flex-start;
                 gap: var(--dui-spacing-large);
 
-                .clear-filter-button {
-                    color: var(--dui-color-danger);
-                }
+                .clear-all-container {
+                    flex-basis: 100%;
 
+                    .clear-filter-button {
+                        color: var(--dui-color-danger);
+                        gap: var(--dui-spacing-extra-small);
+                    }
+                }
             }
 
             .separator {

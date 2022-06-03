@@ -37,8 +37,7 @@ function useSanitizedHtml(rawHtml: string | null | undefined, hideHeading?: bool
         return sanitizeHtml(
             rawHtml,
             {
-                allowedTags: [
-                ],
+                allowedTags,
                 // TODO: create comprehensive list of the attributes used
                 // to improve security
                 // allowedAttributes: {
@@ -56,7 +55,7 @@ function useSanitizedHtml(rawHtml: string | null | undefined, hideHeading?: bool
                 },
             },
         );
-    }, [rawHtml]);
+    }, [rawHtml, allowedTags]);
 
     return sanitizedHtml;
 }

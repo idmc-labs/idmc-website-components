@@ -4,8 +4,7 @@ import {
     useQuery,
 } from '@apollo/client';
 import {
-    FaqsQueryVariables,
-    FaqsQuery,
+    FaqsQueryVariables, FaqsQuery,
     GoodPracticesQuery,
     GoodPracticesQueryVariables,
     GoodPracticeListingStaticPageQuery,
@@ -54,7 +53,7 @@ const FAQS = gql`
             id
             question
         }
-    } 
+    }
 `;
 
 const GOOD_PRACTICES = gql`
@@ -155,8 +154,8 @@ type GoodPracticeItemType = NonNullable<NonNullable<GoodPracticesQuery['goodPrac
 const keySelector = (d: { key: string }) => d.key;
 const labelSelector = (d: { label: string }) => d.label;
 
-function idSelector(d: { id: number }) {
-    return String(d.id);
+function idSelector(d: { id: string }) {
+    return d.id;
 }
 
 function nameSelector(d: { name: string }) {
@@ -219,8 +218,8 @@ function GoodPractices(props: Props) {
 
     type GoodPracticeFilter = NonNullable<(typeof goodPracticeFilterResponse)>['goodPracticeFilterChoices'];
     type GoodPracticeTypeType = NonNullable<GoodPracticeFilter['type']>[number]['name'];
-    type GoodPracticeAreaType = NonNullable<GoodPracticeFilter['focusArea']>[number]['name'];
-    type GoodPracticeDriveType = NonNullable<GoodPracticeFilter['driversOfDisplacement']>[number]['name'];
+    type GoodPracticeAreaType = NonNullable<GoodPracticeFilter['focusArea']>[number]['id'];
+    type GoodPracticeDriveType = NonNullable<GoodPracticeFilter['driversOfDisplacement']>[number]['id'];
     type GoodPracticeStageType = NonNullable<GoodPracticeFilter['stage']>[number]['name'];
     type GoodPracticeRegionType = NonNullable<GoodPracticeFilter['regions']>[number]['name'];
     type GoodPracticeCountryType = NonNullable<GoodPracticeFilter['countries']>[number]['name'];
@@ -317,14 +316,14 @@ function GoodPractices(props: Props) {
         goodPracticeVariables,
     ] = useMemo(() => ([
         searchText
-        || goodPracticeCountry.length > 0
-        || goodPracticeType.length > 0
-        || goodPracticeArea.length > 0
-        || goodpracticeStage.length > 0
-        || goodPracticeRegion.length > 0
-        || goodPracticeDrive.length > 0
-        || yearRange[0] !== minYear
-        || yearRange[1] !== maxYear,
+            || goodPracticeCountry.length > 0
+            || goodPracticeType.length > 0
+            || goodPracticeArea.length > 0
+            || goodpracticeStage.length > 0
+            || goodPracticeRegion.length > 0
+            || goodPracticeDrive.length > 0
+            || yearRange[0] !== minYear
+            || yearRange[1] !== maxYear,
         {
             search: searchText ?? '',
             countries: goodPracticeCountry,
@@ -760,15 +759,17 @@ function GoodPractices(props: Props) {
                                         onChange={setGoodPracticeStage}
                                     />
                                 )}
-                                <Button
-                                    name={undefined}
-                                    onClick={handleClearFilterClick}
-                                    variant="action"
-                                    actions={<IoClose />}
-                                    className={styles.clearFilterButton}
-                                >
-                                    Clear All Filters
-                                </Button>
+                                <div className={styles.clearAllContainer}>
+                                    <Button
+                                        name={undefined}
+                                        onClick={handleClearFilterClick}
+                                        variant="action"
+                                        actions={<IoClose />}
+                                        className={styles.clearFilterButton}
+                                    >
+                                        Clear All Filters
+                                    </Button>
+                                </div>
                             </>
                         )}
                         <div />
@@ -799,7 +800,18 @@ function GoodPractices(props: Props) {
                         renderer={GoodPracticeItem}
                         errored={!!goodPracticeError}
                         pending={goodPracticeLoading}
+                        messageShown
                         filtered={false}
+                        emptyMessage={(
+                            <div>
+                                No Good Practice found
+                            </div>
+                        )}
+                        filteredEmptyMessage={(
+                            <div>
+                                No Good Practice found
+                            </div>
+                        )}
                     />
                     <Button
                         name={undefined}
