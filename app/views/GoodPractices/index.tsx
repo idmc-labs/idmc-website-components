@@ -29,6 +29,7 @@ import {
     IoSearch,
     IoClose,
     IoArrowDown,
+    IoArrowUp,
 } from 'react-icons/io5';
 
 import Button from '#components/Button';
@@ -86,6 +87,7 @@ query GoodPractices(
         },
         pagination: {limit: $limit, offset: $offset},
     ) {
+        totalCount
         results {
             id
             title
@@ -367,10 +369,13 @@ function GoodPractices(props: Props) {
         data: goodPracticeResponse = previousData,
         error: goodPracticeError,
         loading: goodPracticeLoading,
+        refetch: refetchGoodPractice,
     } = useQuery<GoodPracticesQuery, GoodPracticesQueryVariables>(
         GOOD_PRACTICES,
         { variables: goodPracticeFilterVariables },
     );
+
+    const maxLimitShow = goodPracticeResponse?.goodPractices?.totalCount ?? 0;
 
     const goodPracticeList = React.useMemo(() => {
         const list = goodPracticeResponse?.goodPractices?.results;
@@ -472,6 +477,12 @@ function GoodPractices(props: Props) {
         goodPracticeVariables,
         goodPracticesOffset,
         fetchMoreGoodPractice,
+    ]);
+
+    const handleShowLessButtonClick = useCallback(() => {
+        refetchGoodPractice();
+    }, [
+        refetchGoodPractice,
     ]);
 
     const orderingOptionKeys = React.useMemo(
@@ -774,24 +785,28 @@ function GoodPractices(props: Props) {
                         )}
                         <div />
                     </div>
-                    <div className={styles.separator} />
-                    <div className={styles.orderingContainer}>
-                        <DropdownMenu
-                            className={styles.orderDropdown}
-                            label={`Sort: ${orderingOptions[orderingOptionValue]}`}
-                            variant="transparent"
-                        >
-                            {orderingOptionKeys.map((ok) => (
-                                <DropdownMenuItem
-                                    key={ok}
-                                    name={ok}
-                                    onClick={setOrderingOptionValue}
+                    {goodPracticeList && (
+                        <>
+                            <div className={styles.separator} />
+                            <div className={styles.orderingContainer}>
+                                <DropdownMenu
+                                    className={styles.orderDropdown}
+                                    label={`Sort: ${orderingOptions[orderingOptionValue]}`}
+                                    variant="transparent"
                                 >
-                                    {orderingOptions[ok]}
-                                </DropdownMenuItem>
-                            ))}
-                        </DropdownMenu>
-                    </div>
+                                    {orderingOptionKeys.map((ok) => (
+                                        <DropdownMenuItem
+                                            key={ok}
+                                            name={ok}
+                                            onClick={setOrderingOptionValue}
+                                        >
+                                            {orderingOptions[ok]}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenu>
+                            </div>
+                        </>
+                    )}
                     <ListView
                         className={styles.goodPracticeList}
                         data={goodPracticeList}
@@ -804,24 +819,40 @@ function GoodPractices(props: Props) {
                         filtered={false}
                         emptyMessage={(
                             <div>
-                                No Good Practice found
+                                No Good Practice Found
                             </div>
                         )}
                         filteredEmptyMessage={(
                             <div>
-                                No Good Practice found
+                                No Good Practice Found
                             </div>
                         )}
                     />
-                    <Button
-                        name={undefined}
-                        onClick={handleShowMoreButtonClick}
-                        disabled={goodPracticeLoading}
-                        variant="transparent"
-                        actions={<IoArrowDown />}
-                    >
-                        View More Good Practices
-                    </Button>
+                    <div className={styles.viewButtons}>
+                        {goodPracticeList && (
+                            <Button
+                                name={undefined}
+                                onClick={handleShowMoreButtonClick}
+                                disabled={goodPracticeLoading}
+                                variant="transparent"
+                                actions={<IoArrowDown />}
+                            >
+                                View More Good Practices
+                            </Button>
+                        )}
+                        {(goodPracticeList && goodPracticeList.length
+                        > GOOD_PRACTICE_PAGE_SIZE) && (
+                            <Button
+                                name={undefined}
+                                onClick={handleShowLessButtonClick}
+                                disabled={goodPracticeLoading}
+                                variant="transparent"
+                                actions={<IoArrowUp />}
+                            >
+                                Show Less
+                            </Button>
+                        )}
+                    </div>
                 </section>
             </div>
         </div>
