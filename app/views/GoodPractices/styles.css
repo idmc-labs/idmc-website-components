@@ -36,6 +36,34 @@
         }
 
     }
+    .map {
+        /* display: flex; */
+        gap: var(--dui-spacing-large);
+
+        .map-wrapper {
+            flex-grow: 1;
+
+            .map-container {
+                width: 100%;
+                height: 32rem;
+            }
+        }
+        .legend-list {
+            display: flex;
+            background-color: var(--dui-color-background);
+            padding: var(--dui-spacing-small) 0;
+
+            .legend {
+                padding: var(--dui-spacing-small) var(--dui-spacing-large);
+
+                .legend-element-list {
+                    display: flex;
+                    margin-top: var(--dui-spacing-medium);
+                    gap: var(--dui-spacing-large);
+                }
+            }
+        }
+    }
 
     .main-content {
         display: flex;

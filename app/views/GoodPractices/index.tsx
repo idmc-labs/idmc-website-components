@@ -20,6 +20,11 @@ import {
     DropdownMenuItem,
     useInputState,
 } from '@the-deep/deep-ui';
+import Map, {
+    MapContainer,
+    MapSource,
+    MapLayer,
+} from '@togglecorp/re-map';
 import {
     _cs,
     listToMap,
@@ -34,6 +39,7 @@ import {
 
 import Button from '#components/Button';
 import Header from '#components/Header';
+import LegendElement from '#components/LegendElement';
 import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
 import CollapsibleContent from '#components/CollapsibleContent';
@@ -155,6 +161,26 @@ type GoodPracticeItemType = NonNullable<NonNullable<GoodPracticesQuery['goodPrac
 
 const keySelector = (d: { key: string }) => d.key;
 const labelSelector = (d: { label: string }) => d.label;
+
+const lightStyle = 'mapbox://styles/mapbox/light-v10';
+
+const orangePointHaloCirclePaint: mapboxgl.CirclePaint = {
+    'circle-opacity': 0.6,
+    'circle-color': {
+        property: 'status',
+        type: 'categorical',
+        stops: [
+            ['recently_submitted', 'rgb(239, 125, 0)'],
+            ['under_review', 'rgb(1, 142, 202)'],
+            ['approved', 'rgb(51, 149, 62)'],
+        ],
+    },
+    'circle-radius': 9,
+};
+
+const sourceOption: mapboxgl.GeoJSONSourceRaw = {
+    type: 'geojson',
+};
 
 function idSelector(d: { id: string }) {
     return d.id;
@@ -520,6 +546,57 @@ function GoodPractices(props: Props) {
                 </section>
             </div>
             <div className={styles.mainContent}>
+                <section className={styles.map}>
+                    <div className={styles.legendList}>
+                        <div className={styles.legend}>
+                            <Header
+                                headingSize="extraSmall"
+                                heading="State"
+                            />
+                            <div className={styles.legendElementList}>
+                                <LegendElement
+                                    color="var(--color-green)"
+                                    label="Approved"
+                                />
+                                <LegendElement
+                                    color="var(--color-blue)"
+                                    label="Under Review"
+                                />
+                                <LegendElement
+                                    color="var(--color-orange)"
+                                    label="Recently submitted or registered"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <Map
+                        mapStyle={lightStyle}
+                        mapOptions={{
+                            logoPosition: 'bottom-left',
+                            scrollZoom: false,
+                            zoom: 1,
+                        }}
+                        scaleControlShown
+                        navControlShown
+                    >
+                        <div className={styles.mapWrapper}>
+                            <MapContainer className={styles.mapContainer} />
+                            <MapSource
+                                sourceKey="multi-points"
+                                sourceOptions={sourceOption}
+                                geoJson={undefined}
+                            >
+                                <MapLayer
+                                    layerKey="points-halo-circle"
+                                    layerOptions={{
+                                        type: 'circle',
+                                        paint: orangePointHaloCirclePaint,
+                                    }}
+                                />
+                            </MapSource>
+                        </div>
+                    </Map>
+                </section>
                 {((faqsResponse && faqsResponse.faqs.length > 0)
                     || submitDescription || contactInformation) && (
                     <section className={styles.faqSection}>
@@ -830,6 +907,7 @@ function GoodPractices(props: Props) {
                     />
                     <div className={styles.viewButtons}>
                         {goodPracticeList && (
+                        // FIXME: need to hide this if there is no more good practice
                             <Button
                                 name={undefined}
                                 onClick={handleShowMoreButtonClick}
