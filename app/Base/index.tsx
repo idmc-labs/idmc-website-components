@@ -10,6 +10,11 @@ import '@the-deep/deep-ui/build/esm/index.css';
 
 import { setMapboxToken } from '@togglecorp/re-map';
 
+import {
+    getCountryProfileLink,
+    getGoodPracticesLink,
+    getGoodPracticeLink,
+} from '#utils/common';
 import CountryProfile from '#views/CountryProfile';
 import GoodPractice from '#views/GoodPractice';
 import GoodPractices from '#views/GoodPractices';
@@ -50,6 +55,8 @@ export function parseQueryString(value: string) {
 }
 
 interface Win {
+    standaloneMode?: boolean;
+
     page?: string;
 
     // For country profile
@@ -59,6 +66,8 @@ interface Win {
     // For good practices
     id?: string;
 }
+
+const standaloneMode = (window as Win).standaloneMode ?? false;
 
 const query: Win = parseQueryString(window.location.search);
 
@@ -98,28 +107,38 @@ function Base() {
                     />
                 );
             }
-            return (
-                <>
-                    <a href="/?page=country-profile&iso3=NPL&countryName=Nepal">
-                        Country Profile (NPL)
-                    </a>
-                    <a href="/?page=country-profile&iso3=IND&countryName=India">
-                        Country Profile (IND)
-                    </a>
-                    <a href="/?page=country-profile&iso3=MMR&countryName=Myanmar">
-                        Country Profile (MMR)
-                    </a>
-                    <a href="/?page=country-profile&iso3=JPN&countryName=Japan">
-                        Country Profile (JPN)
-                    </a>
-                    <a href="/?page=good-practices">
-                        Good Practices
-                    </a>
-                    <a href="/?page=good-practice&id=1">
-                        Good Practice (1)
-                    </a>
-                </>
-            );
+            if (currentPage === 'good-practice' && !currentId) {
+                return (
+                    <div>
+                        Good Practice id is missing.
+                    </div>
+                );
+            }
+            if (standaloneMode) {
+                return (
+                    <>
+                        <a href={getCountryProfileLink('NPL', 'Nepal')}>
+                            Country Profile (NPL)
+                        </a>
+                        <a href={getCountryProfileLink('IND', 'India')}>
+                            Country Profile (IND)
+                        </a>
+                        <a href={getCountryProfileLink('MMR', 'Myanmar')}>
+                            Country Profile (MMR)
+                        </a>
+                        <a href={getCountryProfileLink('JPN', 'Japan')}>
+                            Country Profile (JPN)
+                        </a>
+                        <a href={getGoodPracticesLink()}>
+                            Good Practices
+                        </a>
+                        <a href={getGoodPracticeLink('1')}>
+                            Good Practice (1)
+                        </a>
+                    </>
+                );
+            }
+            return null;
         },
         [],
     );

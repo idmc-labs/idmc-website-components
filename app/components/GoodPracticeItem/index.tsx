@@ -6,6 +6,7 @@ import {
 
 import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
+import { getGoodPracticeLink } from '#utils/common';
 
 import gridCover from '../../resources/img/grid2021-cover.png';
 
@@ -43,7 +44,7 @@ function GoodPracticeItem(props: Props) {
 
     return (
         <a
-            href={`/?page=good-practice&id=${goodPracticeId}`}
+            href={getGoodPracticeLink(goodPracticeId)}
             className={_cs(styles.goodPracticeItem, className)}
         >
             <img

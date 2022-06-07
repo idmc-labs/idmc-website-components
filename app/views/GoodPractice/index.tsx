@@ -34,6 +34,8 @@ import {
     IncrementPageViewMutationVariables,
 } from '#generated/types';
 
+import { getGoodPracticesLink } from '#utils/common';
+
 import styles from './styles.css';
 
 // TODO: remove this
@@ -250,8 +252,7 @@ function GoodPractice(props: Props) {
                                 Home
                             </a>
                             <IoChevronForward />
-                            {/* TODO: use actual link */}
-                            <a href="?page=good-practices">
+                            <a href={getGoodPracticesLink()}>
                                 Good Practices
                             </a>
                         </div>
