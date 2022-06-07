@@ -53,11 +53,11 @@
 .base {
     display: flex;
     flex-direction: column;
+    min-height: 100vh; /* country profile should take some space initially */
     line-height: 1.5;
     color: var(--color-text);
     font-family: 'proxima-nova', sans-serif;
     font-size: 1rem; /* durpal has set font-size on body */
-    min-height: 100vh; /* country profile should take some space initially */
 
     .view {
         flex-grow: 1;
