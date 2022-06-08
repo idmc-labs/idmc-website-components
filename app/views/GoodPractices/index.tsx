@@ -729,7 +729,6 @@ function GoodPractices(props: Props) {
     ] = useState<PopupProperties | undefined>(undefined);
 
     const handleMapPopupClose = useCallback(() => {
-        console.warn('clicked');
         setMapHoverLngLat(undefined);
         setMapHoverFeatureProperties(undefined);
     }, [
@@ -738,7 +737,7 @@ function GoodPractices(props: Props) {
     ]);
 
     const handleMapPointClick = useCallback((features: unknown) => {
-        setGoodPracticeCountry([String(features.id)]);
+        setGoodPracticeCountry([String(features?.id)]);
         handleJumpToGoodPractices();
         return true;
     }, [
@@ -747,7 +746,6 @@ function GoodPractices(props: Props) {
     ]);
 
     const goodPracticeCount = mapResponse?.countries?.map((d) => d.goodPracticesCount);
->>>>>>> API integration in good practice map
 
     return (
         <div className={_cs(styles.goodPractices, className)}>
