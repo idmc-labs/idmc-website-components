@@ -20,6 +20,7 @@ interface Props {
     title: React.ReactNode;
     startYear: number | undefined | null;
     endYear: number | undefined | null;
+    countries: string | undefined;
     tags?: React.ReactNode;
     type?: React.ReactNode;
 }
@@ -33,6 +34,7 @@ function GoodPracticeItem(props: Props) {
         image,
         startYear,
         endYear,
+        countries,
         tags,
         type = 'Good Practice',
     } = props;
@@ -78,6 +80,9 @@ function GoodPracticeItem(props: Props) {
                     value={description}
                     hideHeadings
                 />
+                <div className={styles.tags}>
+                    {countries}
+                </div>
                 {tags && (
                     <div className={styles.tags}>
                         {tags}

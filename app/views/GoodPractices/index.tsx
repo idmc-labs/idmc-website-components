@@ -11,6 +11,8 @@ import {
     GoodPracticeListingStaticPageQueryVariables,
     GoodPracticeFilterChoicesQuery,
     GoodPracticeFilterChoicesQueryVariables,
+    GoodPracticeMapQuery,
+    GoodPracticeMapQueryVariables,
 } from '#generated/types';
 import {
     TextInput,
@@ -27,7 +29,11 @@ import Map, {
     MapContainer,
     MapSource,
     MapLayer,
+    MapBounds,
+    MapTooltip,
 } from '@togglecorp/re-map';
+
+import { LngLatLike, PopupOptions } from 'mapbox-gl';
 import {
     _cs,
     listToMap,
@@ -43,7 +49,6 @@ import {
 
 import Button from '#components/Button';
 import Header from '#components/Header';
-import LegendElement from '#components/LegendElement';
 import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
 import CollapsibleContent from '#components/CollapsibleContent';
@@ -110,6 +115,11 @@ query GoodPractices(
                 name
                 url
             }
+            countries {
+                name
+                goodPracticeRegion
+                id
+            }
             tags {
                 id
                 name
@@ -127,6 +137,16 @@ query GoodPracticeListingStaticPage {
         id
     }
 }
+`;
+
+const GOOD_PRACTICE_MAP = gql`
+query GoodPracticeMap {
+    countries {
+        id
+        centerPoint
+        goodPracticesCount
+        }
+    }  
 `;
 
 const GOOD_PRACTICE_FILTER_CHOICES = gql`
@@ -163,6 +183,23 @@ query GoodPracticeFilterChoices {
 `;
 
 type GoodPracticeItemType = NonNullable<NonNullable<GoodPracticesQuery['goodPractices']>['results']>[number];
+
+type GoodPracticeGeoJSON = GeoJSON.FeatureCollection<
+    GeoJSON.Point,
+    { type: 'Approved' | 'Under Review' | 'Recently Submitted or Registered', value: number, description: string | null | undefined }
+>;
+
+interface PopupProperties {
+    type: 'Disaster' | 'Conflict' | 'Other',
+    value: number,
+}
+
+const popupOptions: PopupOptions = {
+    closeOnClick: true,
+    closeButton: false,
+    offset: 12,
+    maxWidth: '480px',
+};
 
 const keySelector = (d: { key: string }) => d.key;
 const labelSelector = (d: { label: string }) => d.label;
@@ -452,6 +489,11 @@ function GoodPractices(props: Props) {
         ];
     }, [staticPageResponse]);
 
+    const { data: mapResponse } = useQuery<
+        GoodPracticeMapQuery,
+        GoodPracticeMapQueryVariables
+    >(GOOD_PRACTICE_MAP);
+
     const goodPracticeRendererParams = useCallback((
         _: string,
         d: GoodPracticeItemType | undefined,
@@ -462,6 +504,8 @@ function GoodPractices(props: Props) {
         startYear: d?.startYear,
         endYear: d?.endYear,
         image: d?.image?.url,
+        countries: d?.countries?.map((t) => t.name),
+        // regions: d?.countries?.map((t) => t.goodPracticeRegion),
         tags: d?.tags?.map((t) => t.name)?.join(', '),
     }), []);
 
@@ -658,6 +702,53 @@ function GoodPractices(props: Props) {
         </div>
     );
 
+    const countries = mapResponse?.countries;
+    const goodPracticeGeojson : GoodPracticeGeoJSON = useMemo(
+        () => ({
+            type: 'FeatureCollection',
+            features: countries?.filter((t) => (t.goodPracticesCount ?? 0) > 0).map((t) => ({
+                id: t.id,
+                type: 'Feature',
+                properties: {},
+                geometry: {
+                    type: 'Point',
+                    coordinates: [
+                        t.centerPoint?.[0],
+                        t.centerPoint?.[1],
+                    ],
+                },
+            })) ?? [],
+        }),
+        [countries],
+    );
+
+    const [mapHoverLngLat, setMapHoverLngLat] = useState<LngLatLike>();
+    const [
+        mapHoverFeatureProperties,
+        setMapHoverFeatureProperties,
+    ] = useState<PopupProperties | undefined>(undefined);
+
+    const handleMapPopupClose = useCallback(() => {
+        console.warn('clicked');
+        setMapHoverLngLat(undefined);
+        setMapHoverFeatureProperties(undefined);
+    }, [
+        setMapHoverLngLat,
+        setMapHoverFeatureProperties,
+    ]);
+
+    const handleMapPointClick = useCallback((features: unknown) => {
+        setGoodPracticeCountry([String(features.id)]);
+        handleJumpToGoodPractices();
+        return true;
+    }, [
+        setGoodPracticeCountry,
+        handleJumpToGoodPractices,
+    ]);
+
+    const goodPracticeCount = mapResponse?.countries?.map((d) => d.goodPracticesCount);
+>>>>>>> API integration in good practice map
+
     return (
         <div className={_cs(styles.goodPractices, className)}>
             <div className={styles.headerSection}>
@@ -689,28 +780,10 @@ function GoodPractices(props: Props) {
             </div>
             <div className={styles.mainContent}>
                 <section className={styles.map}>
-                    <div className={styles.legendList}>
-                        <div className={styles.legend}>
-                            <Header
-                                headingSize="extraSmall"
-                                heading="State"
-                            />
-                            <div className={styles.legendElementList}>
-                                <LegendElement
-                                    color="var(--color-green)"
-                                    label="Approved"
-                                />
-                                <LegendElement
-                                    color="var(--color-blue)"
-                                    label="Under Review"
-                                />
-                                <LegendElement
-                                    color="var(--color-orange)"
-                                    label="Recently submitted or registered"
-                                />
-                            </div>
-                        </div>
-                    </div>
+                    <Header
+                        headingSize="large"
+                        heading="Good Practices Around the World"
+                    />
                     <Map
                         mapStyle={lightStyle}
                         mapOptions={{
@@ -726,7 +799,7 @@ function GoodPractices(props: Props) {
                             <MapSource
                                 sourceKey="multi-points"
                                 sourceOptions={sourceOption}
-                                geoJson={undefined}
+                                geoJson={goodPracticeGeojson}
                             >
                                 <MapLayer
                                     layerKey="points-halo-circle"
@@ -734,7 +807,17 @@ function GoodPractices(props: Props) {
                                         type: 'circle',
                                         paint: orangePointHaloCirclePaint,
                                     }}
+                                    onClick={handleMapPointClick}
                                 />
+                                <MapTooltip
+                                    coordinates={mapHoverLngLat}
+                                    tooltipOptions={popupOptions}
+                                    onHide={handleMapPopupClose}
+                                >
+                                    <HTMLOutput
+                                        value={String(goodPracticeCount)}
+                                    />
+                                </MapTooltip>
                             </MapSource>
                         </div>
                     </Map>
@@ -978,7 +1061,8 @@ function GoodPractices(props: Props) {
                         )}
                     />
                     <div className={styles.viewButtons}>
-                        {goodPracticeList && (
+                        {goodPracticeList && maxLimitShow
+                        >= (GOOD_PRACTICE_PAGE_SIZE + goodPracticesOffset) && (
                         // FIXME: need to hide this if there is no more good practice
                             <Button
                                 name={undefined}

@@ -52,6 +52,7 @@
         }
         .legend-list {
             display: flex;
+            margin-top: var(--dui-spacing-medium);
             background-color: var(--dui-color-background);
             padding: var(--dui-spacing-small) 0;
 

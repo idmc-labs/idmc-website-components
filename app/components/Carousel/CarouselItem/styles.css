@@ -1,6 +1,5 @@
 .carousel-item {
     position: relative;
-    padding: var(--dui-spacing-small);
 
     .expand-button {
         position: absolute;

@@ -50,6 +50,7 @@ query GoodPracticeDetails($id: ID!) {
             id
             name
             goodPracticeRegion
+            goodPracticeRegionLabel
         }
         gallery {
           caption
@@ -277,7 +278,8 @@ function GoodPractice(props: Props) {
                             <TextOutput
                                 hideLabelColon
                                 label="Region"
-                                value={region}
+                                value={data?.goodPractice
+                                    ?.countries.map((r) => r.goodPracticeRegionLabel)}
                                 strongValue
                                 displayType="block"
                             />
