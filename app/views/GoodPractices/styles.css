@@ -41,7 +41,9 @@
         gap: var(--dui-spacing-large);
 
         .map-wrapper {
+            position: relative;
             flex-grow: 1;
+            z-index: 0;
 
             .map-container {
                 width: 100%;
@@ -108,6 +110,22 @@
                     padding: var(--dui-spacing-medium);
                 }
             }
+
+            @media (max-width: 1000px) {
+                flex-wrap: wrap;
+
+                .side-pane {
+                    flex-basis: 100%;
+                    flex-direction: row;
+                    flex-wrap: wrap;
+
+                    .block {
+                        flex-basis: 0;
+                        flex-grow: 1;
+                        min-width: 20rem;
+                    }
+                }
+            }
         }
 
         .good-practices-container {
@@ -157,7 +175,7 @@
                 }
             }
 
-            .filter-actions {
+            .filter-list {
                 display: flex;
                 align-items: center;
                 flex-wrap: wrap;
@@ -172,6 +190,11 @@
                         gap: var(--dui-spacing-extra-small);
                     }
                 }
+            }
+
+            .mobile-actions {
+                display: flex;
+                justify-content: flex-end;
             }
 
             .separator {
@@ -208,3 +231,40 @@
     }
 }
 
+.mobile-filter-modal {
+    width: 100%!important;
+    min-width: unset;
+    height: 100%!important;
+    min-height: unset;
+
+    .content {
+        display: flex;
+        flex-direction: column;
+        padding: var(--dui-spacing-medium);
+        gap: var(--dui-spacing-large);
+
+        .search-and-time-range-container {
+            display: flex;
+            flex-direction: column;
+            gap: var(--dui-spacing-large);
+
+            >* {
+                width: 100%;
+            }
+        }
+
+        .mobile-filters {
+            display: flex;
+            flex-direction: column;
+            gap: var(--dui-spacing-large);
+        }
+
+        .label {
+            font-size: var(--dui-font-size-medium);
+        }
+
+        .radio-list {
+            flex-direction: column;
+        }
+    }
+}

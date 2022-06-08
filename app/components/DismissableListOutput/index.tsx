@@ -1,7 +1,6 @@
 import React from 'react';
 import { IoClose } from 'react-icons/io5';
 import { listToMap } from '@togglecorp/fujs';
-import { Tag } from '@the-deep/deep-ui';
 
 import Button from '#components/Button';
 

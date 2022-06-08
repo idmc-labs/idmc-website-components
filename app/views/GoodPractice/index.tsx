@@ -313,17 +313,6 @@ function GoodPractice(props: Props) {
                                 value={data?.goodPractice?.description}
                             />
                         )}
-                        {data?.goodPractice.mediaAndResourceLinks && (
-                            <div className={styles.mediaAndResourceLinks}>
-                                <Header
-                                    headingSize="large"
-                                    heading="Media and Resources"
-                                />
-                                <HTMLOutput
-                                    value={data?.goodPractice?.mediaAndResourceLinks}
-                                />
-                            </div>
-                        )}
                     </div>
                     <div className={styles.sidePane}>
                         {(data?.goodPractice?.gallery?.length ?? 0) > 0 && (
@@ -395,6 +384,17 @@ function GoodPractice(props: Props) {
                         </div>
                     </div>
                 </section>
+                {data?.goodPractice.mediaAndResourceLinks && (
+                    <section className={styles.mediaAndResourceLinks}>
+                        <Header
+                            headingSize="large"
+                            heading="Media and Resources"
+                        />
+                        <HTMLOutput
+                            value={data?.goodPractice?.mediaAndResourceLinks}
+                        />
+                    </section>
+                )}
                 <section className={styles.relatedSection}>
                     <Header
                         headingSize="large"

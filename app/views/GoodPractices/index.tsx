@@ -19,6 +19,9 @@ import {
     DropdownMenu,
     DropdownMenuItem,
     useInputState,
+    useBooleanState,
+    Modal,
+    RadioInput,
 } from '@the-deep/deep-ui';
 import Map, {
     MapContainer,
@@ -35,6 +38,7 @@ import {
     IoClose,
     IoArrowDown,
     IoArrowUp,
+    IoFilter,
 } from 'react-icons/io5';
 
 import Button from '#components/Button';
@@ -48,6 +52,7 @@ import SliderInput from '#components/SliderInput';
 import DismissableListOutput from '#components/DismissableListOutput';
 
 import useDebouncedValue from '../../hooks/useDebouncedValue';
+import useDocumentSize from '../../hooks/useDocumentSize';
 
 import styles from './styles.css';
 
@@ -243,6 +248,8 @@ function GoodPractices(props: Props) {
 
     const [expandedFaq, setExpandedFaq] = useState<string>();
     const [searchText, setSearchText] = useState<string>();
+    const windowSize = useDocumentSize();
+    const isSmallDisplay = windowSize.width < 600;
 
     type GoodPracticeFilter = NonNullable<(typeof goodPracticeFilterResponse)>['goodPracticeFilterChoices'];
     type GoodPracticeTypeType = NonNullable<GoodPracticeFilter['type']>[number]['name'];
@@ -252,6 +259,11 @@ function GoodPractices(props: Props) {
     type GoodPracticeRegionType = NonNullable<GoodPracticeFilter['regions']>[number]['name'];
     type GoodPracticeCountryType = NonNullable<GoodPracticeFilter['countries']>[number]['name'];
 
+    const [
+        showFiltersModal,
+        setShowFilterModalTrue,
+        setShowFilterModalFalse,
+    ] = useBooleanState(false);
     const [yearRange, setYearRange] = useInputState<[number, number]>([0, 0]);
     const [goodPracticeType, setGoodPracticeType] = useInputState<GoodPracticeTypeType[]>([]);
     const [goodPracticeArea, setGoodPracticeArea] = useInputState<GoodPracticeAreaType[]>([]);
@@ -516,6 +528,136 @@ function GoodPractices(props: Props) {
         [],
     );
 
+    const orderingOptionList = React.useMemo(() => (
+        orderingOptionKeys.map((k) => ({ key: k, label: orderingOptions[k] }))
+    ), [orderingOptionKeys]);
+
+    const filterElements = (
+        <>
+            {typeFilterOptions && typeFilterOptions.length > 0 && (
+                <MultiSelectInput
+                    labelContainerClassName={styles.label}
+                    label="Type of Good Practice"
+                    variant="general"
+                    placeholder="Type of Good Practice"
+                    name="type"
+                    value={goodPracticeType}
+                    options={typeFilterOptions}
+                    keySelector={keySelector}
+                    labelSelector={labelSelector}
+                    onChange={setGoodPracticeType}
+                    inputSectionClassName={styles.inputSection}
+                />
+            )}
+            {regionFilterOptions && regionFilterOptions.length > 0 && (
+                <MultiSelectInput
+                    labelContainerClassName={styles.label}
+                    variant="general"
+                    placeholder="Region"
+                    label="Region"
+                    name="region"
+                    value={goodPracticeRegion}
+                    options={regionFilterOptions}
+                    keySelector={keySelector}
+                    labelSelector={labelSelector}
+                    onChange={setGoodPracticeRegion}
+                    inputSectionClassName={styles.inputSection}
+                />
+            )}
+            {countryFilterOptions && countryFilterOptions.length > 0 && (
+                <MultiSelectInput
+                    labelContainerClassName={styles.label}
+                    variant="general"
+                    placeholder="Country"
+                    label="Country"
+                    name="country"
+                    value={goodPracticeCountry}
+                    options={countryFilterOptions}
+                    keySelector={idSelector}
+                    labelSelector={nameSelector}
+                    onChange={setGoodPracticeCountry}
+                    inputSectionClassName={styles.inputSection}
+                />
+            )}
+            {driverFilterOptions && driverFilterOptions.length > 0 && (
+                <MultiSelectInput
+                    labelContainerClassName={styles.label}
+                    variant="general"
+                    placeholder="Drivers of Displacement"
+                    label="Drivers of Displacement"
+                    name="driversOfDisplacement"
+                    value={goodPracticeDrive}
+                    options={driverFilterOptions}
+                    keySelector={idSelector}
+                    labelSelector={nameSelector}
+                    onChange={setGoodPracticeDrive}
+                    inputSectionClassName={styles.inputSection}
+                />
+            )}
+            {areaFilterOptions && areaFilterOptions.length > 0 && (
+                <MultiSelectInput
+                    labelContainerClassName={styles.label}
+                    variant="general"
+                    placeholder="Focus Area"
+                    label="Focus Area"
+                    name="focusArea"
+                    value={goodPracticeArea}
+                    options={areaFilterOptions}
+                    keySelector={idSelector}
+                    labelSelector={nameSelector}
+                    onChange={setGoodPracticeArea}
+                    inputSectionClassName={styles.inputSection}
+                />
+            )}
+            {stageFilterOptions && stageFilterOptions.length > 0 && (
+                <MultiSelectInput
+                    labelContainerClassName={styles.label}
+                    variant="general"
+                    placeholder="Stage"
+                    label="Stage"
+                    name="stage"
+                    value={goodpracticeStage}
+                    options={stageFilterOptions}
+                    keySelector={keySelector}
+                    labelSelector={labelSelector}
+                    onChange={setGoodPracticeStage}
+                    inputSectionClassName={styles.inputSection}
+                />
+            )}
+        </>
+    );
+
+    const searchAndTimeRange = (
+        <div className={styles.searchAndTimeRangeContainer}>
+            <TextInput
+                labelContainerClassName={styles.label}
+                variant="general"
+                inputSectionClassName={styles.inputSection}
+                className={className}
+                name="search"
+                label="Search Good Practice"
+                placeholder="Search Good Practice"
+                value={searchText}
+                onChange={setSearchText}
+                // disabled={goodPracticeLoading}
+                error={undefined}
+                icons={(
+                    <IoSearch />
+                )}
+            />
+            <SliderInput
+                labelDescription={`(${yearRange[0]} - ${yearRange[1]})`}
+                min={minYear}
+                max={maxYear}
+                value={yearRange}
+                step={1}
+                minDistance={1}
+                hideValues
+                onChange={setYearRange}
+            />
+        </div>
+    );
+
     return (
         <div className={_cs(styles.goodPractices, className)}>
             <div className={styles.headerSection}>
@@ -661,130 +803,27 @@ function GoodPractices(props: Props) {
                         headingSize="large"
                         heading="Find Good Practices"
                     />
-                    <div className={styles.searchAndTimeRangeContainer}>
-                        <TextInput
-                            labelContainerClassName={styles.label}
-                            variant="general"
-                            inputSectionClassName={styles.inputSection}
-                            className={className}
-                            name="search"
-                            label="Search Good Practice"
-                            placeholder="Search Good Practice"
-                            value={searchText}
-                            onChange={setSearchText}
-                            // disabled={goodPracticeLoading}
-                            error={undefined}
-                            icons={(
-                                <IoSearch />
-                            )}
-                        />
-                        <SliderInput
-                            labelDescription={`(${yearRange[0]} - ${yearRange[1]})`}
-                            min={minYear}
-                            max={maxYear}
-                            value={yearRange}
-                            step={1}
-                            minDistance={1}
-                            hideValues
-                            onChange={setYearRange}
-                        />
-                    </div>
-                    <div className={styles.filterContainer}>
-                        {typeFilterOptions && typeFilterOptions.length > 0 && (
-                            <MultiSelectInput
-                                labelContainerClassName={styles.label}
-                                label="Type of Good Practice"
-                                variant="general"
-                                placeholder="Type of Good Practice"
-                                name="type"
-                                value={goodPracticeType}
-                                options={typeFilterOptions}
-                                keySelector={keySelector}
-                                labelSelector={labelSelector}
-                                onChange={setGoodPracticeType}
-                                inputSectionClassName={styles.inputSection}
-                            />
-                        )}
-                        {regionFilterOptions && regionFilterOptions.length > 0 && (
-                            <MultiSelectInput
-                                labelContainerClassName={styles.label}
-                                variant="general"
-                                placeholder="Region"
-                                label="Region"
-                                name="region"
-                                value={goodPracticeRegion}
-                                options={regionFilterOptions}
-                                keySelector={keySelector}
-                                labelSelector={labelSelector}
-                                onChange={setGoodPracticeRegion}
-                                inputSectionClassName={styles.inputSection}
-                            />
-                        )}
-                        {countryFilterOptions && countryFilterOptions.length > 0 && (
-                            <MultiSelectInput
-                                labelContainerClassName={styles.label}
-                                variant="general"
-                                placeholder="Country"
-                                label="Country"
-                                name="country"
-                                value={goodPracticeCountry}
-                                options={countryFilterOptions}
-                                keySelector={idSelector}
-                                labelSelector={nameSelector}
-                                onChange={setGoodPracticeCountry}
-                                inputSectionClassName={styles.inputSection}
-                            />
-                        )}
-                        {driverFilterOptions && driverFilterOptions.length > 0 && (
-                            <MultiSelectInput
-                                labelContainerClassName={styles.label}
-                                variant="general"
-                                placeholder="Drivers of Displacement"
-                                label="Drivers of Displacement"
-                                name="driversOfDisplacement"
-                                value={goodPracticeDrive}
-                                options={driverFilterOptions}
-                                keySelector={idSelector}
-                                labelSelector={nameSelector}
-                                onChange={setGoodPracticeDrive}
-                                inputSectionClassName={styles.inputSection}
-                            />
-                        )}
-                        {areaFilterOptions && areaFilterOptions.length > 0 && (
-                            <MultiSelectInput
-                                labelContainerClassName={styles.label}
-                                variant="general"
-                                placeholder="Focus Area"
-                                label="Focus Area"
-                                name="focusArea"
-                                value={goodPracticeArea}
-                                options={areaFilterOptions}
-                                keySelector={idSelector}
-                                labelSelector={nameSelector}
-                                onChange={setGoodPracticeArea}
-                                inputSectionClassName={styles.inputSection}
-                            />
-                        )}
-                        {stageFilterOptions && stageFilterOptions.length > 0 && (
-                            <MultiSelectInput
-                                labelContainerClassName={styles.label}
-                                variant="general"
-                                placeholder="Stage"
-                                label="Stage"
-                                name="stage"
-                                value={goodpracticeStage}
-                                options={stageFilterOptions}
-                                keySelector={keySelector}
-                                labelSelector={labelSelector}
-                                onChange={setGoodPracticeStage}
-                                inputSectionClassName={styles.inputSection}
-                            />
-                        )}
-                        {(!stageFilterOptions || stageFilterOptions.length === 0) && <div />}
-                        <div />
-                        <div />
-                    </div>
-                    <div className={styles.filterActions}>
+                    {searchAndTimeRange}
+                    {!isSmallDisplay && (
+                        <div className={styles.filterContainer}>
+                            {filterElements}
+                            {(!stageFilterOptions || stageFilterOptions.length === 0)
+                                && <div />}
+                            {(!areaFilterOptions || areaFilterOptions.length === 0)
+                                && <div />}
+                            {(!regionFilterOptions || regionFilterOptions.length === 0)
+                                && <div />}
+                            {(!countryFilterOptions || countryFilterOptions.length === 0)
+                                && <div />}
+                            {(!typeFilterOptions || typeFilterOptions.length === 0)
+                                && <div />}
+                            {(!driverFilterOptions || driverFilterOptions.length === 0)
+                                && <div />}
+                            <div />
+                            <div />
+                        </div>
+                    )}
+                    <div className={styles.filterList}>
                         {isFiltered && (
                             <>
                                 {goodPracticeType.length > 0 && (
@@ -862,27 +901,60 @@ function GoodPractices(props: Props) {
                         )}
                         <div />
                     </div>
-                    {goodPracticeList && (
-                        <>
-                            <div className={styles.separator} />
-                            <div className={styles.orderingContainer}>
-                                <DropdownMenu
-                                    className={styles.orderDropdown}
-                                    label={`Sort: ${orderingOptions[orderingOptionValue]}`}
-                                    variant="transparent"
+                    <div className={styles.separator} />
+                    {goodPracticeList && !isSmallDisplay && (
+                        <div className={styles.orderingContainer}>
+                            <DropdownMenu
+                                className={styles.orderDropdown}
+                                label={`Sort: ${orderingOptions[orderingOptionValue]}`}
+                                variant="transparent"
+                            >
+                                {orderingOptionKeys.map((ok) => (
+                                    <DropdownMenuItem
+                                        key={ok}
+                                        name={ok}
+                                        onClick={setOrderingOptionValue}
+                                    >
+                                        {orderingOptions[ok]}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenu>
+                        </div>
+                    )}
+                    {isSmallDisplay && (
+                        <div className={styles.mobileActions}>
+                            <Button
+                                variant="transparent"
+                                onClick={setShowFilterModalTrue}
+                                name={undefined}
+                                actions={<IoFilter />}
+                            >
+                                Filter and Sort
+                            </Button>
+                            {showFiltersModal && (
+                                <Modal
+                                    heading="Filter"
+                                    className={styles.mobileFilterModal}
+                                    bodyClassName={styles.content}
+                                    onCloseButtonClick={setShowFilterModalFalse}
                                 >
-                                    {orderingOptionKeys.map((ok) => (
-                                        <DropdownMenuItem
-                                            key={ok}
-                                            name={ok}
-                                            onClick={setOrderingOptionValue}
-                                        >
-                                            {orderingOptions[ok]}
-                                        </DropdownMenuItem>
-                                    ))}
-                                </DropdownMenu>
-                            </div>
-                        </>
+                                    <RadioInput
+                                        labelContainerClassName={styles.label}
+                                        listContainerClassName={styles.radioList}
+                                        name={undefined}
+                                        label="Sort Results by"
+                                        options={orderingOptionList}
+                                        onChange={setOrderingOptionValue}
+                                        keySelector={(d) => d.key}
+                                        labelSelector={(d) => d.label}
+                                        value={orderingOptionValue}
+                                    />
+                                    <div className={styles.mobileFilters}>
+                                        {filterElements}
+                                    </div>
+                                </Modal>
+                            )}
+                        </div>
                     )}
                     <ListView
                         className={styles.goodPracticeList}
