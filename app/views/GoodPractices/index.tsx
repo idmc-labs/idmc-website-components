@@ -146,9 +146,8 @@ query GoodPracticeMap {
         id
         centerPoint
         goodPracticesCount
-        name
     }
-}  
+}
 `;
 
 const GOOD_PRACTICE_FILTER_CHOICES = gql`
@@ -495,6 +494,12 @@ function GoodPractices(props: Props) {
         startYear: d?.startYear,
         endYear: d?.endYear,
         image: d?.image?.url,
+        countries: unique(d?.countries?.map((t) => t.name) ?? []).join(', '),
+        regions: d?.countries
+            ?.map((t) => t.goodPracticeRegionLabel)
+            .filter((e, i: any) => e.indexOf(e) === i)
+            .join(', '),
+        tags: d?.tags?.map((t) => t.name)?.join(', '),
     }), []);
 
     const handleFaqExpansionChange = useCallback((newValue: boolean, name: string | undefined) => {
