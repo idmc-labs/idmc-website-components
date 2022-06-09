@@ -21,30 +21,30 @@ import {
     DropdownMenu,
     DropdownMenuItem,
     useInputState,
-    useBooleanState,
-    Modal,
-    RadioInput,
 } from '@the-deep/deep-ui';
 import Map, {
     MapContainer,
     MapSource,
     MapLayer,
-    MapBounds,
     MapTooltip,
 } from '@togglecorp/re-map';
 
-import { LngLatLike, PopupOptions } from 'mapbox-gl';
+import mapboxgl, {
+    LngLatLike,
+    PopupOptions,
+    LngLat,
+} from 'mapbox-gl';
 import {
     _cs,
     listToMap,
     unique,
+    isDefined,
 } from '@togglecorp/fujs';
 import {
     IoSearch,
     IoClose,
     IoArrowDown,
     IoArrowUp,
-    IoFilter,
 } from 'react-icons/io5';
 
 import Button from '#components/Button';
@@ -57,7 +57,6 @@ import SliderInput from '#components/SliderInput';
 import DismissableListOutput from '#components/DismissableListOutput';
 
 import useDebouncedValue from '../../hooks/useDebouncedValue';
-import useDocumentSize from '../../hooks/useDocumentSize';
 
 import styles from './styles.css';
 
@@ -119,6 +118,7 @@ query GoodPractices(
                 name
                 goodPracticeRegion
                 id
+                goodPracticeRegionLabel
             }
             tags {
                 id
@@ -145,8 +145,9 @@ query GoodPracticeMap {
         id
         centerPoint
         goodPracticesCount
-        }
-    }  
+        name
+    }
+}  
 `;
 
 const GOOD_PRACTICE_FILTER_CHOICES = gql`
@@ -186,11 +187,11 @@ type GoodPracticeItemType = NonNullable<NonNullable<GoodPracticesQuery['goodPrac
 
 type GoodPracticeGeoJSON = GeoJSON.FeatureCollection<
     GeoJSON.Point,
-    { type: 'Approved' | 'Under Review' | 'Recently Submitted or Registered', value: number, description: string | null | undefined }
+    { value: number, name: string }
 >;
 
 interface PopupProperties {
-    type: 'Disaster' | 'Conflict' | 'Other',
+    name: string,
     value: number,
 }
 
@@ -208,16 +209,8 @@ const lightStyle = 'mapbox://styles/mapbox/light-v10';
 
 const orangePointHaloCirclePaint: mapboxgl.CirclePaint = {
     'circle-opacity': 0.6,
-    'circle-color': {
-        property: 'status',
-        type: 'categorical',
-        stops: [
-            ['recently_submitted', 'rgb(239, 125, 0)'],
-            ['under_review', 'rgb(1, 142, 202)'],
-            ['approved', 'rgb(51, 149, 62)'],
-        ],
-    },
-    'circle-radius': 9,
+    'circle-color': 'rgb(1, 142, 202)',
+    'circle-radius': 12,
 };
 
 const sourceOption: mapboxgl.GeoJSONSourceRaw = {
@@ -266,12 +259,24 @@ function getOrderingFromOption(option: OrderingOptionType): OrderingType {
     return { publishedDate: 'DESC' };
 }
 
+type GoodPracticeFilter = NonNullable<GoodPracticeFilterChoicesQuery>['goodPracticeFilterChoices'];
+type GoodPracticeTypeType = NonNullable<GoodPracticeFilter['type']>[number]['name'];
+type GoodPracticeAreaType = NonNullable<GoodPracticeFilter['focusArea']>[number]['id'];
+type GoodPracticeDriveType = NonNullable<GoodPracticeFilter['driversOfDisplacement']>[number]['id'];
+type GoodPracticeStageType = NonNullable<GoodPracticeFilter['stage']>[number]['name'];
+type GoodPracticeRegionType = NonNullable<GoodPracticeFilter['regions']>[number]['name'];
+type GoodPracticeCountryType = NonNullable<GoodPracticeFilter['countries']>[number]['name'];
+
 interface Props {
     className?: string;
+    showTooltip?: boolean;
 }
 
 function GoodPractices(props: Props) {
-    const { className } = props;
+    const {
+        className,
+        showTooltip = true,
+    } = props;
 
     const practicesListRef = React.useRef<HTMLDivElement>(null);
     const [
@@ -285,22 +290,7 @@ function GoodPractices(props: Props) {
 
     const [expandedFaq, setExpandedFaq] = useState<string>();
     const [searchText, setSearchText] = useState<string>();
-    const windowSize = useDocumentSize();
-    const isSmallDisplay = windowSize.width < 600;
 
-    type GoodPracticeFilter = NonNullable<(typeof goodPracticeFilterResponse)>['goodPracticeFilterChoices'];
-    type GoodPracticeTypeType = NonNullable<GoodPracticeFilter['type']>[number]['name'];
-    type GoodPracticeAreaType = NonNullable<GoodPracticeFilter['focusArea']>[number]['id'];
-    type GoodPracticeDriveType = NonNullable<GoodPracticeFilter['driversOfDisplacement']>[number]['id'];
-    type GoodPracticeStageType = NonNullable<GoodPracticeFilter['stage']>[number]['name'];
-    type GoodPracticeRegionType = NonNullable<GoodPracticeFilter['regions']>[number]['name'];
-    type GoodPracticeCountryType = NonNullable<GoodPracticeFilter['countries']>[number]['name'];
-
-    const [
-        showFiltersModal,
-        setShowFilterModalTrue,
-        setShowFilterModalFalse,
-    ] = useBooleanState(false);
     const [yearRange, setYearRange] = useInputState<[number, number]>([0, 0]);
     const [goodPracticeType, setGoodPracticeType] = useInputState<GoodPracticeTypeType[]>([]);
     const [goodPracticeArea, setGoodPracticeArea] = useInputState<GoodPracticeAreaType[]>([]);
@@ -504,17 +494,18 @@ function GoodPractices(props: Props) {
         startYear: d?.startYear,
         endYear: d?.endYear,
         image: d?.image?.url,
-        countries: d?.countries?.map((t) => t.name),
-        // regions: d?.countries?.map((t) => t.goodPracticeRegion),
-        tags: d?.tags?.map((t) => t.name)?.join(', '),
+        countries: d?.countries
+            ?.map((t) => t.name)
+            .filter((e, i: any) => e.indexOf(e) === i)
+            .join(', '),
+        regions: d?.countries
+            ?.map((t) => t.goodPracticeRegionLabel)
+            .filter((e, i: any) => e.indexOf(e) === i)
+            .join(', '),
     }), []);
 
     const handleFaqExpansionChange = useCallback((newValue: boolean, name: string | undefined) => {
-        if (newValue === false) {
-            setExpandedFaq(undefined);
-        } else {
-            setExpandedFaq(name);
-        }
+        setExpandedFaq(newValue === false ? undefined : name);
     }, []);
 
     const handleJumpToGoodPractices = useCallback(
@@ -572,152 +563,30 @@ function GoodPractices(props: Props) {
         [],
     );
 
-    const orderingOptionList = React.useMemo(() => (
-        orderingOptionKeys.map((k) => ({ key: k, label: orderingOptions[k] }))
-    ), [orderingOptionKeys]);
-
-    const filterElements = (
-        <>
-            {typeFilterOptions && typeFilterOptions.length > 0 && (
-                <MultiSelectInput
-                    labelContainerClassName={styles.label}
-                    label="Type of Good Practice"
-                    variant="general"
-                    placeholder="Type of Good Practice"
-                    name="type"
-                    value={goodPracticeType}
-                    options={typeFilterOptions}
-                    keySelector={keySelector}
-                    labelSelector={labelSelector}
-                    onChange={setGoodPracticeType}
-                    inputSectionClassName={styles.inputSection}
-                />
-            )}
-            {regionFilterOptions && regionFilterOptions.length > 0 && (
-                <MultiSelectInput
-                    labelContainerClassName={styles.label}
-                    variant="general"
-                    placeholder="Region"
-                    label="Region"
-                    name="region"
-                    value={goodPracticeRegion}
-                    options={regionFilterOptions}
-                    keySelector={keySelector}
-                    labelSelector={labelSelector}
-                    onChange={setGoodPracticeRegion}
-                    inputSectionClassName={styles.inputSection}
-                />
-            )}
-            {countryFilterOptions && countryFilterOptions.length > 0 && (
-                <MultiSelectInput
-                    labelContainerClassName={styles.label}
-                    variant="general"
-                    placeholder="Country"
-                    label="Country"
-                    name="country"
-                    value={goodPracticeCountry}
-                    options={countryFilterOptions}
-                    keySelector={idSelector}
-                    labelSelector={nameSelector}
-                    onChange={setGoodPracticeCountry}
-                    inputSectionClassName={styles.inputSection}
-                />
-            )}
-            {driverFilterOptions && driverFilterOptions.length > 0 && (
-                <MultiSelectInput
-                    labelContainerClassName={styles.label}
-                    variant="general"
-                    placeholder="Drivers of Displacement"
-                    label="Drivers of Displacement"
-                    name="driversOfDisplacement"
-                    value={goodPracticeDrive}
-                    options={driverFilterOptions}
-                    keySelector={idSelector}
-                    labelSelector={nameSelector}
-                    onChange={setGoodPracticeDrive}
-                    inputSectionClassName={styles.inputSection}
-                />
-            )}
-            {areaFilterOptions && areaFilterOptions.length > 0 && (
-                <MultiSelectInput
-                    labelContainerClassName={styles.label}
-                    variant="general"
-                    placeholder="Focus Area"
-                    label="Focus Area"
-                    name="focusArea"
-                    value={goodPracticeArea}
-                    options={areaFilterOptions}
-                    keySelector={idSelector}
-                    labelSelector={nameSelector}
-                    onChange={setGoodPracticeArea}
-                    inputSectionClassName={styles.inputSection}
-                />
-            )}
-            {stageFilterOptions && stageFilterOptions.length > 0 && (
-                <MultiSelectInput
-                    labelContainerClassName={styles.label}
-                    variant="general"
-                    placeholder="Stage"
-                    label="Stage"
-                    name="stage"
-                    value={goodpracticeStage}
-                    options={stageFilterOptions}
-                    keySelector={keySelector}
-                    labelSelector={labelSelector}
-                    onChange={setGoodPracticeStage}
-                    inputSectionClassName={styles.inputSection}
-                />
-            )}
-        </>
-    );
-
-    const searchAndTimeRange = (
-        <div className={styles.searchAndTimeRangeContainer}>
-            <TextInput
-                labelContainerClassName={styles.label}
-                variant="general"
-                inputSectionClassName={styles.inputSection}
-                className={className}
-                name="search"
-                label="Search Good Practice"
-                placeholder="Search Good Practice"
-                value={searchText}
-                onChange={setSearchText}
-                // disabled={goodPracticeLoading}
-                error={undefined}
-                icons={(
-                    <IoSearch />
-                )}
-            />
-            <SliderInput
-                labelDescription={`(${yearRange[0]} - ${yearRange[1]})`}
-                min={minYear}
-                max={maxYear}
-                value={yearRange}
-                step={1}
-                minDistance={1}
-                hideValues
-                onChange={setYearRange}
-            />
-        </div>
-    );
-
     const countries = mapResponse?.countries;
     const goodPracticeGeojson : GoodPracticeGeoJSON = useMemo(
         () => ({
             type: 'FeatureCollection',
-            features: countries?.filter((t) => (t.goodPracticesCount ?? 0) > 0).map((t) => ({
-                id: t.id,
-                type: 'Feature',
-                properties: {},
-                geometry: {
-                    type: 'Point',
-                    coordinates: [
-                        t.centerPoint?.[0],
-                        t.centerPoint?.[1],
-                    ],
-                },
-            })) ?? [],
+            features: countries?.map((t) => {
+                if ((t.goodPracticesCount ?? 0) <= 0) {
+                    return undefined;
+                }
+                if (!t.centerPoint) {
+                    return undefined;
+                }
+                return {
+                    id: t.id,
+                    type: 'Feature' as const,
+                    properties: {
+                        name: t.name,
+                        value: t.goodPracticesCount,
+                    },
+                    geometry: {
+                        type: 'Point' as const,
+                        coordinates: t.centerPoint,
+                    },
+                };
+            }).filter(isDefined) ?? [],
         }),
         [countries],
     );
@@ -728,16 +597,8 @@ function GoodPractices(props: Props) {
         setMapHoverFeatureProperties,
     ] = useState<PopupProperties | undefined>(undefined);
 
-    const handleMapPopupClose = useCallback(() => {
-        setMapHoverLngLat(undefined);
-        setMapHoverFeatureProperties(undefined);
-    }, [
-        setMapHoverLngLat,
-        setMapHoverFeatureProperties,
-    ]);
-
-    const handleMapPointClick = useCallback((features: unknown) => {
-        setGoodPracticeCountry([String(features?.id)]);
+    const handleMapPointClick = useCallback((features: mapboxgl.MapboxGeoJSONFeature) => {
+        setGoodPracticeCountry([String(features.id)]);
         handleJumpToGoodPractices();
         return true;
     }, [
@@ -745,7 +606,19 @@ function GoodPractices(props: Props) {
         handleJumpToGoodPractices,
     ]);
 
-    const goodPracticeCount = mapResponse?.countries?.map((d) => d.goodPracticesCount);
+    const handleMouseEnter = useCallback(
+        (feature: mapboxgl.MapboxGeoJSONFeature, lngLat: LngLat) => {
+            const properties = feature.properties as PopupProperties;
+            setMapHoverLngLat(lngLat);
+            setMapHoverFeatureProperties(properties);
+        },
+        [],
+    );
+
+    const handleMouseLeave = useCallback(() => {
+        setMapHoverLngLat(undefined);
+        setMapHoverFeatureProperties(undefined);
+    }, []);
 
     return (
         <div className={_cs(styles.goodPractices, className)}>
@@ -806,16 +679,24 @@ function GoodPractices(props: Props) {
                                         paint: orangePointHaloCirclePaint,
                                     }}
                                     onClick={handleMapPointClick}
+                                    onMouseEnter={showTooltip ? handleMouseEnter : undefined}
+                                    onMouseLeave={showTooltip ? handleMouseLeave : undefined}
                                 />
-                                <MapTooltip
-                                    coordinates={mapHoverLngLat}
-                                    tooltipOptions={popupOptions}
-                                    onHide={handleMapPopupClose}
-                                >
-                                    <HTMLOutput
-                                        value={String(goodPracticeCount)}
-                                    />
-                                </MapTooltip>
+                                {mapHoverLngLat && mapHoverFeatureProperties && (
+                                    <MapTooltip
+                                        coordinates={mapHoverLngLat}
+                                        tooltipOptions={popupOptions}
+                                    >
+                                        <div>
+                                            <div>
+                                                {mapHoverFeatureProperties.name}
+                                            </div>
+                                            <div>
+                                                {`Good Practice: ${mapHoverFeatureProperties.value}`}
+                                            </div>
+                                        </div>
+                                    </MapTooltip>
+                                )}
                             </MapSource>
                         </div>
                     </Map>
@@ -884,27 +765,130 @@ function GoodPractices(props: Props) {
                         headingSize="large"
                         heading="Find Good Practices"
                     />
-                    {searchAndTimeRange}
-                    {!isSmallDisplay && (
-                        <div className={styles.filterContainer}>
-                            {filterElements}
-                            {(!stageFilterOptions || stageFilterOptions.length === 0)
-                                && <div />}
-                            {(!areaFilterOptions || areaFilterOptions.length === 0)
-                                && <div />}
-                            {(!regionFilterOptions || regionFilterOptions.length === 0)
-                                && <div />}
-                            {(!countryFilterOptions || countryFilterOptions.length === 0)
-                                && <div />}
-                            {(!typeFilterOptions || typeFilterOptions.length === 0)
-                                && <div />}
-                            {(!driverFilterOptions || driverFilterOptions.length === 0)
-                                && <div />}
-                            <div />
-                            <div />
-                        </div>
-                    )}
-                    <div className={styles.filterList}>
+                    <div className={styles.searchAndTimeRangeContainer}>
+                        <TextInput
+                            labelContainerClassName={styles.label}
+                            variant="general"
+                            inputSectionClassName={styles.inputSection}
+                            className={className}
+                            name="search"
+                            label="Search Good Practice"
+                            placeholder="Search Good Practice"
+                            value={searchText}
+                            onChange={setSearchText}
+                            // disabled={goodPracticeLoading}
+                            error={undefined}
+                            icons={(
+                                <IoSearch />
+                            )}
+                        />
+                        <SliderInput
+                            labelDescription={`(${yearRange[0]} - ${yearRange[1]})`}
+                            min={minYear}
+                            max={maxYear}
+                            value={yearRange}
+                            step={1}
+                            minDistance={1}
+                            hideValues
+                            onChange={setYearRange}
+                        />
+                    </div>
+                    <div className={styles.filterContainer}>
+                        {typeFilterOptions && typeFilterOptions.length > 0 && (
+                            <MultiSelectInput
+                                labelContainerClassName={styles.label}
+                                label="Type of Good Practice"
+                                variant="general"
+                                placeholder="Type of Good Practice"
+                                name="type"
+                                value={goodPracticeType}
+                                options={typeFilterOptions}
+                                keySelector={keySelector}
+                                labelSelector={labelSelector}
+                                onChange={setGoodPracticeType}
+                                inputSectionClassName={styles.inputSection}
+                            />
+                        )}
+                        {regionFilterOptions && regionFilterOptions.length > 0 && (
+                            <MultiSelectInput
+                                labelContainerClassName={styles.label}
+                                variant="general"
+                                placeholder="Region"
+                                label="Region"
+                                name="region"
+                                value={goodPracticeRegion}
+                                options={regionFilterOptions}
+                                keySelector={keySelector}
+                                labelSelector={labelSelector}
+                                onChange={setGoodPracticeRegion}
+                                inputSectionClassName={styles.inputSection}
+                            />
+                        )}
+                        {countryFilterOptions && countryFilterOptions.length > 0 && (
+                            <MultiSelectInput
+                                labelContainerClassName={styles.label}
+                                variant="general"
+                                placeholder="Country"
+                                label="Country"
+                                name="country"
+                                value={goodPracticeCountry}
+                                options={countryFilterOptions}
+                                keySelector={idSelector}
+                                labelSelector={nameSelector}
+                                onChange={setGoodPracticeCountry}
+                                inputSectionClassName={styles.inputSection}
+                            />
+                        )}
+                        {driverFilterOptions && driverFilterOptions.length > 0 && (
+                            <MultiSelectInput
+                                labelContainerClassName={styles.label}
+                                variant="general"
+                                placeholder="Drivers of Displacement"
+                                label="Drivers of Displacement"
+                                name="driversOfDisplacement"
+                                value={goodPracticeDrive}
+                                options={driverFilterOptions}
+                                keySelector={idSelector}
+                                labelSelector={nameSelector}
+                                onChange={setGoodPracticeDrive}
+                                inputSectionClassName={styles.inputSection}
+                            />
+                        )}
+                        {areaFilterOptions && areaFilterOptions.length > 0 && (
+                            <MultiSelectInput
+                                labelContainerClassName={styles.label}
+                                variant="general"
+                                placeholder="Focus Area"
+                                label="Focus Area"
+                                name="focusArea"
+                                value={goodPracticeArea}
+                                options={areaFilterOptions}
+                                keySelector={idSelector}
+                                labelSelector={nameSelector}
+                                onChange={setGoodPracticeArea}
+                                inputSectionClassName={styles.inputSection}
+                            />
+                        )}
+                        {stageFilterOptions && stageFilterOptions.length > 0 && (
+                            <MultiSelectInput
+                                labelContainerClassName={styles.label}
+                                variant="general"
+                                placeholder="Stage"
+                                label="Stage"
+                                name="stage"
+                                value={goodpracticeStage}
+                                options={stageFilterOptions}
+                                keySelector={keySelector}
+                                labelSelector={labelSelector}
+                                onChange={setGoodPracticeStage}
+                                inputSectionClassName={styles.inputSection}
+                            />
+                        )}
+                        {(!stageFilterOptions || stageFilterOptions.length === 0) && <div />}
+                        <div />
+                        <div />
+                    </div>
+                    <div className={styles.filterActions}>
                         {isFiltered && (
                             <>
                                 {goodPracticeType.length > 0 && (
@@ -982,60 +966,27 @@ function GoodPractices(props: Props) {
                         )}
                         <div />
                     </div>
-                    <div className={styles.separator} />
-                    {goodPracticeList && !isSmallDisplay && (
-                        <div className={styles.orderingContainer}>
-                            <DropdownMenu
-                                className={styles.orderDropdown}
-                                label={`Sort: ${orderingOptions[orderingOptionValue]}`}
-                                variant="transparent"
-                            >
-                                {orderingOptionKeys.map((ok) => (
-                                    <DropdownMenuItem
-                                        key={ok}
-                                        name={ok}
-                                        onClick={setOrderingOptionValue}
-                                    >
-                                        {orderingOptions[ok]}
-                                    </DropdownMenuItem>
-                                ))}
-                            </DropdownMenu>
-                        </div>
-                    )}
-                    {isSmallDisplay && (
-                        <div className={styles.mobileActions}>
-                            <Button
-                                variant="transparent"
-                                onClick={setShowFilterModalTrue}
-                                name={undefined}
-                                actions={<IoFilter />}
-                            >
-                                Filter and Sort
-                            </Button>
-                            {showFiltersModal && (
-                                <Modal
-                                    heading="Filter"
-                                    className={styles.mobileFilterModal}
-                                    bodyClassName={styles.content}
-                                    onCloseButtonClick={setShowFilterModalFalse}
+                    {goodPracticeList && (
+                        <>
+                            <div className={styles.separator} />
+                            <div className={styles.orderingContainer}>
+                                <DropdownMenu
+                                    className={styles.orderDropdown}
+                                    label={`Sort: ${orderingOptions[orderingOptionValue]}`}
+                                    variant="transparent"
                                 >
-                                    <RadioInput
-                                        labelContainerClassName={styles.label}
-                                        listContainerClassName={styles.radioList}
-                                        name={undefined}
-                                        label="Sort Results by"
-                                        options={orderingOptionList}
-                                        onChange={setOrderingOptionValue}
-                                        keySelector={(d) => d.key}
-                                        labelSelector={(d) => d.label}
-                                        value={orderingOptionValue}
-                                    />
-                                    <div className={styles.mobileFilters}>
-                                        {filterElements}
-                                    </div>
-                                </Modal>
-                            )}
-                        </div>
+                                    {orderingOptionKeys.map((ok) => (
+                                        <DropdownMenuItem
+                                            key={ok}
+                                            name={ok}
+                                            onClick={setOrderingOptionValue}
+                                        >
+                                            {orderingOptions[ok]}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenu>
+                            </div>
+                        </>
                     )}
                     <ListView
                         className={styles.goodPracticeList}

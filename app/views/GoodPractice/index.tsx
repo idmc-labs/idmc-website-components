@@ -279,7 +279,7 @@ function GoodPractice(props: Props) {
                                 hideLabelColon
                                 label="Region"
                                 value={data?.goodPractice
-                                    ?.countries.map((r) => r.goodPracticeRegionLabel)}
+                                    ?.countries.map((r) => r.goodPracticeRegionLabel).join(', ')}
                                 strongValue
                                 displayType="block"
                             />

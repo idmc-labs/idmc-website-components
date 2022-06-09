@@ -21,7 +21,7 @@ interface Props {
     startYear: number | undefined | null;
     endYear: number | undefined | null;
     countries: string | undefined;
-    tags?: React.ReactNode;
+    regions: string | undefined;
     type?: React.ReactNode;
 }
 
@@ -35,7 +35,7 @@ function GoodPracticeItem(props: Props) {
         startYear,
         endYear,
         countries,
-        tags,
+        regions,
         type = 'Good Practice',
     } = props;
 
@@ -80,14 +80,14 @@ function GoodPracticeItem(props: Props) {
                     value={description}
                     hideHeadings
                 />
-                <div className={styles.tags}>
-                    {countries}
-                </div>
-                {tags && (
+                <div className={styles.countryList}>
                     <div className={styles.tags}>
-                        {tags}
+                        {countries}
                     </div>
-                )}
+                    <div className={styles.tags}>
+                        {regions}
+                    </div>
+                </div>
             </div>
         </a>
     );

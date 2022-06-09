@@ -27,9 +27,10 @@
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
         }
-
-        .tags {
-            color: var(--dui-color-brand);
+        .country-list{
+            .tags {
+                color: var(--dui-color-brand);
+            }
         }
     }
 
