@@ -90,14 +90,15 @@ function GoodPracticeItem<
                 {(countries || regions) && (
                     <div className={styles.countryList}>
                         {countries && (
-                            <div className={styles.tags}>
+                            <span className={styles.tags}>
                                 {countries}
-                            </div>
+                            </span>
                         )}
+                        {countries && regions && <>, </>}
                         {regions && (
-                            <div className={styles.tags}>
+                            <span className={styles.tags}>
                                 {regions}
-                            </div>
+                            </span>
                         )}
                     </div>
                 )}
