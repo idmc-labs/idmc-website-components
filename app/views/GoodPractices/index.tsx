@@ -39,6 +39,7 @@ import {
     listToMap,
     unique,
     isDefined,
+    isNotDefined,
 } from '@togglecorp/fujs';
 import {
     IoSearch,
@@ -494,14 +495,6 @@ function GoodPractices(props: Props) {
         startYear: d?.startYear,
         endYear: d?.endYear,
         image: d?.image?.url,
-        countries: d?.countries
-            ?.map((t) => t.name)
-            .filter((e, i: any) => e.indexOf(e) === i)
-            .join(', '),
-        regions: d?.countries
-            ?.map((t) => t.goodPracticeRegionLabel)
-            .filter((e, i: any) => e.indexOf(e) === i)
-            .join(', '),
     }), []);
 
     const handleFaqExpansionChange = useCallback((newValue: boolean, name: string | undefined) => {
@@ -568,7 +561,7 @@ function GoodPractices(props: Props) {
         () => ({
             type: 'FeatureCollection',
             features: countries?.map((t) => {
-                if ((t.goodPracticesCount ?? 0) <= 0) {
+                if (isNotDefined(t.goodPracticesCount) || t.goodPracticesCount <= 0) {
                     return undefined;
                 }
                 if (!t.centerPoint) {

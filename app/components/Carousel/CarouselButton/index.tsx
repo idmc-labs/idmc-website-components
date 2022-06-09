@@ -4,8 +4,6 @@ import {
     isDefined,
 } from '@togglecorp/fujs';
 import {
-    IoRadioButtonOffOutline,
-    IoRadioButtonOnOutline,
     IoChevronForward,
     IoChevronBack,
     IoEllipse,

@@ -157,7 +157,7 @@ function GoodPractice(props: Props) {
         },
     );
 
-    const region = React.useMemo(() => {
+    const regionText = React.useMemo(() => {
         if (!data) {
             return undefined;
         }
@@ -190,6 +190,11 @@ function GoodPractice(props: Props) {
             (d) => d,
         ).join(', ');
     }, [data]);
+
+    const countryText = data
+        ?.goodPractice.countries
+        .map((c) => c.name)
+        .join(', ');
 
     const {
         data: relatedData,
@@ -278,15 +283,14 @@ function GoodPractice(props: Props) {
                             <TextOutput
                                 hideLabelColon
                                 label="Region"
-                                value={data?.goodPractice
-                                    ?.countries.map((r) => r.goodPracticeRegionLabel).join(', ')}
+                                value={regionText}
                                 strongValue
                                 displayType="block"
                             />
                             <TextOutput
                                 hideLabelColon
                                 label="Country"
-                                value={data?.goodPractice.countries.map((c) => c.name).join(', ')}
+                                value={countryText}
                                 strongValue
                                 displayType="block"
                             />
