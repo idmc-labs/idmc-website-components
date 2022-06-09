@@ -1008,9 +1008,10 @@ function GoodPractices(props: Props) {
                         )}
                     />
                     <div className={styles.viewButtons}>
-                        {goodPracticeList && maxLimitShow
-                        >= (GOOD_PRACTICE_PAGE_SIZE + goodPracticesOffset) && (
-                        // FIXME: need to hide this if there is no more good practice
+                        {goodPracticeList && maxLimitShow >= (
+                            GOOD_PRACTICE_PAGE_SIZE + goodPracticesOffset
+                        ) && (
+                            // FIXME: need to hide this if there is no more good practice
                             <Button
                                 name={undefined}
                                 onClick={handleShowMoreButtonClick}
@@ -1022,7 +1023,7 @@ function GoodPractices(props: Props) {
                             </Button>
                         )}
                         {(goodPracticeList && goodPracticeList.length
-                        > GOOD_PRACTICE_PAGE_SIZE) && (
+                            > GOOD_PRACTICE_PAGE_SIZE) && (
                             <Button
                                 name={undefined}
                                 onClick={handleShowLessButtonClick}

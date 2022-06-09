@@ -5,15 +5,6 @@
         color: var(--dui-color-text-on-dark);
     }
 
-    .container {
-        &.ellipsized {
-            display: -webkit-box;
-            overflow: hidden;
-            -webkit-line-clamp: 6;
-            -webkit-box-orient: vertical;
-        }
-    }
-
     .footer {
         display: block;
         padding: var(--dui-spacing-medium) 0;

@@ -21,12 +21,6 @@
             color: var(--dui-color-brand);
         }
 
-        .description {
-            display: -webkit-box;
-            overflow: hidden;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-        }
         .country-list{
             .tags {
                 color: var(--dui-color-brand);

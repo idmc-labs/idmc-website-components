@@ -6,6 +6,7 @@ import {
 
 import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
+import EllipsizedContent from '#components/EllipsizedContent';
 import { getGoodPracticeLink } from '#utils/common';
 
 import gridCover from '../../resources/img/grid2021-cover.png';
@@ -75,19 +76,29 @@ function GoodPracticeItem(props: Props) {
                         </>
                     )}
                 />
-                <HTMLOutput
-                    className={styles.description}
-                    value={description}
-                    hideHeadings
-                />
-                <div className={styles.countryList}>
-                    <div className={styles.tags}>
-                        {countries}
+                <EllipsizedContent
+                    maxCharacters={120}
+                    expandDisabled
+                >
+                    <HTMLOutput
+                        value={description}
+                        hideHeadings
+                    />
+                </EllipsizedContent>
+                {(countries || regions) && (
+                    <div className={styles.countryList}>
+                        {countries && (
+                            <div className={styles.tags}>
+                                {countries}
+                            </div>
+                        )}
+                        {regions && (
+                            <div className={styles.tags}>
+                                {regions}
+                            </div>
+                        )}
                     </div>
-                    <div className={styles.tags}>
-                        {regions}
-                    </div>
-                </div>
+                )}
             </div>
         </a>
     );
