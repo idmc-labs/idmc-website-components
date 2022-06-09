@@ -1013,6 +1013,7 @@ function GoodPractices(props: Props) {
                         ) && (
                             // FIXME: need to hide this if there is no more good practice
                             <Button
+                                className={styles.viewMoreButton}
                                 name={undefined}
                                 onClick={handleShowMoreButtonClick}
                                 disabled={goodPracticeLoading}
@@ -1023,17 +1024,22 @@ function GoodPractices(props: Props) {
                             </Button>
                         )}
                         {(goodPracticeList && goodPracticeList.length
-                            > GOOD_PRACTICE_PAGE_SIZE) && (
-                            <Button
-                                name={undefined}
-                                onClick={handleShowLessButtonClick}
-                                disabled={goodPracticeLoading}
-                                variant="transparent"
-                                actions={<IoArrowUp />}
-                            >
-                                Show Less
-                            </Button>
-                        )}
+                            > GOOD_PRACTICE_PAGE_SIZE) ? (
+                                <Button
+                                    className={styles.seeLessButton}
+                                    name={undefined}
+                                    onClick={handleShowLessButtonClick}
+                                    disabled={goodPracticeLoading}
+                                    variant="transparent"
+                                    actions={<IoArrowUp />}
+                                >
+                                    Show Less
+                                </Button>
+                            ) : (
+                                <div />
+                            )}
+                        <div />
+                        <div />
                     </div>
                 </section>
             </div>
