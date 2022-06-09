@@ -509,11 +509,7 @@ function GoodPractices(props: Props) {
         endYear: d?.endYear,
         image: d?.image?.url,
         countries: unique(d?.countries?.map((t) => t.name) ?? []).join(', '),
-        regions: d?.countries
-            ?.map((t) => t.goodPracticeRegionLabel)
-            .filter((e, i: number) => e.indexOf(e) === i)
-            .join(', '),
-        tags: d?.tags?.map((t) => t.name)?.join(', '),
+        regions: unique(d?.countries?.map((t) => t.goodPracticeRegionLabel) ?? []).join(', '),
     }), []);
 
     const handleFaqExpansionChange = useCallback((newValue: boolean, name: string | undefined) => {

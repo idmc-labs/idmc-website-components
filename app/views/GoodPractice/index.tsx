@@ -196,6 +196,11 @@ function GoodPractice(props: Props) {
         .map((c) => c.name)
         .join(', ');
 
+    const regionLabel = data
+        ?.goodPractice.countries
+        ?.map((c) => c.goodPracticeRegionLabel)
+        .join(', ');
+
     const {
         data: relatedData,
     } = useQuery<RelatedGoodPracticeListQuery, RelatedGoodPracticeListQueryVariables>(
@@ -283,7 +288,7 @@ function GoodPractice(props: Props) {
                             <TextOutput
                                 hideLabelColon
                                 label="Region"
-                                value={regionText}
+                                value={regionLabel}
                                 strongValue
                                 displayType="block"
                             />
@@ -416,6 +421,8 @@ function GoodPractice(props: Props) {
                                 startYear={gp?.startYear}
                                 endYear={gp?.endYear}
                                 image={gp?.image?.url}
+                                countries={undefined}
+                                regions={undefined}
                             />
                         ))}
                     </div>
