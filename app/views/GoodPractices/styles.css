@@ -236,6 +236,10 @@
     height: 100%!important;
     min-height: unset;
 
+    .heading {
+        text-transform: none;
+    }
+
     .content {
         display: flex;
         flex-direction: column;
