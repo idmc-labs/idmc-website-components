@@ -233,8 +233,8 @@ type OrderingOptionType = 'recent' | 'oldest' | 'mostPopular' | 'leastPopular';
 const orderingOptions: {
     [key in OrderingOptionType]: string;
 } = {
-    recent: 'Recent First',
-    oldest: 'Oldest First',
+    recent: 'Year of Publication (Latest First)',
+    oldest: 'Year of Publication (Oldest First)',
     mostPopular: 'Most Popular First',
     leastPopular: 'Least Popular First',
 };
@@ -633,7 +633,7 @@ function GoodPractices(props: Props) {
                         <Header
                             darkMode
                             headingSize="extraLarge"
-                            heading="Global Repositories for Good Practices"
+                            heading="Global Repository of Good Practices"
                             hideHeadingBorder
                         />
                         <EllipsizedContent darkMode>

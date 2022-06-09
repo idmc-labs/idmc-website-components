@@ -1,36 +1,56 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import sanitizeHtml from 'sanitize-html';
 import { _cs } from '@togglecorp/fujs';
 
 import styles from './styles.css';
 
-function useSanitizedHtml(rawHtml: string | null | undefined, hideHeading?: boolean) {
-    const baseTags = [
-        'b',
-        'h',
-        'p',
-        'bold',
-        'strong',
-        'li',
-        'ul',
-        'a',
-        'br',
-        'i',
-    ];
-    const headingTags = [
-        'h1',
-        'h2',
-        'h3',
-        'h4',
-        'h5',
-        'h6',
-    ];
-    const allowedTags = [...baseTags];
-    if (!hideHeading) {
-        allowedTags.push(...headingTags);
-    }
+const baseTags = [
+    'blockquote',
+    'div',
+    'hr',
+    'li',
+    'ol',
+    'p',
+    'pre',
+    'ul',
 
-    const sanitizedHtml = React.useMemo(() => {
+    'a',
+    'abbr',
+    'b',
+    'br',
+    'em',
+    'i',
+    'q',
+    's',
+    'small',
+    'span',
+    'strong',
+    'sub',
+    'sup',
+    'u',
+];
+
+const headingTags = [
+    'h1',
+    'h2',
+    'h3',
+    'h4',
+    'h5',
+    'h6',
+];
+
+function useSanitizedHtml(rawHtml: string | null | undefined, hideHeading?: boolean) {
+    const allowedTags = useMemo(
+        () => {
+            if (hideHeading) {
+                return baseTags;
+            }
+            return [...baseTags, ...headingTags];
+        },
+        [hideHeading],
+    );
+
+    const sanitizedHtml = useMemo(() => {
         if (!rawHtml) {
             return undefined;
         }
