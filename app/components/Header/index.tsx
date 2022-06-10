@@ -7,6 +7,7 @@ import styles from './styles.css';
 
 export interface Props {
     className?: string;
+    darkMode?: boolean;
     headingClassName?: string;
     headingDescriptionClassName?: string;
     heading?: React.ReactNode;
@@ -36,10 +37,17 @@ function Header(props: Props) {
         inlineHeadingDescription,
         hideHeadingBorder,
         headingTitle,
+        darkMode,
     } = props;
 
     return (
-        <header className={_cs(styles.header, className)}>
+        <header
+            className={_cs(
+                styles.header,
+                darkMode && styles.darkMode,
+                className,
+            )}
+        >
             <div className={styles.headingSection}>
                 {icons && (
                     <div>
@@ -62,6 +70,7 @@ function Header(props: Props) {
                             size={headingSize}
                             className={_cs(styles.heading, headingClassName)}
                             hideBorder={hideHeadingBorder}
+                            darkMode={darkMode}
                         >
                             {heading}
                             {headingInfo && (

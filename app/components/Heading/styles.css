@@ -7,6 +7,10 @@
     font-family: var(--dui-font-family-heading);
     font-weight: var(--dui-font-weight-heading);
 
+    &.dark-mode {
+        color: var(--color-text-on-dark);
+    }
+
     &.extra-large {
         font-size: var(--dui-font-size-mega-large);
     }
@@ -23,6 +27,12 @@
         font-size: var(--dui-font-size-large);
     }
 
+    &.small-alt {
+        line-height: 1.33;
+        font-family: var(--dui-font-family-sans-serif);
+        font-size: var(--dui-font-size-large);
+    }
+
     &.extra-small {
         font-family: var(--dui-font-family-sans-serif);
         font-size: var(--dui-font-size-medium);
@@ -32,8 +42,8 @@
         position: absolute;
         bottom: 0;
         left: 0;
-        background-color: var(--dui-color-accent);
-        width: 4ch;
-        height: var(--dui-width-separator-medium);
+        background-color: var(--dui-color-brand);
+        width: 2ch;
+        height: var(--dui-width-separator-thick);
     }
 }

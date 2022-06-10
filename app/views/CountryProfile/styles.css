@@ -231,10 +231,6 @@
                     flex-basis: 100%;
                     flex-wrap: wrap;
                     gap: var(--dui-spacing-large);
-
-                    .idu-pager-button {
-                        padding: 0;
-                    }
                 }
             }
 
@@ -302,10 +298,6 @@
                     flex-basis: 100%;
                     flex-wrap: wrap;
                     gap: var(--dui-spacing-large);
-
-                    .material-pager-button {
-                        padding: 0;
-                    }
                 }
 
             }

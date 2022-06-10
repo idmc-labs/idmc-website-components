@@ -4,6 +4,7 @@ import {
     IoArrowDown,
     IoArrowUp,
 } from 'react-icons/io5';
+import ellipsize from 'html-ellipsis';
 
 import Button from '#components/Button';
 
@@ -16,6 +17,7 @@ interface Props {
     footer?: React.ReactNode;
     darkMode?: boolean;
     expandDisabled?: boolean;
+    maxCharacters?: number;
 }
 
 function EllipsizedContent(props: Props) {
@@ -26,76 +28,82 @@ function EllipsizedContent(props: Props) {
         footer,
         darkMode,
         expandDisabled = false,
+        maxCharacters = 400,
     } = props;
 
-    const [isEllipsized, setIsEllipsized] = React.useState(false);
-    const [shouldEllipsize, setShouldEllipsize] = React.useState(true);
+    const [shouldEllipsize, setShouldEllipsize] = React.useState(false);
+    const [isEllipsized, setIsEllipsized] = React.useState(true);
+
     const containerRef = React.useRef<HTMLDivElement>(null);
+    const dummyContainerRef = React.useRef<HTMLDivElement>(null);
 
     React.useEffect(() => {
-        const checkAndSetEllipsize = () => {
-            const el = containerRef.current;
-            if (el) {
-                if (el.offsetHeight < el.scrollHeight) {
-                    setIsEllipsized(true);
-                } else {
-                    setIsEllipsized(false);
-                }
+        const dummyEl = dummyContainerRef.current;
+        const containerEl = containerRef.current;
 
-                // TODO: The logic in this component breaks when
-                // you expand the content and then resize it to
-                // the point where it is not ellipsized.
-                // After that, it will no longer will be ellipsized
-                // even if the lines extend its limit,
-                // Hence, we set should ellipsize true after resize
+        if (dummyEl && containerEl) {
+            const originalContent = dummyEl.innerHTML;
+            const ellipsized = ellipsize(originalContent, maxCharacters, true);
+            containerEl.innerHTML = ellipsized;
+
+            if (ellipsized === originalContent) {
+                setShouldEllipsize(false);
+                setIsEllipsized(false);
+            } else {
                 setShouldEllipsize(true);
+                setIsEllipsized(true);
             }
-        };
-
-        checkAndSetEllipsize();
-        window.addEventListener('resize', checkAndSetEllipsize);
-
-        return () => {
-            window.removeEventListener('resize', checkAndSetEllipsize);
-        };
-    }, []);
+        }
+    }, [children, maxCharacters]);
 
     React.useEffect(() => {
-        const el = containerRef.current;
-        if (el && el.offsetHeight < el.scrollHeight) {
-            setIsEllipsized(true);
-        }
-    }, [shouldEllipsize]);
+        const dummyEl = dummyContainerRef.current;
+        const containerEl = containerRef.current;
 
-    if (!children) {
-        return null;
-    }
+        if (dummyEl && containerEl) {
+            const originalContent = dummyEl.innerHTML;
+
+            if (isEllipsized) {
+                const ellipsized = ellipsize(originalContent, maxCharacters);
+                containerEl.innerHTML = ellipsized;
+            } else {
+                containerEl.innerHTML = originalContent;
+            }
+        }
+    }, [children, maxCharacters, isEllipsized]);
 
     return (
-        <div className={_cs(styles.ellipsizedContent, className)}>
+        <div
+            className={_cs(
+                styles.ellipsizedContent,
+                darkMode && styles.darkMode,
+                className,
+            )}
+        >
             <div
-                ref={containerRef}
-                className={_cs(
-                    styles.container,
-                    shouldEllipsize && styles.ellipsized,
-                )}
+                ref={dummyContainerRef}
+                style={{ display: 'none' }}
             >
                 {children}
             </div>
+            <div
+                ref={containerRef}
+            />
             {footer && (
                 <div className={_cs(styles.footer, footerClassName)}>
                     {footer}
                 </div>
             )}
-            {isEllipsized && !expandDisabled && (
+            {!expandDisabled && shouldEllipsize && (
                 <Button
                     className={styles.ellipsizeToggleButton}
-                    name={!shouldEllipsize}
-                    onClick={setShouldEllipsize}
-                    actions={shouldEllipsize ? <IoArrowDown /> : <IoArrowUp />}
-                    variant={darkMode ? 'primary' : 'secondary'}
+                    name={!isEllipsized}
+                    onClick={setIsEllipsized}
+                    actions={isEllipsized ? <IoArrowDown /> : <IoArrowUp />}
+                    variant="action"
+                    darkMode={darkMode}
                 >
-                    {shouldEllipsize ? 'Read More' : 'See Less'}
+                    {isEllipsized ? 'Read More' : 'See Less'}
                 </Button>
             )}
         </div>

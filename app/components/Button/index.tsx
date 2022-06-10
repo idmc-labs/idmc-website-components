@@ -5,23 +5,30 @@ import RawButton, { Props as RawButtonProps } from '#components/RawButton';
 
 import styles from './styles.css';
 
+type ButtonVariantType = 'primary' | 'secondary' | 'action' | 'transparent';
+
 export function useButtonFeatures(props: {
-    variant: 'primary' | 'secondary',
+    variant: ButtonVariantType,
     icons?: React.ReactNode;
     actions?: React.ReactNode;
     children?: React.ReactNode;
+    darkMode?: boolean;
 }) {
     const {
         variant,
         icons,
         actions,
         children,
+        darkMode,
     } = props;
 
     const buttonClassName = _cs(
         styles.button,
         variant === 'primary' && styles.primary,
         variant === 'secondary' && styles.secondary,
+        variant === 'action' && styles.action,
+        variant === 'transparent' && styles.transparent,
+        darkMode && styles.darkMode,
     );
 
     const childrenForOutput = (
@@ -52,8 +59,9 @@ interface Props<N> extends RawButtonProps<N> {
     onClick?: (name: N, e: React.MouseEvent<HTMLButtonElement>) => void;
     icons?: React.ReactNode;
     actions?: React.ReactNode;
-    variant?: 'primary' | 'secondary';
+    variant?: ButtonVariantType;
     disabled?: boolean;
+    darkMode?: boolean;
 }
 
 function Button<N>(props: Props<N>) {
@@ -63,6 +71,7 @@ function Button<N>(props: Props<N>) {
         actions,
         children,
         variant = 'primary',
+        darkMode,
         ...otherProps
     } = props;
 
@@ -74,6 +83,7 @@ function Button<N>(props: Props<N>) {
         icons,
         actions,
         children,
+        darkMode,
     });
 
     return (

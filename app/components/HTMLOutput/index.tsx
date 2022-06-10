@@ -1,18 +1,63 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import sanitizeHtml from 'sanitize-html';
 import { _cs } from '@togglecorp/fujs';
 
 import styles from './styles.css';
 
-function useSanitizedHtml(rawHtml: string | null | undefined) {
-    const sanitizedHtml = React.useMemo(() => {
+const baseTags = [
+    'blockquote',
+    'div',
+    'hr',
+    'li',
+    'ol',
+    'p',
+    'pre',
+    'ul',
+
+    'a',
+    'abbr',
+    'b',
+    'br',
+    'em',
+    'i',
+    'q',
+    's',
+    'small',
+    'span',
+    'strong',
+    'sub',
+    'sup',
+    'u',
+];
+
+const headingTags = [
+    'h1',
+    'h2',
+    'h3',
+    'h4',
+    'h5',
+    'h6',
+];
+
+function useSanitizedHtml(rawHtml: string | null | undefined, hideHeading?: boolean) {
+    const allowedTags = useMemo(
+        () => {
+            if (hideHeading) {
+                return baseTags;
+            }
+            return [...baseTags, ...headingTags];
+        },
+        [hideHeading],
+    );
+
+    const sanitizedHtml = useMemo(() => {
         if (!rawHtml) {
             return undefined;
         }
         return sanitizeHtml(
             rawHtml,
             {
-                allowedTags: ['b', 'h', 'p', 'bold', 'strong', 'li', 'ul', 'a', 'br', 'i'],
+                allowedTags,
                 // TODO: create comprehensive list of the attributes used
                 // to improve security
                 // allowedAttributes: {
@@ -30,23 +75,25 @@ function useSanitizedHtml(rawHtml: string | null | undefined) {
                 },
             },
         );
-    }, [rawHtml]);
+    }, [rawHtml, allowedTags]);
 
     return sanitizedHtml;
 }
 
 interface Props extends Omit<React.HTMLProps<HTMLDivElement>, 'dangerouslySetInnerHTML' | 'value'>{
     value: string | null | undefined;
+    hideHeadings?: boolean;
 }
 
 function RichTextOutput(props: Props) {
     const {
         className,
         value,
+        hideHeadings,
         ...otherProps
     } = props;
 
-    const sanitizedValue = useSanitizedHtml(value);
+    const sanitizedValue = useSanitizedHtml(value, hideHeadings);
 
     if (!sanitizedValue) {
         return null;

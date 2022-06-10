@@ -1,0 +1,8 @@
+.carousel-button {
+    padding: var(--dui-spacing-small);
+    color: rgba(0, 0, 0, .3);
+
+    &.active {
+        color: var(--dui-color-brand);
+    }
+}

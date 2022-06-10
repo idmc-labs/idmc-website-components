@@ -1,82 +1,107 @@
 import React from 'react';
-import { _cs } from '@togglecorp/fujs';
+import {
+    _cs,
+    isNotDefined,
+} from '@togglecorp/fujs';
 
 import Header from '#components/Header';
-import DateOutput from '#components/DateOutput';
 import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
+import { getGoodPracticeLink } from '#utils/common';
 
-// import SmartLink from '#base/components/SmartLink';
-// import route from '#base/configs/routes';
+import gridCover from '../../resources/img/grid2021-cover.png';
 
 import styles from './styles.css';
 
 interface Props {
     className?: string;
-    coverImageUrl: string | undefined | null;
-    heading: string;
-    date: string | undefined | null;
-    url: string;
+    goodPracticeId: string | undefined;
     description: string | undefined | null;
-    type: string | undefined | null;
+    image: string | undefined;
+    title: React.ReactNode;
+    startYear: number | undefined | null;
+    endYear: number | undefined | null;
+    countries?: string | null;
+    regions?: string | null;
+    type?: React.ReactNode;
 }
 
 function GoodPracticeItem(props: Props) {
     const {
         className,
-        coverImageUrl,
-        heading,
-        date,
-        type,
+        goodPracticeId,
+        title,
         description,
-        url,
+        image,
+        startYear,
+        endYear,
+        countries = [],
+        regions = [],
+        type = 'Good Practice',
     } = props;
 
+    // NOTE: Advanced stuff, contact frozenhelium
+    if (isNotDefined(goodPracticeId)) {
+        return <div />;
+    }
+
     return (
-        <div className={_cs(styles.goodPracticeItem, className)}>
-            {coverImageUrl && (
-                <a
-                    className={styles.coverWrapper}
-                    href={url}
-                    target="_blank"
-                    rel="noreferrer"
-                >
-                    <img
-                        src={coverImageUrl}
-                        className={styles.coverImage}
-                        alt="Cover"
-                    />
-                </a>
-            )}
-            <div className={styles.content}>
+        <a
+            href={getGoodPracticeLink(goodPracticeId)}
+            className={_cs(styles.goodPracticeItem, className)}
+        >
+            <img
+                className={styles.preview}
+                src={image ?? gridCover}
+                alt=""
+            />
+            <div className={styles.details}>
                 <div className={styles.type}>
                     {type}
                 </div>
                 <Header
-                    heading={(
-                        <a
-                            href={url}
-                            className={styles.link}
-                            target="_blank"
-                            rel="noreferrer"
-                        >
-                            {heading}
-                        </a>
+                    headingSize="smallAlt"
+                    heading={title}
+                    description={startYear && (
+                        <>
+                            <span>
+                                {startYear}
+                            </span>
+                            <span>
+                                &nbsp;-&nbsp;
+                            </span>
+                            <span>
+                                {endYear ?? 'Ongoing'}
+                            </span>
+                        </>
                     )}
-                    headingSize="extraSmall"
                 />
                 <EllipsizedContent
+                    maxCharacters={120}
                     expandDisabled
                 >
-                    <HTMLOutput value={description} />
+                    <HTMLOutput
+                        value={description}
+                        hideHeadings
+                    />
                 </EllipsizedContent>
-                <DateOutput
-                    className={styles.date}
-                    value={date}
-                    format="dd MMM yyyy"
-                />
+                {(countries || regions) && (
+                    <div className={styles.countryList}>
+                        {countries && (
+                            <span className={styles.tags}>
+                                {countries}
+                            </span>
+                        )}
+                        {countries && regions && <>, </>}
+                        {regions && (
+                            <span className={styles.tags}>
+                                {regions}
+                            </span>
+                        )}
+                    </div>
+                )}
             </div>
-        </div>
+        </a>
     );
 }
 

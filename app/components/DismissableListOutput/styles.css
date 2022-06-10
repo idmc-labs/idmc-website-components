@@ -1,0 +1,24 @@
+.dismissable-list-output {
+    display: flex;
+    align-items: baseline;
+    gap: var(--dui-spacing-small);
+    flex-wrap: wrap;
+
+    .label {
+        font-weight: var(--dui-font-weight-bold);
+    }
+
+    .value-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--dui-spacing-small);
+
+        .tag {
+            display: flex;
+            align-items: center;
+            background-color: var(--dui-color-background);
+            padding: var(--dui-spacing-super-small) var(--dui-spacing-small);
+            gap: var(--dui-spacing-small);
+        }
+    }
+}

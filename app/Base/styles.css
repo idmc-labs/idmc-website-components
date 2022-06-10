@@ -30,6 +30,7 @@
     --dui-color-watermark: rgb(100,99,99);
     */
     --dui-color-background: #eff4fa;
+    --dui-color-background-information: var(--dui-color-background);
 
     --color-foreground: #ffffff;
     --color-background: #eff4fa;
@@ -47,15 +48,12 @@
 
     --width-page-max: 69rem;
     --width-readable-content-max: 46rem;
-
-    #app-container {
-        min-height: 100vh; /* country profile should take some space initially */
-    }
 }
 
 .base {
     display: flex;
     flex-direction: column;
+    min-height: 100vh; /* country profile should take some space initially */
     line-height: 1.5;
     color: var(--color-text);
     font-family: 'proxima-nova', sans-serif;

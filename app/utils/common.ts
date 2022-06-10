@@ -10,6 +10,8 @@ import {
     getAutoPrecision,
 } from '#components/Numeral';
 
+const standaloneMode = (window as { standaloneMode?: boolean }).standaloneMode ?? false;
+
 export function rankedSearchOnList<T>(
     list: T[],
     searchString: string | undefined,
@@ -72,4 +74,31 @@ export function formatNumber(value: number) {
         valueSuffix: normalizeSuffix = '',
     } = output;
     return `${number}${normalizeSuffix}`;
+}
+
+export function getCountryProfileLink(iso3: string, countryName?: string) {
+    // NOTE: we need to also add countryName on standaloneMode url
+    let link = standaloneMode
+        ? `/?page=country-profile&iso3=${iso3}`
+        : `/country-profiles/${iso3}`;
+    if (countryName) {
+        link = standaloneMode
+            ? `${link}&countryName=${countryName}`
+            : `${link}?countryName=${countryName}`;
+    }
+    return link;
+}
+
+export function getGoodPracticesLink() {
+    // NOTE: we need to also add countryName on standaloneMode url
+    return standaloneMode
+        ? '/?page=good-practices'
+        : '/good-practices';
+}
+
+export function getGoodPracticeLink(id: string) {
+    // NOTE: we need to also add countryName on standaloneMode url
+    return standaloneMode
+        ? `/?page=good-practice&id=${id}`
+        : `/good-practice?id=${id}`;
 }
