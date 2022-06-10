@@ -4,16 +4,15 @@ export type TabKey = string;
 export type TabVariant = 'primary' | 'secondary' | 'step';
 
 export type TabContextProps = {
-    variant?: TabVariant;
-    disabled?: boolean;
-    tabs: TabKey[];
-    registerTab: (tab: TabKey) => void;
-    unregisterTab: (tab: TabKey) => void;
-    step: number;
-    setStep?: React.Dispatch<React.SetStateAction<number>>;
-    useHash?: false;
     activeTab: TabKey | undefined;
+    disabled?: boolean;
+    registerTab: (tab: TabKey) => void;
     setActiveTab: (key: TabKey | undefined) => void;
+    setStep?: React.Dispatch<React.SetStateAction<number>>;
+    step: number;
+    tabs: TabKey[];
+    unregisterTab: (tab: TabKey) => void;
+    variant?: TabVariant;
 }
 
 export const TabContext = React.createContext<TabContextProps>({

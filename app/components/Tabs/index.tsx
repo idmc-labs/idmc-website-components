@@ -6,7 +6,7 @@ import {
     TabContext,
 } from '#components/Tabs/TabContext';
 
-export interface Props<T extends TabKey> {
+export interface Props<T extends TabKey | undefined> {
     children: React.ReactNode;
     variant?: TabVariant;
     disabled?: boolean;
@@ -14,7 +14,7 @@ export interface Props<T extends TabKey> {
     onChange: (key: T) => void;
 }
 
-export function Tabs<T extends TabKey>(props: Props<T>) {
+export function Tabs<T extends TabKey | undefined>(props: Props<T>) {
     const {
         children,
         variant = 'primary',
@@ -51,15 +51,15 @@ export function Tabs<T extends TabKey>(props: Props<T>) {
     }, [setTabs]);
 
     const contextValue = React.useMemo(() => ({
-        tabs,
-        variant,
-        disabled,
         activeTab: value,
-        setActiveTab: onChange,
+        disabled,
         registerTab,
-        unregisterTab,
-        step,
+        setActiveTab: onChange as (tabKey: TabKey| undefined) => void,
         setStep,
+        step,
+        tabs: tabs as string[],
+        unregisterTab,
+        variant,
     }), [
         tabs,
         value,

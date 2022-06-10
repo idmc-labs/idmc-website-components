@@ -4,6 +4,7 @@ import {
     isNotDefined,
     listToMap,
     isDefined,
+    unique,
 } from '@togglecorp/fujs';
 import {
     gql,
@@ -157,14 +158,14 @@ function GoodPractice(props: Props) {
         },
     );
 
-    const countryText = data
+    const countryText = unique(data
         ?.goodPractice.countries
-        ?.map((c) => c.name)
+        ?.map((c) => c.name) ?? [])
         .join(', ');
 
-    const regionLabel = data
+    const regionLabel = unique(data
         ?.goodPractice.countries
-        ?.map((c) => c.goodPracticeRegionLabel)
+        ?.map((c) => c.goodPracticeRegionLabel) ?? [])
         .join(', ');
 
     const {
