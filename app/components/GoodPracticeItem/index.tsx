@@ -13,7 +13,7 @@ import gridCover from '../../resources/img/grid2021-cover.png';
 
 import styles from './styles.css';
 
-interface Props<T> {
+interface Props {
     className?: string;
     goodPracticeId: string | undefined;
     description: string | undefined | null;
@@ -21,14 +21,12 @@ interface Props<T> {
     title: React.ReactNode;
     startYear: number | undefined | null;
     endYear: number | undefined | null;
-    countries: T[] | undefined| null;
-    regions: T[] |undefined | null;
+    countries?: string | null;
+    regions?: string | null;
     type?: React.ReactNode;
 }
 
-function GoodPracticeItem<
-    T extends null | undefined
->(props: Props<T>) {
+function GoodPracticeItem(props: Props) {
     const {
         className,
         goodPracticeId,

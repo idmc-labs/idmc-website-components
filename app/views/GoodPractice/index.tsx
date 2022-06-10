@@ -3,7 +3,6 @@ import {
     _cs,
     isNotDefined,
     listToMap,
-    unique,
     isDefined,
 } from '@togglecorp/fujs';
 import {
@@ -157,43 +156,9 @@ function GoodPractice(props: Props) {
         },
     );
 
-    const regionText = React.useMemo(() => {
-        if (!data) {
-            return undefined;
-        }
-
-        const format = (name: string) => (
-            name.split('_').join(' ')
-        );
-
-        const regionMap = listToMap(
-            data.regionList?.enumValues,
-            (d) => d.name,
-            (d) => d.description ?? format(d.name),
-        );
-        const regionList = data?.goodPractice?.countries?.map(
-            (c) => {
-                if (!c) {
-                    return '';
-                }
-
-                if (isNotDefined(c.goodPracticeRegion)) {
-                    return '';
-                }
-
-                return regionMap?.[c.goodPracticeRegion] ?? '';
-            },
-        );
-
-        return unique(
-            regionList,
-            (d) => d,
-        ).join(', ');
-    }, [data]);
-
     const countryText = data
         ?.goodPractice.countries
-        .map((c) => c.name)
+        ?.map((c) => c.name)
         .join(', ');
 
     const regionLabel = data
