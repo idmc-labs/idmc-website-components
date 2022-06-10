@@ -1,8 +1,5 @@
 .ellipsized-content {
     max-width: var(--width-readable-content-max);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 
     &.dark-mode {
         color: var(--dui-color-text-on-dark);
@@ -20,3 +17,4 @@
         gap: var(--dui-spacing-small);
     }
 }
+
