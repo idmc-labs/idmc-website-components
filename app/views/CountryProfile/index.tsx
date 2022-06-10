@@ -25,7 +25,12 @@ import {
     isDefined,
 } from '@togglecorp/fujs';
 import { saveAs } from 'file-saver';
+
+// FIXME: figure this out
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import stringify from 'csv-stringify/lib/browser/sync';
+
 import {
     ResponsiveContainer,
     BarChart,
@@ -56,7 +61,6 @@ import {
     ConflictDataQueryVariables,
 } from '#generated/types';
 
-// import CountrySelectInput, { SearchCountryType } from '#components/CountrySelectInput';
 import ErrorBoundary from '#components/ErrorBoundary';
 import RoundedBar from '#components/RoundedBar';
 import Tabs from '#components/Tabs';
