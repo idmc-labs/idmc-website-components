@@ -208,21 +208,21 @@
             }
             .view-buttons{
                 display: flex;
-                gap: var(--dui-spacing-extra-large);
+                gap: var(--dui-spacing-extra-small);
                 flex-wrap: wrap;
 
                 >* {
                     flex-basis: 0;
-                    flex-grow: 1;
                     min-width: 14rem;
                 }
 
                 .view-more-button {
+                    margin-right: var(--dui-spacing-small);
                     min-width: 14rem;
                 }
 
                 .see-less-button {
-                    min-width: 10rem;
+                    min-width: 7rem;
                 }
             }
         }

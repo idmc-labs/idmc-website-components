@@ -791,7 +791,7 @@ function GoodPractices(props: Props) {
                 <section className={styles.map}>
                     <Header
                         headingSize="large"
-                        heading="Good Practices Around the World"
+                        heading="Good Practices around the world"
                     />
                     <Map
                         mapStyle={lightStyle}
@@ -845,7 +845,7 @@ function GoodPractices(props: Props) {
                         {faqsResponse && faqsResponse.faqs.length > 0 ? (
                             <div className={styles.faqList}>
                                 <Header
-                                    heading="Frequently Asked Questions"
+                                    heading="Frequently asked questions"
                                     headingSize="large"
                                 />
                                 <div className={styles.content}>

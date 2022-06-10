@@ -76,8 +76,8 @@
                     display: flex;
                     flex-wrap: wrap;
                     border-radius: 0.25rem;
-                    background-color: var(--dui-color-background);
                     gap: var(--dui-spacing-medium);
+                    background-color: var(--dui-color-background);
 
                     >* {
                         flex-basis: 0;

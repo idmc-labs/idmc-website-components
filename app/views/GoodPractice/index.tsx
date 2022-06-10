@@ -60,6 +60,7 @@ query GoodPracticeDetails($id: ID!) {
           }
           youtubeVideoUrl
         }
+        implementingEntity
         id
         image {
           name
@@ -249,40 +250,51 @@ function GoodPractice(props: Props) {
             <div className={styles.mainContent}>
                 <section className={styles.details}>
                     <div className={styles.mainSection}>
-                        <div className={styles.meta}>
-                            <TextOutput
-                                hideLabelColon
-                                label="Region"
-                                value={regionLabel}
-                                strongValue
-                                displayType="block"
-                            />
-                            <TextOutput
-                                hideLabelColon
-                                label="Country"
-                                value={countryText}
-                                strongValue
-                                displayType="block"
-                            />
-                            <TextOutput
-                                hideLabelColon
-                                label="Timeframe"
-                                value={(
-                                    <div>
-                                        <span>
-                                            {data?.goodPractice?.startYear}
-                                        </span>
-                                        <span>
-                                            &nbsp;-&nbsp;
-                                        </span>
-                                        <span>
-                                            {data?.goodPractice?.endYear ?? 'Ongoing'}
-                                        </span>
-                                    </div>
-                                )}
-                                strongValue
-                                displayType="block"
-                            />
+                        <div className={styles.metaBlock}>
+                            <div className={styles.meta}>
+                                <TextOutput
+                                    hideLabelColon
+                                    label="Region"
+                                    value={regionLabel}
+                                    strongValue
+                                    displayType="block"
+                                />
+                                <TextOutput
+                                    hideLabelColon
+                                    label="Country"
+                                    value={countryText}
+                                    strongValue
+                                    displayType="block"
+                                />
+                            </div>
+                            <div className={styles.meta}>
+                                <TextOutput
+                                    hideLabelColon
+                                    label="Timeframe"
+                                    value={(
+                                        <div>
+                                            <span>
+                                                {data?.goodPractice?.startYear}
+                                            </span>
+                                            <span>
+                                                &nbsp;-&nbsp;
+                                            </span>
+                                            <span>
+                                                {data?.goodPractice?.endYear ?? 'Ongoing'}
+                                            </span>
+                                        </div>
+                                    )}
+                                    strongValue
+                                    displayType="block"
+                                />
+                                <TextOutput
+                                    hideLabelColon
+                                    label="Implementing entity"
+                                    value={data?.goodPractice?.implementingEntity}
+                                    strongValue
+                                    displayType="block"
+                                />
+                            </div>
                         </div>
                         {data?.goodPractice.description && (
                             <HTMLOutput
@@ -294,7 +306,7 @@ function GoodPractice(props: Props) {
                         {(data?.goodPractice?.gallery?.length ?? 0) > 0 && (
                             <div className={styles.carouselContainer}>
                                 <Header
-                                    heading="Best Practice Gallery"
+                                    heading="Best Practice gallery"
                                     headingSize="small"
                                 />
                                 <Carousel className={styles.carousel}>
@@ -364,7 +376,7 @@ function GoodPractice(props: Props) {
                     <section className={styles.mediaAndResourceLinks}>
                         <Header
                             headingSize="large"
-                            heading="Media and Resources"
+                            heading="Media and resources"
                         />
                         <HTMLOutput
                             value={data?.goodPractice?.mediaAndResourceLinks}
@@ -374,7 +386,7 @@ function GoodPractice(props: Props) {
                 <section className={styles.relatedSection}>
                     <Header
                         headingSize="large"
-                        heading="Related Materials"
+                        heading="Related materials"
                     />
                     <div className={styles.relatedGoodPracticeList}>
                         {relatedGoodPracticeList?.map((gp, i) => (
