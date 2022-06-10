@@ -35,8 +35,8 @@ function GoodPracticeItem(props: Props) {
         image,
         startYear,
         endYear,
-        countries = [],
-        regions = [],
+        countries,
+        regions,
         type = 'Good Practice',
     } = props;
 

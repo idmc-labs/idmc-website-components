@@ -160,13 +160,15 @@ function GoodPractice(props: Props) {
 
     const countryText = unique(data
         ?.goodPractice.countries
-        ?.map((c) => c.name) ?? [])
-        .join(', ');
+        ?.map((c) => c.name)
+        ?.filter((c) => !!c)
+            ?? []).join(', ') || '-';
 
     const regionLabel = unique(data
         ?.goodPractice.countries
-        ?.map((c) => c.goodPracticeRegionLabel) ?? [])
-        .join(', ');
+        ?.map((c) => c.goodPracticeRegionLabel)
+        ?.filter((c) => !!c)
+            ?? []).join(', ') || '-';
 
     const {
         data: relatedData,
@@ -291,7 +293,8 @@ function GoodPractice(props: Props) {
                                 <TextOutput
                                     hideLabelColon
                                     label="Implementing entity"
-                                    value={data?.goodPractice?.implementingEntity}
+                                    // Note: || used instead of ?? due to empty string
+                                    value={data?.goodPractice?.implementingEntity || '-'}
                                     strongValue
                                     displayType="block"
                                 />
