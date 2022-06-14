@@ -750,7 +750,7 @@ function CountryProfile(props: Props) {
                 </>
             )}
             filters={(
-                <>
+                <div className={styles.timeRangeContainer}>
                     <SliderInput
                         hideValues
                         min={START_YEAR}
@@ -780,7 +780,7 @@ function CountryProfile(props: Props) {
                             />
                         )}
                     />
-                </>
+                </div>
             )}
         >
             <div className={styles.infographicList}>
@@ -909,7 +909,7 @@ function CountryProfile(props: Props) {
                 </TooltipIcon>
             )}
             filters={(
-                <>
+                <div className={styles.timeRangeContainer}>
                     <SliderInput
                         hideValues
                         min={START_YEAR}
@@ -920,9 +920,7 @@ function CountryProfile(props: Props) {
                         value={conflictTimeRangeActual}
                         onChange={setConflictTimeRange}
                     />
-                    <div />
-                    <div />
-                </>
+                </div>
             )}
             footerActions={(
                 <>
