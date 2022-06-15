@@ -63,6 +63,7 @@ import DismissableListOutput from '#components/DismissableListOutput';
 
 import useDebouncedValue from '../../hooks/useDebouncedValue';
 import useDocumentSize from '../../hooks/useDocumentSize';
+import backgroundImage from '../../resources/img/backgroundImage.png';
 
 import styles from './styles.css';
 
@@ -764,7 +765,7 @@ function GoodPractices(props: Props) {
                 <section
                     className={styles.profile}
                     style={{
-                        backgroundImage: 'url("https://images.unsplash.com/photo-1534271057238-c2c170a76672?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80")',
+                        backgroundImage: `url(${backgroundImage})`,
                     }}
                 >
                     <div className={styles.container}>
