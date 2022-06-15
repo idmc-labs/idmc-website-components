@@ -190,8 +190,10 @@
                 justify-content: flex-end;
                 
                 .order-dropdown{
+                    margin-left: var(--dui-spacing-large);
                     color: var(--dui-color-brand);
                     gap: var(--dui-spacing-extra-small);
+
                 }
             }
 
