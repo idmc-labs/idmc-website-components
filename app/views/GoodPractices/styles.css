@@ -188,7 +188,7 @@
             .ordering-container {
                 display: flex;
                 justify-content: flex-end;
-
+                
                 .order-dropdown{
                     color: var(--dui-color-brand);
                     gap: var(--dui-spacing-extra-small);
@@ -204,6 +204,20 @@
                     flex-basis: 0;
                     flex-grow: 1;
                     min-width: 20rem;
+                }
+            }
+
+            .good-practice-grid {
+                display: flex;
+                flex-direction: column;
+                gap: var(--dui-spacing-extra-large);
+
+                >* {
+                    display: flex;
+                    >*{
+                        width: auto;
+                        height: 14rem;
+                    }
                 }
             }
             .view-buttons{
@@ -227,16 +241,6 @@
             }
         }
 
-    }
-}
-
-.grid-container{
-    .good-practice-grid {
-        --gap: 5rem;
-        display: flex;
-        flex-wrap: wrap;
-        gap: var(--gap);
-        width: 100%;
     }
 }
 

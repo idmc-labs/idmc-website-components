@@ -1005,25 +1005,6 @@ function GoodPractices(props: Props) {
                         <div />
                     </div>
                     <div className={styles.separator} />
-                    {goodPracticeList && !isSmallDisplay && (
-                        <div className={styles.orderingContainer}>
-                            <DropdownMenu
-                                className={styles.orderDropdown}
-                                label={`Sort: ${orderingOptions[orderingOptionValue]}`}
-                                variant="transparent"
-                            >
-                                {orderingOptionKeys.map((ok) => (
-                                    <DropdownMenuItem
-                                        key={ok}
-                                        name={ok}
-                                        onClick={setOrderingOptionValue}
-                                    >
-                                        {orderingOptions[ok]}
-                                    </DropdownMenuItem>
-                                ))}
-                            </DropdownMenu>
-                        </div>
-                    )}
                     {isSmallDisplay && (
                         <div className={styles.mobileActions}>
                             <Button
@@ -1065,19 +1046,36 @@ function GoodPractices(props: Props) {
                             value={activeTab}
                             onChange={setActiveTab}
                         >
-                            {!isSmallDisplay && (
-                                <TabList>
-                                    <Tab name="grid">
-                                        <IoGridOutline />
-                                    </Tab>
-                                    <Tab name="list">
-                                        <IoListOutline />
-                                    </Tab>
-                                </TabList>
+                            {goodPracticeList && !isSmallDisplay && (
+                                <div className={styles.orderingContainer}>
+                                    <TabList>
+                                        <Tab name="grid">
+                                            <IoGridOutline />
+                                        </Tab>
+                                        <Tab name="list">
+                                            <IoListOutline />
+                                        </Tab>
+                                    </TabList>
+                                    <DropdownMenu
+                                        className={styles.orderDropdown}
+                                        label={`Sort: ${orderingOptions[orderingOptionValue]}`}
+                                        variant="transparent"
+                                    >
+                                        {orderingOptionKeys.map((ok) => (
+                                            <DropdownMenuItem
+                                                key={ok}
+                                                name={ok}
+                                                onClick={setOrderingOptionValue}
+                                            >
+                                                {orderingOptions[ok]}
+                                            </DropdownMenuItem>
+                                        ))}
+                                    </DropdownMenu>
+                                </div>
                             )}
-                            <TabPanel name="list">
+                            <TabPanel name="grid">
                                 <ListView
-                                    className={styles.goodPracticeGrid}
+                                    className={styles.goodPracticeList}
                                     data={goodPracticeList}
                                     keySelector={goodPracticekeySelector}
                                     rendererParams={goodPracticeRendererParams}
@@ -1098,9 +1096,9 @@ function GoodPractices(props: Props) {
                                     )}
                                 />
                             </TabPanel>
-                            <TabPanel name="grid">
+                            <TabPanel name="list">
                                 <ListView
-                                    className={styles.goodPracticeList}
+                                    className={styles.goodPracticeGrid}
                                     data={goodPracticeList}
                                     keySelector={goodPracticekeySelector}
                                     rendererParams={goodPracticeRendererParams}
