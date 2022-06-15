@@ -230,6 +230,16 @@
     }
 }
 
+.grid-container{
+    .good-practice-grid {
+        --gap: 5rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--gap);
+        width: 100%;
+    }
+}
+
 .mobile-filter-modal {
     width: 100%!important;
     min-width: unset;
