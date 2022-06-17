@@ -7,7 +7,7 @@ function useBlurEffect(
     parentRef: React.RefObject<HTMLElement>,
 ) {
     React.useEffect(() => {
-        const handleDocumentClick = (e) => {
+        const handleDocumentClick = (e: any) => {
             const { current: element } = elementRef;
             const { current: parent } = parentRef;
 

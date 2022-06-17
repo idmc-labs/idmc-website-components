@@ -770,7 +770,6 @@ function CountryProfile(props: Props) {
                             <MultiSelectInput
                                 className={styles.selectInput}
                                 inputSectionClassName={styles.inputSection}
-                                variant="general"
                                 placeholder="Disaster Category"
                                 name="disasterCategory"
                                 value={disasterCategories}

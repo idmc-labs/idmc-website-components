@@ -120,7 +120,6 @@ function Message(props: Props) {
                         <Button
                             name={undefined}
                             onClick={onReload}
-                            variant="accent"
                         >
                             <IoRefreshOutline />
                         </Button>
@@ -129,7 +128,6 @@ function Message(props: Props) {
                         <Button
                             name={undefined}
                             onClick={onReload}
-                            variant="accent"
                             icons={(
                                 <IoRefreshOutline />
                             )}

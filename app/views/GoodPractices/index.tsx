@@ -67,10 +67,10 @@ import DismissableListOutput from '#components/DismissableListOutput';
 import useBooleanState from '#hooks/useBooleanState';
 import useInputState from '#hooks/useInputState';
 
-import backgroundImage from '../../resources/img/backgroundImage.png';
 import useDebouncedValue from '#hooks/useDebouncedValue';
 import useDocumentSize from '#hooks/useDocumentSize';
 
+import backgroundImage from '../../resources/img/backgroundImage.png';
 import styles from './styles.css';
 
 const GOOD_PRACTICE_PAGE_SIZE = 6;
@@ -1019,7 +1019,7 @@ function GoodPractices(props: Props) {
                                     headingClassName={styles.heading}
                                     className={styles.mobileFilterModal}
                                     bodyClassName={styles.content}
-                                    onCloseButtonClick={setShowFilterModalFalse}
+                                    onClose={setShowFilterModalFalse}
                                 >
                                     <RadioInput
                                         labelContainerClassName={styles.label}
