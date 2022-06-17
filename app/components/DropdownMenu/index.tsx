@@ -5,7 +5,6 @@ import {
     IoChevronUp,
 } from 'react-icons/io5';
 import { Popup, Button, ButtonProps } from '@togglecorp/toggle-ui';
-
 import { genericMemo } from '../../utils';
 import useBooleanState from '../../hooks/useBooleanState';
 import useBlurEffect from '../../hooks/useBlurEffect';
@@ -29,6 +28,7 @@ export function useDropdownFeatures(persistent = false) {
         if (persistent && clickedOnElement) {
             return;
         }
+
         setShowPopupFalse();
     }, [persistent, setShowPopupFalse]);
 

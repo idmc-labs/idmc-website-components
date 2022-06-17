@@ -1024,7 +1024,7 @@ function GoodPractices(props: Props) {
                                     <RadioInput
                                         labelContainerClassName={styles.label}
                                         listContainerClassName={styles.radioList}
-                                        name={undefined}
+                                        name="sort"
                                         label="Sort Results by"
                                         options={orderingOptionList}
                                         onChange={setOrderingOptionValue}

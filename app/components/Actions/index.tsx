@@ -1,25 +1,14 @@
 import React from 'react';
 import { _cs } from '@togglecorp/fujs';
 
-import { SpacingTypes } from '../../types';
 import { genericMemo } from '../../utils';
 import styles from './styles.css';
-
-const spacingToStyleMap: {
-    [key in SpacingTypes]: string;
-} = {
-    none: styles.noSpacing,
-    compact: styles.compactSpacing,
-    comfortable: styles.comfortableSpacing,
-    loose: styles.looseSpacing,
-};
 
 export interface Props {
     className?: string;
     children?: React.ReactNode;
     wrap?: boolean;
     allowShrink?: boolean;
-    spacing?: SpacingTypes;
 }
 
 function Actions(props: Props) {
@@ -28,7 +17,6 @@ function Actions(props: Props) {
         children,
         wrap,
         allowShrink,
-        spacing = 'comfortable',
     } = props;
 
     return (
@@ -37,7 +25,6 @@ function Actions(props: Props) {
                 styles.actions,
                 wrap && styles.wrap,
                 allowShrink && styles.allowShrink,
-                spacingToStyleMap[spacing],
                 className,
             )}
         >

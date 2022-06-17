@@ -1,8 +1,0 @@
-.input {
-    padding: var(--tui-spacing-extra-small);
-    color: var(--tui-color-text);
-
-    &.errored {
-        color: var(--tui-color-negative);
-    }
-}
