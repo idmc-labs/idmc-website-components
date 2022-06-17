@@ -1,9 +1,9 @@
 import React from 'react';
-import { useBooleanState } from '@the-deep/deep-ui';
 import { IoInformationCircleOutline } from 'react-icons/io5';
 
 import Portal from '#components/Portal';
 import HTMLOutput from '#components/HTMLOutput';
+import useBooleanState from '#hooks/useBooleanState';
 
 import useFloatPlacement from '../../hooks/useFloatPlacement';
 

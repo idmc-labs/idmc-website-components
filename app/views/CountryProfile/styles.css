@@ -4,7 +4,7 @@
 
     .cover-image {
         align-self: stretch;
-        background-color: var(--dui-color-background);
+        background-color: var(--tui-color-background);
         width: 100%;
         height: 18rem;
         object-fit: cover;
@@ -23,15 +23,15 @@
     .content {
         display: flex;
         flex-direction: column;
-        padding: var(--dui-spacing-extra-large);
+        padding: var(--tui-spacing-extra-large);
         width: 100%;
         max-width: var(--width-page-max);
-        gap: var(--dui-spacing-extra-large);
+        gap: var(--tui-spacing-extra-large);
 
         .profile {
             display: flex;
             flex-direction: column;
-            gap: var(--dui-spacing-large);
+            gap: var(--tui-spacing-large);
 
             .profile-heading {
                 color: var(--color-text-on-dark);
@@ -45,8 +45,8 @@
             align-items: center;
             flex-wrap: wrap;
             justify-content: center;
-            padding: 0 var(--dui-spacing-large);
-            gap: var(--dui-spacing-extra-large);
+            padding: 0 var(--tui-spacing-large);
+            gap: var(--tui-spacing-extra-large);
 
             .nav-link {
                 text-align: center;
@@ -65,29 +65,29 @@
             flex-basis: unset;
             flex-grow: unset;
             flex-shrink: 0;
-            margin: var(--dui-spacing-small) 0;
-            background-color: var(--dui-color-separator);
-            width: var(--dui-width-separator-medium);
+            margin: var(--tui-spacing-small) 0;
+            background-color: var(--tui-color-separator);
+            width: var(--tui-width-separator-medium);
         }
 
         .content {
             display: flex;
             flex-direction: column;
-            padding: var(--dui-spacing-extra-large);
+            padding: var(--tui-spacing-extra-large);
             width: 100%;
             max-width: var(--width-page-max);
-            gap: var(--dui-spacing-extra-large);
+            gap: var(--tui-spacing-extra-large);
 
             .overview {
                 display: flex;
                 flex-direction: column;
-                padding: var(--dui-spacing-super-large) 0;
-                gap: var(--dui-spacing-large);
+                padding: var(--tui-spacing-super-large) 0;
+                gap: var(--tui-spacing-large);
 
                 .overview-content {
                     display: flex;
                     align-items: flex-start;
-                    gap: var(--dui-spacing-medium);
+                    gap: var(--tui-spacing-medium);
                     flex-wrap: wrap;
 
                     .tab-list {
@@ -97,7 +97,7 @@
                         flex-shrink: 0;
                         background-color: transparent;
                         width: 12rem;
-                        gap: var(--dui-spacing-small);
+                        gap: var(--tui-spacing-small);
 
                         .tab {
                             width: 100%;
@@ -105,11 +105,11 @@
                     }
 
                     .text-output {
-                        gap: var(--dui-spacing-small);
+                        gap: var(--tui-spacing-small);
                         flex-grow: 1;
 
                         .value {
-                            color: var(--dui-color-text-label);
+                            color: var(--tui-color-text-label);
                         }
                     }
                 }
@@ -118,8 +118,8 @@
             .displacement-data {
                 display: flex;
                 flex-direction: column;
-                padding: var(--dui-spacing-super-large) 0;
-                gap: var(--dui-spacing-extra-large);
+                padding: var(--tui-spacing-super-large) 0;
+                gap: var(--tui-spacing-extra-large);
 
                 .conflict-header {
                     background-color: var(--color-conflict);
@@ -148,15 +148,15 @@
                 .infographics {
                     display: flex;
                     flex-direction: column;
-                    gap: var(--dui-spacing-large);
+                    gap: var(--tui-spacing-large);
 
                     :global {
                         .recharts-legend-item-text {
-                            font-size: var(--dui-font-size-small);
+                            font-size: var(--tui-font-size-small);
                         }
 
                         .recharts-cartesian-axis-tick-value {
-                            font-size: var(--dui-font-size-small);
+                            font-size: var(--tui-font-size-small);
                         }
                     }
 
@@ -167,7 +167,7 @@
                         >* {
                             flex-basis: 0;
                             flex-grow: 1;
-                            padding: var(--dui-spacing-medium);
+                            padding: var(--tui-spacing-medium);
                             min-width: 15rem;
                         }
 
@@ -193,14 +193,14 @@
             .latest-new-displacements {
                 display: flex;
                 flex-direction: column;
-                gap: var(--dui-spacing-large);
+                gap: var(--tui-spacing-large);
             }
 
             .idu-container {
                 display: flex;
                 flex-wrap: wrap;
-                gap: var(--dui-spacing-large);
-                padding: var(--dui-spacing-large) 0;
+                gap: var(--tui-spacing-large);
+                padding: var(--tui-spacing-large) 0;
 
                 .idu {
                     display: flex;
@@ -208,15 +208,15 @@
                     flex-basis: 50%;
                     flex-direction: column;
                     flex-grow: 1;
-                    border: var(--dui-width-separator-thin) solid var(--dui-color-separator);
-                    padding: var(--dui-spacing-medium);
+                    border: var(--tui-width-separator-thin) solid var(--tui-color-separator);
+                    padding: var(--tui-spacing-medium);
                     max-width: 30rem;
-                    gap: var(--dui-spacing-medium);
+                    gap: var(--tui-spacing-medium);
 
                     .displacementIcon {
                         display: flex;
                         align-items: baseline;
-                        gap: var(--dui-spacing-medium);
+                        gap: var(--tui-spacing-medium);
 
                         .icon {
                             flex-shrink: 0;
@@ -229,14 +229,14 @@
                     display: flex;
                     flex-basis: 100%;
                     flex-wrap: wrap;
-                    gap: var(--dui-spacing-large);
+                    gap: var(--tui-spacing-large);
                 }
             }
 
             .internal-displacement-updates {
                 display: flex;
                 flex-direction: column;
-                gap: var(--dui-spacing-large);
+                gap: var(--tui-spacing-large);
 
                 .filters-container {
                     align-items: stretch;
@@ -244,12 +244,12 @@
                     .legend {
                         display: flex;
                         flex-direction: column;
-                        gap: var(--dui-spacing-extra-small);
+                        gap: var(--tui-spacing-extra-small);
 
                         .legend-element-list {
                             display: flex;
                             flex-grow: 1;
-                            gap: var(--dui-spacing-small);
+                            gap: var(--tui-spacing-small);
                         }
 
                     }
@@ -258,7 +258,7 @@
                         display: flex;
                         flex-direction: column;
                         flex-grow: 1;
-                        gap: var(--dui-spacing-medium);
+                        gap: var(--tui-spacing-medium);
 
                         .time-range-input {
                             width: 100%;
@@ -266,7 +266,7 @@
                     }
                     @media (max-width: 1000px) {
                         .legend {
-                            padding-right: var(--dui-spacing-extra-large);
+                            padding-right: var(--tui-spacing-extra-large);
                         }
                     }
                 }
@@ -275,10 +275,10 @@
             .related-material {
                 display: flex;
                 flex-direction: column;
-                gap: var(--dui-spacing-large);
+                gap: var(--tui-spacing-large);
 
                 .material-list {
-                    --gap: var(--dui-spacing-large);
+                    --gap: var(--tui-spacing-large);
                     display: flex;
                     flex-wrap: wrap;
                     gap: var(--gap);
@@ -301,32 +301,32 @@
                     display: flex;
                     flex-basis: 100%;
                     flex-wrap: wrap;
-                    gap: var(--dui-spacing-large);
+                    gap: var(--tui-spacing-large);
                 }
 
             }
 
             .misc {
                 display: flex;
-                gap: var(--dui-spacing-extra-large);
+                gap: var(--tui-spacing-extra-large);
                 flex-wrap: wrap;
 
                 .essential-reading {
                     display: flex;
                     flex-direction: column;
-                    gap: var(--dui-spacing-large);
+                    gap: var(--tui-spacing-large);
                 }
 
                 .contact {
                     display: flex;
                     flex-direction: column;
-                    gap: var(--dui-spacing-large);
+                    gap: var(--tui-spacing-large);
 
                     .contact-item {
                         display: flex;
                         background-color: var(--color-background);
                         max-width: 30rem;
-                        gap: var(--dui-spacing-large);
+                        gap: var(--tui-spacing-large);
 
                         .preview {
                             width: 10rem;
@@ -335,7 +335,7 @@
                         }
 
                         .contact-details {
-                            padding: var(--dui-spacing-small);
+                            padding: var(--tui-spacing-small);
                         }
                     }
                 }
@@ -350,12 +350,7 @@
     }
     @media (max-width: 1000px) {
         .time-range-container {
-            padding-right: var(--dui-spacing-extra-large);
-        }
-        .select-input {
-            .input-section {
-                margin-right: var(--dui-spacing-extra-small);
-            }
+            padding-right: var(--tui-spacing-medium);
         }
     }
 }

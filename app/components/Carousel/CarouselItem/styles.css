@@ -6,8 +6,8 @@
         top: 0;
         right: 0;
         background-color: rgba(0, 0, 0, 0.7);
-        padding: var(--dui-spacing-small);
-        color: var(--dui-color-text-on-dark);
+        padding: var(--tui-spacing-small);
+        color: var(--tui-color-text-on-dark);
     }
 }
 

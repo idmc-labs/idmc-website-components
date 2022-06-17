@@ -2,12 +2,12 @@
     &.inline-type {
         display: flex;
         align-items: center;
-        gap: var(--dui-spacing-medium);
+        gap: var(--tui-spacing-medium);
     }
 
     >.label {
-        color: var(--dui-color-text);
-        font-weight: var(--dui-font-weight-medium);
+        color: var(--tui-color-text);
+        font-weight: var(--tui-font-weight-medium);
     }
 
     &.table-type {
@@ -30,7 +30,7 @@
 
     &.strong-value {
         >.value {
-            font-weight: var(--dui-font-weight-bold);
+            font-weight: var(--tui-font-weight-bold);
         }
     }
 }

@@ -1,0 +1,10 @@
+.input-error {
+    --color: var(--tui-color-negative);
+
+    &.dark {
+        --color: var(--tui-color-negative-on-dark);
+    }
+
+    color: var(--color);
+    font-size: var(--tui-font-size-small);
+}

@@ -2,7 +2,7 @@
     display: flex;
     align-items: center;
     flex-direction: column;
-    gap: var(--dui-spacing-super-large);
+    gap: var(--tui-spacing-super-large);
 
     .header-section {
         display: flex;
@@ -17,37 +17,37 @@
             align-items: center;
             flex-direction: column;
             justify-content: flex-end;
-            background-color: var(--dui-color-brand);
+            background-color: var(--tui-color-brand);
             background-position: top center;
             background-size: cover;
-            padding: var(--dui-spacing-extra-large) 0;
+            padding: var(--tui-spacing-extra-large) 0;
             width: 100%;
             min-height: 20rem;
-            color: var(--dui-color-text-on-dark);
+            color: var(--tui-color-text-on-dark);
             background-blend-mode: soft-light;
-            gap: var(--dui-spacing-large);
+            gap: var(--tui-spacing-large);
 
             .breadcrumbs {
                 display: flex;
                 align-items: center;
                 flex-wrap: wrap;
                 border-radius: 0.25rem;
-                gap: var(--dui-spacing-small);
-                font-size: var(--dui-font-size-large);
+                gap: var(--tui-spacing-small);
+                font-size: var(--tui-font-size-large);
 
                 >* {
                     display: inline-block;
-                    color: var(--dui-color-text-on-dark);
+                    color: var(--tui-color-text-on-dark);
                 }
             }
 
             .container {
                 display: flex;
                 flex-direction: column;
-                padding: var(--dui-spacing-large);
+                padding: var(--tui-spacing-large);
                 width: 100%;
                 max-width: var(--width-page-max);
-                gap: var(--dui-spacing-large);
+                gap: var(--tui-spacing-large);
             }
         }
 
@@ -56,19 +56,19 @@
     .main-content {
         display: flex;
         flex-direction: column;
-        padding: var(--dui-spacing-large);
+        padding: var(--tui-spacing-large);
         width: 100%;
         max-width: var(--width-page-max);
-        gap: var(--dui-spacing-ultra-large);
+        gap: var(--tui-spacing-ultra-large);
 
         .details {
             display: flex;
-            gap: var(--dui-spacing-super-large);
+            gap: var(--tui-spacing-super-large);
 
             .main-section {
                 display: flex;
                 flex-direction: column;
-                gap: var(--dui-spacing-large);
+                gap: var(--tui-spacing-large);
                 flex-grow: 1;
                 overflow: hidden;
 
@@ -76,13 +76,13 @@
                     display: flex;
                     flex-wrap: wrap;
                     border-radius: 0.25rem;
-                    gap: var(--dui-spacing-medium);
-                    background-color: var(--dui-color-background);
+                    gap: var(--tui-spacing-medium);
+                    background-color: var(--tui-color-background);
 
                     >* {
                         flex-basis: 0;
                         flex-grow: 1;
-                        padding: var(--dui-spacing-medium) var(--dui-spacing-large);
+                        padding: var(--tui-spacing-medium) var(--tui-spacing-large);
                     }
 
                     @media (max-width: 600px) {
@@ -97,7 +97,7 @@
                 flex-direction: column;
                 flex-shrink: 0;
                 min-width: 20rem;
-                gap: var(--dui-spacing-large);
+                gap: var(--tui-spacing-large);
 
                 .carousel {
                     min-height: 16rem;
@@ -117,7 +117,7 @@
                         }
 
                         .description {
-                            color: var(--dui-color-text);
+                            color: var(--tui-color-text);
                         }
                     }
 
@@ -130,7 +130,7 @@
                         >* {
                             display: flex;
                             align-items: center;
-                            padding: var(--dui-spacing-extra-small);
+                            padding: var(--tui-spacing-extra-small);
                         }
                     }
                 }
@@ -139,23 +139,23 @@
                     display: flex;
                     flex-direction: column;
                     border-radius: 0.25rem;
-                    background-color: var(--dui-color-background);
-                    padding: var(--dui-spacing-large);
-                    gap: var(--dui-spacing-small);
+                    background-color: var(--tui-color-background);
+                    padding: var(--tui-spacing-large);
+                    gap: var(--tui-spacing-small);
                 }
 
                 .block-list {
                     display: flex;
                     flex-direction: column;
-                    gap: var(--dui-spacing-large);
+                    gap: var(--tui-spacing-large);
 
                     .block {
                         display: flex;
                         flex-direction: column;
                         border-radius: 0.25rem;
-                        background-color: var(--dui-color-background);
-                        padding: var(--dui-spacing-large);
-                        gap: var(--dui-spacing-small);
+                        background-color: var(--tui-color-background);
+                        padding: var(--tui-spacing-large);
+                        gap: var(--tui-spacing-small);
                     }
                 }
             }
@@ -186,19 +186,18 @@
         .media-and-resource-links {
             display: flex;
             flex-direction: column;
-            gap: var(--dui-spacing-large);
+            gap: var(--tui-spacing-large);
         }
-
 
         .related-section {
             display: flex;
             flex-direction: column;
-            gap: var(--dui-spacing-large);
+            gap: var(--tui-spacing-large);
 
             .related-good-practice-list {
                 display: flex;
                 flex-wrap: wrap;
-                gap: var(--dui-spacing-extra-large);
+                gap: var(--tui-spacing-extra-large);
 
                 >* {
                     flex-basis: 0;
@@ -218,7 +217,7 @@
     }
 
     .image {
-        background-color: var(--dui-color-background);
+        background-color: var(--tui-color-background);
         width: 100%;
         height: calc(100% - 4rem);
         object-fit: contain;
@@ -226,6 +225,6 @@
     }
 
     .description {
-        padding: var(--dui-spacing-medium) 0;
+        padding: var(--tui-spacing-medium) 0;
     }
 }

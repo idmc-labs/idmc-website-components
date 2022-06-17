@@ -1,0 +1,49 @@
+.radio {
+    --cursor: default;
+    --spacing: var(--tui-spacing-small);
+
+    display: flex;
+    align-items: center;
+    cursor: var(--cursor);
+    gap: var(--spacing);
+
+    .icon {
+        font-size: 1.2em;
+    }
+
+    .input {
+        display: none;
+    }
+
+    &.active {
+        .icon {
+            color: var(--tui-color-accent);
+        }
+    }
+
+    &.disabled {
+        opacity: var(--tui-opacity-disabled-element);
+    }
+
+    &.no-spacing {
+        --spacing: 0;
+    }
+
+    &.compact-spacing {
+        --spacing: var(--tui-spacing-extra-small);
+    }
+
+    &.comfortable-spacing {
+        --spacing: var(--tui-spacing-small);
+    }
+
+    &.loose-spacing {
+        --spacing: var(--tui-spacing-medium);
+    }
+
+    &:not(.disabled) {
+        &:not(.read-only) {
+            --cursor: pointer;
+        }
+    }
+}

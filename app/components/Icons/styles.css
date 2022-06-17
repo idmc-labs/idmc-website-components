@@ -1,0 +1,37 @@
+.icons {
+    --spacing: var(--tui-spacing-small);
+
+    display: flex;
+    align-items: center;
+    gap: var(--spacing);
+
+    >* {
+        flex-shrink: 0;
+    }
+
+    &.wrap {
+        flex-wrap: wrap;
+    }
+
+    &.allow-shrink {
+        >* {
+            flex-shrink: initial;
+        }
+    }
+
+    &.no-spacing {
+        --spacing: 0;
+    }
+
+    &.compact-spacing {
+        --spacing: var(--tui-spacing-extra-small);
+    }
+
+    &.comfortable-spacing {
+        --spacing: var(--tui-spacing-small);
+    }
+
+    &.loose-spacing {
+        --spacing: var(--tui-spacing-medium);
+    }
+}

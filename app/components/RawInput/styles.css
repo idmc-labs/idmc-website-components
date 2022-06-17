@@ -1,5 +1,5 @@
 .raw-input {
-    --color-placeholder: var(--dui-color-input-placeholder);
+    --color-placeholder: var(--tui-color-input-placeholder);
 
     margin: 0;
     outline: none;

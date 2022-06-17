@@ -38,7 +38,7 @@
         "@babel/runtime": "^7.17.9",
         "@mapbox/mapbox-gl-draw": "^1.3.0",
         "@sentry/react": "^6.19.7",
-        "@the-deep/deep-ui": "^2.0.0-beta.0",
+        "@tanem/svg-injector": "^10.1.24",
         "@togglecorp/fujs": "^1.9.3",
         "@togglecorp/re-map": "^0.1.3",
         "@togglecorp/toggle-ui": "^0.14.1",
@@ -58,6 +58,7 @@
         "react-slider": "^2.0.0",
         "react-tooltip": "^4.2.21",
         "recharts": "^2.1.9",
+        "resize-observer-polyfill": "^1.5.1",
         "sanitize-html": "^2.7.0"
     },
     "devDependencies": {

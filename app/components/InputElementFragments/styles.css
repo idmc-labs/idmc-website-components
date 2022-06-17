@@ -1,0 +1,17 @@
+.icons {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.children {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}

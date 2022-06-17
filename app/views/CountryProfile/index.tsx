@@ -5,7 +5,7 @@ import React, {
 } from 'react';
 import {
     MultiSelectInput,
-} from '@the-deep/deep-ui';
+} from '@togglecorp/toggle-ui';
 import {
     gql,
     useQuery,

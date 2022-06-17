@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import {
     SearchSelectInput,
     SearchSelectInputProps,
-} from '@the-deep/deep-ui';
+} from '@togglecorp/toggle-ui';
 import {
     useQuery,
     gql,

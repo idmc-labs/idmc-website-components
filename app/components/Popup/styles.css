@@ -1,0 +1,159 @@
+.dummy {
+    pointer-events: none;
+    display: none;
+}
+
+.popup {
+    display: flex;
+    position: fixed;
+    flex-direction: column;
+    border-radius: var(--tui-radius-popup-border);
+    background-color: var(--tui-color-foreground);
+    max-width: calc(100vw - 2 * var(--tui-spacing-large));
+    filter: drop-shadow(0 0 var(--tui-radius-blur-shadow) var(--tui-color-shadow));
+
+    .tip {
+        position: absolute;
+        top: unset;
+        right: unset;
+        bottom: unset;
+        left: unset;
+        background-color: #fff;
+        width: var(--tui-width-popup-tip);
+        height: var(--tui-height-popup-tip);
+    }
+
+    &.top {
+        animation: appear-from-top var(--tui-duration-transition-short) ease-in forwards;
+
+        .tip {
+            bottom: calc(-1 * var(--tui-height-popup-tip) + 1px);
+            clip-path: polygon(100% 0%, 0 0, 50% 100%);
+        }
+    }
+
+    &.bottom {
+        animation: appear-from-bottom var(--tui-duration-transition-short) ease-in forwards;
+
+        .tip {
+            top: calc(-1 * var(--tui-height-popup-tip) + 1px);
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+        }
+    }
+
+    &.left {
+        .tip {
+            right: var(--tui-offset-popup-tip);
+        }
+    }
+
+    &.right {
+        .tip {
+            left: var(--tui-offset-popup-tip);
+        }
+    }
+
+    &.horizontal-placement {
+        .tip {
+            top: unset;
+            right: unset;
+            bottom: unset;
+            left: unset;
+            z-index: 1;
+            width: var(--tui-height-popup-tip);
+            height: var(--tui-width-popup-tip);
+        }
+
+        &.top {
+            .tip {
+                bottom: var(--tui-height-popup-tip);
+            }
+        }
+
+        &.bottom {
+            .tip {
+                top: var(--tui-height-popup-tip);
+            }
+        }
+
+        &.left {
+            .tip {
+                right: calc(-1 * var(--tui-height-popup-tip));
+                clip-path: polygon(100% 50%, 0 0, 0 100%);
+            }
+        }
+
+        &.right {
+            .tip {
+                left: calc(-1 * var(--tui-height-popup-tip) + 1px);
+                clip-path: polygon(100% 0, 0 50%, 100% 100%);
+            }
+        }
+    }
+
+    .content {
+        overflow: auto;
+    }
+
+    &.hidden {
+        pointer-events: none;
+        transform-origin: 0 0;
+
+        &.top {
+            animation: hide-from-top var(--tui-duration-transition-short) ease-in forwards;
+        }
+
+        &.bottom {
+            animation: hide-from-bottom var(--tui-duration-transition-short) ease-in forwards;
+        }
+    }
+
+}
+
+@keyframes hide-from-top {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    to {
+        transform: translateY(-10px);
+        opacity: 0;
+    }
+}
+
+@keyframes hide-from-bottom {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    to {
+        transform: translateY(10px);
+        opacity: 0;
+    }
+}
+
+@keyframes appear-from-top {
+    from {
+        transform: translateY(-10px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes appear-from-bottom {
+    from {
+        transform: translateY(10px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

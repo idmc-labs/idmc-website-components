@@ -1,0 +1,35 @@
+.pending-message {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    background-color: var(--tui-color-backdrop);
+    padding: calc(var(--tui-spacing-large) - var(--tui-spacing-small));
+    animation: appear var(--tui-duration-transition-medium) ease-in forwards;
+    animation-delay: var(--tui-duration-delay-medium);
+    text-align: center;
+    color: var(--tui-color-text-message);
+
+    &.no-debouncing {
+        animation-delay: unset;
+    }
+
+    .icon {
+        padding: var(--tui-spacing-small);
+    }
+
+    .message {
+        padding: var(--tui-spacing-small);
+    }
+
+    &.compact {
+        flex-direction: row;
+        justify-content: flex-start;
+        padding: calc(var(--tui-spacing-medium) - var(--tui-spacing-small));
+    }
+}
+
+@keyframes appear {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}

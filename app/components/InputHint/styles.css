@@ -1,0 +1,10 @@
+.input-hint {
+    --color: var(--tui-color-text-label);
+
+    &.dark {
+        --color: var(--tui-color-text-label-on-dark);
+    }
+
+    color: var(--color);
+    font-size: var(--tui-font-size-small);
+}

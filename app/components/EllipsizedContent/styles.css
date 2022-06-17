@@ -2,19 +2,19 @@
     max-width: var(--width-readable-content-max);
 
     &.dark-mode {
-        color: var(--dui-color-text-on-dark);
+        color: var(--tui-color-text-on-dark);
     }
 
     .footer {
         display: block;
-        padding: var(--dui-spacing-medium) 0;
+        padding: var(--tui-spacing-medium) 0;
     }
 
     .ellipsize-toggle-button {
         display: flex;
         align-items: center;
-        margin-top: var(--dui-spacing-medium);
-        gap: var(--dui-spacing-small);
+        margin-top: var(--tui-spacing-medium);
+        gap: var(--tui-spacing-small);
     }
 }
 

@@ -2,11 +2,11 @@ import React from 'react';
 import { IoExpand } from 'react-icons/io5';
 import {
     Modal,
-    useBooleanState,
-} from '@the-deep/deep-ui';
+} from '@togglecorp/toggle-ui';
 import { _cs } from '@togglecorp/fujs';
 
 import Button from '#components/Button';
+import useBooleanState from '#hooks/useBooleanState';
 
 import CarouselContext from '../CarouselContext';
 

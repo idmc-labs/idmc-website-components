@@ -3,11 +3,11 @@
     z-index: 11;
     box-shadow: 0 0 5px 1px rgba(0, 0, 0, .3);
     background-color: var(--color-foreground);
-    padding: var(--dui-spacing-medium);
+    padding: var(--tui-spacing-medium);
     max-width: 20rem;
     line-height: 1.5;
-    color: var(--dui-color-text);
-    font-family: var(--dui-font-family-sans-serif);
-    font-size: var(--dui-font-size-medium);
-    /* font-weight: var(--dui-font-weight-light); */
+    color: var(--tui-color-text);
+    font-family: var(--tui-font-family-sans-serif);
+    font-size: var(--tui-font-size-medium);
+    /* font-weight: var(--tui-font-weight-light); */
 }

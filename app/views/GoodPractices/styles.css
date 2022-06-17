@@ -2,7 +2,7 @@
     display: flex;
     align-items: center;
     flex-direction: column;
-    gap: var(--dui-spacing-super-large);
+    gap: var(--tui-spacing-super-large);
 
     .header-section {
         display: flex;
@@ -16,22 +16,22 @@
             display: flex;
             align-items: center;
             flex-direction: column;
-            background-color: var(--dui-color-brand);
+            background-color: var(--tui-color-brand);
             background-position: top center;
             background-size: cover;
-            padding: var(--dui-spacing-extra-large) 0;
+            padding: var(--tui-spacing-extra-large) 0;
             width: 100%;
-            color: var(--dui-color-text-on-dark);
+            color: var(--tui-color-text-on-dark);
             background-blend-mode: soft-light;
-            gap: var(--dui-spacing-large);
+            gap: var(--tui-spacing-large);
 
             .container {
                 display: flex;
                 flex-direction: column;
-                padding: var(--dui-spacing-large);
+                padding: var(--tui-spacing-large);
                 width: 100%;
                 max-width: var(--width-page-max);
-                gap: var(--dui-spacing-large);
+                gap: var(--tui-spacing-large);
             }
         }
 
@@ -42,7 +42,7 @@
             position: relative;
             flex-grow: 1;
             z-index: 0;
-            margin-top: var(--dui-spacing-large);
+            margin-top: var(--tui-spacing-large);
 
             .map-container {
                 width: 100%;
@@ -54,28 +54,28 @@
     .main-content {
         display: flex;
         flex-direction: column;
-        padding: var(--dui-spacing-large);
+        padding: var(--tui-spacing-large);
         width: 100%;
         max-width: var(--width-page-max);
-        gap: var(--dui-spacing-ultra-large);
+        gap: var(--tui-spacing-ultra-large);
 
         .faq-section {
             display: flex;
-            gap: var(--dui-spacing-super-large);
+            gap: var(--tui-spacing-super-large);
 
             .faq-list {
                 display: flex;
                 flex-direction: column;
                 flex-grow: 1;
-                gap: var(--dui-spacing-large);
+                gap: var(--tui-spacing-large);
 
                 .content {
                     display: flex;
                     flex-direction: column;
-                    gap: var(--dui-spacing-small);
+                    gap: var(--tui-spacing-small);
 
                     .separator {
-                        border: var(--dui-width-separator-thin) solid var(--dui-color-separator);
+                        border: var(--tui-width-separator-thin) solid var(--tui-color-separator);
                     }
                 }
             }
@@ -85,13 +85,13 @@
                 flex-basis: 30%;
                 flex-direction: column;
                 flex-shrink: 0;
-                gap: var(--dui-spacing-medium);
+                gap: var(--tui-spacing-medium);
                 margin-top: 5rem;
 
                 .block {
                     border-radius: 0.25rem;
-                    background-color: var(--dui-color-background);
-                    padding: var(--dui-spacing-medium);
+                    background-color: var(--tui-color-background);
+                    padding: var(--tui-spacing-medium);
                 }
             }
 
@@ -115,13 +115,13 @@
         .good-practices-container {
             display: flex;
             flex-direction: column;
-            gap: var(--dui-spacing-extra-large);
+            gap: var(--tui-spacing-extra-large);
 
             .search-and-time-range-container {
                 display: flex;
                 align-items: flex-start;
                 flex-wrap: wrap;
-                gap: var(--dui-spacing-large);
+                gap: var(--tui-spacing-large);
 
                 >* {
                     flex-basis: 0;
@@ -133,7 +133,7 @@
                     }
 
                     .label {
-                        font-size: var(--dui-font-size-medium);
+                        font-size: var(--tui-font-size-medium);
                     }
                 }
             }
@@ -141,7 +141,7 @@
             .filter-container {
                 display: flex;
                 flex-wrap: wrap;
-                gap: var(--dui-spacing-medium);
+                gap: var(--tui-spacing-medium);
 
                 >* {
                     flex-basis: 0;
@@ -154,7 +154,7 @@
                     }
 
                     .label {
-                        font-size: var(--dui-font-size-medium);
+                        font-size: var(--tui-font-size-medium);
                     }
                 }
             }
@@ -164,14 +164,14 @@
                 align-items: center;
                 flex-wrap: wrap;
                 justify-content: flex-start;
-                gap: var(--dui-spacing-large);
+                gap: var(--tui-spacing-large);
 
                 .clear-all-container {
                     flex-basis: 100%;
 
                     .clear-filter-button {
-                        color: var(--dui-color-danger);
-                        gap: var(--dui-spacing-extra-small);
+                        color: var(--tui-color-danger);
+                        gap: var(--tui-spacing-extra-small);
                     }
                 }
             }
@@ -182,17 +182,16 @@
             }
 
             .separator {
-                border: var(--dui-width-separator-thin) solid var(--dui-color-separator);
+                border: var(--tui-width-separator-thin) solid var(--tui-color-separator);
             }
 
             .ordering-container {
                 display: flex;
                 justify-content: flex-end;
-                
                 .order-dropdown{
-                    margin-left: var(--dui-spacing-large);
-                    color: var(--dui-color-brand);
-                    gap: var(--dui-spacing-extra-small);
+                    margin-left: var(--tui-spacing-large);
+                    color: var(--tui-color-brand);
+                    gap: var(--tui-spacing-extra-small);
 
                 }
             }
@@ -200,7 +199,7 @@
             .good-practice-list {
                 display: flex;
                 flex-wrap: wrap;
-                gap: var(--dui-spacing-extra-large);
+                gap: var(--tui-spacing-extra-large);
 
                 >* {
                     flex-basis: 0;
@@ -212,7 +211,7 @@
             .good-practice-grid {
                 display: flex;
                 flex-direction: column;
-                gap: var(--dui-spacing-extra-large);
+                gap: var(--tui-spacing-extra-large);
 
                 >* {
                     display: flex;
@@ -224,7 +223,7 @@
             }
             .view-buttons{
                 display: flex;
-                gap: var(--dui-spacing-extra-small);
+                gap: var(--tui-spacing-extra-small);
                 flex-wrap: wrap;
 
                 >* {
@@ -233,7 +232,7 @@
                 }
 
                 .view-more-button {
-                    margin-right: var(--dui-spacing-small);
+                    margin-right: var(--tui-spacing-small);
                     min-width: 14rem;
                 }
 
@@ -259,13 +258,13 @@
     .content {
         display: flex;
         flex-direction: column;
-        padding: var(--dui-spacing-medium);
-        gap: var(--dui-spacing-large);
+        padding: var(--tui-spacing-medium);
+        gap: var(--tui-spacing-large);
 
         .search-and-time-range-container {
             display: flex;
             flex-direction: column;
-            gap: var(--dui-spacing-large);
+            gap: var(--tui-spacing-large);
 
             >* {
                 width: 100%;
@@ -275,11 +274,11 @@
         .mobile-filters {
             display: flex;
             flex-direction: column;
-            gap: var(--dui-spacing-large);
+            gap: var(--tui-spacing-large);
         }
 
         .label {
-            font-size: var(--dui-font-size-medium);
+            font-size: var(--tui-font-size-medium);
         }
 
         .radio-list {

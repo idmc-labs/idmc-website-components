@@ -3,15 +3,15 @@
     align-items: center;
     justify-content: center;
     border-radius: 0.25rem;
-    padding: var(--dui-spacing-small) var(--dui-spacing-large);
-    gap: var(--dui-spacing-medium);
+    padding: var(--tui-spacing-small) var(--tui-spacing-large);
+    gap: var(--tui-spacing-medium);
     text-align: center;
 
     .icons {
         display: flex;
         align-items: center;
         flex-wrap: wrap;
-        gap: var(--dui-spacing-extra-small);
+        gap: var(--tui-spacing-extra-small);
     }
 
     .children {
@@ -24,12 +24,12 @@
         display: flex;
         align-items: center;
         flex-wrap: wrap;
-        gap: var(--dui-spacing-extra-small);
+        gap: var(--tui-spacing-extra-small);
     }
 
     &.primary {
-        background-color: var(--dui-color-brand);
-        color: var(--dui-color-text-on-dark);
+        background-color: var(--tui-color-brand);
+        color: var(--tui-color-text-on-dark);
     }
 
     &.action {
@@ -40,21 +40,21 @@
     &.transparent {
         background-color: transparent;
         padding: 0;
-        color: var(--dui-color-brand);
-        font-weight: var(--dui-font-weight-bold);
+        color: var(--tui-color-brand);
+        font-weight: var(--tui-font-weight-bold);
     }
 
     &.secondary {
-        background-color: var(--dui-color-foreground);
-        color: var(--dui-color-brand);
-        font-weight: var(--dui-font-weight-bold);
+        background-color: var(--tui-color-foreground);
+        color: var(--tui-color-brand);
+        font-weight: var(--tui-font-weight-bold);
 
         .icons {
-            color: var(--dui-color-brand);
+            color: var(--tui-color-brand);
         }
 
         .actions {
-            color: var(--dui-color-brand);
+            color: var(--tui-color-brand);
         }
     }
 
@@ -65,19 +65,19 @@
     &:not(:disabled) {
         &:hover {
             &.primary {
-                background-color: var(--dui-color-brand-hover);
+                background-color: var(--tui-color-brand-hover);
             }
 
             &.secondary {
-                background-color: var(--dui-color-background);
+                background-color: var(--tui-color-background);
             }
 
             &.transparent,
             &.action {
-                color: var(--dui-color-brand);
+                color: var(--tui-color-brand);
 
                 &.dark-mode {
-                    color: var(--dui-color-background);
+                    color: var(--tui-color-background);
                 }
             }
         }

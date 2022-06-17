@@ -1,8 +1,8 @@
 .tab {
     border: 0;
-    padding: var(--dui-spacing-medium) var(--dui-spacing-large);
-    color: var(--dui-color-text);
-    font-weight: var(--dui-font-weight-bold);
+    padding: var(--tui-spacing-medium) var(--tui-spacing-large);
+    color: var(--tui-color-text);
+    font-weight: var(--tui-font-weight-bold);
 
     &.disabled {
         pointer-events: none;
@@ -10,68 +10,68 @@
 
     &.primary {
         position: relative;
-        background-color: var(--dui-color-background);
-        font-size: var(--dui-font-size-large);
+        background-color: var(--tui-color-background);
+        font-size: var(--tui-font-size-large);
 
         .active-border {
             position: absolute;
             bottom: 0;
-            left: var(--dui-spacing-small);
-            background-color: var(--dui-color-);
-            width: calc(100% - #{var(--dui-spacing-medium)});
-            height: var(--dui-width-separator-thin);
+            left: var(--tui-spacing-small);
+            background-color: var(--tui-color-);
+            width: calc(100% - #{var(--tui-spacing-medium)});
+            height: var(--tui-width-separator-thin);
             animation: grow-h .2s ease-in;
         }
 
         &.active {
-            background-color: var(--dui-color-foreground);
-            color: var(--dui-color-brand);
+            background-color: var(--tui-color-foreground);
+            color: var(--tui-color-brand);
         }
 
         &.disabled {
-            color: var(--dui-color-text-disabled);
+            color: var(--tui-color-text-disabled);
 
             .active-border {
-                background-color: var(--dui-color-separator);
+                background-color: var(--tui-color-separator);
             }
         }
     }
 
     &.secondary {
-        /* border-radius: calc(1em + #{var(--dui-spacing-medium)}); */
+        /* border-radius: calc(1em + #{var(--tui-spacing-medium)}); */
         border-radius: 0.25rem;
 
-        background-color: var(--dui-color-background);
+        background-color: var(--tui-color-background);
         text-align: left;
         text-transform: uppercase;
 
         &.active {
-            background-color: var(--dui-color-brand);
-            color: var(--dui-color-text-on-dark);
+            background-color: var(--tui-color-brand);
+            color: var(--tui-color-text-on-dark);
         }
 
         &.disabled {
-            color: var(--dui-color-text-disabled);
+            color: var(--tui-color-text-disabled);
         }
     }
 
     &.step {
         position: relative;
-        transition: var(--dui-duration-transition-medium) color, background-color ease-in-out;
-        padding: var(--dui-spacing-medium);
+        transition: var(--tui-duration-transition-medium) color, background-color ease-in-out;
+        padding: var(--tui-spacing-medium);
         text-transform: uppercase;
-        color: var(--dui-color-text-light);
+        color: var(--tui-color-text-light);
 
         &:hover {
-            color: var(--dui-color-text);
+            color: var(--tui-color-text);
         }
 
         &.active {
-            color: var(--dui-color-brand);
+            color: var(--tui-color-brand);
         }
 
         &.disabled {
-            color: var(--dui-color-text-disabled);
+            color: var(--tui-color-text-disabled);
         }
     }
 
@@ -82,7 +82,7 @@
             position: absolute;
             transform: translate(-100%, -100%);
             border-radius: 50%;
-            background-color: var(--dui-color-negative);
+            background-color: var(--tui-color-negative);
             width: .75em;
             height: .75em;
         }
@@ -90,12 +90,12 @@
 }
 
 .primary-tab-wrapper {
-    border: var(--dui-width-separator-thin) solid transparent;
-    border-bottom-color: var(--dui-color-separator);
-    padding: 0 var(--dui-spacing-small);
+    border: var(--tui-width-separator-thin) solid transparent;
+    border-bottom-color: var(--tui-color-separator);
+    padding: 0 var(--tui-spacing-small);
 
     &.active {
-        border-color: var(--dui-color-separator);
+        border-color: var(--tui-color-separator);
         border-bottom-color: transparent;
     }
 }
@@ -114,25 +114,25 @@
     justify-content: flex-start;
 
     .step-circle {
-        transition: var(--dui-duration-transition-slow) border-color ease-in-out;
-        border: var(--dui-width-separator-medium) solid transparent;
+        transition: var(--tui-duration-transition-slow) border-color ease-in-out;
+        border: var(--tui-width-separator-medium) solid transparent;
         border-radius: 50%;
-        background-color: var(--dui-color-background);
-        padding: var(--dui-spacing-extra-small);
+        background-color: var(--tui-color-background);
+        padding: var(--tui-spacing-extra-small);
 
         .inner-circle {
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: var(--dui-duration-transition-slow) background-color ease-in-out;
+            transition: var(--tui-duration-transition-slow) background-color ease-in-out;
             border-radius: 50%;
-            background-color: var(--dui-color-text-disabled);
+            background-color: var(--tui-color-text-disabled);
             width: 1rem;
             height: 1rem;
 
             .icon {
                 padding: 0.1em;
-                color: var(--dui-color-text-on-dark);
+                color: var(--tui-color-text-on-dark);
             }
         }
     }
@@ -140,17 +140,17 @@
     &.completed {
         .step-circle {
             .inner-circle {
-                background-color: var(--dui-color-text);
+                background-color: var(--tui-color-text);
             }
         }
     }
 
     &.active {
         .step-circle {
-            border-color: var(--dui-color-brand);
+            border-color: var(--tui-color-brand);
 
             .inner-circle {
-                background-color: var(--dui-color-brand);
+                background-color: var(--tui-color-brand);
             }
         }
     }

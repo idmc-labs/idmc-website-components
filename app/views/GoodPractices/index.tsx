@@ -15,17 +15,9 @@ import {
     GoodPracticeMapQueryVariables,
 } from '#generated/types';
 import {
-    ListView,
-    DropdownMenu,
-    DropdownMenuItem,
-    Modal,
-    RadioInput,
-    useInputState,
-    useBooleanState,
-} from '@the-deep/deep-ui';
-import {
     TextInput,
     MultiSelectInput,
+    Modal,
 } from '@togglecorp/toggle-ui';
 import Map, {
     MapContainer,
@@ -63,15 +55,21 @@ import TabPanel from '#components/Tabs/TabPanel';
 import Button from '#components/Button';
 import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
+import RadioInput from '#components/RadioInput';
+import ListView from '#components/ListView';
+import DropdownMenu from '#components/DropdownMenu';
+import DropdownMenuItem from '#components/DropdownMenuItem';
 import EllipsizedContent from '#components/EllipsizedContent';
 import CollapsibleContent from '#components/CollapsibleContent';
 import GoodPracticeItem from '#components/GoodPracticeItem';
 import SliderInput from '#components/SliderInput';
 import DismissableListOutput from '#components/DismissableListOutput';
+import useBooleanState from '#hooks/useBooleanState';
+import useInputState from '#hooks/useInputState';
 
-import useDebouncedValue from '../../hooks/useDebouncedValue';
-import useDocumentSize from '../../hooks/useDocumentSize';
 import backgroundImage from '../../resources/img/backgroundImage.png';
+import useDebouncedValue from '#hooks/useDebouncedValue';
+import useDocumentSize from '#hooks/useDocumentSize';
 
 import styles from './styles.css';
 
@@ -1091,7 +1089,7 @@ function GoodPractices(props: Props) {
                                     )}
                                     filteredEmptyMessage={(
                                         <div>
-                                            No Good Practice Found
+                                            No Filtered Good Practice Found
                                         </div>
                                     )}
                                 />
@@ -1114,7 +1112,7 @@ function GoodPractices(props: Props) {
                                     )}
                                     filteredEmptyMessage={(
                                         <div>
-                                            No Good Practice Found
+                                            No Filtered Good Practice Found
                                         </div>
                                     )}
                                 />

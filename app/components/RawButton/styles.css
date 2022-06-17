@@ -10,6 +10,6 @@
     font-size: inherit;
 
     &.focused {
-        outline-color: var(--dui-color-outline-light);
+        outline-color: var(--tui-color-outline-light);
     }
 }
