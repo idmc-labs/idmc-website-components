@@ -1,12 +1,11 @@
 import React from 'react';
 import { _cs } from '@togglecorp/fujs';
 import { IoRefreshOutline } from 'react-icons/io5';
+import { PendingMessage } from '@togglecorp/toggle-ui';
 
-import Kraken, { SizeTypes as KrakenSizeTypes } from '../Kraken';
 import Button from '../Button';
 import QuickActionButton from '../QuickActionButton';
 import { genericMemo } from '../../utils';
-import PendingMessage from '../PendingMessage';
 
 import styles from './styles.css';
 
@@ -75,42 +74,8 @@ function Message(props: Props) {
         );
     }
 
-    let icon: React.ReactNode = iconFromProps;
-    let message: React.ReactNode = messageFromProps;
-
-    if (empty || errored) {
-        let size: KrakenSizeTypes = 'medium';
-        if (compact) {
-            size = 'extraSmall';
-        } else if (compactAndVertical) {
-            size = 'small';
-        }
-        if (errored) {
-            icon = erroredEmptyIcon ?? (
-                <Kraken
-                    variant="fat"
-                    size={size}
-                />
-            );
-            message = erroredEmptyMessage;
-        } else if (filtered) {
-            icon = filteredEmptyIcon ?? (
-                <Kraken
-                    variant="search"
-                    size={size}
-                />
-            );
-            message = filteredEmptyMessage;
-        } else {
-            icon = emptyIcon ?? (
-                <Kraken
-                    variant="ballon"
-                    size={size}
-                />
-            );
-            message = emptyMessage;
-        }
-    }
+    const icon: React.ReactNode = iconFromProps;
+    const message: React.ReactNode = messageFromProps;
 
     if (!icon && !message) {
         return null;

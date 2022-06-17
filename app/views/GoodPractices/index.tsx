@@ -18,6 +18,7 @@ import {
     TextInput,
     MultiSelectInput,
     Modal,
+    RadioInput,
 } from '@togglecorp/toggle-ui';
 import Map, {
     MapContainer,
@@ -55,7 +56,6 @@ import TabPanel from '#components/Tabs/TabPanel';
 import Button from '#components/Button';
 import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
-import RadioInput from '#components/RadioInput';
 import ListView from '#components/ListView';
 import DropdownMenu from '#components/DropdownMenu';
 import DropdownMenuItem from '#components/DropdownMenuItem';

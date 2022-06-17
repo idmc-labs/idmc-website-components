@@ -750,8 +750,9 @@ function CountryProfile(props: Props) {
                 </>
             )}
             filters={(
-                <div className={styles.timeRangeContainer}>
+                <>
                     <SliderInput
+                        className={styles.timeRangeContainer}
                         hideValues
                         min={START_YEAR}
                         max={END_YEAR}
@@ -761,7 +762,6 @@ function CountryProfile(props: Props) {
                         value={disasterTimeRangeActual}
                         onChange={setDisasterTimeRange}
                     />
-                    <div />
                     <Header
                         heading="Disaster Category"
                         headingSize="extraSmall"
@@ -780,7 +780,7 @@ function CountryProfile(props: Props) {
                             />
                         )}
                     />
-                </div>
+                </>
             )}
         >
             <div className={styles.infographicList}>
@@ -909,18 +909,17 @@ function CountryProfile(props: Props) {
                 </TooltipIcon>
             )}
             filters={(
-                <div className={styles.timeRangeContainer}>
-                    <SliderInput
-                        hideValues
-                        min={START_YEAR}
-                        labelDescription={`${conflictTimeRangeActual[0]} - ${conflictTimeRangeActual[1]}`}
-                        max={END_YEAR}
-                        step={1}
-                        minDistance={0}
-                        value={conflictTimeRangeActual}
-                        onChange={setConflictTimeRange}
-                    />
-                </div>
+                <SliderInput
+                    className={styles.timeRangeContainer}
+                    hideValues
+                    min={START_YEAR}
+                    labelDescription={`${conflictTimeRangeActual[0]} - ${conflictTimeRangeActual[1]}`}
+                    max={END_YEAR}
+                    step={1}
+                    minDistance={0}
+                    value={conflictTimeRangeActual}
+                    onChange={setConflictTimeRange}
+                />
             )}
             footerActions={(
                 <>

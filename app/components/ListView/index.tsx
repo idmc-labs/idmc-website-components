@@ -1,12 +1,10 @@
 import React from 'react';
 import { _cs } from '@togglecorp/fujs';
-
+import {
+    List,
+    ListProps,
+} from '@togglecorp/toggle-ui';
 import { genericMemo } from '../../utils';
-import List, {
-    Props as ListProps,
-    OptionKey,
-    GroupCommonProps,
-} from '../List';
 
 import { SpacingTypes } from '../../types';
 import Message, { Props as MessageProps } from '../Message';
@@ -20,10 +18,16 @@ const spacingToStyleMap: {
     comfortable: styles.comfortableSpacing,
     loose: styles.looseSpacing,
 };
+type OptionKey = string | number;
 
 type MessagePropOmission = 'className' | 'message'
 | 'compact' | 'icon' | 'empty' | 'pendingContainerClassName' | 'messageHidden'
 | 'messageIconHidden' | 'filtered' | 'pending' | 'errored' | 'actions';
+
+export interface GroupCommonProps {
+    className?: string;
+    children: React.ReactNode;
+}
 
 export type Props<
     D,
