@@ -762,6 +762,7 @@ function CountryProfile(props: Props) {
                         value={disasterTimeRangeActual}
                         onChange={setDisasterTimeRange}
                     />
+                    <div />
                     <Header
                         heading="Disaster Category"
                         headingSize="extraSmall"
@@ -909,17 +910,21 @@ function CountryProfile(props: Props) {
                 </TooltipIcon>
             )}
             filters={(
-                <SliderInput
-                    className={styles.timeRangeContainer}
-                    hideValues
-                    min={START_YEAR}
-                    labelDescription={`${conflictTimeRangeActual[0]} - ${conflictTimeRangeActual[1]}`}
-                    max={END_YEAR}
-                    step={1}
-                    minDistance={0}
-                    value={conflictTimeRangeActual}
-                    onChange={setConflictTimeRange}
-                />
+                <>
+                    <SliderInput
+                        className={styles.timeRangeContainer}
+                        hideValues
+                        min={START_YEAR}
+                        labelDescription={`${conflictTimeRangeActual[0]} - ${conflictTimeRangeActual[1]}`}
+                        max={END_YEAR}
+                        step={1}
+                        minDistance={0}
+                        value={conflictTimeRangeActual}
+                        onChange={setConflictTimeRange}
+                    />
+                    <div />
+                    <div />
+                </>
             )}
             footerActions={(
                 <>

@@ -2,7 +2,8 @@ import React from 'react';
 import { _cs } from '@togglecorp/fujs';
 import { IoRefreshOutline } from 'react-icons/io5';
 
-import { Button, PendingMessage } from '@togglecorp/toggle-ui';
+import { PendingMessage } from '@togglecorp/toggle-ui';
+import Button from '#components/Button';
 import { genericMemo } from '../../utils';
 
 import styles from './styles.css';

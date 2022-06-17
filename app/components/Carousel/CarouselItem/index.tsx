@@ -1,10 +1,8 @@
 import React from 'react';
 import { IoExpand } from 'react-icons/io5';
-import {
-    Modal,
-    Button,
-} from '@togglecorp/toggle-ui';
+import { Modal } from '@togglecorp/toggle-ui';
 import { _cs } from '@togglecorp/fujs';
+import Button from '#components/Button';
 
 import useBooleanState from '#hooks/useBooleanState';
 

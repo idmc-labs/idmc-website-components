@@ -4,7 +4,10 @@ import {
     IoChevronDown,
     IoChevronUp,
 } from 'react-icons/io5';
-import { Popup, Button, ButtonProps } from '@togglecorp/toggle-ui';
+import { Popup } from '@togglecorp/toggle-ui';
+
+import Button, { Props as ButtonProps } from '../Button';
+
 import { genericMemo } from '../../utils';
 import useBooleanState from '../../hooks/useBooleanState';
 import useBlurEffect from '../../hooks/useBlurEffect';
@@ -96,7 +99,7 @@ function DropdownMenu(props: Props) {
             <Button
                 {...buttonProps}
                 name={undefined}
-                variant={variant}
+                variant="transparent"
                 elementRef={buttonRef}
                 className={_cs(styles.dropdownMenu, className)}
                 onClick={handleButtonClick}
@@ -112,11 +115,11 @@ function DropdownMenu(props: Props) {
             <Popup
                 elementRef={popupRef}
                 parentRef={buttonRef}
-                className={_cs(styles.popup, popupClassName)}
+                className={_cs(styles.popup, popupClassName, !showPopup && styles.hidden)}
                 contentClassName={popupContentClassName}
-                show={showPopup}
+                // show={showPopup}
                 freeWidth={!popupMatchesParentWidth}
-                placementDirection={popupPlacementDirection}
+                // placementDirection={popupPlacementDirection}
             >
                 { children }
             </Popup>

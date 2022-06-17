@@ -49,7 +49,6 @@ function DropdownMenuItem<N extends string | number | undefined>(props: Props<N>
         iconsContainerClassName,
         childrenContainerClassName,
         actionsContainerClassName,
-        spacing = 'comfortable',
         href,
     } = props;
 
