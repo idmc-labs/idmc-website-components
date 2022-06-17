@@ -1,10 +1,8 @@
 import React from 'react';
 import { _cs } from '@togglecorp/fujs';
 import { IoRefreshOutline } from 'react-icons/io5';
-import { PendingMessage } from '@togglecorp/toggle-ui';
 
-import Button from '../Button';
-import QuickActionButton from '../QuickActionButton';
+import { Button, PendingMessage } from '@togglecorp/toggle-ui';
 import { genericMemo } from '../../utils';
 
 import styles from './styles.css';
@@ -22,7 +20,7 @@ export interface Props {
     onReload?: () => void;
     actions?: React.ReactNode;
     message?: React.ReactNode;
-    pendingMessage?: React.ReactNode;
+    pendingMessage?: string;
     emptyMessage?: React.ReactNode;
     filteredEmptyMessage?: React.ReactNode;
     erroredEmptyMessage?: React.ReactNode;
@@ -68,14 +66,27 @@ function Message(props: Props) {
         return (
             <PendingMessage
                 className={pendingContainerClassName}
-                message={pendingMessage}
+                message={pendingMessage ?? undefined}
                 compact={compactPendingMessage || compact}
             />
         );
     }
 
-    const icon: React.ReactNode = iconFromProps;
-    const message: React.ReactNode = messageFromProps;
+    let icon: React.ReactNode = iconFromProps;
+    let message: React.ReactNode = messageFromProps;
+
+    if (empty || errored) {
+        if (errored) {
+            icon = erroredEmptyIcon;
+            message = erroredEmptyMessage;
+        } else if (filtered) {
+            icon = filteredEmptyIcon;
+            message = filteredEmptyMessage;
+        } else {
+            icon = emptyIcon;
+            message = emptyMessage;
+        }
+    }
 
     if (!icon && !message) {
         return null;
@@ -99,25 +110,25 @@ function Message(props: Props) {
             )}
             {!messageHidden && (
                 <div className={styles.content}>
-                    { message }
+                    {message}
                 </div>
             )}
             {showActions && (
                 <div className={_cs(styles.actions, actionsContainerClassName)}>
                     {onReload && compact && (
-                        <QuickActionButton
+                        <Button
                             name={undefined}
                             onClick={onReload}
-                            variant="secondary"
+                            variant="accent"
                         >
                             <IoRefreshOutline />
-                        </QuickActionButton>
+                        </Button>
                     )}
                     {onReload && !compact && (
                         <Button
                             name={undefined}
                             onClick={onReload}
-                            variant="secondary"
+                            variant="accent"
                             icons={(
                                 <IoRefreshOutline />
                             )}

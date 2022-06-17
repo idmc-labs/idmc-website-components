@@ -6,18 +6,9 @@ import {
 } from '@togglecorp/toggle-ui';
 import { genericMemo } from '../../utils';
 
-import { SpacingTypes } from '../../types';
 import Message, { Props as MessageProps } from '../Message';
 import styles from './styles.css';
 
-const spacingToStyleMap: {
-    [key in SpacingTypes]: string;
-} = {
-    none: styles.noSpacing,
-    compact: styles.compactSpacing,
-    comfortable: styles.comfortableSpacing,
-    loose: styles.looseSpacing,
-};
 type OptionKey = string | number;
 
 type MessagePropOmission = 'className' | 'message'
@@ -78,7 +69,6 @@ function ListView<
         compactEmptyMessage,
         compactAndVerticalEmptyMessage,
         messageActions,
-        spacing = 'none',
         direction = 'horizontal',
         messageShown = false,
         messageIconShown = false,
@@ -96,7 +86,6 @@ function ListView<
                 styles.listView,
                 empty && styles.empty,
                 pending && styles.pending,
-                spacingToStyleMap[spacing],
                 direction === 'vertical' && styles.vertical,
                 reverse && styles.reverse,
                 className,
@@ -126,7 +115,6 @@ function ListView<
             {!errored && (
                 <List
                     data={data}
-                    spacing={spacing}
                     {...otherListProps}
                 />
             )}

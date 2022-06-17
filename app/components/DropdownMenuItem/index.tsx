@@ -18,17 +18,7 @@ import RawButton, {
 
 import { genericMemo } from '../../utils';
 
-import { SpacingTypes } from '../../types';
 import styles from './styles.css';
-
-const spacingToStyleMap: {
-    [key in SpacingTypes]: string;
-} = {
-    none: styles.noSpacing,
-    compact: styles.compactSpacing,
-    comfortable: styles.comfortableSpacing,
-    loose: styles.looseSpacing,
-};
 
 // FIXME: remove this (only used in stories)
 export function Separator({ className }: { className?: string }) {
@@ -65,7 +55,6 @@ function DropdownMenuItem<N extends string | number | undefined>(props: Props<N>
 
     const className = _cs(
         styles.dropdownMenuItem,
-        spacingToStyleMap[spacing],
         classNameFromProps,
     );
 

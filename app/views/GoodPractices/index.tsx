@@ -482,7 +482,7 @@ function GoodPractices(props: Props) {
 
         return modifiedList;
     }, [goodPracticeResponse]);
-
+    console.warn('list', goodPracticeList);
     const { data: staticPageResponse } = useQuery<
         GoodPracticeListingStaticPageQuery,
         GoodPracticeListingStaticPageQueryVariables
