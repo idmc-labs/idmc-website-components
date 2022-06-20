@@ -18,12 +18,22 @@
     --tui-font-size-mega-large: 3rem;
     --tui-font-size-ultra-large: 4rem;
 
+    --tui-spacing-extra-small: 0.7rem;
+    --tui-spacing-small: 0.8rem;
+    --tui-spacing-medium: 1rem;
+    --tui-spacing-large: 1.26rem;
+    --tui-spacing-extra-large: 1.6rem;
+    --tui-spacing-super-large: 2.2rem;
+    --tui-spacing-mega-large: 3rem;
+    --tui-spacing-ultra-large: 4rem;
+
     --tui-color-primary: rgb(65, 131, 196);
     --tui-color-accent: rgb(65, 131, 196);
     --tui-color-brand: rgb(25, 50, 86);
     --tui-color-brand-hover: #06179E;
 
     --tui-color-text: rgb(100,99,99);
+    --tui-filter-background-color: #EFF4FA;
     /*
     --tui-color-label: rgb(100,99,99);
     --tui-color-description: rgb(100,99,99);

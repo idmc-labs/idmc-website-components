@@ -2,7 +2,7 @@
     display: flex;
     align-items: center;
     flex-direction: column;
-    gap: var(--tui-spacing-super-large);
+    gap: var(--tui-spacing-ultra-large);
 
     .header-section {
         display: flex;
@@ -130,6 +130,7 @@
 
                     .input-section {
                         border-radius: 0.25rem;
+                        background-color: var(--tui-filter-background-color);
                     }
 
                     .label {
@@ -151,6 +152,7 @@
 
                     .input-section {
                         border-radius: 0.25rem;
+                        background-color: var(--tui-filter-background-color);
                     }
 
                     .label {
@@ -188,6 +190,12 @@
             .ordering-container {
                 display: flex;
                 justify-content: flex-end;
+
+                .grid-separator {
+                    border: var(--tui-width-separator-thin) solid var(--tui-color-separator);
+                    height: 3rem;
+                }
+
                 .order-dropdown{
                     margin-left: var(--tui-spacing-large);
                     color: var(--tui-color-brand);

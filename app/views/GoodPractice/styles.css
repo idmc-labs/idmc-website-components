@@ -59,7 +59,7 @@
         padding: var(--tui-spacing-large);
         width: 100%;
         max-width: var(--width-page-max);
-        gap: var(--tui-spacing-ultra-large);
+        gap: var(--tui-spacing-extra-large);
 
         .details {
             display: flex;

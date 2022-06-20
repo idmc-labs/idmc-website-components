@@ -15,6 +15,8 @@
         align-items: center;
         margin-top: var(--tui-spacing-medium);
         gap: var(--tui-spacing-small);
+        color: var(--tui-color-brand);
+        font-weight: var(--tui-font-weight-bold);
     }
 }
 

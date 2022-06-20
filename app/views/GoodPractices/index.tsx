@@ -1043,6 +1043,7 @@ function GoodPractices(props: Props) {
                         <Tabs
                             value={activeTab}
                             onChange={setActiveTab}
+                            variant="transparent"
                         >
                             {goodPracticeList && !isSmallDisplay && (
                                 <div className={styles.orderingContainer}>
@@ -1050,6 +1051,7 @@ function GoodPractices(props: Props) {
                                         <Tab name="grid">
                                             <IoGridOutline />
                                         </Tab>
+                                        <div className={styles.gridSeparator} />
                                         <Tab name="list">
                                             <IoListOutline />
                                         </Tab>
