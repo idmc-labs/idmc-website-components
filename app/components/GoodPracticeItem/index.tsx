@@ -24,6 +24,7 @@ interface Props {
     countries?: string | null;
     regions?: string | null;
     type?: React.ReactNode;
+    name? : string;
 }
 
 function GoodPracticeItem(props: Props) {
@@ -36,6 +37,7 @@ function GoodPracticeItem(props: Props) {
         startYear,
         endYear,
         countries,
+        name,
         regions,
         type = 'Good Practice',
     } = props;
@@ -55,6 +57,14 @@ function GoodPracticeItem(props: Props) {
                 src={image ?? gridCover}
                 alt=""
             />
+            {/* )}
+            {rendererClassName === 'list' && (
+                <img
+                    className={styles.previewList}
+                    src={image ?? gridCover}
+                    alt=""
+                />
+            )} */}
             <div className={styles.details}>
                 <div className={styles.type}>
                     {type}

@@ -225,7 +225,6 @@
                     display: flex;
                     >*{
                         width: auto;
-                        height: 14rem;
                     }
                 }
             }
