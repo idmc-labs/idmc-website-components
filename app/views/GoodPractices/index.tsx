@@ -1043,7 +1043,7 @@ function GoodPractices(props: Props) {
                         <Tabs
                             value={activeTab}
                             onChange={setActiveTab}
-                            variant="transparent"
+                            // variant="secondary"
                         >
                             {goodPracticeList && !isSmallDisplay && (
                                 <div className={styles.orderingContainer}>
