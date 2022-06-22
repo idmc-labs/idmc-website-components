@@ -115,7 +115,7 @@
         .good-practices-container {
             display: flex;
             flex-direction: column;
-            gap: var(--tui-spacing-extra-large);
+            gap: var(--tui-spacing-small);
 
             .search-and-time-range-container {
                 display: flex;
@@ -131,9 +131,12 @@
                     .input-section {
                         border-radius: 0.25rem;
                         background-color: var(--tui-filter-background-color);
+                        height: 3rem;
                     }
 
                     .label {
+                        padding-left: var(--tui-spacing-small);
+                        color: var(--tui-color-label);
                         font-size: var(--tui-font-size-medium);
                     }
                 }
@@ -142,7 +145,7 @@
             .filter-container {
                 display: flex;
                 flex-wrap: wrap;
-                gap: var(--tui-spacing-medium);
+                gap: var(--tui-spacing-small);
 
                 >* {
                     flex-basis: 0;
@@ -153,9 +156,12 @@
                     .input-section {
                         border-radius: 0.25rem;
                         background-color: var(--tui-filter-background-color);
+                        height: 3rem;
                     }
 
                     .label {
+                        padding-left: var(--tui-spacing-small);
+                        color: var(--tui-color-label);
                         font-size: var(--tui-font-size-medium);
                     }
                 }
@@ -219,15 +225,26 @@
             .good-practice-grid {
                 display: flex;
                 flex-direction: column;
-                gap: var(--tui-spacing-extra-large);
+                gap: var(--tui-spacing-large);
 
-                >* {
+                >*{
                     display: flex;
+                    flex-direction: row;
+                    height: 17rem;
+
                     >*{
-                        width: auto;
+                        display: flex;
+                        flex-direction: column;
+                        width: 100%;
+                        height: 17rem;
+
+                        >*{
+                            height:2.5rem;
+                        }
                     }
                 }
             }
+
             .view-buttons{
                 display: flex;
                 gap: var(--tui-spacing-extra-small);
@@ -285,7 +302,12 @@
         }
 
         .label {
+            padding-left: var(--tui-spacing-small);
+            color: var(--tui-color-label);
             font-size: var(--tui-font-size-medium);
+        }
+        .input-section {
+            height: 3rem;
         }
 
         .radio-list {

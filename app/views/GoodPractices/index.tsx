@@ -506,10 +506,26 @@ function GoodPractices(props: Props) {
         GoodPracticeMapQueryVariables
     >(GOOD_PRACTICE_MAP);
 
-    const goodPracticeRendererParams = useCallback((
+    const goodPracticeListRendererParams = useCallback((
         _: string,
         d: GoodPracticeItemType | undefined,
     ) => ({
+        className: styles.goodPracticeList,
+        goodPracticeId: d?.id,
+        description: d?.description,
+        title: d?.title,
+        startYear: d?.startYear,
+        endYear: d?.endYear,
+        image: d?.image?.url,
+        countries: unique(d?.countries?.map((t) => t.name) ?? []).join(', '),
+        regions: unique(d?.countries?.map((t) => t.goodPracticeRegionLabel) ?? []).join(', '),
+    }), []);
+
+    const goodPracticeGridRendererParams = useCallback((
+        _: string,
+        d: GoodPracticeItemType | undefined,
+    ) => ({
+        className: styles.goodPracticeGrid,
         goodPracticeId: d?.id,
         description: d?.description,
         title: d?.title,
@@ -1043,7 +1059,7 @@ function GoodPractices(props: Props) {
                         <Tabs
                             value={activeTab}
                             onChange={setActiveTab}
-                            // variant="secondary"
+                            // variant="accent"
                         >
                             {goodPracticeList && !isSmallDisplay && (
                                 <div className={styles.orderingContainer}>
@@ -1051,7 +1067,7 @@ function GoodPractices(props: Props) {
                                         <Tab name="grid">
                                             <IoGridOutline />
                                         </Tab>
-                                        <div className={styles.gridSeparator} />
+                                        {/* <div className={styles.gridSeparator} /> */}
                                         <Tab name="list">
                                             <IoListOutline />
                                         </Tab>
@@ -1078,7 +1094,7 @@ function GoodPractices(props: Props) {
                                     className={styles.goodPracticeList}
                                     data={goodPracticeList}
                                     keySelector={goodPracticekeySelector}
-                                    rendererParams={goodPracticeRendererParams}
+                                    rendererParams={goodPracticeListRendererParams}
                                     renderer={GoodPracticeItem}
                                     errored={!!goodPracticeError}
                                     pending={goodPracticeLoading}
@@ -1101,7 +1117,7 @@ function GoodPractices(props: Props) {
                                     className={styles.goodPracticeGrid}
                                     data={goodPracticeList}
                                     keySelector={goodPracticekeySelector}
-                                    rendererParams={goodPracticeRendererParams}
+                                    rendererParams={goodPracticeGridRendererParams}
                                     renderer={GoodPracticeItem}
                                     errored={!!goodPracticeError}
                                     pending={goodPracticeLoading}
