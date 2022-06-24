@@ -3,7 +3,8 @@
     border-radius: 0.25rem;
 
     .preview {
-        width: 100%;
+        width: auto;
+        max-width: 12rem;
         height: 12rem;
         object-fit: cover;
         object-position: top center;
@@ -13,7 +14,7 @@
         display: flex;
         flex-direction: column;
         gap: var(--tui-spacing-large);
-        padding: var(--tui-spacing-medium);
+        padding: var(--tui-spacing-small);
         color: var(--tui-color-text);
 
         .type {

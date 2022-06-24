@@ -1213,14 +1213,14 @@ function CountryProfile(props: Props) {
                                         // max={mapTimeRangeBounds[1]}
                                         min={0}
                                         max={11}
-                                        labelDescription={`${startDate.getFullYear()} ${monthList[startDate.getMonth()]} - ${endDate.getFullYear()} ${monthList[endDate.getMonth()]}`}
+                                        labelDescription={`${monthList[startDate.getMonth()]} ${startDate.getFullYear()} - ${monthList[endDate.getMonth()]} ${endDate.getFullYear()}`}
                                         step={1}
                                         minDistance={0}
                                         value={mapTimeMonthRange}
                                         onChange={setMapTimeMonthRange}
                                     />
                                 </div>
-                                <div className={styles.legend}>
+                                <div className={styles.displacementLegend}>
                                     <Header
                                         headingSize="extraSmall"
                                         heading="Type of Displacement"
@@ -1242,7 +1242,7 @@ function CountryProfile(props: Props) {
                                         />
                                     </div>
                                 </div>
-                                <div className={styles.legend}>
+                                <div className={styles.numberLegend}>
                                     <Header
                                         headingSize="extraSmall"
                                         heading="No. of Displacement"

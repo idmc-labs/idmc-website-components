@@ -131,7 +131,7 @@
                     .input-section {
                         border-radius: 0.25rem;
                         background-color: var(--tui-filter-background-color);
-                        height: 3rem;
+                        height: 2.5rem;
                     }
 
                     .label {
@@ -151,16 +151,23 @@
                     flex-basis: 0;
                     flex-grow: 1;
                     border-radius: .25rem;
-                    min-width: 16rem;
+                    min-width: 17rem;
 
                     .input-section {
                         border-radius: 0.25rem;
                         background-color: var(--tui-filter-background-color);
-                        height: 3rem;
+                        height: 2.5rem;
+
+                        >*{
+                            padding-right: 0;
+                            width: 4.5rem;
+                        }:hover{
+                            background-color: unset;
+                        }
                     }
 
                     .label {
-                        padding-left: var(--tui-spacing-small);
+                        padding-left: var(--tui-spacing-extra-small-small);
                         color: var(--tui-color-label);
                         font-size: var(--tui-font-size-medium);
                     }
@@ -230,16 +237,14 @@
                 >*{
                     display: flex;
                     flex-direction: row;
+                    object-fit: fill;
                     height: 17rem;
 
                     >*{
-                        display: flex;
                         flex-direction: column;
-                        width: 100%;
-                        height: 17rem;
 
                         >*{
-                            height:2.5rem;
+                            height:4.5rem;
                         }
                     }
                 }

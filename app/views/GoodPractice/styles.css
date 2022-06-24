@@ -186,13 +186,13 @@
         .media-and-resource-links {
             display: flex;
             flex-direction: column;
-            gap: var(--tui-spacing-large);
+            gap: var(--tui-spacing-super-large);
         }
 
         .related-section {
             display: flex;
             flex-direction: column;
-            gap: var(--tui-spacing-large);
+            gap: var(--tui-spacing-super-large);
 
             .related-good-practice-list {
                 display: flex;

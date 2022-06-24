@@ -241,8 +241,9 @@
                 .filters-container {
                     align-items: stretch;
 
-                    .legend {
+                    .displacement-legend {
                         display: flex;
+                        flex-basis: 20%;
                         flex-direction: column;
                         gap: var(--tui-spacing-extra-small);
 
@@ -254,6 +255,21 @@
                         }
 
                     }
+                    .number-legend {
+                        display: flex;
+                        flex-basis: 40%;
+                        flex-direction: column;
+                        gap: var(--tui-spacing-extra-small);
+
+                        .legend-element-list {
+                            display: flex;
+                            flex-grow: 1;
+                            gap: var(--tui-spacing-small);
+                            height: 3rem;
+                        }
+
+                    }
+
 
                     .time-range-container {
                         display: flex;
