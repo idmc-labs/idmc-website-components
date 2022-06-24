@@ -81,7 +81,7 @@ import Container from '#components/Container';
 import TooltipIcon from '#components/TooltipIcon';
 import DisplacementIcon from '#components/DisplacementIcon';
 
-import { formatNumber } from '#utils/common';
+import { formatNumber, monthList } from '#utils/common';
 
 import useDebouncedValue from '../../hooks/useDebouncedValue';
 import useInputState from '../../hooks/useInputState';
@@ -137,6 +137,10 @@ type DisplacementNumber = 'less-than-100' | 'less-than-1000' | 'more-than-1000';
 const disasterCategoryKeySelector = (d: CategoryStatisticsType) => d.label;
 
 // constants
+const endDate = new Date();
+const startDate = new Date();
+startDate.setMonth(endDate.getMonth() - 12);
+
 const START_YEAR = 2008;
 const END_YEAR = 2021;
 const END_YEAR_FOR_IDU = (new Date()).getFullYear();
@@ -352,6 +356,10 @@ function CountryProfile(props: Props) {
     const [mapTimeRangeActual, setMapTimeRange] = useState<[number, number]>(
         [START_YEAR, END_YEAR_FOR_IDU],
     );
+
+    const [mapTimeMonthRange, setMapTimeMonthRange] = useState<[number, number]>(
+        [0, 11],
+    );
     const mapTimeRange = useDebouncedValue(mapTimeRangeActual);
     const [
         mapTypeOfDisplacements,
@@ -501,6 +509,21 @@ function CountryProfile(props: Props) {
     );
 
     const idus = iduData?.idu;
+    const idusForMap = React.useMemo(() => (
+        idus?.filter((d) => {
+            const filterStartDate = new Date(startDate);
+            const filterEndDate = new Date(startDate);
+
+            filterStartDate.setMonth(startDate.getMonth() + mapTimeMonthRange[0]);
+            filterEndDate.setMonth(startDate.getMonth() + mapTimeMonthRange[1]);
+
+            const displacementStartDate = new Date(d.displacement_start_date);
+            const displacementEndDate = new Date(d.displacement_end_date);
+
+            return displacementStartDate.getTime() >= filterStartDate.getTime()
+                && displacementEndDate.getTime() <= filterEndDate.getTime();
+        })
+    ), [mapTimeMonthRange, idus]);
     const countryInfo = countryProfileData?.country;
 
     const countryOverviewSortedByYear = useMemo(() => {
@@ -1118,7 +1141,11 @@ function CountryProfile(props: Props) {
                     value={countryInfo?.internalDisplacementDescription}
                 />
             </EllipsizedContent>
-            {idus && idus.length > 0 && (
+            {idus && (
+                idus.length > 0
+                    || mapTimeMonthRange[0] !== 0
+                    || mapTimeMonthRange[1] !== 11
+            ) && (
                 <>
                     <div className={styles.iduContainer}>
                         {idus.slice(0, iduActivePage * iduPageSize)?.map((idu) => (
@@ -1184,13 +1211,13 @@ function CountryProfile(props: Props) {
                                         className={styles.timeRangeInput}
                                         // min={mapTimeRangeBounds[0]}
                                         // max={mapTimeRangeBounds[1]}
-                                        min={START_YEAR}
-                                        max={END_YEAR_FOR_IDU}
-                                        labelDescription={`${mapTimeRangeActual[0]} - ${mapTimeRangeActual[1]}`}
+                                        min={0}
+                                        max={11}
+                                        labelDescription={`${startDate.getFullYear()} ${monthList[startDate.getMonth()]} - ${endDate.getFullYear()} ${monthList[endDate.getMonth()]}`}
                                         step={1}
                                         minDistance={0}
-                                        value={mapTimeRangeActual}
-                                        onChange={setMapTimeRange}
+                                        value={mapTimeMonthRange}
+                                        onChange={setMapTimeMonthRange}
                                     />
                                 </div>
                                 <div className={styles.legend}>
@@ -1274,7 +1301,7 @@ function CountryProfile(props: Props) {
                         )}
                     >
                         <IduMap
-                            idus={idus}
+                            idus={idusForMap}
                             boundingBox={countryInfo?.boundingBox as LngLatBounds | undefined}
                             mapTypeOfDisplacements={mapTypeOfDisplacements}
                             mapNoOfDisplacements={mapNoOfDisplacements}

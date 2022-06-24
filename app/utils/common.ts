@@ -102,3 +102,5 @@ export function getGoodPracticeLink(id: string) {
         ? `/?page=good-practice&id=${id}`
         : `/good-practice?id=${id}`;
 }
+
+export const monthList = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
