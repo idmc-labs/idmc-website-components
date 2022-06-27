@@ -136,14 +136,11 @@ type DisplacementNumber = 'less-than-100' | 'less-than-1000' | 'more-than-1000';
 
 const disasterCategoryKeySelector = (d: CategoryStatisticsType) => d.label;
 
-// constants
-const endDate = new Date();
-const startDate = new Date();
-startDate.setMonth(endDate.getMonth() - 12);
+const today = new Date();
 
 const START_YEAR = 2008;
 const END_YEAR = 2021;
-const END_YEAR_FOR_IDU = (new Date()).getFullYear();
+const END_YEAR_FOR_IDU = today.getFullYear();
 const MAX_IDU_ITEMS = 8;
 
 const giddLink = suffixDrupalEndpoing('/database/displacement-data');
@@ -251,7 +248,7 @@ const IDU_DATA = gql`
             displacement_type
             qualifier
             figure
-            displacment_date
+            displacement_date
             displacement_start_date
             displacement_end_date
             year
@@ -358,7 +355,7 @@ function CountryProfile(props: Props) {
     );
 
     const [mapTimeMonthRange, setMapTimeMonthRange] = useState<[number, number]>(
-        [0, 11],
+        [0, 12],
     );
     const mapTimeRange = useDebouncedValue(mapTimeRangeActual);
     const [
@@ -508,22 +505,45 @@ function CountryProfile(props: Props) {
         Number(data?.relatedMaterials?.pager?.total_items || '0') - relatedMaterialPageSize,
     );
 
+    const [iduFilterStartDate, iduFilterEndDate] = useMemo(
+        () => {
+            const lastYearToday = new Date(today);
+            lastYearToday.setMonth(lastYearToday.getMonth() - 12);
+
+            const filterStartDate = new Date(
+                lastYearToday.getFullYear(),
+                lastYearToday.getMonth(),
+                1,
+            );
+            filterStartDate.setMonth(filterStartDate.getMonth() + mapTimeMonthRange[0]);
+
+            const filterEndDate = new Date(
+                lastYearToday.getFullYear(),
+                lastYearToday.getMonth(),
+                1,
+            );
+            filterEndDate.setMonth(filterEndDate.getMonth() + 1 + mapTimeMonthRange[1]);
+            filterEndDate.setSeconds(filterEndDate.getSeconds() - 1);
+
+            return [filterStartDate, filterEndDate] as const;
+        },
+        [mapTimeMonthRange],
+    );
+
     const idus = iduData?.idu;
     const idusForMap = React.useMemo(() => (
         idus?.filter((d) => {
-            const filterStartDate = new Date(startDate);
-            const filterEndDate = new Date(startDate);
+            if (isNotDefined(d.displacement_date)) {
+                return false;
+            }
 
-            filterStartDate.setMonth(startDate.getMonth() + mapTimeMonthRange[0]);
-            filterEndDate.setMonth(startDate.getMonth() + mapTimeMonthRange[1]);
+            const displacementDate = new Date(d.displacement_date);
 
-            const displacementStartDate = new Date(d.displacement_start_date);
-            const displacementEndDate = new Date(d.displacement_end_date);
-
-            return displacementStartDate.getTime() >= filterStartDate.getTime()
-                && displacementEndDate.getTime() <= filterEndDate.getTime();
+            return displacementDate.getTime() >= iduFilterStartDate.getTime()
+                && displacementDate.getTime() <= iduFilterEndDate.getTime();
         })
-    ), [mapTimeMonthRange, idus]);
+    ), [idus, iduFilterStartDate, iduFilterEndDate]);
+
     const countryInfo = countryProfileData?.country;
 
     const countryOverviewSortedByYear = useMemo(() => {
@@ -1141,11 +1161,7 @@ function CountryProfile(props: Props) {
                     value={countryInfo?.internalDisplacementDescription}
                 />
             </EllipsizedContent>
-            {idus && (
-                idus.length > 0
-                    || mapTimeMonthRange[0] !== 0
-                    || mapTimeMonthRange[1] !== 11
-            ) && (
+            {idus && idus.length > 0 && (
                 <>
                     <div className={styles.iduContainer}>
                         {idus.slice(0, iduActivePage * iduPageSize)?.map((idu) => (
@@ -1212,8 +1228,8 @@ function CountryProfile(props: Props) {
                                         // min={mapTimeRangeBounds[0]}
                                         // max={mapTimeRangeBounds[1]}
                                         min={0}
-                                        max={11}
-                                        labelDescription={`${monthList[startDate.getMonth()]} ${startDate.getFullYear()} - ${monthList[endDate.getMonth()]} ${endDate.getFullYear()}`}
+                                        max={12}
+                                        labelDescription={`${monthList[iduFilterStartDate.getMonth()]} ${iduFilterStartDate.getFullYear()} - ${monthList[iduFilterEndDate.getMonth()]} ${iduFilterEndDate.getFullYear()}`}
                                         step={1}
                                         minDistance={0}
                                         value={mapTimeMonthRange}

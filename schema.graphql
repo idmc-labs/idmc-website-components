@@ -14,7 +14,7 @@ type IduData {
   displacement_type: DisplacementType
   qualifier: String
   figure: Int!
-  displacment_date: String
+  displacement_date: String
   displacement_start_date: String
   displacement_end_date: String
   year: Int
