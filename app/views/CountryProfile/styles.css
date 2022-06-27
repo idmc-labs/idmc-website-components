@@ -131,6 +131,7 @@
 
                 .conflict-button {
                     background-color: var(--color-conflict);
+                    height: 2.5rem;
                 }
 
                 .disaster-header {
@@ -143,6 +144,7 @@
 
                 .disaster-button {
                     background-color: var(--color-disaster);
+                    height: 2.5rem;
                 }
 
                 .infographics {
@@ -253,7 +255,6 @@
                             gap: var(--tui-spacing-small);
                             height: 3rem;
                         }
-
                     }
                     .number-legend {
                         display: flex;
@@ -267,9 +268,12 @@
                             gap: var(--tui-spacing-small);
                             height: 3rem;
                         }
-
+                        @media (max-width: 1000px) {
+                            .legend-element-list {
+                                gap: var(--tui-spacing-extra-extra-small);
+                            }
+                        }
                     }
-
 
                     .time-range-container {
                         display: flex;
@@ -286,6 +290,10 @@
                             padding-right: var(--tui-spacing-extra-large);
                         }
                     }
+                }
+                .disaster-button {
+                    background-color: var(--color-background-dark);
+                    height: 2.5rem;
                 }
             }
 
@@ -362,8 +370,15 @@
     .select-input {
         .input-section {
             border-radius: 0.25rem;
-            background-color:var(--tui-filter-background-color);
-            height: 3rem;
+            background-color: var(--tui-filter-background-color);
+            height: 2.5rem;
+
+            >*{
+                padding-right: 0;
+                width: 4.5rem;
+            }:hover{
+                background-color: unset;
+            }
         }
     }
     @media (max-width: 1000px) {

@@ -1297,6 +1297,7 @@ function CountryProfile(props: Props) {
                                 <Button
                                     name={undefined}
                                     onClick={handleExportIduClick}
+                                    className={styles.disasterButton}
                                     icons={(
                                         <IoDownloadOutline />
                                     )}
@@ -1306,6 +1307,7 @@ function CountryProfile(props: Props) {
                                 <ButtonLikeLink
                                     href={giddLink}
                                     target="_blank"
+                                    className={styles.disasterButton}
                                     rel="noopener noreferrer"
                                     icons={(
                                         <IoExitOutline />

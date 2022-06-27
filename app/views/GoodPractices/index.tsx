@@ -1067,7 +1067,6 @@ function GoodPractices(props: Props) {
                                         <Tab name="grid">
                                             <IoGridOutline />
                                         </Tab>
-                                        {/* <div className={styles.gridSeparator} /> */}
                                         <Tab name="list">
                                             <IoListOutline />
                                         </Tab>
