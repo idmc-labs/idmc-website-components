@@ -161,11 +161,11 @@
                         >*{
                             padding-right: 0;
                             width: 4.5rem;
-                        }:hover{
+                        }
+                        :hover{
                             background-color: unset;
                         }
                     }
-
                     .label {
                         padding-left: var(--tui-spacing-extra-small-small);
                         color: var(--tui-color-label);
@@ -317,6 +317,19 @@
 
         .radio-list {
             flex-direction: column;
+        }
+    }
+    @media (max-width: 1000px) {
+        .input-section {
+            margin-right: var(--tui-spacing-medium);
+            border-radius: 0.25rem;
+            height: 3rem;
+            >*{
+                padding-right: 0;
+                width: 4.5rem;
+            }:hover{
+                background-color: unset;
+            }
         }
     }
 }
