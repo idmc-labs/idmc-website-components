@@ -225,6 +225,7 @@
 
                 >* {
                     flex-basis: 0;
+                    padding-right: var(--tui-spacing-ultra-small);
                     min-width: 20rem;
                 }
             }

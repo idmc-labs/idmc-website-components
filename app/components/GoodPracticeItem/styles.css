@@ -6,6 +6,7 @@
         width: auto;
         max-width: 12rem;
         height: 12rem;
+        max-height: 19.9rem;
         object-fit: cover;
         object-position: top center;
     }
