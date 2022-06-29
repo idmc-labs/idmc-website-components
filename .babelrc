@@ -18,6 +18,7 @@
                 "#utils": "./app/utils",
                 "#views": "./app/views",
                 "#base": "./app/Base",
+                "#hooks": "./app/hooks"
             },
         }],
 

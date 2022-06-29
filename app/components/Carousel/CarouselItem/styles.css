@@ -6,18 +6,14 @@
         top: 0;
         right: 0;
         background-color: rgba(0, 0, 0, 0.7);
-        padding: var(--dui-spacing-small);
-        color: var(--dui-color-text-on-dark);
+        padding: var(--tui-spacing-small);
+        color: var(--tui-color-text-on-dark);
     }
 }
 
-.modal-backdrop {
-    z-index: 1111;
-
-    .expanded-modal {
-        width: 100%!important;
-        max-width: 96vw;
-        height: 100%!important;
-        max-height: 98vh;
-    }
+.expanded-modal {
+    width: 100%!important;
+    max-width: 96vw;
+    height: 100%!important;
+    max-height: 98vh;
 }

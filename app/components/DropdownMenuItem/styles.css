@@ -1,0 +1,36 @@
+.dropdown-menu-item {
+    --spacing: var(--tui-spacing-medium);
+
+    display: flex;
+    padding: calc(var(--spacing) / 2) var(--spacing);
+    width: 100%;
+    text-decoration: none;
+    color: inherit;
+    gap: var(--spacing);
+
+    &:hover {
+        background-color: var(--tui-color-background-hover);
+    }
+
+    &.no-spacing {
+        --spacing: 0;
+    }
+
+    &.compact-spacing {
+        --spacing: var(--tui-spacing-small);
+    }
+
+    &.comfortable-spacing {
+        --spacing: var(--tui-spacing-medium);
+    }
+
+    &.loose-spacing {
+        --spacing: var(--tui-spacing-large);
+    }
+}
+
+.separator {
+    margin: var(--tui-spacing-extra-small) 0;
+    border: var(--tui-width-separator-thin) solid var(--tui-color-separator);
+    border-bottom: none;
+}

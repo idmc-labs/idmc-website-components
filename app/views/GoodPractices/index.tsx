@@ -17,14 +17,9 @@ import {
 import {
     TextInput,
     MultiSelectInput,
-    ListView,
-    DropdownMenu,
-    DropdownMenuItem,
     Modal,
     RadioInput,
-    useInputState,
-    useBooleanState,
-} from '@the-deep/deep-ui';
+} from '@togglecorp/toggle-ui';
 import Map, {
     MapContainer,
     MapSource,
@@ -50,21 +45,32 @@ import {
     IoArrowDown,
     IoArrowUp,
     IoFilter,
+    IoGridOutline,
+    IoListOutline,
 } from 'react-icons/io5';
 
+import Tabs from '#components/Tabs';
+import Tab from '#components/Tabs/Tab';
+import TabList from '#components/Tabs/TabList';
+import TabPanel from '#components/Tabs/TabPanel';
 import Button from '#components/Button';
 import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
+import ListView from '#components/ListView';
+import DropdownMenu from '#components/DropdownMenu';
+import DropdownMenuItem from '#components/DropdownMenuItem';
 import EllipsizedContent from '#components/EllipsizedContent';
 import CollapsibleContent from '#components/CollapsibleContent';
 import GoodPracticeItem from '#components/GoodPracticeItem';
 import SliderInput from '#components/SliderInput';
 import DismissableListOutput from '#components/DismissableListOutput';
+import useBooleanState from '#hooks/useBooleanState';
+import useInputState from '#hooks/useInputState';
 
-import useDebouncedValue from '../../hooks/useDebouncedValue';
-import useDocumentSize from '../../hooks/useDocumentSize';
+import useDebouncedValue from '#hooks/useDebouncedValue';
+import useDocumentSize from '#hooks/useDocumentSize';
+
 import backgroundImage from '../../resources/img/backgroundImage.png';
-
 import styles from './styles.css';
 
 const GOOD_PRACTICE_PAGE_SIZE = 6;
@@ -296,6 +302,7 @@ function GoodPractices(props: Props) {
     ), [orderingOptionValue]);
 
     const [expandedFaq, setExpandedFaq] = useState<string>();
+    const [activeTab, setActiveTab] = useState<'grid' | 'list' | undefined>('grid');
     const [searchText, setSearchText] = useState<string>();
     const windowSize = useDocumentSize();
     const isSmallDisplay = windowSize.width < 600;
@@ -499,10 +506,26 @@ function GoodPractices(props: Props) {
         GoodPracticeMapQueryVariables
     >(GOOD_PRACTICE_MAP);
 
-    const goodPracticeRendererParams = useCallback((
+    const goodPracticeListRendererParams = useCallback((
         _: string,
         d: GoodPracticeItemType | undefined,
     ) => ({
+        className: styles.goodPracticeList,
+        goodPracticeId: d?.id,
+        description: d?.description,
+        title: d?.title,
+        startYear: d?.startYear,
+        endYear: d?.endYear,
+        image: d?.image?.url,
+        countries: unique(d?.countries?.map((t) => t.name) ?? []).join(', '),
+        regions: unique(d?.countries?.map((t) => t.goodPracticeRegionLabel) ?? []).join(', '),
+    }), []);
+
+    const goodPracticeGridRendererParams = useCallback((
+        _: string,
+        d: GoodPracticeItemType | undefined,
+    ) => ({
+        className: styles.goodPracticeGrid,
         goodPracticeId: d?.id,
         description: d?.description,
         title: d?.title,
@@ -582,7 +605,6 @@ function GoodPractices(props: Props) {
                 <MultiSelectInput
                     labelContainerClassName={styles.label}
                     label="Type of Good Practice"
-                    variant="general"
                     placeholder="Type of Good Practice"
                     name="type"
                     value={goodPracticeType}
@@ -596,7 +618,6 @@ function GoodPractices(props: Props) {
             {regionFilterOptions && regionFilterOptions.length > 0 && (
                 <MultiSelectInput
                     labelContainerClassName={styles.label}
-                    variant="general"
                     placeholder="Region"
                     label="Region"
                     name="region"
@@ -611,7 +632,6 @@ function GoodPractices(props: Props) {
             {countryFilterOptions && countryFilterOptions.length > 0 && (
                 <MultiSelectInput
                     labelContainerClassName={styles.label}
-                    variant="general"
                     placeholder="Country"
                     label="Country"
                     name="country"
@@ -626,7 +646,6 @@ function GoodPractices(props: Props) {
             {driverFilterOptions && driverFilterOptions.length > 0 && (
                 <MultiSelectInput
                     labelContainerClassName={styles.label}
-                    variant="general"
                     placeholder="Drivers of Displacement"
                     label="Drivers of Displacement"
                     name="driversOfDisplacement"
@@ -641,7 +660,6 @@ function GoodPractices(props: Props) {
             {areaFilterOptions && areaFilterOptions.length > 0 && (
                 <MultiSelectInput
                     labelContainerClassName={styles.label}
-                    variant="general"
                     placeholder="Focus Area"
                     label="Focus Area"
                     name="focusArea"
@@ -656,7 +674,6 @@ function GoodPractices(props: Props) {
             {stageFilterOptions && stageFilterOptions.length > 0 && (
                 <MultiSelectInput
                     labelContainerClassName={styles.label}
-                    variant="general"
                     placeholder="Stage"
                     label="Stage"
                     name="stage"
@@ -675,7 +692,6 @@ function GoodPractices(props: Props) {
         <div className={styles.searchAndTimeRangeContainer}>
             <TextInput
                 labelContainerClassName={styles.label}
-                variant="general"
                 inputSectionClassName={styles.inputSection}
                 className={className}
                 name="search"
@@ -1003,25 +1019,6 @@ function GoodPractices(props: Props) {
                         <div />
                     </div>
                     <div className={styles.separator} />
-                    {goodPracticeList && !isSmallDisplay && (
-                        <div className={styles.orderingContainer}>
-                            <DropdownMenu
-                                className={styles.orderDropdown}
-                                label={`Sort: ${orderingOptions[orderingOptionValue]}`}
-                                variant="transparent"
-                            >
-                                {orderingOptionKeys.map((ok) => (
-                                    <DropdownMenuItem
-                                        key={ok}
-                                        name={ok}
-                                        onClick={setOrderingOptionValue}
-                                    >
-                                        {orderingOptions[ok]}
-                                    </DropdownMenuItem>
-                                ))}
-                            </DropdownMenu>
-                        </div>
-                    )}
                     {isSmallDisplay && (
                         <div className={styles.mobileActions}>
                             <Button
@@ -1038,12 +1035,12 @@ function GoodPractices(props: Props) {
                                     headingClassName={styles.heading}
                                     className={styles.mobileFilterModal}
                                     bodyClassName={styles.content}
-                                    onCloseButtonClick={setShowFilterModalFalse}
+                                    onClose={setShowFilterModalFalse}
                                 >
                                     <RadioInput
                                         labelContainerClassName={styles.label}
                                         listContainerClassName={styles.radioList}
-                                        name={undefined}
+                                        name="sort"
                                         label="Sort Results by"
                                         options={orderingOptionList}
                                         onChange={setOrderingOptionValue}
@@ -1058,27 +1055,87 @@ function GoodPractices(props: Props) {
                             )}
                         </div>
                     )}
-                    <ListView
-                        className={styles.goodPracticeList}
-                        data={goodPracticeList}
-                        keySelector={goodPracticekeySelector}
-                        rendererParams={goodPracticeRendererParams}
-                        renderer={GoodPracticeItem}
-                        errored={!!goodPracticeError}
-                        pending={goodPracticeLoading}
-                        messageShown
-                        filtered={false}
-                        emptyMessage={(
-                            <div>
-                                No Good Practice Found
-                            </div>
-                        )}
-                        filteredEmptyMessage={(
-                            <div>
-                                No Good Practice Found
-                            </div>
-                        )}
-                    />
+                    <div className={styles.gridContainer}>
+                        <Tabs
+                            value={activeTab}
+                            onChange={setActiveTab}
+                            // variant="accent"
+                        >
+                            {goodPracticeList && !isSmallDisplay && (
+                                <div className={styles.orderingContainer}>
+                                    <TabList>
+                                        <Tab name="grid">
+                                            <IoGridOutline />
+                                        </Tab>
+                                        <Tab name="list">
+                                            <IoListOutline />
+                                        </Tab>
+                                    </TabList>
+                                    <DropdownMenu
+                                        className={styles.orderDropdown}
+                                        label={`Sort: ${orderingOptions[orderingOptionValue]}`}
+                                        variant="transparent"
+                                    >
+                                        {orderingOptionKeys.map((ok) => (
+                                            <DropdownMenuItem
+                                                key={ok}
+                                                name={ok}
+                                                onClick={setOrderingOptionValue}
+                                            >
+                                                {orderingOptions[ok]}
+                                            </DropdownMenuItem>
+                                        ))}
+                                    </DropdownMenu>
+                                </div>
+                            )}
+                            <TabPanel name="grid">
+                                <ListView
+                                    className={styles.goodPracticeList}
+                                    data={goodPracticeList}
+                                    keySelector={goodPracticekeySelector}
+                                    rendererParams={goodPracticeListRendererParams}
+                                    renderer={GoodPracticeItem}
+                                    errored={!!goodPracticeError}
+                                    pending={goodPracticeLoading}
+                                    messageShown
+                                    filtered={false}
+                                    emptyMessage={(
+                                        <div>
+                                            No Good Practice Found
+                                        </div>
+                                    )}
+                                    filteredEmptyMessage={(
+                                        <div>
+                                            No Filtered Good Practice Found
+                                        </div>
+                                    )}
+                                />
+                            </TabPanel>
+                            <TabPanel name="list">
+                                <ListView
+                                    className={styles.goodPracticeGrid}
+                                    data={goodPracticeList}
+                                    keySelector={goodPracticekeySelector}
+                                    rendererParams={goodPracticeGridRendererParams}
+                                    renderer={GoodPracticeItem}
+                                    errored={!!goodPracticeError}
+                                    pending={goodPracticeLoading}
+                                    messageShown
+                                    filtered={false}
+                                    emptyMessage={(
+                                        <div>
+                                            No Good Practice Found
+                                        </div>
+                                    )}
+                                    filteredEmptyMessage={(
+                                        <div>
+                                            No Filtered Good Practice Found
+                                        </div>
+                                    )}
+                                />
+                            </TabPanel>
+                        </Tabs>
+                    </div>
                     <div className={styles.viewButtons}>
                         {goodPracticeList && maxLimitShow >= (
                             GOOD_PRACTICE_PAGE_SIZE + goodPracticesOffset

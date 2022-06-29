@@ -5,7 +5,7 @@ import React, {
 } from 'react';
 import {
     MultiSelectInput,
-} from '@the-deep/deep-ui';
+} from '@togglecorp/toggle-ui';
 import {
     gql,
     useQuery,
@@ -81,7 +81,7 @@ import Container from '#components/Container';
 import TooltipIcon from '#components/TooltipIcon';
 import DisplacementIcon from '#components/DisplacementIcon';
 
-import { formatNumber } from '#utils/common';
+import { formatNumber, monthList } from '#utils/common';
 
 import useDebouncedValue from '../../hooks/useDebouncedValue';
 import useInputState from '../../hooks/useInputState';
@@ -136,10 +136,11 @@ type DisplacementNumber = 'less-than-100' | 'less-than-1000' | 'more-than-1000';
 
 const disasterCategoryKeySelector = (d: CategoryStatisticsType) => d.label;
 
-// constants
+const today = new Date();
+
 const START_YEAR = 2008;
 const END_YEAR = 2021;
-const END_YEAR_FOR_IDU = (new Date()).getFullYear();
+const END_YEAR_FOR_IDU = today.getFullYear();
 const MAX_IDU_ITEMS = 8;
 
 const giddLink = suffixDrupalEndpoing('/database/displacement-data');
@@ -247,7 +248,7 @@ const IDU_DATA = gql`
             displacement_type
             qualifier
             figure
-            displacment_date
+            displacement_date
             displacement_start_date
             displacement_end_date
             year
@@ -351,6 +352,10 @@ function CountryProfile(props: Props) {
     */
     const [mapTimeRangeActual, setMapTimeRange] = useState<[number, number]>(
         [START_YEAR, END_YEAR_FOR_IDU],
+    );
+
+    const [mapTimeMonthRange, setMapTimeMonthRange] = useState<[number, number]>(
+        [0, 12],
     );
     const mapTimeRange = useDebouncedValue(mapTimeRangeActual);
     const [
@@ -500,7 +505,45 @@ function CountryProfile(props: Props) {
         Number(data?.relatedMaterials?.pager?.total_items || '0') - relatedMaterialPageSize,
     );
 
+    const [iduFilterStartDate, iduFilterEndDate] = useMemo(
+        () => {
+            const lastYearToday = new Date(today);
+            lastYearToday.setMonth(lastYearToday.getMonth() - 12);
+
+            const filterStartDate = new Date(
+                lastYearToday.getFullYear(),
+                lastYearToday.getMonth(),
+                1,
+            );
+            filterStartDate.setMonth(filterStartDate.getMonth() + mapTimeMonthRange[0]);
+
+            const filterEndDate = new Date(
+                lastYearToday.getFullYear(),
+                lastYearToday.getMonth(),
+                1,
+            );
+            filterEndDate.setMonth(filterEndDate.getMonth() + 1 + mapTimeMonthRange[1]);
+            filterEndDate.setSeconds(filterEndDate.getSeconds() - 1);
+
+            return [filterStartDate, filterEndDate] as const;
+        },
+        [mapTimeMonthRange],
+    );
+
     const idus = iduData?.idu;
+    const idusForMap = React.useMemo(() => (
+        idus?.filter((d) => {
+            if (isNotDefined(d.displacement_date)) {
+                return false;
+            }
+
+            const displacementDate = new Date(d.displacement_date);
+
+            return displacementDate.getTime() >= iduFilterStartDate.getTime()
+                && displacementDate.getTime() <= iduFilterEndDate.getTime();
+        })
+    ), [idus, iduFilterStartDate, iduFilterEndDate]);
+
     const countryInfo = countryProfileData?.country;
 
     const countryOverviewSortedByYear = useMemo(() => {
@@ -752,6 +795,7 @@ function CountryProfile(props: Props) {
             filters={(
                 <>
                     <SliderInput
+                        className={styles.timeRangeContainer}
                         hideValues
                         min={START_YEAR}
                         max={END_YEAR}
@@ -769,7 +813,6 @@ function CountryProfile(props: Props) {
                             <MultiSelectInput
                                 className={styles.selectInput}
                                 inputSectionClassName={styles.inputSection}
-                                variant="general"
                                 placeholder="Disaster Category"
                                 name="disasterCategory"
                                 value={disasterCategories}
@@ -911,6 +954,7 @@ function CountryProfile(props: Props) {
             filters={(
                 <>
                     <SliderInput
+                        className={styles.timeRangeContainer}
                         hideValues
                         min={START_YEAR}
                         labelDescription={`${conflictTimeRangeActual[0]} - ${conflictTimeRangeActual[1]}`}
@@ -1183,16 +1227,16 @@ function CountryProfile(props: Props) {
                                         className={styles.timeRangeInput}
                                         // min={mapTimeRangeBounds[0]}
                                         // max={mapTimeRangeBounds[1]}
-                                        min={START_YEAR}
-                                        max={END_YEAR_FOR_IDU}
-                                        labelDescription={`${mapTimeRangeActual[0]} - ${mapTimeRangeActual[1]}`}
+                                        min={0}
+                                        max={12}
+                                        labelDescription={`${monthList[iduFilterStartDate.getMonth()]} ${iduFilterStartDate.getFullYear()} - ${monthList[iduFilterEndDate.getMonth()]} ${iduFilterEndDate.getFullYear()}`}
                                         step={1}
                                         minDistance={0}
-                                        value={mapTimeRangeActual}
-                                        onChange={setMapTimeRange}
+                                        value={mapTimeMonthRange}
+                                        onChange={setMapTimeMonthRange}
                                     />
                                 </div>
-                                <div className={styles.legend}>
+                                <div className={styles.displacementLegend}>
                                     <Header
                                         headingSize="extraSmall"
                                         heading="Type of Displacement"
@@ -1214,7 +1258,7 @@ function CountryProfile(props: Props) {
                                         />
                                     </div>
                                 </div>
-                                <div className={styles.legend}>
+                                <div className={styles.numberLegend}>
                                     <Header
                                         headingSize="extraSmall"
                                         heading="No. of Displacement"
@@ -1253,6 +1297,7 @@ function CountryProfile(props: Props) {
                                 <Button
                                     name={undefined}
                                     onClick={handleExportIduClick}
+                                    className={styles.disasterButton}
                                     icons={(
                                         <IoDownloadOutline />
                                     )}
@@ -1262,6 +1307,7 @@ function CountryProfile(props: Props) {
                                 <ButtonLikeLink
                                     href={giddLink}
                                     target="_blank"
+                                    className={styles.disasterButton}
                                     rel="noopener noreferrer"
                                     icons={(
                                         <IoExitOutline />
@@ -1273,7 +1319,7 @@ function CountryProfile(props: Props) {
                         )}
                     >
                         <IduMap
-                            idus={idus}
+                            idus={idusForMap}
                             boundingBox={countryInfo?.boundingBox as LngLatBounds | undefined}
                             mapTypeOfDisplacements={mapTypeOfDisplacements}
                             mapNoOfDisplacements={mapNoOfDisplacements}

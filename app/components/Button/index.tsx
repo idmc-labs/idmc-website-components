@@ -55,7 +55,7 @@ export function useButtonFeatures(props: {
     };
 }
 
-interface Props<N> extends RawButtonProps<N> {
+export interface Props<N> extends RawButtonProps<N> {
     onClick?: (name: N, e: React.MouseEvent<HTMLButtonElement>) => void;
     icons?: React.ReactNode;
     actions?: React.ReactNode;

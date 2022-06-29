@@ -2,10 +2,10 @@
     display: flex;
     position: relative;
     z-index: 0;
-    gap: var(--dui-spacing-medium);
+    margin: auto 0;
 
     .heading-description {
-        color: var(--dui-color-text-label);
+        color: var(--tui-color-text-label);
     }
 
     .react-slider {
@@ -13,7 +13,7 @@
         height: 2ch;
 
         .thumb {
-            border: 2px solid var(--dui-color-brand);
+            border: 2px solid var(--tui-color-brand);
             border-radius: 50%;
             background-color: var(--color-foreground);
             cursor: grab;
@@ -24,11 +24,11 @@
 
         .track {
             top: 1ch;
-            background-color: var(--dui-color-separator);
+            background-color: var(--tui-color-separator);
             height: 2px;
 
             &.center {
-                background-color: var(--dui-color-brand);
+                background-color: var(--tui-color-brand);
             }
         }
 
@@ -37,8 +37,8 @@
             transition: opacity .2s ease-in-out;
             opacity: 0.3;
             border-radius: 50%;
-            background-color: var(--dui-color-brand);
-            width: var(--dui-width-separator-thin);
+            background-color: var(--tui-color-brand);
+            width: var(--tui-width-separator-thin);
             height: 1.5ch;
         }
     }

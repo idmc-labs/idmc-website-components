@@ -6,7 +6,7 @@ import ReactGA from 'react-ga';
 import { listToMap } from '@togglecorp/fujs';
 
 import 'mapbox-gl/dist/mapbox-gl.css';
-import '@the-deep/deep-ui/build/esm/index.css';
+import '@togglecorp/toggle-ui/build/index.css';
 
 import { setMapboxToken } from '@togglecorp/re-map';
 

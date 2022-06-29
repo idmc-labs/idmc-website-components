@@ -4,46 +4,46 @@
     text-transform: unset; /* durpal has set text-transform on h2*/
     line-height: 1.5; /* durpal has set line-height on h1..hn*/
     color: var(--color-text);
-    font-family: var(--dui-font-family-heading);
-    font-weight: var(--dui-font-weight-heading);
+    font-family: var(--tui-font-family-heading);
+    font-weight: var(--tui-font-weight-heading);
 
     &.dark-mode {
         color: var(--color-text-on-dark);
     }
 
     &.extra-large {
-        font-size: var(--dui-font-size-mega-large);
+        font-size: var(--tui-font-size-mega-large);
     }
 
     &.large {
-        font-size: var(--dui-font-size-super-large);
+        font-size: var(--tui-font-size-super-large);
     }
 
     &.medium {
-        font-size: var(--dui-font-size-extra-large);
+        font-size: var(--tui-font-size-extra-large);
     }
 
     &.small {
-        font-size: var(--dui-font-size-large);
+        font-size: var(--tui-font-size-large);
     }
 
     &.small-alt {
         line-height: 1.33;
-        font-family: var(--dui-font-family-sans-serif);
-        font-size: var(--dui-font-size-large);
+        font-family: var(--tui-font-family-sans-serif);
+        font-size: var(--tui-font-size-large);
     }
 
     &.extra-small {
-        font-family: var(--dui-font-family-sans-serif);
-        font-size: var(--dui-font-size-medium);
+        font-family: var(--tui-font-family-sans-serif);
+        font-size: var(--tui-font-size-medium);
     }
 
     .border {
         position: absolute;
         bottom: 0;
         left: 0;
-        background-color: var(--dui-color-brand);
+        background-color: var(--tui-color-brand);
         width: 2ch;
-        height: var(--dui-width-separator-thick);
+        height: var(--tui-width-separator-thick);
     }
 }
