@@ -72,6 +72,7 @@ function CarouselItem(props: Props) {
                     className={styles.expandedModal}
                     bodyClassName={expandedClassName}
                     onClose={setIsExpandedFalse}
+                    size="cover"
                 >
                     {children}
                 </Modal>
