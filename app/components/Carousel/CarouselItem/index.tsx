@@ -68,7 +68,7 @@ function CarouselItem(props: Props) {
             </div>
             {isExpanded && (
                 <Modal
-                    // backdropClassName={styles.modalBackdrop}
+                    backdropClassName={styles.modalBackdrop}
                     className={styles.expandedModal}
                     bodyClassName={expandedClassName}
                     onClose={setIsExpandedFalse}
