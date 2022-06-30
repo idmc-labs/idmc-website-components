@@ -2817,10 +2817,10 @@
     immer "^7.0.5"
     resize-observer-polyfill "^1.5.1"
 
-"@togglecorp/toggle-ui@0.14.2-beta.8":
-  version "0.14.2-beta.8"
-  resolved "https://registry.yarnpkg.com/@togglecorp/toggle-ui/-/toggle-ui-0.14.2-beta.8.tgz#3e7e71e4161291ddb7ec3248e6f5f96f4a37dfeb"
-  integrity sha512-HQxTgINX3Y723lZmQkAbYzC1ZGth5fBubI2vOf+Hjgq+x6xbUV3f/xjZAujDS2w/yLEswO7k32Hu+Nc5b0smVQ==
+"@togglecorp/toggle-ui@0.14.2-beta.10":
+  version "0.14.2-beta.10"
+  resolved "https://registry.yarnpkg.com/@togglecorp/toggle-ui/-/toggle-ui-0.14.2-beta.10.tgz#c22cfcdeedfc5ff7ba5b476d190b28fbb4ed653f"
+  integrity sha512-dE/1i/RQvKznZynrmkckM+DQdMLQl2wBG76cZtpUE62rZXdpLdDoa6WUGpyrFUsn2jhZe9T47K1Py32pe8HQjw==
   dependencies:
     "@babel/runtime-corejs3" "^7.11.2"
     "@tanem/svg-injector" "^10.1.12"
