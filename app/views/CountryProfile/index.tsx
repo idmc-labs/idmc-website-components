@@ -232,12 +232,12 @@ const DISASTER_DATA = gql`
 `;
 
 const IDU_DATA = gql`
-    query IduData($country: String!) {
-        idu(country: $country) @rest(
+    query IduData {
+        idu @rest(
             type: "[IduData]",
             method: "GET",
             endpoint: "helix",
-            path: "/data/idus_view_flat_cached?iso3=eq.:country&order=displacement_start_date.desc,displacement_end_date.desc"
+            path: "/external-api/idus"
         ) {
             id
             country
@@ -465,9 +465,6 @@ function CountryProfile(props: Props) {
     } = useQuery<IduDataQuery, IduDataQueryVariables>(
         IDU_DATA,
         {
-            variables: {
-                country: currentCountry,
-            },
             onCompleted: (response) => {
                 if (!response.idu || response.idu.length <= 0) {
                     return;
@@ -530,7 +527,10 @@ function CountryProfile(props: Props) {
         [mapTimeMonthRange],
     );
 
-    const idus = iduData?.idu;
+    const idus = React.useMemo(() => (
+        iduData?.idu.filter((item) => item.iso3 === currentCountry)
+    ), [currentCountry, iduData]);
+
     const idusForMap = React.useMemo(() => (
         idus?.filter((d) => {
             if (isNotDefined(d.displacement_date)) {
