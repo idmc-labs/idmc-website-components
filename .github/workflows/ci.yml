@@ -58,7 +58,7 @@ jobs:
       - name: 🤞 Run Build 🧪
         env:
             DOCKER_IMAGE: ${{ steps.prep.outputs.tagged_image }}
-            REACT_APP_HELIX_ENDPOINT: https://backend.idmcdb.org
+            REACT_APP_HELIX_ENDPOINT: https://helix-tools-api.idmcdb.org
             REACT_APP_REST_ENDPOINT: https://gidd-api.idmcdb.org/api
             REACT_APP_GRAPHQL_ENDPOINT: https://gidd-api.idmcdb.org/graphql/
             REACT_APP_ENVIRONMENT: prod

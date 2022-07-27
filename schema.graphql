@@ -62,7 +62,7 @@ type RelatedMaterials {
 }
 
 type Query {
-  idu(country: String!): [IduData!]!
+  idu: [IduData!]!
   relatedMaterials(countryName: String!, offset: Int!, itemsPerPage: Int!): RelatedMaterials!
 }
 

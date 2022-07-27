@@ -15,7 +15,7 @@ const restLink = new RestLink({
         helix: HELIX_ENDPOINT,
         drupal: DRUPAL_ENDPOINT,
     },
-    credentials: 'include',
+    credentials: 'omit',
 }) as unknown as ApolloLinkFromClient;
 
 /*
