@@ -237,7 +237,7 @@ const IDU_DATA = gql`
             type: "[IduData]",
             method: "GET",
             endpoint: "helix",
-            path: "/external-api/idus"
+            path: "/external-api/idus?client_id=IDMCWSHSOLO009"
         ) {
             id
             country
