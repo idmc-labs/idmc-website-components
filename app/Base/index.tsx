@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 // import { Router } from 'react-router-dom';
 import { init, ErrorBoundary } from '@sentry/react';
 import { ApolloClient, ApolloProvider } from '@apollo/client';
@@ -19,12 +19,14 @@ import CountryProfile from '#views/CountryProfile';
 import GoodPractice from '#views/GoodPractice';
 import GoodPractices from '#views/GoodPractices';
 
+import LanguageContext, { Lang } from '#context/LanguageContext';
 import PreloadMessage from '#base/components/PreloadMessage';
 import browserHistory from '#base/configs/history';
 import sentryConfig from '#base/configs/sentry';
 import apolloConfig from '#base/configs/apollo';
 import { trackingId, gaConfig } from '#base/configs/googleAnalytics';
 import { mapboxToken } from '#base/configs/env';
+import useLocalStorage from '#hooks/useLocalStorage';
 
 import styles from './styles.css';
 
@@ -81,6 +83,14 @@ const currentCountryName = (window as Win).countryName
 const currentId = (window as Win).id || query.id;
 
 function Base() {
+    const [lang, setLang] = useState<Lang>('fr');
+
+    const languageContext = useMemo(() => ({
+        lang,
+        setLang,
+        debug: false,
+    }), [lang, setLang]);
+
     const page = useMemo(
         () => {
             if (currentPage === 'country-profile' && currentCountry) {
@@ -155,7 +165,9 @@ function Base() {
                 )}
             >
                 <ApolloProvider client={apolloClient}>
-                    {page}
+                    <LanguageContext.Provider value={languageContext}>
+                        {page}
+                    </LanguageContext.Provider>
                 </ApolloProvider>
             </ErrorBoundary>
         </div>
