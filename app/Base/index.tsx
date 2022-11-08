@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 // import { Router } from 'react-router-dom';
 import { init, ErrorBoundary } from '@sentry/react';
 import { ApolloClient, ApolloProvider } from '@apollo/client';
@@ -83,13 +83,21 @@ const currentCountryName = (window as Win).countryName
 const currentId = (window as Win).id || query.id;
 
 function Base() {
-    const [lang, setLang] = useState<Lang>('fr');
+    const [lang, setLang] = useLocalStorage<Lang>('idmc-website-language', 'en', false);
+
+    const handleLanguageChange = useCallback((newLang: Lang) => {
+        setLang(newLang);
+        window.location.reload();
+    }, [setLang]);
 
     const languageContext = useMemo(() => ({
         lang,
-        setLang,
+        setLang: handleLanguageChange,
         debug: false,
-    }), [lang, setLang]);
+    }), [
+        lang,
+        handleLanguageChange,
+    ]);
 
     const page = useMemo(
         () => {

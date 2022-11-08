@@ -1,0 +1,22 @@
+.language-selection-input {
+    display: flex;
+
+    .button {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+
+        &.active {
+            .label {
+                text-decoration: underline;
+            }
+        }
+
+        &:not(:last-child) {
+            &:after {
+                padding: var(--tui-spacing-extra-small);
+                content: '|';
+            }
+        }
+    }
+}

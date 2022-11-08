@@ -60,6 +60,7 @@ import ListView from '#components/ListView';
 import DropdownMenu from '#components/DropdownMenu';
 import DropdownMenuItem from '#components/DropdownMenuItem';
 import EllipsizedContent from '#components/EllipsizedContent';
+import LanguageSelectionInput from '#components/LanguageSelectInput';
 import CollapsibleContent from '#components/CollapsibleContent';
 import GoodPracticeItem from '#components/GoodPracticeItem';
 import SliderInput from '#components/SliderInput';
@@ -819,6 +820,9 @@ function GoodPractices(props: Props) {
                         >
                             {strings.findGoodPracticesButtonLabel}
                         </Button>
+                        <LanguageSelectionInput
+                            className={styles.languageSelection}
+                        />
                     </div>
                 </section>
             </div>

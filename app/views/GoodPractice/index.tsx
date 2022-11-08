@@ -21,6 +21,7 @@ import TextOutput from '#components/TextOutput';
 import Carousel from '#components/Carousel';
 import CarouselItem from '#components/Carousel/CarouselItem';
 import CarouselButton from '#components/Carousel/CarouselButton';
+import LanguageSelectionInput from '#components/LanguageSelectInput';
 import GoodPracticeItem from '#components/GoodPracticeItem';
 
 import { goodPracticeItem } from '#base/configs/lang';
@@ -251,6 +252,9 @@ function GoodPractice(props: Props) {
                                 value={goodPracticeDescription}
                             />
                         </EllipsizedContent>
+                        <LanguageSelectionInput
+                            className={styles.languageSelection}
+                        />
                     </div>
                 </div>
             </div>
