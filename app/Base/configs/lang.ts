@@ -12,15 +12,15 @@ export interface LangStrings {
 export const commonLabels = {
     recentByPublicationLabel: {
         en: 'Year of Publication (Latest First)',
-        fr: 'Année de publication (le plus récent en premier)',
+        fr: 'Année de publication (La plus récente en premier)',
     },
     oldestByPublicationLabel: {
         en: 'Year of Publication (Oldest First)',
-        fr: 'Année de publication (la plus ancienne en premier)',
+        fr: 'Année de publication (La plus ancienne en premier)',
     },
     mostPopularFirstLabel: {
         en: 'Most Popular First',
-        fr: 'Le plus populaire en premier',
+        fr: 'Les plus populaires en premier',
     },
     leastPopularFirstLabel: {
         en: 'Least Popular First',
@@ -51,11 +51,11 @@ export const goodPracticesDashboard = {
     },
     findGoodPracticesButtonLabel: {
         en: 'Find Good Practices',
-        fr: 'Trouver les bonnes pratiques',
+        fr: 'Trouver des bonnes pratiques',
     },
     goodPracticesAroundTheWorldLabel: {
         en: 'Good practices around the world',
-        fr: 'Bonnes pratiques dans le monde',
+        fr: 'Les bonnes pratiques dans le monde',
     },
     goodPracticeLabel: {
         en: 'Good Practice: {value}',
@@ -63,7 +63,7 @@ export const goodPracticesDashboard = {
     },
     faqHeader: {
         en: 'Frequently asked questions',
-        fr: 'Questions fréquemment posées',
+        fr: 'Foire aux questions',
     },
     typeOfGoodPracticeHeader: {
         en: 'Type of Good Practice',
@@ -83,7 +83,7 @@ export const goodPracticesDashboard = {
     },
     focusAreaLabel: {
         en: 'Focus Area',
-        fr: 'Secteur d\'intérêt',
+        fr: 'Domaine d’intervention',
     },
     stageLabel: {
         en: 'Stage',
@@ -95,11 +95,11 @@ export const goodPracticesDashboard = {
     },
     searchFilterLabel: {
         en: 'Search Good Practice',
-        fr: 'Rechercher une bonne pratique',
+        fr: 'Chercher des bonnes pratiques',
     },
     timescaleLabel: {
         en: 'Timescale',
-        fr: 'Échelle de temps',
+        fr: 'Calendrier',
     },
     filterAndSortLabel: {
         en: 'Filter and Sort',
@@ -111,7 +111,7 @@ export const goodPracticesDashboard = {
     },
     sortLabel: {
         en: 'Sort',
-        fr: 'Trier',
+        fr: 'Tri',
     },
     noGoodPracticeFoundMessage: {
         en: 'No Good Practice Found',
@@ -174,6 +174,6 @@ export const goodPracticeItem = {
     },
     relatedMaterialsLabel: {
         en: 'Related materials',
-        fr: 'Matériaux connexes',
+        fr: 'Matériel connexe',
     },
 };
