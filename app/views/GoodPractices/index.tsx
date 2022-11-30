@@ -19,6 +19,7 @@ import {
     MultiSelectInput,
     Modal,
     RadioInput,
+    Pager,
 } from '@togglecorp/toggle-ui';
 import Map, {
     MapContainer,
@@ -42,8 +43,6 @@ import {
 import {
     IoSearch,
     IoClose,
-    IoArrowDown,
-    IoArrowUp,
     IoFilter,
     IoGridOutline,
     IoListOutline,
@@ -415,6 +414,9 @@ function GoodPractices(props: Props) {
         filterChoices?.countries,
     ], [filterChoices]);
 
+    const [activePage, setActivePage] = useState<number>(1);
+    const offsetForGoodPratices = (activePage - 1) * GOOD_PRACTICE_PAGE_SIZE;
+
     const [
         isFiltered,
         goodPracticeVariables,
@@ -439,7 +441,7 @@ function GoodPractices(props: Props) {
             startYear: yearRange[0],
             endYear: yearRange[1],
             limit: GOOD_PRACTICE_PAGE_SIZE,
-            offset: 0,
+            offset: offsetForGoodPratices,
             ordering,
         } as GoodPracticesQueryVariables,
     ]), [
@@ -454,6 +456,7 @@ function GoodPractices(props: Props) {
         yearRange,
         minYear,
         maxYear,
+        offsetForGoodPratices,
     ]);
 
     const goodPracticeFilterVariables = useDebouncedValue(
@@ -467,17 +470,13 @@ function GoodPractices(props: Props) {
 
     const {
         previousData,
-        fetchMore: fetchMoreGoodPractice,
         data: goodPracticeResponse = previousData,
         error: goodPracticeError,
         loading: goodPracticeLoading,
-        refetch: refetchGoodPractice,
     } = useQuery<GoodPracticesQuery, GoodPracticesQueryVariables>(
         GOOD_PRACTICES,
         { variables: goodPracticeFilterVariables },
     );
-
-    const maxLimitShow = goodPracticeResponse?.goodPractices?.totalCount ?? 0;
 
     const goodPracticeList = React.useMemo(() => {
         const list = goodPracticeResponse?.goodPractices?.results;
@@ -565,45 +564,6 @@ function GoodPractices(props: Props) {
         },
         [],
     );
-
-    const goodPractices = goodPracticeResponse?.goodPractices.results;
-    const goodPracticesOffset = goodPractices?.length ?? 0;
-
-    const handleShowMoreButtonClick = useCallback(() => {
-        fetchMoreGoodPractice({
-            variables: {
-                ...goodPracticeVariables,
-                offset: goodPracticesOffset,
-                limit: GOOD_PRACTICE_PAGE_SIZE,
-            },
-            updateQuery: (previousResult, { fetchMoreResult }) => {
-                if (!previousResult.goodPractices) {
-                    return previousResult;
-                }
-
-                return {
-                    ...previousResult,
-                    goodPractices: {
-                        ...previousResult.goodPractices,
-                        results: unique([
-                            ...previousResult.goodPractices.results,
-                            ...fetchMoreResult.goodPractices.results,
-                        ], (d) => d.id),
-                    },
-                };
-            },
-        });
-    }, [
-        goodPracticeVariables,
-        goodPracticesOffset,
-        fetchMoreGoodPractice,
-    ]);
-
-    const handleShowLessButtonClick = useCallback(() => {
-        refetchGoodPractice();
-    }, [
-        refetchGoodPractice,
-    ]);
 
     const orderingOptionKeys = React.useMemo(
         () => (Object.keys(orderingOptions) as OrderingOptionType[]),
@@ -899,11 +859,9 @@ function GoodPractices(props: Props) {
                                                 isExpanded={expandedFaq === faq.id}
                                                 header={faq?.question}
                                             >
-                                                <EllipsizedContent>
-                                                    <HTMLOutput
-                                                        value={faq.answer}
-                                                    />
-                                                </EllipsizedContent>
+                                                <HTMLOutput
+                                                    value={faq.answer}
+                                                />
                                             </CollapsibleContent>
                                             {i < (faqsResponse?.faqs.length - 1) && (
                                                 <div className={styles.separator} />
@@ -1161,39 +1119,15 @@ function GoodPractices(props: Props) {
                             </TabPanel>
                         </Tabs>
                     </div>
-                    <div className={styles.viewButtons}>
-                        {goodPracticeList && maxLimitShow >= (
-                            GOOD_PRACTICE_PAGE_SIZE + goodPracticesOffset
-                        ) && (
-                            // FIXME: need to hide this if there is no more good practice
-                            <Button
-                                className={styles.viewMoreButton}
-                                name={undefined}
-                                onClick={handleShowMoreButtonClick}
-                                disabled={goodPracticeLoading}
-                                variant="transparent"
-                                actions={<IoArrowDown />}
-                            >
-                                {strings.viewMoreButtonLabel}
-                            </Button>
-                        )}
-                        {(goodPracticeList && goodPracticeList.length
-                            > GOOD_PRACTICE_PAGE_SIZE) ? (
-                                <Button
-                                    className={styles.seeLessButton}
-                                    name={undefined}
-                                    onClick={handleShowLessButtonClick}
-                                    disabled={goodPracticeLoading}
-                                    variant="transparent"
-                                    actions={<IoArrowUp />}
-                                >
-                                    {strings.showLessButtonLabel}
-                                </Button>
-                            ) : (
-                                <div />
-                            )}
-                        <div />
-                        <div />
+                    <div className={styles.footer}>
+                        <Pager
+                            activePage={activePage}
+                            onActivePageChange={setActivePage}
+                            maxItemsPerPage={GOOD_PRACTICE_PAGE_SIZE}
+                            totalCapacity={3}
+                            itemsCount={goodPracticeResponse?.goodPractices?.totalCount ?? 0}
+                            itemsPerPageControlHidden
+                        />
                     </div>
                 </section>
             </div>
