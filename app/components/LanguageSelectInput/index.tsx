@@ -6,7 +6,11 @@ import LanguageContext, {
     LangOption,
     Lang,
     langKeySelector,
+    langLabelSelector,
 } from '#context/LanguageContext';
+
+import { commonLabels } from '#base/configs/lang';
+import useTranslation from '#hooks/useTranslation';
 
 import ListView from '../ListView';
 import RawButton from '../RawButton';
@@ -33,24 +37,30 @@ function LanguageSelectionInput(props: Props) {
             lang === langKey && styles.active,
             styles.button,
         ),
-        children: <div className={styles.label}>{langKeySelector(datum)}</div>,
+        children: <div className={styles.label}>{langLabelSelector(datum)}</div>,
         onClick: setLang,
     }), [
         setLang,
         lang,
     ]);
+    const commonStrings = useTranslation(commonLabels);
 
     return (
-        <ListView
-            keySelector={langKeySelector}
-            data={langOptions}
-            className={_cs(styles.languageSelectionInput, className)}
-            renderer={RawButton}
-            rendererParams={buttonRendererParams}
-            errored={false}
-            pending={false}
-            filtered={false}
-        />
+        <div className={_cs(styles.languageSelectionInput, className)}>
+            <div className={styles.selectionLabel}>
+                {`${commonStrings.alsoAvailableInLabel}:`}
+            </div>
+            <ListView
+                keySelector={langKeySelector}
+                data={langOptions}
+                className={styles.list}
+                renderer={RawButton}
+                rendererParams={buttonRendererParams}
+                errored={false}
+                pending={false}
+                filtered={false}
+            />
+        </div>
     );
 }
 

@@ -38,6 +38,10 @@ export const commonLabels = {
         en: 'Oops! We ran into an issue',
         fr: 'Oops! Nous avons rencontré un problème',
     },
+    alsoAvailableInLabel: {
+        en: 'Also available in',
+        fr: 'Également disponible en',
+    },
     reloadButtonLabel: {
         en: 'Reload',
         fr: 'Recharger',
