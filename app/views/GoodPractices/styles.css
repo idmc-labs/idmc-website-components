@@ -33,6 +33,11 @@
                 max-width: var(--width-page-max);
                 gap: var(--tui-spacing-large);
             }
+
+            .language-selection {
+                align-self: flex-end;
+                max-width: var(--width-page-max);
+            }
         }
 
     }

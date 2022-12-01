@@ -17,6 +17,7 @@
         "paths": {
             "#generated/*": ["./generated/*"],
             "#components/*": ["./app/components/*"],
+            "#context/*": ["./app/context/*"],
             "#utils/*": ["./app/utils/*"],
             "#views/*": ["./app/views/*"],
             "#hooks/*": ["./app/hooks/*"],

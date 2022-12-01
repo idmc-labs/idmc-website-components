@@ -4,6 +4,9 @@ import { IoRefreshOutline } from 'react-icons/io5';
 
 import { PendingMessage } from '@togglecorp/toggle-ui';
 import Button from '#components/Button';
+import { commonLabels } from '#base/configs/lang';
+import useTranslation from '#hooks/useTranslation';
+
 import { genericMemo } from '../../utils';
 
 import styles from './styles.css';
@@ -48,9 +51,9 @@ function Message(props: Props) {
         erroredEmptyIcon,
         message: messageFromProps,
         pendingMessage,
-        emptyMessage = 'No data available',
-        filteredEmptyMessage = 'No matching data',
-        erroredEmptyMessage = 'Oops! We ran into an issue',
+        emptyMessage,
+        filteredEmptyMessage,
+        erroredEmptyMessage,
         pendingContainerClassName,
         compact,
         compactPendingMessage,
@@ -62,6 +65,8 @@ function Message(props: Props) {
         actions,
         actionsContainerClassName,
     } = props;
+
+    const commonStrings = useTranslation(commonLabels);
 
     if (pending) {
         return (
@@ -79,13 +84,13 @@ function Message(props: Props) {
     if (empty || errored) {
         if (errored) {
             icon = erroredEmptyIcon;
-            message = erroredEmptyMessage;
+            message = erroredEmptyMessage ?? commonStrings.erroredEmptyDataMessage;
         } else if (filtered) {
             icon = filteredEmptyIcon;
-            message = filteredEmptyMessage;
+            message = filteredEmptyMessage ?? commonStrings.noMatchingDataMessage;
         } else {
             icon = emptyIcon;
-            message = emptyMessage;
+            message = emptyMessage ?? commonStrings.noDataAvailableMessage;
         }
     }
 
@@ -132,7 +137,7 @@ function Message(props: Props) {
                                 <IoRefreshOutline />
                             )}
                         >
-                            Reload
+                            {commonStrings.reloadButtonLabel}
                         </Button>
                     )}
                     {actions}

@@ -21,7 +21,11 @@ import TextOutput from '#components/TextOutput';
 import Carousel from '#components/Carousel';
 import CarouselItem from '#components/Carousel/CarouselItem';
 import CarouselButton from '#components/Carousel/CarouselButton';
+import LanguageSelectionInput from '#components/LanguageSelectInput';
 import GoodPracticeItem from '#components/GoodPracticeItem';
+
+import { goodPracticeItem } from '#base/configs/lang';
+import useTranslation from '#hooks/useTranslation';
 
 import {
     GoodPracticeDetailsQuery,
@@ -133,6 +137,7 @@ function GoodPractice(props: Props) {
     const [
         incrementPageCount,
     ] = useMutation<IncrementPageViewMutation, IncrementPageViewMutationVariables>(PAGE_COUNT);
+    const strings = useTranslation(goodPracticeItem);
 
     React.useEffect(() => {
         let timeout: number;
@@ -229,11 +234,11 @@ function GoodPractice(props: Props) {
                     <div className={styles.container}>
                         <div className={styles.breadcrumbs}>
                             <a href="/">
-                                Home
+                                {strings.homeLabel}
                             </a>
                             <IoChevronForward />
                             <a href={getGoodPracticesLink()}>
-                                Good Practices
+                                {strings.goodPracticesLabel}
                             </a>
                         </div>
                         <Header
@@ -247,6 +252,9 @@ function GoodPractice(props: Props) {
                                 value={goodPracticeDescription}
                             />
                         </EllipsizedContent>
+                        <LanguageSelectionInput
+                            className={styles.languageSelection}
+                        />
                     </div>
                 </div>
             </div>
@@ -257,14 +265,14 @@ function GoodPractice(props: Props) {
                             <div className={styles.meta}>
                                 <TextOutput
                                     hideLabelColon
-                                    label="Region"
+                                    label={strings.regionLabel}
                                     value={regionLabel}
                                     strongValue
                                     displayType="block"
                                 />
                                 <TextOutput
                                     hideLabelColon
-                                    label="Country"
+                                    label={strings.countryLabel}
                                     value={countryText}
                                     strongValue
                                     displayType="block"
@@ -273,7 +281,7 @@ function GoodPractice(props: Props) {
                             <div className={styles.meta}>
                                 <TextOutput
                                     hideLabelColon
-                                    label="Timeframe"
+                                    label={strings.timeframeLabel}
                                     value={(
                                         <div>
                                             <span>
@@ -283,7 +291,8 @@ function GoodPractice(props: Props) {
                                                 &nbsp;-&nbsp;
                                             </span>
                                             <span>
-                                                {data?.goodPractice?.endYear ?? 'Ongoing'}
+                                                {data?.goodPractice?.endYear
+                                                ?? strings.ongoingLabel}
                                             </span>
                                         </div>
                                     )}
@@ -292,7 +301,7 @@ function GoodPractice(props: Props) {
                                 />
                                 <TextOutput
                                     hideLabelColon
-                                    label="Implementing entity"
+                                    label={strings.implementingEntityLabel}
                                     // Note: || used instead of ?? due to empty string
                                     value={data?.goodPractice?.implementingEntity || '-'}
                                     strongValue
@@ -310,7 +319,7 @@ function GoodPractice(props: Props) {
                         {(data?.goodPractice?.gallery?.length ?? 0) > 0 && (
                             <div className={styles.carouselContainer}>
                                 <Header
-                                    heading="Best Practice gallery"
+                                    heading={strings.bestPracticeGalleryLabel}
                                     headingSize="small"
                                 />
                                 <Carousel className={styles.carousel}>
@@ -380,7 +389,7 @@ function GoodPractice(props: Props) {
                     <section className={styles.mediaAndResourceLinks}>
                         <Header
                             headingSize="large"
-                            heading="Media and resources"
+                            heading={strings.mediaAndResourcesLabel}
                         />
                         <HTMLOutput
                             value={data?.goodPractice?.mediaAndResourceLinks}
@@ -390,7 +399,7 @@ function GoodPractice(props: Props) {
                 <section className={styles.relatedSection}>
                     <Header
                         headingSize="large"
-                        heading="Related materials"
+                        heading={strings.relatedMaterialsLabel}
                     />
                     <div className={styles.relatedGoodPracticeList}>
                         {relatedGoodPracticeList?.map((gp, i) => (

@@ -60,6 +60,7 @@ import ListView from '#components/ListView';
 import DropdownMenu from '#components/DropdownMenu';
 import DropdownMenuItem from '#components/DropdownMenuItem';
 import EllipsizedContent from '#components/EllipsizedContent';
+import LanguageSelectionInput from '#components/LanguageSelectInput';
 import CollapsibleContent from '#components/CollapsibleContent';
 import GoodPracticeItem from '#components/GoodPracticeItem';
 import SliderInput from '#components/SliderInput';
@@ -69,6 +70,13 @@ import useInputState from '#hooks/useInputState';
 
 import useDebouncedValue from '#hooks/useDebouncedValue';
 import useDocumentSize from '#hooks/useDocumentSize';
+
+import {
+    goodPracticesDashboard,
+    commonLabels,
+} from '#base/configs/lang';
+import useTranslation from '#hooks/useTranslation';
+import generateString from '#utils/strings';
 
 import backgroundImage from '../../resources/img/backgroundImage.png';
 import styles from './styles.css';
@@ -243,14 +251,17 @@ function goodPracticekeySelector(d: GoodPracticeItemType | undefined, i: number)
 }
 
 type OrderingOptionType = 'recent' | 'oldest' | 'mostPopular' | 'leastPopular';
-const orderingOptions: {
+
+function getOrderingOptions(str: { [key in string]: string }): {
     [key in OrderingOptionType]: string;
-} = {
-    recent: 'Year of Publication (Latest First)',
-    oldest: 'Year of Publication (Oldest First)',
-    mostPopular: 'Most Popular First',
-    leastPopular: 'Least Popular First',
-};
+} {
+    return ({
+        recent: str.recentByPublicationLabel,
+        oldest: str.oldestByPublicationLabel,
+        mostPopular: str.mostPopularFirstLabel,
+        leastPopular: str.leastPopularFirstLabel,
+    });
+}
 
 type OrderingType = {
     [key in 'publishedDate' | 'pageViewedCount']?: 'ASC' | 'DESC'
@@ -312,6 +323,10 @@ function GoodPractices(props: Props) {
         setShowFilterModalTrue,
         setShowFilterModalFalse,
     ] = useBooleanState(false);
+
+    const strings = useTranslation(goodPracticesDashboard);
+    const commonStrings = useTranslation(commonLabels);
+    const orderingOptions = getOrderingOptions(commonStrings);
 
     const [yearRange, setYearRange] = useInputState<[number, number]>([0, 0]);
     const [goodPracticeType, setGoodPracticeType] = useInputState<GoodPracticeTypeType[]>([]);
@@ -592,20 +607,23 @@ function GoodPractices(props: Props) {
 
     const orderingOptionKeys = React.useMemo(
         () => (Object.keys(orderingOptions) as OrderingOptionType[]),
-        [],
+        [orderingOptions],
     );
 
     const orderingOptionList = React.useMemo(() => (
         orderingOptionKeys.map((k) => ({ key: k, label: orderingOptions[k] }))
-    ), [orderingOptionKeys]);
+    ), [
+        orderingOptionKeys,
+        orderingOptions,
+    ]);
 
     const filterElements = (
         <>
             {typeFilterOptions && typeFilterOptions.length > 0 && (
                 <MultiSelectInput
                     labelContainerClassName={styles.label}
-                    label="Type of Good Practice"
-                    placeholder="Type of Good Practice"
+                    label={strings.typeOfGoodPracticeHeader}
+                    placeholder={strings.typeOfGoodPracticeHeader}
                     name="type"
                     value={goodPracticeType}
                     options={typeFilterOptions}
@@ -618,8 +636,8 @@ function GoodPractices(props: Props) {
             {regionFilterOptions && regionFilterOptions.length > 0 && (
                 <MultiSelectInput
                     labelContainerClassName={styles.label}
-                    placeholder="Region"
-                    label="Region"
+                    placeholder={strings.regionLabel}
+                    label={strings.regionLabel}
                     name="region"
                     value={goodPracticeRegion}
                     options={regionFilterOptions}
@@ -632,8 +650,8 @@ function GoodPractices(props: Props) {
             {countryFilterOptions && countryFilterOptions.length > 0 && (
                 <MultiSelectInput
                     labelContainerClassName={styles.label}
-                    placeholder="Country"
-                    label="Country"
+                    placeholder={strings.countryLabel}
+                    label={strings.countryLabel}
                     name="country"
                     value={goodPracticeCountry}
                     options={countryFilterOptions}
@@ -646,8 +664,8 @@ function GoodPractices(props: Props) {
             {driverFilterOptions && driverFilterOptions.length > 0 && (
                 <MultiSelectInput
                     labelContainerClassName={styles.label}
-                    placeholder="Drivers of Displacement"
-                    label="Drivers of Displacement"
+                    placeholder={strings.driversOfDisplacementLabel}
+                    label={strings.driversOfDisplacementLabel}
                     name="driversOfDisplacement"
                     value={goodPracticeDrive}
                     options={driverFilterOptions}
@@ -660,8 +678,8 @@ function GoodPractices(props: Props) {
             {areaFilterOptions && areaFilterOptions.length > 0 && (
                 <MultiSelectInput
                     labelContainerClassName={styles.label}
-                    placeholder="Focus Area"
-                    label="Focus Area"
+                    placeholder={strings.focusAreaLabel}
+                    label={strings.focusAreaLabel}
                     name="focusArea"
                     value={goodPracticeArea}
                     options={areaFilterOptions}
@@ -674,8 +692,8 @@ function GoodPractices(props: Props) {
             {stageFilterOptions && stageFilterOptions.length > 0 && (
                 <MultiSelectInput
                     labelContainerClassName={styles.label}
-                    placeholder="Stage"
-                    label="Stage"
+                    placeholder={strings.stageLabel}
+                    label={strings.stageLabel}
                     name="stage"
                     value={goodpracticeStage}
                     options={stageFilterOptions}
@@ -695,8 +713,8 @@ function GoodPractices(props: Props) {
                 inputSectionClassName={styles.inputSection}
                 className={className}
                 name="search"
-                label="Search Good Practice"
-                placeholder="Search Good Practice"
+                label={strings.searchFilterLabel}
+                placeholder={strings.searchFilterLabel}
                 value={searchText}
                 onChange={setSearchText}
                 // disabled={goodPracticeLoading}
@@ -713,6 +731,7 @@ function GoodPractices(props: Props) {
                 step={1}
                 minDistance={1}
                 hideValues
+                label={strings.timescaleLabel}
                 onChange={setYearRange}
             />
         </div>
@@ -788,7 +807,7 @@ function GoodPractices(props: Props) {
                         <Header
                             darkMode
                             headingSize="extraLarge"
-                            heading="Global Repository of Good Practices"
+                            heading={strings.goodPracticesHeader}
                             hideHeadingBorder
                         />
                         <EllipsizedContent darkMode>
@@ -799,8 +818,11 @@ function GoodPractices(props: Props) {
                             name={undefined}
                             variant="secondary"
                         >
-                            Find Good Practices
+                            {strings.findGoodPracticesButtonLabel}
                         </Button>
+                        <LanguageSelectionInput
+                            className={styles.languageSelection}
+                        />
                     </div>
                 </section>
             </div>
@@ -808,7 +830,7 @@ function GoodPractices(props: Props) {
                 <section className={styles.map}>
                     <Header
                         headingSize="large"
-                        heading="Good Practices around the world"
+                        heading={strings.goodPracticesAroundTheWorldLabel}
                     />
                     <Map
                         mapStyle={lightStyle}
@@ -847,7 +869,10 @@ function GoodPractices(props: Props) {
                                                 {mapHoverFeatureProperties.name}
                                             </div>
                                             <div>
-                                                {`Good Practice: ${mapHoverFeatureProperties.value}`}
+                                                {generateString(
+                                                    strings.goodPracticeLabel,
+                                                    { value: mapHoverFeatureProperties.value },
+                                                )}
                                             </div>
                                         </div>
                                     </MapTooltip>
@@ -862,7 +887,7 @@ function GoodPractices(props: Props) {
                         {faqsResponse && faqsResponse.faqs.length > 0 ? (
                             <div className={styles.faqList}>
                                 <Header
-                                    heading="Frequently asked questions"
+                                    heading={strings.faqHeader}
                                     headingSize="large"
                                 />
                                 <div className={styles.content}>
@@ -918,7 +943,7 @@ function GoodPractices(props: Props) {
                 >
                     <Header
                         headingSize="large"
-                        heading="Find Good Practices"
+                        heading={strings.goodPracticesHeader}
                     />
                     {searchAndTimeRange}
                     {!isSmallDisplay && (
@@ -945,7 +970,7 @@ function GoodPractices(props: Props) {
                             <>
                                 {goodPracticeType.length > 0 && (
                                     <DismissableListOutput
-                                        label="Type of Good Practice"
+                                        label={strings.typeOfGoodPracticeHeader}
                                         value={goodPracticeType}
                                         keySelector={keySelector}
                                         labelSelector={labelSelector}
@@ -955,7 +980,7 @@ function GoodPractices(props: Props) {
                                 )}
                                 {goodPracticeRegion.length > 0 && (
                                     <DismissableListOutput
-                                        label="Region"
+                                        label={strings.regionLabel}
                                         value={goodPracticeRegion}
                                         keySelector={keySelector}
                                         labelSelector={labelSelector}
@@ -965,7 +990,7 @@ function GoodPractices(props: Props) {
                                 )}
                                 {goodPracticeCountry.length > 0 && (
                                     <DismissableListOutput
-                                        label="Country"
+                                        label={strings.countryLabel}
                                         value={goodPracticeCountry}
                                         keySelector={idSelector}
                                         labelSelector={nameSelector}
@@ -975,7 +1000,7 @@ function GoodPractices(props: Props) {
                                 )}
                                 {goodPracticeDrive.length > 0 && (
                                     <DismissableListOutput
-                                        label="Drive Of Displacement"
+                                        label={strings.driversOfDisplacementLabel}
                                         value={goodPracticeDrive}
                                         keySelector={idSelector}
                                         labelSelector={nameSelector}
@@ -985,7 +1010,7 @@ function GoodPractices(props: Props) {
                                 )}
                                 {goodPracticeArea.length > 0 && (
                                     <DismissableListOutput
-                                        label="Focus Area"
+                                        label={strings.focusAreaLabel}
                                         value={goodPracticeArea}
                                         keySelector={idSelector}
                                         labelSelector={nameSelector}
@@ -995,7 +1020,7 @@ function GoodPractices(props: Props) {
                                 )}
                                 {goodpracticeStage.length > 0 && (
                                     <DismissableListOutput
-                                        label="Stage"
+                                        label={strings.stageLabel}
                                         value={goodpracticeStage}
                                         keySelector={keySelector}
                                         labelSelector={labelSelector}
@@ -1011,7 +1036,7 @@ function GoodPractices(props: Props) {
                                         actions={<IoClose />}
                                         className={styles.clearFilterButton}
                                     >
-                                        Clear All Filters
+                                        {strings.clearButtonLabel}
                                     </Button>
                                 </div>
                             </>
@@ -1027,7 +1052,7 @@ function GoodPractices(props: Props) {
                                 name={undefined}
                                 actions={<IoFilter />}
                             >
-                                Filter and Sort
+                                {strings.filterAndSortLabel}
                             </Button>
                             {showFiltersModal && (
                                 <Modal
@@ -1041,7 +1066,7 @@ function GoodPractices(props: Props) {
                                         labelContainerClassName={styles.label}
                                         listContainerClassName={styles.radioList}
                                         name="sort"
-                                        label="Sort Results by"
+                                        label={strings.sortResultsByLabel}
                                         options={orderingOptionList}
                                         onChange={setOrderingOptionValue}
                                         keySelector={(d) => d.key}
@@ -1073,7 +1098,7 @@ function GoodPractices(props: Props) {
                                     </TabList>
                                     <DropdownMenu
                                         className={styles.orderDropdown}
-                                        label={`Sort: ${orderingOptions[orderingOptionValue]}`}
+                                        label={`${strings.sortLabel}: ${orderingOptions[orderingOptionValue]}`}
                                         variant="transparent"
                                     >
                                         {orderingOptionKeys.map((ok) => (
@@ -1101,12 +1126,12 @@ function GoodPractices(props: Props) {
                                     filtered={false}
                                     emptyMessage={(
                                         <div>
-                                            No Good Practice Found
+                                            {strings.noGoodPracticeFoundMessage}
                                         </div>
                                     )}
                                     filteredEmptyMessage={(
                                         <div>
-                                            No Filtered Good Practice Found
+                                            {strings.noFilteredPracticesFoundMessage}
                                         </div>
                                     )}
                                 />
@@ -1124,12 +1149,12 @@ function GoodPractices(props: Props) {
                                     filtered={false}
                                     emptyMessage={(
                                         <div>
-                                            No Good Practice Found
+                                            {strings.noGoodPracticeFoundMessage}
                                         </div>
                                     )}
                                     filteredEmptyMessage={(
                                         <div>
-                                            No Filtered Good Practice Found
+                                            {strings.noFilteredPracticesFoundMessage}
                                         </div>
                                     )}
                                 />
@@ -1149,7 +1174,7 @@ function GoodPractices(props: Props) {
                                 variant="transparent"
                                 actions={<IoArrowDown />}
                             >
-                                View More Good Practices
+                                {strings.viewMoreButtonLabel}
                             </Button>
                         )}
                         {(goodPracticeList && goodPracticeList.length
@@ -1162,7 +1187,7 @@ function GoodPractices(props: Props) {
                                     variant="transparent"
                                     actions={<IoArrowUp />}
                                 >
-                                    Show Less
+                                    {strings.showLessButtonLabel}
                                 </Button>
                             ) : (
                                 <div />

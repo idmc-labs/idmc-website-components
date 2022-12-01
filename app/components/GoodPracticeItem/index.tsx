@@ -9,6 +9,9 @@ import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
 import { getGoodPracticeLink } from '#utils/common';
 
+import { goodPracticeItem } from '#base/configs/lang';
+import useTranslation from '#hooks/useTranslation';
+
 import gridCover from '../../resources/img/grid2021-cover.png';
 
 import styles from './styles.css';
@@ -37,8 +40,10 @@ function GoodPracticeItem(props: Props) {
         endYear,
         countries,
         regions,
-        type = 'Good Practice',
+        type,
     } = props;
+
+    const strings = useTranslation(goodPracticeItem);
 
     // NOTE: Advanced stuff, contact frozenhelium
     if (isNotDefined(goodPracticeId)) {
@@ -57,7 +62,7 @@ function GoodPracticeItem(props: Props) {
             />
             <div className={styles.details}>
                 <div className={styles.type}>
-                    {type}
+                    {type ?? strings.goodPracticeLabel}
                 </div>
                 <Header
                     headingSize="smallAlt"
@@ -71,7 +76,7 @@ function GoodPracticeItem(props: Props) {
                                 &nbsp;-&nbsp;
                             </span>
                             <span>
-                                {endYear ?? 'Ongoing'}
+                                {endYear ?? strings.ongoingLabel}
                             </span>
                         </>
                     )}
