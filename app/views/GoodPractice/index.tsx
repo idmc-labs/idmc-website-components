@@ -115,8 +115,8 @@ query GoodPracticeListingStaticPage {
 
 const PAGE_COUNT = gql`
 mutation IncrementPageView($id: ID!) {
-    incrementPageViewedCount(input: {id: $id}) {
-        ... on GoodPracticeType {
+    incrementPageViewedCount(id: $id) {
+        ... on GoodPracticePageViewCountType {
             id
         }
     }

@@ -1,0 +1,13 @@
+.modal {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tui-spacing-small);
+}
+.inline {
+    display: flex;
+    gap: var(--tui-spacing-large);
+}
+
+.input {
+    flex-basis: 50%;
+}
