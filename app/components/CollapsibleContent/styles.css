@@ -17,6 +17,6 @@
     }
 
     .children {
-        padding: var(--tui-spacing-medium);
+        padding: 0 var(--tui-spacing-medium);
     }
 }

@@ -1037,6 +1037,7 @@ function GoodPractices(props: Props) {
                                     className={styles.mobileFilterModal}
                                     bodyClassName={styles.content}
                                     onClose={setShowFilterModalFalse}
+                                    size="cover"
                                 >
                                     <RadioInput
                                         labelContainerClassName={styles.label}
@@ -1052,6 +1053,7 @@ function GoodPractices(props: Props) {
                                     <div className={styles.mobileFilters}>
                                         {filterElements}
                                     </div>
+                                    <div className={styles.emptyContent} />
                                 </Modal>
                             )}
                         </div>

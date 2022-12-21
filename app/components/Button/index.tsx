@@ -62,6 +62,7 @@ export interface Props<N> extends RawButtonProps<N> {
     variant?: ButtonVariantType;
     disabled?: boolean;
     darkMode?: boolean;
+    children?: React.ReactNode;
 }
 
 function Button<N>(props: Props<N>) {

@@ -8,6 +8,7 @@ import {
     concat,
 } from '@apollo/client';
 import { RestLink } from 'apollo-link-rest';
+import { createUploadLink } from 'apollo-upload-client';
 
 // FIXME: move this to utils
 const langStorageKey = 'idmc-website-language';
@@ -54,7 +55,7 @@ const restLink = new RestLink({
 }) as unknown as ApolloLinkFromClient;
 
 const apolloOptions: ApolloClientOptions<NormalizedCacheObject> = {
-    link: from([restLink, languageAwareLink]),
+    link: from([restLink, languageAwareLink, createUploadLink()]),
     cache: new InMemoryCache(),
     assumeImmutableResults: true,
     defaultOptions: {

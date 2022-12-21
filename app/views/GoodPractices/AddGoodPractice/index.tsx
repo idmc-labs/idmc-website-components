@@ -1,10 +1,12 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { gql, useQuery, useMutation } from '@apollo/client';
+import { _cs } from '@togglecorp/fujs';
 
 import {
     Button,
     Modal,
     MultiSelectInput,
+    Checkbox,
     NumberInput,
     SelectInput,
     TextArea,
@@ -28,6 +30,7 @@ import {
 
 import { hCaptchaKey } from '#base/configs/hCaptcha';
 import HCaptcha from '#components/HCaptcha';
+import FileInput from '#components/FileInput';
 // import useAlert from '#hooks/useAlert';
 import { transformToFormError, ObjectError } from '#utils/errorTransform';
 import {
@@ -125,7 +128,7 @@ const OPTIONS_FOR_GOOD_PRACTICES = gql`
 
 type FormType = CreateGoodPracticeMutationVariables;
 
-type PartialFormType = PartialForm<FormType>;
+type PartialFormType = PartialForm<FormType> & { image?: File | undefined | null };
 type FormSchema = ObjectSchema<PartialFormType>;
 type FormSchemaFields = ReturnType<FormSchema['fields']>;
 
@@ -148,6 +151,7 @@ const schema: FormSchema = {
         startYear: [requiredCondition],
         endYear: [requiredCondition],
         captcha: [requiredStringCondition],
+        image: [],
     }),
 };
 
@@ -200,6 +204,8 @@ function AddGoodPractice(props: Props) {
         // setValue,
         setError,
     } = useForm(schema, defaultValues);
+
+    const [frenchAvailable, setFrenchAvailable] = useState(false);
 
     const error = getErrorObject(riskyError);
 
@@ -284,7 +290,20 @@ function AddGoodPractice(props: Props) {
         >
             <Modal
                 onClose={onModalClose}
-                heading="Add new good practice"
+                headingClassName={styles.headingContainer}
+                heading={(
+                    <div className={styles.heading}>
+                        Add new good practice
+                        <Checkbox
+                            className={styles.switch}
+                            name="french"
+                            value={frenchAvailable}
+                            onChange={setFrenchAvailable}
+                            label="Also submit in French"
+                            labelClassName={styles.switchLabel}
+                        />
+                    </div>
+                )}
                 footerClassName={styles.footer}
                 className={styles.modal}
                 footer={(
@@ -299,7 +318,7 @@ function AddGoodPractice(props: Props) {
                         Submit
                     </Button>
                 )}
-                size="large"
+                size="cover"
             >
                 <div className={styles.inline}>
                     <TextInput
@@ -309,15 +328,19 @@ function AddGoodPractice(props: Props) {
                         value={value?.titleEn}
                         error={error?.titleEn}
                         onChange={setFieldValue}
+                        inputSectionClassName={styles.inputSection}
                     />
-                    <TextInput
-                        className={styles.input}
-                        name="titleFr"
-                        label="Title (French)"
-                        value={value?.titleFr}
-                        error={error?.titleFr}
-                        onChange={setFieldValue}
-                    />
+                    {frenchAvailable && (
+                        <TextInput
+                            className={styles.input}
+                            name="titleFr"
+                            label="Title (French)"
+                            value={value?.titleFr}
+                            error={error?.titleFr}
+                            onChange={setFieldValue}
+                            inputSectionClassName={styles.inputSection}
+                        />
+                    )}
                 </div>
                 <div className={styles.inline}>
                     <TextArea
@@ -328,14 +351,16 @@ function AddGoodPractice(props: Props) {
                         error={error?.descriptionEn}
                         onChange={setFieldValue}
                     />
-                    <TextArea
-                        className={styles.input}
-                        name="descriptionFr"
-                        label="Description(French)"
-                        value={value?.descriptionFr}
-                        error={error?.descriptionFr}
-                        onChange={setFieldValue}
-                    />
+                    {frenchAvailable && (
+                        <TextArea
+                            className={styles.input}
+                            name="descriptionFr"
+                            label="Description(French)"
+                            value={value?.descriptionFr}
+                            error={error?.descriptionFr}
+                            onChange={setFieldValue}
+                        />
+                    )}
                 </div>
                 <div className={styles.inline}>
                     <TextArea
@@ -345,15 +370,18 @@ function AddGoodPractice(props: Props) {
                         value={value?.mediaAndResourceLinksEn}
                         error={error?.mediaAndResourceLinksEn}
                         onChange={setFieldValue}
+                        height="auto"
                     />
-                    <TextArea
-                        className={styles.input}
-                        name="mediaAndResourceLinksFr"
-                        label="Media and Resource Links (French)"
-                        value={value?.mediaAndResourceLinksFr}
-                        error={error?.mediaAndResourceLinksFr}
-                        onChange={setFieldValue}
-                    />
+                    {frenchAvailable && (
+                        <TextArea
+                            className={styles.input}
+                            name="mediaAndResourceLinksFr"
+                            label="Media and Resource Links (French)"
+                            value={value?.mediaAndResourceLinksFr}
+                            error={error?.mediaAndResourceLinksFr}
+                            onChange={setFieldValue}
+                        />
+                    )}
                 </div>
                 <div className={styles.inline}>
                     <TextInput
@@ -361,23 +389,28 @@ function AddGoodPractice(props: Props) {
                         name="implementingEntityEn"
                         label="Implementing Entity"
                         value={value?.implementingEntityEn}
+                        inputSectionClassName={styles.inputSection}
                         error={error?.implementingEntityEn}
                         onChange={setFieldValue}
                     />
-                    <TextInput
-                        className={styles.input}
-                        name="implementingEntityFr"
-                        label="Implementing Entity (French)"
-                        value={value?.implementingEntityFr}
-                        error={error?.implementingEntityFr}
-                        onChange={setFieldValue}
-                    />
+                    {frenchAvailable && (
+                        <TextInput
+                            className={styles.input}
+                            name="implementingEntityFr"
+                            label="Implementing Entity (French)"
+                            value={value?.implementingEntityFr}
+                            inputSectionClassName={styles.inputSection}
+                            error={error?.implementingEntityFr}
+                            onChange={setFieldValue}
+                        />
+                    )}
                 </div>
                 <div className={styles.inline}>
                     <MultiSelectInput
                         className={styles.input}
                         name="countries"
                         options={countries}
+                        inputSectionClassName={styles.inputSection}
                         label="Countries"
                         value={value?.countries}
                         error={getErrorString(error?.countries)}
@@ -390,6 +423,7 @@ function AddGoodPractice(props: Props) {
                         className={styles.input}
                         name="type"
                         label="Type"
+                        inputSectionClassName={styles.inputSection}
                         options={types}
                         value={value?.type}
                         error={error?.type}
@@ -400,9 +434,10 @@ function AddGoodPractice(props: Props) {
                 </div>
                 <div className={styles.inline}>
                     <MultiSelectInput
-                        className={styles.input}
+                        className={_cs(styles.input, styles.multiSelect)}
                         name="driversOfDisplacement"
                         label="Drivers of displacement"
+                        inputSectionClassName={styles.inputSection}
                         options={driversOfDisplacements}
                         keySelector={driversOfDisplacementKeySelector}
                         labelSelector={driversOfDisplacementLabelSelector}
@@ -412,10 +447,11 @@ function AddGoodPractice(props: Props) {
                         disabled={optionsLoading}
                     />
                     <SelectInput
-                        className={styles.input}
+                        className={_cs(styles.input, styles.multiSelect)}
                         name="stage"
                         label="Stage"
                         options={stages}
+                        inputSectionClassName={styles.inputSection}
                         value={value?.stage}
                         error={error?.stage}
                         keySelector={stageKeySelector}
@@ -429,9 +465,11 @@ function AddGoodPractice(props: Props) {
                     label="Focus Area"
                     options={focusAreas}
                     value={value?.focusArea}
+                    inputSectionClassName={styles.inputSection}
                     error={getErrorString(error?.focusArea)}
                     keySelector={focusAreaKeySelector}
                     labelSelector={focusAreaLabelSelector}
+                    className={_cs(styles.input, styles.multiSelect)}
                     onChange={setFieldValue}
                     disabled={optionsLoading}
                 />
@@ -440,8 +478,10 @@ function AddGoodPractice(props: Props) {
                     label="Tags"
                     options={tags}
                     value={value?.tags}
+                    inputSectionClassName={styles.inputSection}
                     error={getErrorString(error?.tags)}
                     keySelector={tagsKeySelector}
+                    className={_cs(styles.input, styles.multiSelect)}
                     labelSelector={tagsLabelSelector}
                     onChange={setFieldValue}
                     disabled={optionsLoading}
@@ -454,16 +494,30 @@ function AddGoodPractice(props: Props) {
                         value={value?.startYear}
                         error={error?.startYear}
                         onChange={setFieldValue}
+                        inputSectionClassName={styles.inputSection}
                     />
                     <NumberInput
                         className={styles.input}
                         name="endYear"
                         label="End year"
+                        inputSectionClassName={styles.inputSection}
                         value={value?.endYear}
                         error={error?.endYear}
                         onChange={setFieldValue}
                     />
                 </div>
+                <FileInput
+                    name="image"
+                    label="Cover Image"
+                    title="Upload a cover image"
+                    value={value?.image}
+                    error={error?.image}
+                    onChange={setFieldValue}
+                    accept="image/*"
+                    overrideStatus
+                >
+                    Select Cover Image
+                </FileInput>
                 <HCaptcha
                     name="captcha"
                     onChange={setFieldValue}

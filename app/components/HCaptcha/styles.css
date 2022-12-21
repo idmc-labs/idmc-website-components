@@ -1,0 +1,14 @@
+.hcaptcha {
+    .input-section {
+        box-shadow: none;
+        background-color: transparent;
+
+        .input-container {
+            padding: 0 var(--tui-spacing-small);
+        }
+    }
+
+    .error {
+        padding: 0 var(--tui-spacing-small);
+    }
+}
