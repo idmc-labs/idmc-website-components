@@ -63,6 +63,7 @@ export interface Props<N> extends RawButtonProps<N> {
     disabled?: boolean;
     darkMode?: boolean;
     children?: React.ReactNode;
+    className?: string;
 }
 
 function Button<N>(props: Props<N>) {

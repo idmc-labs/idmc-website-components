@@ -133,6 +133,78 @@ export const goodPracticesDashboard = {
         en: 'Show less',
         fr: 'Montrer moins',
     },
+    captchaLabel: {
+        en: 'Captcha',
+        fr: 'Captcha',
+    },
+    coverImageLabel: {
+        en: 'Cover image',
+        fr: 'Image de couverture',
+    },
+    coverImageTitle: {
+        en: 'Upload a cover image',
+        fr: 'télécharger une image de couverture',
+    },
+    startYearLabel: {
+        en: 'Start year',
+        fr: 'année de début',
+    },
+    endYearLabel: {
+        en: 'End Year',
+        fr: 'fin d\'année',
+    },
+    tagLabel: {
+        en: 'Tags',
+        fr: 'étiquette',
+    },
+    typeLabel: {
+        en: 'Type',
+        fr: 'taper',
+    },
+    implementingEntityLabel: {
+        en: 'Implementing Entity',
+        fr: 'entité de mise en œuvre',
+    },
+    implementingEntityFrLabel: {
+        en: 'Implementing Entity (French)',
+        fr: 'entité de mise en œuvre (français)',
+    },
+    mediaAndResourceLinksLabel: {
+        en: 'Media and Resource Links',
+        fr: 'liens médias et ressources',
+    },
+    mediaAndResoureLinksFrLabel: {
+        en: 'Media and Resource Links (French)',
+        fr: 'liens médias et ressources (français)',
+    },
+    descriptionLabel: {
+        en: 'Description',
+        fr: 'la description',
+    },
+    descriptionsFrLabel: {
+        en: 'Description (French)',
+        fr: 'descriptif (français)',
+    },
+    titleLabel: {
+        en: 'Title',
+        fr: 'Titre',
+    },
+    titleFrLabel: {
+        en: 'Title (French)',
+        fr: 'titre (français)',
+    },
+    submitLabel: {
+        en: 'Submit',
+        fr: 'nous faire parvenir',
+    },
+    alsoSubmitInFrenchLabel: {
+        en: 'Also submit in french',
+        fr: 'Soumettre également en français',
+    },
+    submitNewgoodPracticeLabel: {
+        en: 'Submit a new good practice',
+        fr: 'soumettre une nouvelle bonne pratique',
+    },
 };
 
 export const goodPracticeItem = {

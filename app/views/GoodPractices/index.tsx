@@ -897,7 +897,7 @@ function GoodPractices(props: Props) {
                                         name=""
                                         onClick={handleNewGoodPracticeButtonClick}
                                     >
-                                        Submit a new good practice
+                                        {strings.submitNewgoodPracticeLabel}
                                     </Button>
                                 </div>
                             )}

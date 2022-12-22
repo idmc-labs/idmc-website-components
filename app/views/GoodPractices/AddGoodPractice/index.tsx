@@ -31,8 +31,12 @@ import {
 import { hCaptchaKey } from '#base/configs/hCaptcha';
 import HCaptcha from '#components/HCaptcha';
 import FileInput from '#components/FileInput';
-// import useAlert from '#hooks/useAlert';
+import useTranslation from '#hooks/useTranslation';
+import useAlert from '#hooks/useAlert';
 import { transformToFormError, ObjectError } from '#utils/errorTransform';
+import {
+    goodPracticesDashboard,
+} from '#base/configs/lang';
 import {
     StageTypeEnum,
     TypeEnum,
@@ -111,17 +115,13 @@ const OPTIONS_FOR_GOOD_PRACTICES = gql`
             id
             name
         }
-        type: __type(name: "TypeEnum") {
-            enumValues {
-                name
-                description
-            }
+        type: goodPracticeTypeEnums {
+            label
+            name
         }
-        stages: __type(name: "StageTypeEnum") {
-            enumValues {
-                name
-                description
-            }
+        stages: goodPracticeStageTypeEnums {
+            label
+            name
         }
     }
 `;
@@ -161,15 +161,13 @@ type CountryType = NonNullable<OptionsForGoodPracticesQuery['countries']>[number
 const countryKeySelector = (c: CountryType) => c.id;
 const countryLabelSelector = (c: CountryType) => c.name;
 
-type TypeType = NonNullable<NonNullable<OptionsForGoodPracticesQuery['type']>['enumValues']>[number];
+type TypeType = NonNullable<OptionsForGoodPracticesQuery['type']>[number];
 const typeEnumKeySelector = (t: TypeType) => t.name as TypeEnum;
-// FIXME: use description instead of name
-const typeEnumLabelSelector = (t: TypeType) => t.name;
+const typeEnumLabelSelector = (t: TypeType) => t.label;
 
-type StageType = NonNullable<NonNullable<OptionsForGoodPracticesQuery['stages']>['enumValues']>[number];
+type StageType = NonNullable<OptionsForGoodPracticesQuery['stages']>[number];
 const stageKeySelector = (s: StageType) => s.name as StageTypeEnum;
-// FIXME: use description instead of name
-const stageLabelSelector = (s: StageType) => s.name;
+const stageLabelSelector = (s: StageType) => s.label;
 
 type FocusAreaType = NonNullable<OptionsForGoodPracticesQuery['focusAreas']>[number];
 const focusAreaKeySelector = (fa: FocusAreaType) => fa.id;
@@ -192,7 +190,9 @@ function AddGoodPractice(props: Props) {
         onModalClose,
     } = props;
 
-    // const alert = useAlert();
+    const strings = useTranslation(goodPracticesDashboard);
+
+    const alert = useAlert();
     const elementRef = useRef<Captcha>(null);
 
     const {
@@ -217,9 +217,9 @@ function AddGoodPractice(props: Props) {
     );
 
     const countries = optionsResponse?.countries;
-    const types = optionsResponse?.type?.enumValues;
+    const types = optionsResponse?.type;
     const driversOfDisplacements = optionsResponse?.driversOfDisplacements;
-    const stages = optionsResponse?.stages?.enumValues;
+    const stages = optionsResponse?.stages;
     const focusAreas = optionsResponse?.focusAreas;
     const tags = optionsResponse?.tags;
 
@@ -235,34 +235,30 @@ function AddGoodPractice(props: Props) {
                 const responseData = response?.createGoodPractice;
 
                 const {
-                    // ok,
+                    ok,
                     errors,
                 } = responseData;
                 if (errors) {
                     const formError = transformToFormError(removeNull(errors) as ObjectError[]);
                     setError(formError);
-                    /* FIXME: alert needs to be fixed
                     alert.show(
                         'Failed to add good practice',
                         { variant: 'error' },
                     );
-                     */
-                } /* else if (ok) {
+                } else if (ok) {
                     alert.show(
                         'Successfully added good practice',
                         { variant: 'success' },
                     );
                 }
-                   */
+                onModalClose();
             },
-            /* FIXME: alert needs to be fixed
             onError: () => {
                 alert.show(
                     'Failed to add good practice',
                     { variant: 'error' },
                 );
             },
-             */
         },
     );
 
@@ -299,7 +295,7 @@ function AddGoodPractice(props: Props) {
                             name="french"
                             value={frenchAvailable}
                             onChange={setFrenchAvailable}
-                            label="Also submit in French"
+                            label={strings.alsoSubmitInFrenchLabel}
                             labelClassName={styles.switchLabel}
                         />
                     </div>
@@ -315,7 +311,7 @@ function AddGoodPractice(props: Props) {
                         disabled={pristine || createNewGoodPracticeLoading}
                         compact
                     >
-                        Submit
+                        {strings.submitLabel}
                     </Button>
                 )}
                 size="cover"
@@ -324,7 +320,7 @@ function AddGoodPractice(props: Props) {
                     <TextInput
                         className={styles.input}
                         name="titleEn"
-                        label="Title"
+                        label={strings.titleLabel}
                         value={value?.titleEn}
                         error={error?.titleEn}
                         onChange={setFieldValue}
@@ -334,7 +330,7 @@ function AddGoodPractice(props: Props) {
                         <TextInput
                             className={styles.input}
                             name="titleFr"
-                            label="Title (French)"
+                            label={strings.titleFrLabel}
                             value={value?.titleFr}
                             error={error?.titleFr}
                             onChange={setFieldValue}
@@ -346,7 +342,7 @@ function AddGoodPractice(props: Props) {
                     <TextArea
                         className={styles.input}
                         name="descriptionEn"
-                        label="Description"
+                        label={strings.descriptionLabel}
                         value={value?.descriptionEn}
                         error={error?.descriptionEn}
                         onChange={setFieldValue}
@@ -355,7 +351,7 @@ function AddGoodPractice(props: Props) {
                         <TextArea
                             className={styles.input}
                             name="descriptionFr"
-                            label="Description(French)"
+                            label={strings.descriptionsFrLabel}
                             value={value?.descriptionFr}
                             error={error?.descriptionFr}
                             onChange={setFieldValue}
@@ -366,7 +362,7 @@ function AddGoodPractice(props: Props) {
                     <TextArea
                         className={styles.input}
                         name="mediaAndResourceLinksEn"
-                        label="Media and Resource Links"
+                        label={strings.mediaAndResourceLinksLabel}
                         value={value?.mediaAndResourceLinksEn}
                         error={error?.mediaAndResourceLinksEn}
                         onChange={setFieldValue}
@@ -376,7 +372,7 @@ function AddGoodPractice(props: Props) {
                         <TextArea
                             className={styles.input}
                             name="mediaAndResourceLinksFr"
-                            label="Media and Resource Links (French)"
+                            label={strings.mediaAndResoureLinksFrLabel}
                             value={value?.mediaAndResourceLinksFr}
                             error={error?.mediaAndResourceLinksFr}
                             onChange={setFieldValue}
@@ -387,7 +383,7 @@ function AddGoodPractice(props: Props) {
                     <TextInput
                         className={styles.input}
                         name="implementingEntityEn"
-                        label="Implementing Entity"
+                        label={strings.implementingEntityLabel}
                         value={value?.implementingEntityEn}
                         inputSectionClassName={styles.inputSection}
                         error={error?.implementingEntityEn}
@@ -397,7 +393,7 @@ function AddGoodPractice(props: Props) {
                         <TextInput
                             className={styles.input}
                             name="implementingEntityFr"
-                            label="Implementing Entity (French)"
+                            label={strings.implementingEntityFrLabel}
                             value={value?.implementingEntityFr}
                             inputSectionClassName={styles.inputSection}
                             error={error?.implementingEntityFr}
@@ -411,7 +407,7 @@ function AddGoodPractice(props: Props) {
                         name="countries"
                         options={countries}
                         inputSectionClassName={styles.inputSection}
-                        label="Countries"
+                        label={strings.countryLabel}
                         value={value?.countries}
                         error={getErrorString(error?.countries)}
                         onChange={setFieldValue}
@@ -422,7 +418,7 @@ function AddGoodPractice(props: Props) {
                     <SelectInput
                         className={styles.input}
                         name="type"
-                        label="Type"
+                        label={strings.typeLabel}
                         inputSectionClassName={styles.inputSection}
                         options={types}
                         value={value?.type}
@@ -436,7 +432,7 @@ function AddGoodPractice(props: Props) {
                     <MultiSelectInput
                         className={_cs(styles.input, styles.multiSelect)}
                         name="driversOfDisplacement"
-                        label="Drivers of displacement"
+                        label={strings.driversOfDisplacementLabel}
                         inputSectionClassName={styles.inputSection}
                         options={driversOfDisplacements}
                         keySelector={driversOfDisplacementKeySelector}
@@ -449,7 +445,7 @@ function AddGoodPractice(props: Props) {
                     <SelectInput
                         className={_cs(styles.input, styles.multiSelect)}
                         name="stage"
-                        label="Stage"
+                        label={strings.stageLabel}
                         options={stages}
                         inputSectionClassName={styles.inputSection}
                         value={value?.stage}
@@ -462,7 +458,7 @@ function AddGoodPractice(props: Props) {
                 </div>
                 <MultiSelectInput
                     name="focusArea"
-                    label="Focus Area"
+                    label={strings.focusAreaLabel}
                     options={focusAreas}
                     value={value?.focusArea}
                     inputSectionClassName={styles.inputSection}
@@ -475,7 +471,7 @@ function AddGoodPractice(props: Props) {
                 />
                 <MultiSelectInput
                     name="tags"
-                    label="Tags"
+                    label={strings.tagLabel}
                     options={tags}
                     value={value?.tags}
                     inputSectionClassName={styles.inputSection}
@@ -490,7 +486,7 @@ function AddGoodPractice(props: Props) {
                     <NumberInput
                         className={styles.input}
                         name="startYear"
-                        label="Start date"
+                        label={strings.startYearLabel}
                         value={value?.startYear}
                         error={error?.startYear}
                         onChange={setFieldValue}
@@ -499,7 +495,7 @@ function AddGoodPractice(props: Props) {
                     <NumberInput
                         className={styles.input}
                         name="endYear"
-                        label="End year"
+                        label={strings.endYearLabel}
                         inputSectionClassName={styles.inputSection}
                         value={value?.endYear}
                         error={error?.endYear}
@@ -508,8 +504,8 @@ function AddGoodPractice(props: Props) {
                 </div>
                 <FileInput
                     name="image"
-                    label="Cover Image"
-                    title="Upload a cover image"
+                    label={strings.coverImageLabel}
+                    title={strings.coverImageTitle}
                     value={value?.image}
                     error={error?.image}
                     onChange={setFieldValue}
@@ -521,7 +517,7 @@ function AddGoodPractice(props: Props) {
                 <HCaptcha
                     name="captcha"
                     onChange={setFieldValue}
-                    label="Captcha"
+                    label={strings.captchaLabel}
                     error={error?.captcha}
                     elementRef={elementRef}
                     siteKey={hCaptchaKey}

@@ -1,0 +1,110 @@
+.alert {
+    --spacing: var(--dui-spacing-medium);
+    --height: 100%;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+    visibility: hidden;
+    opacity: 0;
+    border-radius: var(--dui-radius-border-alerts);
+    padding: var(--spacing);
+    width: 100%;
+    animation: appear var(--dui-duration-transition-medium) ease-in forwards;
+    animation-delay: var(--dui-duration-delay-short);
+
+    .icon {
+        display: flex;
+        align-items: flex-start;
+        color: inherit;
+    }
+
+    .content {
+        align-self: center;
+    }
+
+    .icon-container {
+        font-size: 1.4em;
+    }
+
+    .action-container {
+        align-items: flex-start;
+        font-size: 1.1em;
+    }
+
+    &.info {
+        background-color: var(--dui-color-background-dark);
+        color: var(--dui-color-text-on-dark);
+    }
+
+    &.error {
+        background-color: var(--dui-color-danger);
+        color: var(--dui-color-text-on-danger);
+    }
+
+    &.success {
+        background-color: var(--dui-color-success);
+        color: var(--dui-color-text-on-success);
+    }
+
+    &.no-spacing {
+        --spacing: 0;
+    }
+
+    &.compact-spacing {
+        --spacing: var(--dui-spacing-small);
+    }
+
+    &.comfortable-spacing {
+        --spacing: var(--dui-spacing-medium);
+    }
+
+    &.loose-spacing {
+        --spacing: var(--dui-spacing-large);
+    }
+
+    &.hidden {
+        position: initial;
+        visibility: visible;
+        opacity: 1;
+        height: var(--height);
+        overflow: hidden;
+        animation: disappear var(--dui-duration-transition-medium) ease-in forwards;
+        animation-delay: var(--dui-duration-delay-short);
+    }
+
+    @keyframes appear {
+        from {
+            position: initial;
+            visibility: visible;
+            opacity: 0;
+            padding: 0 var(--spacing);
+            height: 0;
+        }
+
+        to {
+            position: initial;
+            visibility: visible;
+            opacity: 1;
+            padding: var(--spacing);
+            height: var(--height);
+        }
+    }
+
+    @keyframes disappear {
+        from {
+            position: initial;
+            visibility: visible;
+            opacity: 1;
+            padding: var(--spacing);
+            height: var(--height);
+        }
+
+        to {
+            opacity: 0;
+            padding: 0 var(--spacing);
+            height: 0;
+        }
+    }
+}
+
