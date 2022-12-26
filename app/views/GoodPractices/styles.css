@@ -209,11 +209,6 @@
                 display: flex;
                 justify-content: flex-end;
 
-                .grid-separator {
-                    border: var(--tui-width-separator-thin) solid var(--tui-color-separator);
-                    height: 3rem;
-                }
-
                 .order-dropdown{
                     margin-left: var(--tui-spacing-large);
                     color: var(--tui-color-brand);
@@ -253,26 +248,6 @@
                             height:5.5rem;
                         }
                     }
-                }
-            }
-
-            .view-buttons{
-                display: flex;
-                gap: var(--tui-spacing-extra-small);
-                flex-wrap: wrap;
-
-                >* {
-                    flex-basis: 0;
-                    min-width: 14rem;
-                }
-
-                .view-more-button {
-                    margin-right: var(--tui-spacing-small);
-                    min-width: 14rem;
-                }
-
-                .see-less-button {
-                    min-width: 7rem;
                 }
             }
         }

@@ -161,11 +161,17 @@ type CountryType = NonNullable<OptionsForGoodPracticesQuery['countries']>[number
 const countryKeySelector = (c: CountryType) => c.id;
 const countryLabelSelector = (c: CountryType) => c.name;
 
-type TypeType = NonNullable<OptionsForGoodPracticesQuery['type']>[number];
+type TypeType = {
+    name: string;
+    label: string;
+};
 const typeEnumKeySelector = (t: TypeType) => t.name as TypeEnum;
 const typeEnumLabelSelector = (t: TypeType) => t.label;
 
-type StageType = NonNullable<OptionsForGoodPracticesQuery['stages']>[number];
+type StageType = {
+    name: string;
+    label: string;
+};
 const stageKeySelector = (s: StageType) => s.name as StageTypeEnum;
 const stageLabelSelector = (s: StageType) => s.label;
 
@@ -250,8 +256,8 @@ function AddGoodPractice(props: Props) {
                         'Successfully added good practice',
                         { variant: 'success' },
                     );
+                    onModalClose();
                 }
-                onModalClose();
             },
             onError: () => {
                 alert.show(
@@ -270,6 +276,7 @@ function AddGoodPractice(props: Props) {
             (val) => {
                 createNewGoodPractice({
                     variables: val as FormType,
+                    context: { hasUpload: true },
                 });
             },
         );
@@ -314,7 +321,7 @@ function AddGoodPractice(props: Props) {
                         {strings.submitLabel}
                     </Button>
                 )}
-                size="cover"
+                size="large"
             >
                 <div className={styles.inline}>
                     <TextInput
@@ -430,7 +437,7 @@ function AddGoodPractice(props: Props) {
                 </div>
                 <div className={styles.inline}>
                     <MultiSelectInput
-                        className={_cs(styles.input, styles.multiSelect)}
+                        className={_cs(styles.input)}
                         name="driversOfDisplacement"
                         label={strings.driversOfDisplacementLabel}
                         inputSectionClassName={styles.inputSection}
@@ -443,7 +450,7 @@ function AddGoodPractice(props: Props) {
                         disabled={optionsLoading}
                     />
                     <SelectInput
-                        className={_cs(styles.input, styles.multiSelect)}
+                        className={_cs(styles.input)}
                         name="stage"
                         label={strings.stageLabel}
                         options={stages}
@@ -465,7 +472,7 @@ function AddGoodPractice(props: Props) {
                     error={getErrorString(error?.focusArea)}
                     keySelector={focusAreaKeySelector}
                     labelSelector={focusAreaLabelSelector}
-                    className={_cs(styles.input, styles.multiSelect)}
+                    className={_cs(styles.input)}
                     onChange={setFieldValue}
                     disabled={optionsLoading}
                 />
@@ -477,7 +484,7 @@ function AddGoodPractice(props: Props) {
                     inputSectionClassName={styles.inputSection}
                     error={getErrorString(error?.tags)}
                     keySelector={tagsKeySelector}
-                    className={_cs(styles.input, styles.multiSelect)}
+                    className={_cs(styles.input)}
                     labelSelector={tagsLabelSelector}
                     onChange={setFieldValue}
                     disabled={optionsLoading}

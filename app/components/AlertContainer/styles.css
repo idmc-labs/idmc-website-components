@@ -1,5 +1,5 @@
 .alert-container {
     .alert {
-        margin: var(--dui-spacing-small) 0;
+        margin: var(--tui-spacing-small) 0;
     }
 }

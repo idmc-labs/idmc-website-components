@@ -17,7 +17,6 @@ import { genericMemo } from '../../utils';
 import styles from './styles.css';
 
 const alertVariantToClassNameMap: {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     [key in AlertVariant]: string;
 } = {
     success: styles.success,
@@ -26,7 +25,6 @@ const alertVariantToClassNameMap: {
 };
 
 const icon: {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     [key in AlertVariant]: React.ReactNode;
 } = {
     success: <IoCheckmarkCircle className={styles.icon} />,
@@ -121,7 +119,6 @@ function Alert<N extends string>(props: Props<N>) {
                 actionsContainerClassName={styles.actionContainer}
                 actions={!nonDismissable && (
                     <Button
-                        className={styles.closeButton}
                         name={undefined}
                         onClick={handleCloseButtonClick}
                         variant="action"

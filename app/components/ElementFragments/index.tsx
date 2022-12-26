@@ -4,6 +4,7 @@ import { _cs } from '@togglecorp/fujs';
 import Icons from '../Icons';
 import Actions from '../Actions';
 import { genericMemo } from '../../utils';
+
 import styles from './styles.css';
 
 export interface Props {
@@ -58,7 +59,7 @@ function ElementFragments(props: Props) {
                 <Actions
                     wrap={wrapActions}
                     allowShrink={allowActionsShrink}
-                    className={actionsContainerClassName}
+                    className={_cs(styles.actions, actionsContainerClassName)}
                 >
                     {actions}
                 </Actions>

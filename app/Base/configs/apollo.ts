@@ -7,6 +7,7 @@ import {
     from,
     concat,
 } from '@apollo/client';
+import { ApolloLink } from 'apollo-link';
 import { RestLink } from 'apollo-link-rest';
 import { createUploadLink } from 'apollo-upload-client';
 
@@ -27,7 +28,7 @@ const DRUPAL_ENDPOINT = (process.env.REACT_APP_DRUPAL_ENDPOINT || '') as string;
 const link = new HttpLink({
     uri: GRAPHQL_ENDPOINT,
     credentials: 'include',
-}) as unknown as ApolloLinkFromClient;
+});
 
 const languageAwareLink = concat(
     new ApolloLinkFromClient((operation, forward) => {
@@ -52,10 +53,24 @@ const restLink = new RestLink({
         drupal: DRUPAL_ENDPOINT,
     },
     credentials: 'omit',
-}) as unknown as ApolloLinkFromClient;
+});
+
+const uploadLink = createUploadLink({
+    uri: GRAPHQL_ENDPOINT,
+    credentials: 'include',
+});
 
 const apolloOptions: ApolloClientOptions<NormalizedCacheObject> = {
-    link: from([restLink, languageAwareLink, createUploadLink()]),
+    link: from([
+        ApolloLink.split(
+            (operation) => operation.getContext().hasUpload,
+            uploadLink as unknown as ApolloLink,
+            ApolloLink.from([
+                restLink as unknown as ApolloLink,
+                languageAwareLink as unknown as ApolloLink,
+            ]),
+        ) as unknown as ApolloLinkFromClient,
+    ]),
     cache: new InMemoryCache(),
     assumeImmutableResults: true,
     defaultOptions: {

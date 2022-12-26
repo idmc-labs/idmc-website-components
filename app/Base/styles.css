@@ -60,6 +60,17 @@
 
     --width-page-max: 69rem;
     --width-readable-content-max: 46rem;
+
+    --tui-duration-transition-short: 100ms;
+    --tui-duration-transition-medium: 200ms;
+    --tui-duration-transition-long: 400ms;
+
+    --tui-duration-delay-short: 150ms;
+    --tui-duration-delay-medium: 250ms;
+    --tui-duration-delay-long: 400ms;
+
+    --tui-radius-border-input-section: 0;
+    --tui-radius-border-alerts: 0.24rem;
 }
 
 .base {
@@ -77,9 +88,9 @@
 
     .alert-container {
         position: fixed;
-        right: var(--dui-spacing-large);
-        bottom: var(--dui-spacing-large);
-        z-index: 1;
+        right: var(--tui-spacing-large);
+        bottom: var(--tui-spacing-large);
+        z-index: 1000;
         width: 20rem;
     }
 }

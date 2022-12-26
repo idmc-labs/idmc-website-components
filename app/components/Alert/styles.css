@@ -1,17 +1,19 @@
 .alert {
-    --spacing: var(--dui-spacing-medium);
+    --spacing: var(--tui-spacing-small);
     --height: 100%;
-
+    display: flex;
     position: absolute;
+    gap: var(--tui-spacing-small);
     top: 0;
     left: 0;
+    align-items: center;
     visibility: hidden;
     opacity: 0;
-    border-radius: var(--dui-radius-border-alerts);
+    border-radius: var(--tui-radius-border-alerts);
     padding: var(--spacing);
     width: 100%;
-    animation: appear var(--dui-duration-transition-medium) ease-in forwards;
-    animation-delay: var(--dui-duration-delay-short);
+    animation: appear var(--tui-duration-transition-medium) ease-in forwards;
+    animation-delay: var(--tui-duration-delay-short);
 
     .icon {
         display: flex;
@@ -33,34 +35,18 @@
     }
 
     &.info {
-        background-color: var(--dui-color-background-dark);
-        color: var(--dui-color-text-on-dark);
+        background-color: var(--tui-color-background-dark);
+        color: var(--tui-color-text-on-dark);
     }
 
     &.error {
-        background-color: var(--dui-color-danger);
-        color: var(--dui-color-text-on-danger);
+        background-color: var(--tui-color-danger);
+        color: var(--tui-color-text-on-danger);
     }
 
     &.success {
-        background-color: var(--dui-color-success);
-        color: var(--dui-color-text-on-success);
-    }
-
-    &.no-spacing {
-        --spacing: 0;
-    }
-
-    &.compact-spacing {
-        --spacing: var(--dui-spacing-small);
-    }
-
-    &.comfortable-spacing {
-        --spacing: var(--dui-spacing-medium);
-    }
-
-    &.loose-spacing {
-        --spacing: var(--dui-spacing-large);
+        background-color: var(--tui-color-success);
+        color: var(--tui-color-text-on-success);
     }
 
     &.hidden {
@@ -69,8 +55,8 @@
         opacity: 1;
         height: var(--height);
         overflow: hidden;
-        animation: disappear var(--dui-duration-transition-medium) ease-in forwards;
-        animation-delay: var(--dui-duration-delay-short);
+        animation: disappear var(--tui-duration-transition-medium) ease-in forwards;
+        animation-delay: var(--tui-duration-delay-short);
     }
 
     @keyframes appear {

@@ -97,7 +97,7 @@ function FileInput<T extends NameType>(props: Props<T>) {
         containerRef,
         inputSectionRef,
         inputClassName,
-        value, // eslint-disable-line @typescript-eslint/no-unused-vars
+        value,
         onChange, // eslint-disable-line @typescript-eslint/no-unused-vars
         showStatus = true,
         overrideStatus,
@@ -318,7 +318,8 @@ function FileInput<T extends NameType>(props: Props<T>) {
             readOnly={readOnly}
             uiMode={uiMode}
             input={(
-                // eslint-disable-next-line jsx-a11y/label-has-associated-control
+                // eslint-disable-next-line max-len
+                // eslint-disable-next-line jsx-a11y/label-has-associated-control, jsx-a11y/label-has-for
                 <label
                     className={_cs(
                         styles.inputWrapper,

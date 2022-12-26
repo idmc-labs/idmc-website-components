@@ -1058,7 +1058,7 @@ function GoodPractices(props: Props) {
                             )}
                         </div>
                     )}
-                    <div className={styles.gridContainer}>
+                    <div>
                         <Tabs
                             value={activeTab}
                             onChange={setActiveTab}
