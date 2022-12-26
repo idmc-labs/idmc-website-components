@@ -80,7 +80,7 @@ interface Props {
     mapTimeRange: [number, number];
 }
 
-function IduMap(props: Props) {
+function RawIduMap(props: Props) {
     const {
         idus,
         boundingBox,
@@ -214,4 +214,4 @@ function IduMap(props: Props) {
         </Map>
     );
 }
-export default IduMap;
+export default RawIduMap;

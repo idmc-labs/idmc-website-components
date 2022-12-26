@@ -54,16 +54,6 @@
         align-items: center;
         flex-direction: column;
 
-        .separator {
-            align-self: stretch;
-            flex-basis: unset;
-            flex-grow: unset;
-            flex-shrink: 0;
-            margin: var(--tui-spacing-small) 0;
-            background-color: var(--tui-color-separator);
-            width: var(--tui-width-separator-medium);
-        }
-
         .content {
             display: flex;
             flex-direction: column;
@@ -186,12 +176,6 @@
                 }
             }
 
-            .latest-new-displacements {
-                display: flex;
-                flex-direction: column;
-                gap: var(--tui-spacing-large);
-            }
-
             .idu-container {
                 display: flex;
                 flex-wrap: wrap;
@@ -201,13 +185,16 @@
                 .idu {
                     display: flex;
                     align-items: flex-start;
-                    flex-basis: 50%;
                     flex-direction: column;
                     flex-grow: 1;
                     border: var(--tui-width-separator-thin) solid var(--tui-color-separator);
                     padding: var(--tui-spacing-medium);
-                    max-width: 30rem;
+                    max-width: calc(50% - var(--tui-spacing-medium));
                     gap: var(--tui-spacing-medium);
+
+                    @media screen and (max-width: 900px) {
+                        max-width: unset;
+                    }
 
                     .displacementIcon {
                         display: flex;
@@ -233,62 +220,6 @@
                 display: flex;
                 flex-direction: column;
                 gap: var(--tui-spacing-large);
-
-                .filters-container {
-                    align-items: stretch;
-
-                    .displacement-legend {
-                        display: flex;
-                        flex-basis: 20%;
-                        flex-direction: column;
-                        gap: var(--tui-spacing-extra-small);
-
-                        .legend-element-list {
-                            display: flex;
-                            flex-grow: 1;
-                            gap: var(--tui-spacing-small);
-                            height: 3rem;
-                        }
-                    }
-                    .number-legend {
-                        display: flex;
-                        flex-basis: 40%;
-                        flex-direction: column;
-                        gap: var(--tui-spacing-extra-small);
-
-                        .legend-element-list {
-                            display: flex;
-                            flex-grow: 1;
-                            gap: var(--tui-spacing-small);
-                            height: 3rem;
-                        }
-                        @media (max-width: 1000px) {
-                            .legend-element-list {
-                                gap: var(--tui-spacing-extra-extra-small);
-                            }
-                        }
-                    }
-
-                    .time-range-container {
-                        display: flex;
-                        flex-direction: column;
-                        flex-grow: 1;
-                        gap: var(--tui-spacing-medium);
-
-                        .time-range-input {
-                            width: 100%;
-                        }
-                    }
-                    @media (max-width: 1000px) {
-                        .legend {
-                            padding-right: var(--tui-spacing-extra-large);
-                        }
-                    }
-                }
-                .disaster-button {
-                    background-color: var(--color-background-dark);
-                    height: 2.5rem;
-                }
             }
 
             .related-material {
