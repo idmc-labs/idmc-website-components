@@ -65,6 +65,7 @@ import GoodPracticeItem from '#components/GoodPracticeItem';
 import SliderInput from '#components/SliderInput';
 import DismissableListOutput from '#components/DismissableListOutput';
 import useBooleanState from '#hooks/useBooleanState';
+import useModalState from '#hooks/useModalState';
 import useInputState from '#hooks/useInputState';
 
 import useDebouncedValue from '#hooks/useDebouncedValue';
@@ -77,6 +78,7 @@ import {
 import useTranslation from '#hooks/useTranslation';
 import generateString from '#utils/strings';
 
+import AddGoodPractice from './AddGoodPractice';
 import backgroundImage from '../../resources/img/backgroundImage.png';
 import styles from './styles.css';
 
@@ -322,6 +324,12 @@ function GoodPractices(props: Props) {
         setShowFilterModalTrue,
         setShowFilterModalFalse,
     ] = useBooleanState(false);
+
+    const [
+        addNewGoodPracticeModalShown,
+        showNewGoodPracticeModal,
+        hideNewGoodPracticeModal,
+    ] = useModalState<boolean>(false);
 
     const strings = useTranslation(goodPracticesDashboard);
     const commonStrings = useTranslation(commonLabels);
@@ -754,6 +762,10 @@ function GoodPractices(props: Props) {
         setMapHoverFeatureProperties(undefined);
     }, []);
 
+    const handleNewGoodPracticeButtonClick = useCallback(() => {
+        showNewGoodPracticeModal();
+    }, [showNewGoodPracticeModal]);
+
     return (
         <div className={_cs(styles.goodPractices, className)}>
             <div className={styles.headerSection}>
@@ -881,6 +893,12 @@ function GoodPractices(props: Props) {
                                             value={submitDescription}
                                         />
                                     </EllipsizedContent>
+                                    <Button
+                                        name=""
+                                        onClick={handleNewGoodPracticeButtonClick}
+                                    >
+                                        {strings.submitNewgoodPracticeLabel}
+                                    </Button>
                                 </div>
                             )}
                             {contactInformation && (
@@ -1019,6 +1037,7 @@ function GoodPractices(props: Props) {
                                     className={styles.mobileFilterModal}
                                     bodyClassName={styles.content}
                                     onClose={setShowFilterModalFalse}
+                                    size="cover"
                                 >
                                     <RadioInput
                                         labelContainerClassName={styles.label}
@@ -1034,11 +1053,12 @@ function GoodPractices(props: Props) {
                                     <div className={styles.mobileFilters}>
                                         {filterElements}
                                     </div>
+                                    <div className={styles.emptyContent} />
                                 </Modal>
                             )}
                         </div>
                     )}
-                    <div className={styles.gridContainer}>
+                    <div>
                         <Tabs
                             value={activeTab}
                             onChange={setActiveTab}
@@ -1130,6 +1150,11 @@ function GoodPractices(props: Props) {
                         />
                     </div>
                 </section>
+                {addNewGoodPracticeModalShown && (
+                    <AddGoodPractice
+                        onModalClose={hideNewGoodPracticeModal}
+                    />
+                )}
             </div>
         </div>
     );

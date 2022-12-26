@@ -115,7 +115,7 @@ function Message(props: Props) {
                 </div>
             )}
             {!messageHidden && (
-                <div className={styles.content}>
+                <div>
                     {message}
                 </div>
             )}

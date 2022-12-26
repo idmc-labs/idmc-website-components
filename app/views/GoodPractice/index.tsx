@@ -115,8 +115,8 @@ query GoodPracticeListingStaticPage {
 
 const PAGE_COUNT = gql`
 mutation IncrementPageView($id: ID!) {
-    incrementPageViewedCount(input: {id: $id}) {
-        ... on GoodPracticeType {
+    incrementPageViewedCount(id: $id) {
+        ... on GoodPracticePageViewCountType {
             id
         }
     }
@@ -261,7 +261,7 @@ function GoodPractice(props: Props) {
             <div className={styles.mainContent}>
                 <section className={styles.details}>
                     <div className={styles.mainSection}>
-                        <div className={styles.metaBlock}>
+                        <div>
                             <div className={styles.meta}>
                                 <TextOutput
                                     hideLabelColon

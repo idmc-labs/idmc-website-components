@@ -3,7 +3,7 @@ import React, { useCallback, useMemo } from 'react';
 import { init, ErrorBoundary } from '@sentry/react';
 import { ApolloClient, ApolloProvider } from '@apollo/client';
 import ReactGA from 'react-ga';
-import { listToMap } from '@togglecorp/fujs';
+import { listToMap, unique } from '@togglecorp/fujs';
 
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '@togglecorp/toggle-ui/build/index.css';
@@ -18,6 +18,9 @@ import {
 import CountryProfile from '#views/CountryProfile';
 import GoodPractice from '#views/GoodPractice';
 import GoodPractices from '#views/GoodPractices';
+
+import AlertContainer from '#components/AlertContainer';
+import AlertContext, { AlertOptions } from '#components/AlertContext';
 
 import LanguageContext, { Lang } from '#context/LanguageContext';
 import PreloadMessage from '#base/components/PreloadMessage';
@@ -99,6 +102,66 @@ function Base() {
         handleLanguageChange,
     ]);
 
+    const [alerts, setAlerts] = React.useState<AlertOptions[]>([]);
+
+    const addAlert = React.useCallback(
+        (alert: AlertOptions) => {
+            setAlerts((prevAlerts) => unique(
+                [...prevAlerts, alert],
+                (a) => a.name,
+            ) ?? prevAlerts);
+        },
+        [setAlerts],
+    );
+
+    const removeAlert = React.useCallback(
+        (name: string) => {
+            setAlerts((prevAlerts) => {
+                const i = prevAlerts.findIndex((a) => a.name === name);
+                if (i === -1) {
+                    return prevAlerts;
+                }
+
+                const newAlerts = [...prevAlerts];
+                newAlerts.splice(i, 1);
+
+                return newAlerts;
+            });
+        },
+        [setAlerts],
+    );
+
+    const updateAlertContent = React.useCallback(
+        (name: string, children: React.ReactNode) => {
+            setAlerts((prevAlerts) => {
+                const i = prevAlerts.findIndex((a) => a.name === name);
+                if (i === -1) {
+                    return prevAlerts;
+                }
+
+                const updatedAlert = {
+                    ...prevAlerts[i],
+                    children,
+                };
+
+                const newAlerts = [...prevAlerts];
+                newAlerts.splice(i, 1, updatedAlert);
+
+                return newAlerts;
+            });
+        },
+        [setAlerts],
+    );
+    const alertContext = React.useMemo(
+        () => ({
+            alerts,
+            addAlert,
+            updateAlertContent,
+            removeAlert,
+        }),
+        [alerts, addAlert, updateAlertContent, removeAlert],
+    );
+
     const page = useMemo(
         () => {
             if (currentPage === 'country-profile' && currentCountry) {
@@ -174,7 +237,10 @@ function Base() {
             >
                 <ApolloProvider client={apolloClient}>
                     <LanguageContext.Provider value={languageContext}>
-                        {page}
+                        <AlertContext.Provider value={alertContext}>
+                            <AlertContainer className={styles.alertContainer} />
+                            {page}
+                        </AlertContext.Provider>
                     </LanguageContext.Provider>
                 </ApolloProvider>
             </ErrorBoundary>

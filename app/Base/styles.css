@@ -36,11 +36,11 @@
 
     --tui-color-text: rgb(100,99,99);
     --tui-filter-background-color: #EFF4FA;
-    
+
     --tui-color-label: rgb(100,99,99);
     --tui-color-description: rgb(100,99,99);
     --tui-color-watermark: rgb(100,99,99);
-   
+
     --tui-color-background: #eff4fa;
     --tui-color-background-information: var(--tui-color-background);
 
@@ -60,6 +60,17 @@
 
     --width-page-max: 69rem;
     --width-readable-content-max: 46rem;
+
+    --tui-duration-transition-short: 100ms;
+    --tui-duration-transition-medium: 200ms;
+    --tui-duration-transition-long: 400ms;
+
+    --tui-duration-delay-short: 150ms;
+    --tui-duration-delay-medium: 250ms;
+    --tui-duration-delay-long: 400ms;
+
+    --tui-radius-border-input-section: 0;
+    --tui-radius-border-alerts: 0.24rem;
 }
 
 .base {
@@ -73,6 +84,14 @@
 
     .view {
         flex-grow: 1;
+    }
+
+    .alert-container {
+        position: fixed;
+        right: var(--tui-spacing-large);
+        bottom: var(--tui-spacing-large);
+        z-index: 1000;
+        width: 20rem;
     }
 }
 
@@ -88,6 +107,11 @@ a {
         text-decoration: none;
     }
 }
+
+h1, h2, h3, h4, h5, h6, p {
+    margin: 0;
+}
+
 
 /* Unset font-size because drupal has set a font-size of 10px */
 html {

@@ -1,4 +1,6 @@
 .list-view {
+    --spacing: var(--tui-spacing-medium);
+
     &.vertical {
         display: flex;
         flex-direction: column;
@@ -13,23 +15,5 @@
         &.pending {
             min-height: calc(2em + var(--tui-spacing-medium) * 2);
         }
-    }
-
-    --spacing: var(--tui-spacing-medium);
-
-    &.no-spacing {
-        --spacing: 0;
-    }
-
-    &.compact-spacing {
-        --spacing: var(--tui-spacing-small);
-    }
-
-    &.comfortable-spacing {
-        --spacing: var(--tui-spacing-medium);
-    }
-
-    &.loose-spacing {
-        --spacing: var(--tui-spacing-large);
     }
 }

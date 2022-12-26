@@ -18,20 +18,4 @@
             flex-shrink: initial;
         }
     }
-
-    &.no-spacing {
-        --spacing: 0;
-    }
-
-    &.compact-spacing {
-        --spacing: var(--tui-spacing-extra-small);
-    }
-
-    &.comfortable-spacing {
-        --spacing: var(--tui-spacing-small);
-    }
-
-    &.loose-spacing {
-        --spacing: var(--tui-spacing-medium);
-    }
 }

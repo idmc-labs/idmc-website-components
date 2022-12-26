@@ -7,15 +7,15 @@ function useBlurEffect(
     parentRef: React.RefObject<HTMLElement>,
 ) {
     React.useEffect(() => {
-        const handleDocumentClick = (e: any) => {
+        const handleDocumentClick = (e: MouseEvent) => {
             const { current: element } = elementRef;
             const { current: parent } = parentRef;
 
             const isElementOrContainedInElement = element
-                ? element === e.target || element.contains(e.target)
+                ? element === e.target || element.contains(e.target as HTMLElement)
                 : false;
             const isParentOrContainedInParent = parent
-                ? parent === e.target || parent.contains(e.target)
+                ? parent === e.target || parent.contains(e.target as HTMLElement)
                 : false;
 
             callback(isElementOrContainedInElement, isParentOrContainedInParent);

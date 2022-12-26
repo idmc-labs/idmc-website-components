@@ -11,22 +11,6 @@
     &:hover {
         background-color: var(--tui-color-background-hover);
     }
-
-    &.no-spacing {
-        --spacing: 0;
-    }
-
-    &.compact-spacing {
-        --spacing: var(--tui-spacing-small);
-    }
-
-    &.comfortable-spacing {
-        --spacing: var(--tui-spacing-medium);
-    }
-
-    &.loose-spacing {
-        --spacing: var(--tui-spacing-large);
-    }
 }
 
 .separator {
