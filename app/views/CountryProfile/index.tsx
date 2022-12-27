@@ -685,11 +685,9 @@ function CountryProfile(props: Props) {
                 heading={countryInfo?.name || countryName || currentCountry}
                 hideHeadingBorder
             />
-            <EllipsizedContent darkMode>
-                <HTMLOutput
-                    value={countryInfo?.description}
-                />
-            </EllipsizedContent>
+            <HTMLOutput
+                value={countryInfo?.description}
+            />
         </section>
     );
 
@@ -1495,15 +1493,16 @@ function CountryProfile(props: Props) {
             )}
         </nav>
     );
+    const headerStyles = useMemo(() => ({
+        backgroundImage: `url(${countryInfo?.backgroundImage?.url})`,
+    }), [countryInfo]);
 
     return (
         <div className={_cs(styles.countryProfile, className)}>
-            <img
-                className={styles.coverImage}
-                src={countryInfo?.backgroundImage?.url}
-                alt={countryInfo?.backgroundImage?.name}
-            />
-            <div className={styles.headerContainer}>
+            <div
+                className={styles.headerContainer}
+                style={headerStyles}
+            >
                 <div className={styles.content}>
                     {profileSection}
                     {navbar}
