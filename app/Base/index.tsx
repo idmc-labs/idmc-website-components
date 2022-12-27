@@ -18,6 +18,7 @@ import {
 import CountryProfile from '#views/CountryProfile';
 import GoodPractice from '#views/GoodPractice';
 import GoodPractices from '#views/GoodPractices';
+import IduMap from '#views/IduMap';
 
 import AlertContainer from '#components/AlertContainer';
 import AlertContext, { AlertOptions } from '#components/AlertContext';
@@ -165,6 +166,13 @@ function Base() {
     const page = useMemo(
         () => {
             if (currentPage === 'country-profile' && currentCountry) {
+                if (!currentCountry) {
+                    return (
+                        <div>
+                            Query parameter iso3 is missing.
+                        </div>
+                    );
+                }
                 return (
                     <CountryProfile
                         className={styles.view}
@@ -181,6 +189,13 @@ function Base() {
                 );
             }
             if (currentPage === 'good-practice' && currentId) {
+                if (!currentId) {
+                    return (
+                        <div>
+                            Query parameter id is missing.
+                        </div>
+                    );
+                }
                 return (
                     <GoodPractice
                         className={styles.view}
@@ -188,11 +203,9 @@ function Base() {
                     />
                 );
             }
-            if (currentPage === 'good-practice' && !currentId) {
+            if (currentPage === 'idu-map') {
                 return (
-                    <div>
-                        Good Practice id is missing.
-                    </div>
+                    <IduMap />
                 );
             }
             if (standaloneMode) {
