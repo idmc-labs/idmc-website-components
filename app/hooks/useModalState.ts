@@ -20,5 +20,12 @@ export default function useModalState<T = string>(initialValue: boolean) {
         [],
     );
 
-    return [value, setTrue, setFalse, context] as const;
+    const toggle = React.useCallback(
+        () => {
+            setValue((oldVal) => !oldVal);
+        },
+        [],
+    );
+
+    return [value, setTrue, setFalse, toggle, context] as const;
 }

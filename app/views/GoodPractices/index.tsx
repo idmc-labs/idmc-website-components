@@ -782,9 +782,7 @@ function GoodPractices(props: Props) {
                             heading={strings.goodPracticesHeader}
                             hideHeadingBorder
                         />
-                        <EllipsizedContent darkMode>
-                            <HTMLOutput value={goodPracticeDescription} />
-                        </EllipsizedContent>
+                        <HTMLOutput value={goodPracticeDescription} />
                         <Button
                             onClick={handleJumpToGoodPractices}
                             name={undefined}
@@ -886,21 +884,21 @@ function GoodPractices(props: Props) {
                             <div className={styles.faqList} />
                         )}
                         <div className={styles.sidePane}>
-                            {submitDescription && (
-                                <div className={styles.block}>
+                            <div className={styles.block}>
+                                {submitDescription && (
                                     <EllipsizedContent>
                                         <HTMLOutput
                                             value={submitDescription}
                                         />
                                     </EllipsizedContent>
-                                    <Button
-                                        name=""
-                                        onClick={handleNewGoodPracticeButtonClick}
-                                    >
-                                        {strings.submitNewgoodPracticeLabel}
-                                    </Button>
-                                </div>
-                            )}
+                                )}
+                                <Button
+                                    name=""
+                                    onClick={handleNewGoodPracticeButtonClick}
+                                >
+                                    {strings.submitNewgoodPracticeLabel}
+                                </Button>
+                            </div>
                             {contactInformation && (
                                 <div className={styles.block}>
                                     <EllipsizedContent>

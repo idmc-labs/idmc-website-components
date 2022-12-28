@@ -71,9 +71,10 @@ import TooltipIcon from '#components/TooltipIcon';
 import DisplacementIcon from '#components/DisplacementIcon';
 
 import { formatNumber } from '#utils/common';
-
 import useIduMap from '#components/IduMap/useIduMap';
+
 import useDebouncedValue from '../../hooks/useDebouncedValue';
+import FigureAnalysis from './FigureAnalysis';
 
 import { countryMetadata } from './data';
 
@@ -153,6 +154,17 @@ const COUNTRY_PROFILE = gql`
                 id
                 year
                 updatedAt
+            }
+            figureAnalysis {
+                id
+                idpCaveatsAndChallenges
+                idpFigures
+                idpMethodologyAndSources
+                ndCaveatsAndChallenges
+                ndFigures
+                ndMethodologyAndSources
+                year
+                crisisType
             }
             contactPersonDescription
             contactPersonImage {
@@ -272,7 +284,6 @@ function CountryProfile(props: Props) {
 
     // Overview section
     const [overviewActiveYear, setOverviewActiveYear] = useState<string>(String(END_YEAR));
-
     // Conflict section
     const [conflictTimeRangeActual, setConflictTimeRange] = useState([START_YEAR, END_YEAR]);
     const conflictTimeRange = useDebouncedValue(conflictTimeRangeActual);
@@ -919,6 +930,9 @@ function CountryProfile(props: Props) {
                     value={countryInfo?.displacementDataDescription}
                 />
             </EllipsizedContent>
+            <FigureAnalysis
+                data={countryInfo?.figureAnalysis}
+            />
             <div className={styles.infographics}>
                 {conflictSection}
                 {disasterSection}
