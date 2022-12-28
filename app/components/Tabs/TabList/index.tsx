@@ -9,6 +9,7 @@ export interface Props extends React.HTMLProps<HTMLDivElement> {
     children: React.ReactNode;
     className?: string;
     actions?: React.ReactNode;
+    position?: 'left' | 'center' | 'right';
 }
 
 export default function TabList(props: Props) {
@@ -24,6 +25,7 @@ export default function TabList(props: Props) {
         children,
         className,
         actions,
+        position = 'center',
         ...otherProps
     } = props;
 
@@ -73,11 +75,11 @@ export default function TabList(props: Props) {
                     />
                 </div>
             )}
-            {variant === 'primary' && !actions && (
+            {variant === 'primary' && !actions && (position === 'center' || position === 'right') && (
                 <div className={styles.startDummyContent} />
             )}
             { children }
-            {variant === 'primary' && (
+            {variant === 'primary' && (position === 'center' || position === 'left') && (
                 <div className={styles.endDummyContent}>
                     {actions}
                 </div>

@@ -225,6 +225,7 @@
 
                 >* {
                     flex-basis: 0;
+                    flex-grow: 1;
                     padding-right: var(--tui-spacing-ultra-small);
                     min-width: 20rem;
                 }
@@ -317,4 +318,8 @@
             }
         }
     }
+}
+
+body.modal-open {
+    overflow: hidden;
 }

@@ -104,3 +104,6 @@ export function getGoodPracticeLink(id: string) {
 }
 
 export const monthList = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+export const START_YEAR = 2008;
+export const END_YEAR = 2021;
