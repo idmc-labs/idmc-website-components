@@ -1,0 +1,9 @@
+.tiny-mce-editor-input {
+    .input-section {
+        background-color: transparent;
+
+        .input {
+            padding: 0;
+        }
+    }
+}

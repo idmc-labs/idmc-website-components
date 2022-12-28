@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { gql, useQuery, useMutation } from '@apollo/client';
 import { _cs } from '@togglecorp/fujs';
-
 import {
     Button,
     Modal,
@@ -9,10 +8,8 @@ import {
     Checkbox,
     NumberInput,
     SelectInput,
-    TextArea,
     TextInput,
 } from '@togglecorp/toggle-ui';
-
 import Captcha from '@hcaptcha/react-hcaptcha';
 
 import {
@@ -32,6 +29,7 @@ import { hCaptchaKey } from '#base/configs/hCaptcha';
 import HCaptcha from '#components/HCaptcha';
 import FileInput from '#components/FileInput';
 import useTranslation from '#hooks/useTranslation';
+import TinyMceEditorInput from '#components/TinyMceEditorInput';
 import useAlert from '#hooks/useAlert';
 import { transformToFormError, ObjectError } from '#utils/errorTransform';
 import {
@@ -321,7 +319,7 @@ function AddGoodPractice(props: Props) {
                         {strings.submitLabel}
                     </Button>
                 )}
-                size="large"
+                size="cover"
             >
                 <div className={styles.inline}>
                     <TextInput
@@ -346,16 +344,15 @@ function AddGoodPractice(props: Props) {
                     )}
                 </div>
                 <div className={styles.inline}>
-                    <TextArea
+                    <TinyMceEditorInput
                         className={styles.input}
+                        value={value?.descriptionEn}
+                        onChange={setFieldValue}
                         name="descriptionEn"
                         label={strings.descriptionLabel}
-                        value={value?.descriptionEn}
-                        error={error?.descriptionEn}
-                        onChange={setFieldValue}
                     />
                     {frenchAvailable && (
-                        <TextArea
+                        <TinyMceEditorInput
                             className={styles.input}
                             name="descriptionFr"
                             label={strings.descriptionsFrLabel}
@@ -366,17 +363,16 @@ function AddGoodPractice(props: Props) {
                     )}
                 </div>
                 <div className={styles.inline}>
-                    <TextArea
+                    <TinyMceEditorInput
                         className={styles.input}
                         name="mediaAndResourceLinksEn"
                         label={strings.mediaAndResourceLinksLabel}
                         value={value?.mediaAndResourceLinksEn}
                         error={error?.mediaAndResourceLinksEn}
                         onChange={setFieldValue}
-                        height="auto"
                     />
                     {frenchAvailable && (
-                        <TextArea
+                        <TinyMceEditorInput
                             className={styles.input}
                             name="mediaAndResourceLinksFr"
                             label={strings.mediaAndResoureLinksFrLabel}

@@ -70,7 +70,11 @@ import Container from '#components/Container';
 import TooltipIcon from '#components/TooltipIcon';
 import DisplacementIcon from '#components/DisplacementIcon';
 
-import { formatNumber } from '#utils/common';
+import {
+    formatNumber,
+    START_YEAR,
+    END_YEAR,
+} from '#utils/common';
 import useIduMap from '#components/IduMap/useIduMap';
 
 import useDebouncedValue from '../../hooks/useDebouncedValue';
@@ -121,8 +125,6 @@ function suffixGiddRestEndpoint(path: string) {
 
 const disasterCategoryKeySelector = (d: CategoryStatisticsType) => d.label;
 
-const START_YEAR = 2008;
-const END_YEAR = 2021;
 const MAX_IDU_ITEMS = 8;
 
 const giddLink = suffixDrupalEndpoing('/database/displacement-data');

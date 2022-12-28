@@ -21,21 +21,24 @@ import Numeral from '#components/Numeral';
 import {
     CountryProfileQuery,
 } from '#generated/types';
+import { END_YEAR } from '#utils/common';
 
 import styles from './styles.css';
 
-const pendingInfo = 'Pending further information and evidence, those who are in a situation of displamcenet, but progressing towards a durable solution have not been included.';
+const pendingInfo = 'Pending further information and evidence, those who are in a situation of displacement, but progressing towards a durable solution have not been included.';
 
 type FigureAnalysisItem = NonNullable<NonNullable<CountryProfileQuery['country']>['figureAnalysis']>[number];
 
 interface ItemTableProps extends FigureAnalysisItem {
     className?: string;
+    selectedYear: string;
 }
 
 function ItemTable(props: ItemTableProps) {
     const {
         className,
         idpCaveatsAndChallenges,
+        selectedYear,
         idpFigures,
         idpMethodologyAndSources,
         ndMethodologyAndSources,
@@ -71,7 +74,7 @@ function ItemTable(props: ItemTableProps) {
             </tr>
             <tr>
                 <td>
-                    <div className={styles.header}>Total Number of IDPs as of</div>
+                    <div className={styles.header}>{`Total Number of IDPs as of 31 December ${selectedYear}`}</div>
                     <div className={styles.description}>
                         {pendingInfo}
                     </div>
@@ -110,11 +113,11 @@ function FigureAnalysis(props: Props) {
     const [
         figureAnalysisActiveYear,
         setFigureAnalysisActiveYear,
-    ] = useState<string>('2022');
+    ] = useState<string>(String(END_YEAR));
 
     const figureAnalysisByYear = useMemo(() => {
         if (!data) {
-            return {};
+            return undefined;
         }
         return listToGroupList(
             data,
@@ -124,6 +127,9 @@ function FigureAnalysis(props: Props) {
     }, [data]);
 
     const sortedYears = useMemo(() => {
+        if (!figureAnalysisByYear) {
+            return undefined;
+        }
         const years = Object.keys(figureAnalysisByYear);
         years.sort((a, b) => compareNumber(Number(a), Number(b), -1));
 
@@ -134,11 +140,11 @@ function FigureAnalysis(props: Props) {
         selectedConflictData,
         selectedDisasterData,
     } = useMemo(() => {
-        const selectedData = figureAnalysisByYear[figureAnalysisActiveYear];
+        const selectedData = figureAnalysisByYear?.[figureAnalysisActiveYear];
 
         return {
-            selectedConflictData: selectedData.find((item) => item.crisisType === 'CONFLICT'),
-            selectedDisasterData: selectedData.find((item) => item.crisisType === 'DISASTER'),
+            selectedConflictData: selectedData?.find((item) => item.crisisType === 'CONFLICT'),
+            selectedDisasterData: selectedData?.find((item) => item.crisisType === 'DISASTER'),
         };
     }, [
         figureAnalysisByYear,
@@ -147,7 +153,7 @@ function FigureAnalysis(props: Props) {
 
     return (
         <div className={_cs(className, styles.figureAnalysis)}>
-            {sortedYears.length > 0 && (
+            {(sortedYears?.length ?? 0) > 0 && (
                 <Button
                     name={undefined}
                     onClick={handleFigureAnalysisToggleClick}
@@ -167,19 +173,19 @@ function FigureAnalysis(props: Props) {
                         className={styles.tabList}
                         position="left"
                     >
-                        {sortedYears.map((year) => (
+                        {sortedYears?.map((year) => (
                             <Tab
                                 key={year}
-                                name={year.toString()}
+                                name={String(year)}
                             >
                                 {year}
                             </Tab>
                         ))}
                     </TabList>
-                    {sortedYears.map((year) => (
+                    {sortedYears?.map((year) => (
                         <TabPanel
                             key={year}
-                            name={year.toString()}
+                            name={String(year)}
                             className={styles.tabPanel}
                         >
                             {selectedConflictData && (
@@ -189,6 +195,7 @@ function FigureAnalysis(props: Props) {
                                 >
                                     <ItemTable
                                         {...selectedConflictData}
+                                        selectedYear={figureAnalysisActiveYear}
                                     />
                                 </Container>
                             )}
@@ -199,6 +206,7 @@ function FigureAnalysis(props: Props) {
                                 >
                                     <ItemTable
                                         {...selectedDisasterData}
+                                        selectedYear={figureAnalysisActiveYear}
                                     />
                                 </Container>
                             )}

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useEffect, useCallback, useMemo, useState } from 'react';
 import {
     gql,
     useQuery,
@@ -320,9 +320,9 @@ function GoodPractices(props: Props) {
     const isSmallDisplay = windowSize.width < 600;
 
     const [
-        showFiltersModal,
-        setShowFilterModalTrue,
-        setShowFilterModalFalse,
+        filtersModalShown,
+        showFilterModal,
+        hideFilterModal,
     ] = useBooleanState(false);
 
     const [
@@ -766,6 +766,19 @@ function GoodPractices(props: Props) {
         showNewGoodPracticeModal();
     }, [showNewGoodPracticeModal]);
 
+    // NOTE: Adding style to body to disable scroll when modal is open
+    useEffect(() => {
+        if (addNewGoodPracticeModalShown || filtersModalShown) {
+            document.body.classList.add(styles.modalOpen);
+        }
+        return (() => {
+            document.body.classList.remove(styles.modalOpen);
+        });
+    }, [
+        addNewGoodPracticeModalShown,
+        filtersModalShown,
+    ]);
+
     return (
         <div className={_cs(styles.goodPractices, className)}>
             <div className={styles.headerSection}>
@@ -1022,19 +1035,19 @@ function GoodPractices(props: Props) {
                         <div className={styles.mobileActions}>
                             <Button
                                 variant="transparent"
-                                onClick={setShowFilterModalTrue}
+                                onClick={showFilterModal}
                                 name={undefined}
                                 actions={<IoFilter />}
                             >
                                 {strings.filterAndSortLabel}
                             </Button>
-                            {showFiltersModal && (
+                            {filtersModalShown && (
                                 <Modal
                                     heading="Filter"
                                     headingClassName={styles.heading}
                                     className={styles.mobileFilterModal}
                                     bodyClassName={styles.content}
-                                    onClose={setShowFilterModalFalse}
+                                    onClose={hideFilterModal}
                                     size="cover"
                                 >
                                     <RadioInput
