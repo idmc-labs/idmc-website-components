@@ -21,6 +21,7 @@ import {
 } from 'react-icons/io5';
 import {
     _cs,
+    isNotDefined,
 } from '@togglecorp/fujs';
 
 import {
@@ -375,6 +376,9 @@ function CountryProfile(props: Props) {
         activeRelatedMaterialPage,
     ]);
 
+    // NOTE: We are storing relatedMaterialsCount, because Drupal's API
+    // changes the total count based on current offset
+    const [relatedMaterialsCount, setRelatedMaterialsCount] = useState<undefined | number>();
     const {
         previousData: relatedMaterialsPreviousData,
         data: relatedMaterialsResponse = relatedMaterialsPreviousData,
@@ -385,6 +389,13 @@ function CountryProfile(props: Props) {
         {
             skip: !countryName,
             variables: relatedMaterialsVariables,
+            onCompleted: (response) => {
+                if (isNotDefined(relatedMaterialsCount)) {
+                    setRelatedMaterialsCount(
+                        Number(response?.relatedMaterials?.pager?.total_items) ?? 0,
+                    );
+                }
+            },
         },
     );
 
@@ -1023,9 +1034,7 @@ function CountryProfile(props: Props) {
                     onActivePageChange={setActiveRelatedMaterialPage}
                     maxItemsPerPage={relatedMaterialPageSize}
                     totalCapacity={4}
-                    itemsCount={
-                        Number(relatedMaterialsResponse?.relatedMaterials?.pager?.total_items) ?? 0
-                    }
+                    itemsCount={relatedMaterialsCount ?? 0}
                     itemsPerPageControlHidden
                 />
             </div>
