@@ -1,10 +1,10 @@
 import React, {
     useMemo,
-    useCallback,
     useState,
 } from 'react';
 import {
     MultiSelectInput,
+    Pager,
 } from '@togglecorp/toggle-ui';
 import {
     LngLatBounds,
@@ -93,6 +93,11 @@ const contentTypeLabelMapping: {
     publications: 'Publications',
 };
 
+// Related material section
+// NOTE: we cannot use any page size for related material
+// It should be defined on drupal rest view
+const relatedMaterialPageSize = 4;
+
 function getContentTypeLabel(val: string | undefined) {
     if (!val) {
         return 'Unknown';
@@ -124,8 +129,6 @@ function suffixGiddRestEndpoint(path: string) {
 }
 
 const disasterCategoryKeySelector = (d: CategoryStatisticsType) => d.label;
-
-const MAX_IDU_ITEMS = 8;
 
 const giddLink = suffixDrupalEndpoing('/database/displacement-data');
 
@@ -232,7 +235,7 @@ const RELATED_MATERIALS = gql`
             type: "RelatedMaterials!",
             method: "GET",
             endpoint: "drupal",
-            path: "/previous-information/rest?_format=json&tags=:countryName&offset=:offset&items_per_page=:itemsPerPage"
+            path: "/previous-information/rest?_format=json&tags=:countryName&offset=:offset&items_per_page=:itemsPerPage",
         ) {
             rows {
                 type {
@@ -294,11 +297,6 @@ function CountryProfile(props: Props) {
     const [disasterCategories, setDisasterCategories] = useState<string[]>([]);
     const [disasterTimeRangeActual, setDisasterTimeRange] = useState([START_YEAR, END_YEAR]);
     const disasterTimeRange = useDebouncedValue(disasterTimeRangeActual);
-
-    // Related material section
-    // NOTE: we cannot use any page size for related material
-    // It should be defined on drupal rest view
-    const relatedMaterialPageSize = 4;
 
     // IDU list section
     const [iduActivePage, setIduActivePage] = useState(1);
@@ -366,33 +364,31 @@ function CountryProfile(props: Props) {
         },
     );
 
+    const [activeRelatedMaterialPage, setActiveRelatedMaterialPage] = useState(1);
+
+    const relatedMaterialsVariables = useMemo(() => (countryName ? ({
+        countryName,
+        offset: relatedMaterialPageSize * (activeRelatedMaterialPage - 1),
+        itemsPerPage: relatedMaterialPageSize,
+    }) : undefined), [
+        countryName,
+        activeRelatedMaterialPage,
+    ]);
+
     const {
-        data,
-        fetchMore,
-        refetch,
-        loading: loadingRelatedMaterials,
+        previousData: relatedMaterialsPreviousData,
+        data: relatedMaterialsResponse = relatedMaterialsPreviousData,
         // FIXME: handle loading and error
         // error,
     } = useQuery<RelatedMaterialsQuery, RelatedMaterialsQueryVariables>(
         RELATED_MATERIALS,
         {
             skip: !countryName,
-            variables: countryName ? {
-                countryName,
-                offset: 0,
-                itemsPerPage: relatedMaterialPageSize,
-            } : undefined,
+            variables: relatedMaterialsVariables,
         },
     );
 
-    const relatedMaterials = data?.relatedMaterials?.rows;
-    const relatedMaterialsOffset = relatedMaterials?.length ?? 0;
-
-    const remainingRelatedMaterialsCount = Math.max(
-        0,
-        Number(data?.relatedMaterials?.pager?.total_items || '0') - relatedMaterialPageSize,
-    );
-
+    const relatedMaterials = relatedMaterialsResponse?.relatedMaterials?.rows;
     const countryInfo = countryProfileData?.country;
 
     const countryOverviewSortedByYear = useMemo(() => {
@@ -422,43 +418,6 @@ function CountryProfile(props: Props) {
         }
     }, [countryOptions]);
     */
-
-    const handleShowMoreButtonClick = useCallback(() => {
-        fetchMore({
-            variables: {
-                countryName,
-                offset: relatedMaterialsOffset,
-                itemsPerPage: relatedMaterialPageSize,
-            },
-            updateQuery: (previousResult, { fetchMoreResult }) => {
-                if (!previousResult.relatedMaterials) {
-                    return previousResult;
-                }
-                const newRows = fetchMoreResult?.relatedMaterials?.rows;
-                const newPager = fetchMoreResult?.relatedMaterials?.pager;
-                const oldRows = previousResult.relatedMaterials?.rows;
-
-                if (!newRows || !newPager) {
-                    return previousResult;
-                }
-                return ({
-                    ...previousResult,
-                    relatedMaterials: {
-                        ...previousResult.relatedMaterials,
-                        rows: [
-                            ...(oldRows ?? []),
-                            ...(newRows ?? []),
-                        ],
-                        pager: newPager,
-                    },
-                });
-            },
-        });
-    }, [
-        countryName,
-        relatedMaterialsOffset,
-        fetchMore,
-    ]);
 
     const profileSection = (
         <section className={styles.profile}>
@@ -1059,32 +1018,16 @@ function CountryProfile(props: Props) {
                 ))}
             </div>
             <div className={styles.materialPager}>
-                {remainingRelatedMaterialsCount > 0
-                    && (data?.relatedMaterials?.rows?.length ?? 0) < MAX_IDU_ITEMS
-                    && (
-                        <Button
-                            // FIXME: need to hide this if there is no more data
-                            name={undefined}
-                            onClick={handleShowMoreButtonClick}
-                            disabled={loadingRelatedMaterials}
-                            actions={<IoArrowDown />}
-                            variant="transparent"
-                        >
-                            Show More
-                        </Button>
-                    )}
-                {(data?.relatedMaterials?.rows?.length ?? 0) > relatedMaterialPageSize && (
-                    <Button
-                        // FIXME: need to hide this if there is no more data
-                        name={undefined}
-                        onClick={() => refetch()}
-                        disabled={loadingRelatedMaterials}
-                        actions={<IoArrowUp />}
-                        variant="transparent"
-                    >
-                        Show Less
-                    </Button>
-                )}
+                <Pager
+                    activePage={activeRelatedMaterialPage}
+                    onActivePageChange={setActiveRelatedMaterialPage}
+                    maxItemsPerPage={relatedMaterialPageSize}
+                    totalCapacity={4}
+                    itemsCount={
+                        Number(relatedMaterialsResponse?.relatedMaterials?.pager?.total_items) ?? 0
+                    }
+                    itemsPerPageControlHidden
+                />
             </div>
         </section>
     );
