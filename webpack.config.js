@@ -4,6 +4,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { HotModuleReplacementPlugin, EnvironmentPlugin } = require('webpack');
 const Dotenv = require('dotenv-webpack');
 const { GitRevisionPlugin } = require('git-revision-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 // const WebpackPwaManifest = require('webpack-pwa-manifest');
 const { merge } = require('webpack-merge');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
@@ -135,6 +136,11 @@ module.exports = () => {
             new MiniCssExtractPlugin({
                 filename: 'css/[name].css',
                 chunkFilename: 'css/[id].css',
+            }),
+            new CopyPlugin({
+                patterns: [
+                    { from: 'public', to: '.' },
+                ],
             }),
             new HtmlWebpackPlugin({
                 favicon: getPath('app/favicon.ico'),
