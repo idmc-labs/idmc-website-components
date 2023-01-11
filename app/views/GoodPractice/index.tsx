@@ -247,11 +247,9 @@ function GoodPractice(props: Props) {
                             darkMode
                             hideHeadingBorder
                         />
-                        <EllipsizedContent darkMode>
-                            <HTMLOutput
-                                value={goodPracticeDescription}
-                            />
-                        </EllipsizedContent>
+                        <HTMLOutput
+                            value={goodPracticeDescription}
+                        />
                         <LanguageSelectionInput
                             className={styles.languageSelection}
                         />
