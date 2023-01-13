@@ -79,7 +79,7 @@ import {
 import useIduMap from '#components/IduMap/useIduMap';
 
 import useDebouncedValue from '../../hooks/useDebouncedValue';
-import FigureAnalysis from './FigureAnalysis';
+// import FigureAnalysis from './FigureAnalysis';
 
 import { countryMetadata } from './data';
 
@@ -902,9 +902,11 @@ function CountryProfile(props: Props) {
                     value={countryInfo?.displacementDataDescription}
                 />
             </EllipsizedContent>
+            {/*
             <FigureAnalysis
                 data={countryInfo?.figureAnalysis}
             />
+              */}
             <div className={styles.infographics}>
                 {conflictSection}
                 {disasterSection}
