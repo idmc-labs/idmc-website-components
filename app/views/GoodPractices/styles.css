@@ -97,6 +97,10 @@
                     border-radius: 0.25rem;
                     background-color: var(--tui-color-background);
                     padding: var(--tui-spacing-medium);
+
+                    .new-good-practice {
+                        display: none;
+                    }
                 }
             }
 
