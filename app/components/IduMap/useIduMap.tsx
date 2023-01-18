@@ -11,24 +11,17 @@ import {
     LngLatBounds,
 } from 'mapbox-gl';
 import {
-    IoDownloadOutline,
     IoExitOutline,
 } from 'react-icons/io5';
 import {
     isNotDefined,
-    isDefined,
 } from '@togglecorp/fujs';
-import { saveAs } from 'file-saver';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import stringify from 'csv-stringify/lib/browser/sync';
 
 import {
     IduDataQuery,
     IduDataQueryVariables,
 } from '#generated/types';
 
-import Button from '#components/Button';
 import ButtonLikeLink from '#components/ButtonLikeLink';
 import Header from '#components/Header';
 import SliderInput from '#components/SliderInput';
@@ -38,7 +31,6 @@ import { monthList } from '#utils/common';
 import LegendElement from '#components/LegendElement';
 
 import RawIduMap from './RawIduMap';
-import useDebouncedValue from '../../hooks/useDebouncedValue';
 import useInputState from '../../hooks/useInputState';
 
 import styles from './styles.css';
@@ -87,61 +79,20 @@ const IDU_DATA = gql`
 type DisplacementType = 'Conflict' | 'Disaster' | 'Other';
 type DisplacementNumber = 'less-than-100' | 'less-than-1000' | 'more-than-1000';
 
-const START_YEAR = 2008;
-const today = new Date();
-const END_YEAR_FOR_IDU = today.getFullYear();
-
-// countryInfo?.boundingBox as LngLatBounds | undefined
+// const START_YEAR = 2008;
+const TODAY = new Date();
 
 function useIduQuery(
     boundingBox?: LngLatBounds | undefined,
     iso3?: string,
 ) {
-    const [mapTimeRangeActual, setMapTimeRange] = useState<[number, number]>(
-        [START_YEAR, END_YEAR_FOR_IDU],
-    );
-
     const [mapTimeMonthRange, setMapTimeMonthRange] = useState<[number, number]>(
-        [0, 12],
+        [11, 12],
     );
-    const mapTimeRange = useDebouncedValue(mapTimeRangeActual);
-    const [
-        mapTypeOfDisplacements,
-        setMapTypeOfDisplacements,
-    ] = useInputState<DisplacementType[]>(['Conflict', 'Disaster']);
-    const [
-        mapNoOfDisplacements,
-        setMapNoOfDisplacements,
-    ] = useInputState<DisplacementNumber[]>(['less-than-100', 'less-than-1000', 'more-than-1000']);
-
-    const {
-        previousData: previousIduData,
-        data: iduData = previousIduData,
-        // FIXME: handle loading and error
-        // loading: iduDataLoading,
-        // error: iduDataError,
-    } = useQuery<IduDataQuery, IduDataQueryVariables>(
-        IDU_DATA,
-        {
-            onCompleted: (response) => {
-                if (!response.idu || response.idu.length <= 0) {
-                    return;
-                }
-                const max = Math.max(...response.idu.map((item) => item.year).filter(isDefined));
-                setMapTimeRange([max, Math.max(max, END_YEAR_FOR_IDU)]);
-            },
-        },
-    );
-
-    const idus = React.useMemo(() => (
-        iso3
-            ? iduData?.idu.filter((item) => item.iso3 === iso3)
-            : iduData?.idu
-    ), [iso3, iduData]);
 
     const [iduFilterStartDate, iduFilterEndDate] = useMemo(
         () => {
-            const lastYearToday = new Date(today);
+            const lastYearToday = new Date(TODAY);
             lastYearToday.setMonth(lastYearToday.getMonth() - 12);
 
             const filterStartDate = new Date(
@@ -164,9 +115,50 @@ function useIduQuery(
         [mapTimeMonthRange],
     );
 
+    const [
+        mapTypeOfDisplacements,
+        setMapTypeOfDisplacements,
+    ] = useInputState<DisplacementType[]>(['Conflict', 'Disaster']);
+    const [
+        mapNoOfDisplacements,
+        setMapNoOfDisplacements,
+    ] = useInputState<DisplacementNumber[]>(['less-than-100', 'less-than-1000', 'more-than-1000']);
+
+    const {
+        previousData: previousIduData,
+        data: iduData = previousIduData,
+        // FIXME: handle loading and error
+        // loading: iduDataLoading,
+        // error: iduDataError,
+    } = useQuery<IduDataQuery, IduDataQueryVariables>(
+        IDU_DATA,
+    );
+
+    const idus = React.useMemo(() => (
+        iso3
+            ? iduData?.idu.filter((item) => item.iso3 === iso3)
+            : iduData?.idu
+    ), [iso3, iduData]);
+
     const idusForMap = React.useMemo(() => (
         idus?.filter((d) => {
             if (isNotDefined(d.displacement_date)) {
+                return false;
+            }
+
+            if (d.displacement_type && !mapTypeOfDisplacements.includes(d.displacement_type)) {
+                return false;
+            }
+
+            let key: DisplacementNumber;
+            if (d.figure < 100) {
+                key = 'less-than-100';
+            } else if (d.figure < 1000) {
+                key = 'less-than-1000';
+            } else {
+                key = 'more-than-1000';
+            }
+            if (!mapNoOfDisplacements.includes(key)) {
                 return false;
             }
 
@@ -175,7 +167,7 @@ function useIduQuery(
             return displacementDate.getTime() >= iduFilterStartDate.getTime()
                 && displacementDate.getTime() <= iduFilterEndDate.getTime();
         })
-    ), [idus, iduFilterStartDate, iduFilterEndDate]);
+    ), [idus, iduFilterStartDate, iduFilterEndDate, mapNoOfDisplacements, mapTypeOfDisplacements]);
 
     const handleTypeOfDisplacementsChange = useCallback((value: DisplacementType) => {
         setMapTypeOfDisplacements((oldValue: DisplacementType[]) => {
@@ -205,60 +197,6 @@ function useIduQuery(
         });
     }, [setMapNoOfDisplacements]);
 
-    const handleExportIduClick = React.useCallback(() => {
-        // FIXME: we have duplicate logic for filtering for now
-        const filteredIdus = idus?.map((idu) => {
-            if (
-                isNotDefined(idu.longitude)
-                || isNotDefined(idu.latitude)
-                || isNotDefined(idu.figure)
-                || isNotDefined(idu.displacement_type)
-                // NOTE: filtering out displacement_type Other
-                || idu.displacement_type === 'Other'
-            ) {
-                return undefined;
-            }
-
-            if (!mapTypeOfDisplacements.includes(idu.displacement_type)) {
-                return undefined;
-            }
-
-            let key: DisplacementNumber;
-            if (idu.figure < 100) {
-                key = 'less-than-100';
-            } else if (idu.figure < 1000) {
-                key = 'less-than-1000';
-            } else {
-                key = 'more-than-1000';
-            }
-            if (!mapNoOfDisplacements.includes(key)) {
-                return undefined;
-            }
-
-            const [min, max] = mapTimeRange;
-            if (!idu.year || idu.year < min || idu.year > max) {
-                return undefined;
-            }
-            return idu;
-        }).filter(isDefined);
-
-        if (filteredIdus && filteredIdus.length > 0) {
-            // FIXME: we may need to manually set headers (first data may not
-            // always have all the keys)
-            const headers = Object.keys(filteredIdus[0]);
-
-            const dataString = stringify(filteredIdus, {
-                columns: headers,
-            });
-            const fullCsvString = `${headers}\n${dataString}`;
-            const blob = new Blob(
-                [fullCsvString],
-                { type: 'text/csv;charset=utf-8' },
-            );
-            saveAs(blob, 'idu_export.csv');
-        }
-    }, [idus, mapNoOfDisplacements, mapTypeOfDisplacements, mapTimeRange]);
-
     const widget = (
         <Container
             filtersClassName={styles.filtersContainer}
@@ -268,8 +206,6 @@ function useIduQuery(
                         <SliderInput
                             hideValues
                             className={styles.timeRangeInput}
-                            // min={mapTimeRangeBounds[0]}
-                            // max={mapTimeRangeBounds[1]}
                             min={0}
                             max={12}
                             labelDescription={`${monthList[iduFilterStartDate.getMonth()]} ${iduFilterStartDate.getFullYear()} - ${monthList[iduFilterEndDate.getMonth()]} ${iduFilterEndDate.getFullYear()}`}
@@ -336,37 +272,22 @@ function useIduQuery(
                 </>
             )}
             footerActions={(
-                <>
-                    <Button
-                        name={undefined}
-                        onClick={handleExportIduClick}
-                        className={styles.disasterButton}
-                        icons={(
-                            <IoDownloadOutline />
-                        )}
-                    >
-                        Download Displacement Data
-                    </Button>
-                    <ButtonLikeLink
-                        href={giddLink}
-                        target="_blank"
-                        className={styles.disasterButton}
-                        rel="noopener noreferrer"
-                        icons={(
-                            <IoExitOutline />
-                        )}
-                    >
-                        View Full Database
-                    </ButtonLikeLink>
-                </>
+                <ButtonLikeLink
+                    href={giddLink}
+                    target="_blank"
+                    className={styles.disasterButton}
+                    rel="noopener noreferrer"
+                    icons={(
+                        <IoExitOutline />
+                    )}
+                >
+                    View Full Database
+                </ButtonLikeLink>
             )}
         >
             <RawIduMap
                 idus={idusForMap}
                 boundingBox={boundingBox}
-                mapTypeOfDisplacements={mapTypeOfDisplacements}
-                mapNoOfDisplacements={mapNoOfDisplacements}
-                mapTimeRange={mapTimeRange}
             />
         </Container>
     );

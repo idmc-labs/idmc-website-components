@@ -415,6 +415,7 @@ function CountryProfile(props: Props) {
         widget: iduWidget,
     } = useIduMap(
         countryInfo?.boundingBox as LngLatBounds | undefined,
+        currentCountry,
     );
 
     /*

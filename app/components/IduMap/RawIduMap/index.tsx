@@ -22,10 +22,6 @@ import {
 
 import styles from './styles.css';
 
-// NOTE: this is repeated
-type DisplacementType = 'Conflict' | 'Disaster' | 'Other';
-type DisplacementNumber = 'less-than-100' | 'less-than-1000' | 'more-than-1000';
-
 interface PopupProperties {
     type: 'Disaster' | 'Conflict' | 'Other',
     value: number,
@@ -75,18 +71,12 @@ const lightStyle = process.env.REACT_APP_MAPBOX_STYLE || 'mapbox://styles/mapbox
 interface Props {
     idus: IduDataQuery['idu'] | undefined;
     boundingBox: LngLatBounds | undefined;
-    mapTypeOfDisplacements: DisplacementType[];
-    mapNoOfDisplacements: DisplacementNumber[];
-    mapTimeRange: [number, number];
 }
 
 function RawIduMap(props: Props) {
     const {
         idus,
         boundingBox,
-        mapTypeOfDisplacements,
-        mapNoOfDisplacements,
-        mapTimeRange,
     } = props;
 
     const [mapHoverLngLat, setMapHoverLngLat] = useState<LngLatLike>();
@@ -126,27 +116,6 @@ function RawIduMap(props: Props) {
                         return undefined;
                     }
 
-                    if (!mapTypeOfDisplacements.includes(idu.displacement_type)) {
-                        return undefined;
-                    }
-                    let key: DisplacementNumber;
-                    if (idu.figure < 100) {
-                        key = 'less-than-100';
-                    } else if (idu.figure < 1000) {
-                        key = 'less-than-1000';
-                    } else {
-                        key = 'more-than-1000';
-                    }
-
-                    if (!mapNoOfDisplacements.includes(key)) {
-                        return undefined;
-                    }
-
-                    const [min, max] = mapTimeRange;
-                    if (idu.year && (idu.year < min || idu.year > max)) {
-                        return undefined;
-                    }
-
                     return {
                         id: idu.id,
                         type: 'Feature' as const,
@@ -165,7 +134,7 @@ function RawIduMap(props: Props) {
                     };
                 }).filter(isDefined) ?? [],
         }),
-        [idus, mapNoOfDisplacements, mapTypeOfDisplacements, mapTimeRange],
+        [idus],
     );
 
     return (
