@@ -90,17 +90,21 @@ export function getCountryProfileLink(iso3: string, countryName?: string) {
 }
 
 export function getGoodPracticesLink() {
-    // NOTE: we need to also add countryName on standaloneMode url
     return standaloneMode
         ? '/?page=good-practices'
         : '/good-practices';
 }
 
 export function getGoodPracticeLink(id: string) {
-    // NOTE: we need to also add countryName on standaloneMode url
     return standaloneMode
         ? `/?page=good-practice&id=${id}`
         : `/good-practice?id=${id}`;
+}
+
+export function getIduLink() {
+    return standaloneMode
+        ? '/?page=idu-map'
+        : '/';
 }
 
 export const monthList = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];

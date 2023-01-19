@@ -14,6 +14,7 @@ import {
     getCountryProfileLink,
     getGoodPracticesLink,
     getGoodPracticeLink,
+    getIduLink,
 } from '#utils/common';
 import CountryProfile from '#views/CountryProfile';
 import GoodPractice from '#views/GoodPractice';
@@ -228,6 +229,18 @@ function Base() {
                         </a>
                         <a href={getGoodPracticeLink('1')}>
                             Good Practice (1)
+                        </a>
+                        <a href={getGoodPracticeLink('2')}>
+                            Good Practice (2)
+                        </a>
+                        <a href={getGoodPracticeLink('3')}>
+                            Good Practice (3)
+                        </a>
+                        <a href={getGoodPracticeLink('4')}>
+                            Good Practice (4)
+                        </a>
+                        <a href={getIduLink()}>
+                            Idu Map
                         </a>
                     </>
                 );
