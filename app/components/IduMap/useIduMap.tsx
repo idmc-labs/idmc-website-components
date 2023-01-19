@@ -81,19 +81,20 @@ type DisplacementNumber = 'less-than-100' | 'less-than-1000' | 'more-than-1000';
 
 // const START_YEAR = 2008;
 const TODAY = new Date();
+const MONTHS = 6;
 
 function useIduQuery(
     boundingBox?: LngLatBounds | undefined,
     iso3?: string,
 ) {
     const [mapTimeMonthRange, setMapTimeMonthRange] = useState<[number, number]>(
-        [11, 12],
+        [MONTHS - 1, MONTHS],
     );
 
     const [iduFilterStartDate, iduFilterEndDate] = useMemo(
         () => {
             const lastYearToday = new Date(TODAY);
-            lastYearToday.setMonth(lastYearToday.getMonth() - 12);
+            lastYearToday.setMonth(lastYearToday.getMonth() - MONTHS);
 
             const filterStartDate = new Date(
                 lastYearToday.getFullYear(),
@@ -207,7 +208,7 @@ function useIduQuery(
                             hideValues
                             className={styles.timeRangeInput}
                             min={0}
-                            max={12}
+                            max={MONTHS}
                             labelDescription={`${monthList[iduFilterStartDate.getMonth()]} ${iduFilterStartDate.getFullYear()} - ${monthList[iduFilterEndDate.getMonth()]} ${iduFilterEndDate.getFullYear()}`}
                             step={1}
                             minDistance={0}
