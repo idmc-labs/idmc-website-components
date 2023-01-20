@@ -79,8 +79,6 @@ function DropdownMenuItem<N extends string | number | undefined>(props: Props<N>
                 <a
                     className={className}
                     href={href}
-                    target="_blank"
-                    rel="noreferrer"
                 >
                     {content}
                 </a>

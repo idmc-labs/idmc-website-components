@@ -38,8 +38,6 @@ function RelatedMaterialItem(props: Props) {
                 <a
                     className={styles.coverWrapper}
                     href={url}
-                    target="_blank"
-                    rel="noreferrer"
                 >
                     <img
                         src={coverImageUrl}
@@ -57,8 +55,6 @@ function RelatedMaterialItem(props: Props) {
                         <a
                             href={url}
                             className={styles.link}
-                            target="_blank"
-                            rel="noreferrer"
                         >
                             {heading}
                         </a>

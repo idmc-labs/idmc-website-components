@@ -275,14 +275,12 @@ function useIduQuery(
             footerActions={(
                 <ButtonLikeLink
                     href={giddLink}
-                    target="_blank"
                     className={styles.disasterButton}
-                    rel="noopener noreferrer"
                     icons={(
                         <IoExitOutline />
                     )}
                 >
-                    View Full Database
+                    View to the GIDD dataset
                 </ButtonLikeLink>
             )}
         >

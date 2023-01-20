@@ -109,7 +109,7 @@ function getContentTypeLabel(val: string | undefined) {
 const DRUPAL_ENDPOINT = process.env.REACT_APP_DRUPAL_ENDPOINT as string || '';
 const REST_ENDPOINT = process.env.REACT_APP_REST_ENDPOINT as string;
 
-function suffixDrupalEndpoing(path: string) {
+function suffixDrupalEndpoint(path: string) {
     return `${DRUPAL_ENDPOINT}${path}`;
 }
 
@@ -122,7 +122,7 @@ function replaceWithDrupalEndpoint(image: string | null | undefined) {
         return image;
     }
     const path = new URL(image).pathname;
-    return suffixDrupalEndpoing(path);
+    return suffixDrupalEndpoint(path);
 }
 
 function suffixGiddRestEndpoint(path: string) {
@@ -131,7 +131,9 @@ function suffixGiddRestEndpoint(path: string) {
 
 const disasterCategoryKeySelector = (d: CategoryStatisticsType) => d.label;
 
-const giddLink = suffixDrupalEndpoing('/database/displacement-data');
+const giddDisplacementDataLink = suffixDrupalEndpoint('/database/displacement-data');
+const giddLink = suffixDrupalEndpoint('/database');
+const monitoringLink = suffixDrupalEndpoint('/monitoring-tools');
 
 const categoricalColorScheme = [
     'rgb(6, 23, 158)',
@@ -542,8 +544,8 @@ function CountryProfile(props: Props) {
                     <ButtonLikeLink
                         href={suffixGiddRestEndpoint(`/countries/${currentCountry}/disaster-export/?start_year=${disasterTimeRange[0]}&end_year=${disasterTimeRange[1]}&hazard_type=${disasterCategories.join(',')}`)}
                         target="_blank"
-                        className={styles.disasterButton}
                         rel="noopener noreferrer"
+                        className={styles.disasterButton}
                         icons={(
                             <IoDownloadOutline />
                         )}
@@ -551,15 +553,13 @@ function CountryProfile(props: Props) {
                         Download Disaster Data
                     </ButtonLikeLink>
                     <ButtonLikeLink
-                        href={giddLink}
+                        href={giddDisplacementDataLink}
                         className={styles.disasterButton}
-                        target="_blank"
-                        rel="noopener noreferrer"
                         icons={(
                             <IoExitOutline />
                         )}
                     >
-                        View Full Database
+                        View to the GIDD dataset
                     </ButtonLikeLink>
                 </>
             )}
@@ -744,8 +744,8 @@ function CountryProfile(props: Props) {
                     <ButtonLikeLink
                         href={suffixGiddRestEndpoint(`/countries/${currentCountry}/conflict-export/?start_year=${conflictTimeRange[0]}&end_year=${conflictTimeRange[1]}`)}
                         target="_blank"
-                        className={styles.conflictButton}
                         rel="noopener noreferrer"
+                        className={styles.conflictButton}
                         icons={(
                             <IoDownloadOutline />
                         )}
@@ -753,15 +753,13 @@ function CountryProfile(props: Props) {
                         Download Conflict Data
                     </ButtonLikeLink>
                     <ButtonLikeLink
-                        href={giddLink}
+                        href={giddDisplacementDataLink}
                         className={styles.conflictButton}
-                        target="_blank"
-                        rel="noopener noreferrer"
                         icons={(
                             <IoExitOutline />
                         )}
                     >
-                        View Full Database
+                        View to the GIDD dataset
                     </ButtonLikeLink>
                 </>
             )}
@@ -932,6 +930,10 @@ function CountryProfile(props: Props) {
                     </TooltipIcon>
                 )}
             />
+            <p>
+                {/* eslint-disable-next-line max-len, react/jsx-one-expression-per-line */}
+                IDMC&apos;s Internal Displacement Updates (IDU) are preliminary estimates of new displacement events reported in the last 180 days. This provisional data is updated daily with new available data. Curated and validated estimates are published in the <a href={giddLink}>Global Internal Displacement Database (GIDD).</a> To find out more about how we monitor and report on our figures, click <a href={monitoringLink}>here.</a>
+            </p>
             <EllipsizedContent>
                 <HTMLOutput
                     value={countryInfo?.internalDisplacementDescription}
