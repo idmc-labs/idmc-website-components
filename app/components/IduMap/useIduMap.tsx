@@ -280,7 +280,7 @@ function useIduQuery(
                         <IoExitOutline />
                     )}
                 >
-                    View to the GIDD dataset
+                    Go to our Data Centre (GIDD)
                 </ButtonLikeLink>
             )}
         >
