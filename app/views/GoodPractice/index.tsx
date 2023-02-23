@@ -15,6 +15,7 @@ import {
 import { IoChevronForward } from 'react-icons/io5';
 
 import Header from '#components/Header';
+import Button from '#components/Button';
 import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
 import TextOutput from '#components/TextOutput';
@@ -23,9 +24,11 @@ import CarouselItem from '#components/Carousel/CarouselItem';
 import CarouselButton from '#components/Carousel/CarouselButton';
 import LanguageSelectionInput from '#components/LanguageSelectInput';
 import GoodPracticeItem from '#components/GoodPracticeItem';
+import AddGoodPractice from '#views/GoodPractices/AddGoodPractice';
 
 import { goodPracticeItem } from '#base/configs/lang';
 import useTranslation from '#hooks/useTranslation';
+import useModalState from '#hooks/useModalState';
 
 import {
     GoodPracticeDetailsQuery,
@@ -137,6 +140,13 @@ function GoodPractice(props: Props) {
     const [
         incrementPageCount,
     ] = useMutation<IncrementPageViewMutation, IncrementPageViewMutationVariables>(PAGE_COUNT);
+
+    const [
+        addNewGoodPracticeModalShown,
+        showNewGoodPracticeModal,
+        hideNewGoodPracticeModal,
+    ] = useModalState<boolean>(false);
+
     const strings = useTranslation(goodPracticeItem);
 
     React.useEffect(() => {
@@ -364,11 +374,15 @@ function GoodPractice(props: Props) {
                         <div className={styles.blockList}>
                             {submitDescription && (
                                 <div className={styles.block}>
-                                    <EllipsizedContent>
-                                        <HTMLOutput
-                                            value={submitDescription}
-                                        />
-                                    </EllipsizedContent>
+                                    <h4>
+                                        {strings.addNewGoodPracticeHeading}
+                                    </h4>
+                                    <Button
+                                        name={undefined}
+                                        onClick={showNewGoodPracticeModal}
+                                    >
+                                        {strings.submitNewGoodPracticeLabel}
+                                    </Button>
                                 </div>
                             )}
                             {contactInformation && (
@@ -415,6 +429,11 @@ function GoodPractice(props: Props) {
                         ))}
                     </div>
                 </section>
+                {addNewGoodPracticeModalShown && (
+                    <AddGoodPractice
+                        onModalClose={hideNewGoodPracticeModal}
+                    />
+                )}
             </div>
         </div>
     );
