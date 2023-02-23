@@ -1,4 +1,9 @@
-import React, { useEffect, useCallback, useMemo, useState } from 'react';
+import React, {
+    useEffect,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 import {
     gql,
     useQuery,
@@ -762,10 +767,6 @@ function GoodPractices(props: Props) {
         setMapHoverFeatureProperties(undefined);
     }, []);
 
-    const handleNewGoodPracticeButtonClick = useCallback(() => {
-        showNewGoodPracticeModal();
-    }, [showNewGoodPracticeModal]);
-
     // NOTE: Adding style to body to disable scroll when modal is open
     useEffect(() => {
         if (addNewGoodPracticeModalShown || filtersModalShown) {
@@ -898,19 +899,15 @@ function GoodPractices(props: Props) {
                         )}
                         <div className={styles.sidePane}>
                             <div className={styles.block}>
-                                {submitDescription && (
-                                    <EllipsizedContent>
-                                        <HTMLOutput
-                                            value={submitDescription}
-                                        />
-                                    </EllipsizedContent>
-                                )}
+                                <h4>
+                                    {strings.addNewGoodPracticeHeading}
+                                </h4>
                                 <Button
-                                    name=""
-                                    onClick={handleNewGoodPracticeButtonClick}
+                                    name={undefined}
+                                    onClick={showNewGoodPracticeModal}
                                     className={styles.newGoodPractice}
                                 >
-                                    {strings.submitNewgoodPracticeLabel}
+                                    {strings.submitNewGoodPracticeLabel}
                                 </Button>
                             </div>
                             {contactInformation && (

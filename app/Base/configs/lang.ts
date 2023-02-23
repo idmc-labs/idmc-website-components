@@ -201,9 +201,13 @@ export const goodPracticesDashboard = {
         en: 'Also submit in french',
         fr: 'Soumettre également en français',
     },
-    submitNewgoodPracticeLabel: {
+    submitNewGoodPracticeLabel: {
         en: 'Submit a new good practice',
         fr: 'soumettre une nouvelle bonne pratique',
+    },
+    addNewGoodPracticeHeading: {
+        en: 'Do you have a Good Practice you would like us to review?',
+        fr: 'Avez-vous une bonne pratique que vous aimeriez que nous examinions?',
     },
 };
 
@@ -251,5 +255,13 @@ export const goodPracticeItem = {
     relatedMaterialsLabel: {
         en: 'Related materials',
         fr: 'Matériel connexe',
+    },
+    addNewGoodPracticeHeading: {
+        en: 'Do you have a Good Practice you would like us to review?',
+        fr: 'Avez-vous une bonne pratique que vous aimeriez que nous examinions?',
+    },
+    submitNewGoodPracticeLabel: {
+        en: 'Submit a new good practice',
+        fr: 'soumettre une nouvelle bonne pratique',
     },
 };
