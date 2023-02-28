@@ -4,6 +4,16 @@
 
         .input {
             padding: 0;
+
+            .textLengthSection {
+                display: flex;
+                justify-content: space-evenly;
+                font-size: var(--tui-font-size-small);
+
+                .textLimit {
+                    color: var(--color-orange);
+                }
+            }
         }
     }
 }
