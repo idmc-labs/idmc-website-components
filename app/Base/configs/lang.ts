@@ -161,16 +161,24 @@ export const goodPracticesDashboard = {
         en: 'Type',
         fr: 'taper',
     },
+    contactNameLabel: {
+        en: 'Contact name',
+        fr: 'Nom du contact',
+    },
+    contactEmailLabel: {
+        en: 'Contact email',
+        fr: 'Email du contact',
+    },
     implementingEntityLabel: {
         en: 'Implementing organisation/entity',
         fr: 'Entité de mise en œuvre',
     },
     implementingEntityFrLabel: {
-        en: 'Implementing Entity (French)',
-        fr: 'entité de mise en œuvre (français)',
+        en: 'Implementing organisation/entity (French)',
+        fr: 'Entité de mise en œuvre',
     },
     mediaAndResourceLinksLabel: {
-        en: 'Please provide links to any relevant reports, evaluations or other documents that will help us better understand the project and its impacts.',
+        en: 'Please provide links to any relevant reports, evaluations or other documents that will help us better understand the project and its impacts',
         fr: `Veuillez fournir des liens vers tous les rapports,
          évaluations ou autres documents pertinents qui nous
          aideront à mieux comprendre le projet et ses impacts.`,
@@ -184,24 +192,28 @@ export const goodPracticesDashboard = {
         fr: 'Description du projet (max 2 000 caractères)',
     },
     descriptionsFrLabel: {
-        en: 'Description (French)',
-        fr: 'descriptif (français)',
+        en: 'Description of the project (max 2,000 characters) (French)',
+        fr: 'Description du projet (max 2 000 caractères) (French)',
     },
     titleLabel: {
         en: 'Name of project',
         fr: 'Nom du projet:',
     },
     titleFrLabel: {
-        en: 'Title (French)',
-        fr: 'titre (français)',
+        en: 'Name of project (French)',
+        fr: 'Nom du projet',
     },
     submitLabel: {
         en: 'Submit',
         fr: 'nous faire parvenir',
     },
+    inFrenchLabel: {
+        en: ' in French',
+        fr: ' en français',
+    },
     alsoSubmitInFrenchLabel: {
-        en: 'Also submit in french',
-        fr: 'Soumettre également en français',
+        en: 'Submit in French',
+        fr: 'Soumettre en français',
     },
     submitNewGoodPracticeLabel: {
         en: 'Submit a new good practice',
@@ -226,6 +238,18 @@ export const goodPracticesDashboard = {
         connexes. IDMC se réserve le droit de modifier tout ou
         partie du texte soumis, selon son propre processus d'examen
         et de vérification.`,
+    },
+    promisingLabel: {
+        en: 'What makes this a promising practice? (max 2,000 characters)',
+        fr: 'Qu`est-ce qui en fait une pratique prometteuse? (max 2 000 caractères)',
+    },
+    keyLessonsLabel: {
+        en: 'Briefly describe the key lessons learned (max 2,000 characters)',
+        fr: 'Décrivez brièvement les principaux enseignements tirés (2 000 caractères maximum)',
+    },
+    ongoingLabel: {
+        en: 'Ongoing',
+        fr: 'en cours',
     },
 };
 

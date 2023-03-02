@@ -33,6 +33,14 @@
             flex-shrink: 0;
         }
 
+        .ongoing {
+            flex-grow: 1;
+            flex-shrink: 0;
+
+            :hover {
+                background-color: unset;
+            }
+        }
     }
 
     .terms-label {
