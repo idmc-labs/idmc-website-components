@@ -78,8 +78,8 @@ export const goodPracticesDashboard = {
         fr: 'Région',
     },
     countryLabel: {
-        en: 'Country',
-        fr: 'Pays',
+        en: 'Country (select from list)',
+        fr: 'Pays (sélectionnez dans la liste) :',
     },
     driversOfDisplacementLabel: {
         en: 'Drivers of Displacement',
@@ -146,12 +146,12 @@ export const goodPracticesDashboard = {
         fr: 'télécharger une image de couverture',
     },
     startYearLabel: {
-        en: 'Start year',
-        fr: 'année de début',
+        en: 'Project start year',
+        fr: 'Année de début du projet',
     },
     endYearLabel: {
-        en: 'End Year',
-        fr: 'fin d\'année',
+        en: 'Project end year or ongoing',
+        fr: 'Fin d`année du projet ou en cours',
     },
     tagLabel: {
         en: 'Tags',
@@ -161,45 +161,59 @@ export const goodPracticesDashboard = {
         en: 'Type',
         fr: 'taper',
     },
+    contactNameLabel: {
+        en: 'Contact name',
+        fr: 'Nom du contact',
+    },
+    contactEmailLabel: {
+        en: 'Contact email',
+        fr: 'Email du contact',
+    },
     implementingEntityLabel: {
-        en: 'Implementing Entity',
-        fr: 'entité de mise en œuvre',
+        en: 'Implementing organisation/entity',
+        fr: 'Entité de mise en œuvre',
     },
     implementingEntityFrLabel: {
-        en: 'Implementing Entity (French)',
-        fr: 'entité de mise en œuvre (français)',
+        en: 'Implementing organisation/entity (French)',
+        fr: 'Entité de mise en œuvre',
     },
     mediaAndResourceLinksLabel: {
-        en: 'Media and Resource Links',
-        fr: 'liens médias et ressources',
+        en: 'Please provide links to any relevant reports, evaluations or other documents that will help us better understand the project and its impacts',
+        fr: `Veuillez fournir des liens vers tous les rapports,
+         évaluations ou autres documents pertinents qui nous
+         aideront à mieux comprendre le projet et ses impacts.`,
     },
     mediaAndResoureLinksFrLabel: {
         en: 'Media and Resource Links (French)',
         fr: 'liens médias et ressources (français)',
     },
     descriptionLabel: {
-        en: 'Description',
-        fr: 'la description',
+        en: 'Description of the project (max 2,000 characters)',
+        fr: 'Description du projet (max 2 000 caractères)',
     },
     descriptionsFrLabel: {
-        en: 'Description (French)',
-        fr: 'descriptif (français)',
+        en: 'Description of the project (max 2,000 characters) (French)',
+        fr: 'Description du projet (max 2 000 caractères) (French)',
     },
     titleLabel: {
-        en: 'Title',
-        fr: 'Titre',
+        en: 'Name of project',
+        fr: 'Nom du projet:',
     },
     titleFrLabel: {
-        en: 'Title (French)',
-        fr: 'titre (français)',
+        en: 'Name of project (French)',
+        fr: 'Nom du projet',
     },
     submitLabel: {
         en: 'Submit',
         fr: 'nous faire parvenir',
     },
+    inFrenchLabel: {
+        en: ' in French',
+        fr: ' en français',
+    },
     alsoSubmitInFrenchLabel: {
-        en: 'Also submit in french',
-        fr: 'Soumettre également en français',
+        en: 'Submit in French',
+        fr: 'Soumettre en français',
     },
     submitNewGoodPracticeLabel: {
         en: 'Submit a new good practice',
@@ -208,6 +222,34 @@ export const goodPracticesDashboard = {
     addNewGoodPracticeHeading: {
         en: 'Do you have a Good Practice you would like us to review?',
         fr: 'Avez-vous une bonne pratique que vous aimeriez que nous examinions?',
+    },
+    textLimitExceeded: {
+        en: 'Your text limit has exceeded',
+        fr: 'Votre limite de texte a été dépassée',
+    },
+    agreementTerms: {
+        en: `By submitting this form you consent to the content being used
+        in IDMC's Global Repository of Good Practices and other related products.
+        IDMC reserves the right to amend some or all of the text submitted,
+         according to its own review and verification process.`,
+        fr: `En soumettant ce formulaire, vous consentez à
+        ce que le contenu soit utilisé dans le référentiel
+        mondial des bonnes pratiques d'IDMC et d'autres produits
+        connexes. IDMC se réserve le droit de modifier tout ou
+        partie du texte soumis, selon son propre processus d'examen
+        et de vérification.`,
+    },
+    promisingLabel: {
+        en: 'What makes this a promising practice? (max 2,000 characters)',
+        fr: 'Qu`est-ce qui en fait une pratique prometteuse? (max 2 000 caractères)',
+    },
+    keyLessonsLabel: {
+        en: 'Briefly describe the key lessons learned (max 2,000 characters)',
+        fr: 'Décrivez brièvement les principaux enseignements tirés (2 000 caractères maximum)',
+    },
+    ongoingLabel: {
+        en: 'Ongoing',
+        fr: 'en cours',
     },
 };
 

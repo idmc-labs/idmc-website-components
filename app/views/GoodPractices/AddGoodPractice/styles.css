@@ -32,17 +32,31 @@
             flex-grow: 1;
             flex-shrink: 0;
         }
+
+        .ongoing {
+            flex-grow: 1;
+            flex-shrink: 0;
+
+            :hover {
+                background-color: unset;
+            }
+        }
+    }
+
+    .terms-label {
+        font-weight: var(--tui-font-weight-bold);
     }
 
     .input-section {
         border-radius: 0.25rem;
         height: 2.5rem;
 
-        >*{
+        >* {
             padding-right: 0;
             width: 4.5rem;
         }
-        :hover{
+
+        :hover {
             background-color: unset;
         }
     }

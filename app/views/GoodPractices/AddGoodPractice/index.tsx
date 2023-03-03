@@ -1,13 +1,11 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { gql, useQuery, useMutation } from '@apollo/client';
-import { _cs } from '@togglecorp/fujs';
 import {
     Button,
     Modal,
     MultiSelectInput,
     Checkbox,
     NumberInput,
-    SelectInput,
     TextInput,
 } from '@togglecorp/toggle-ui';
 import Captcha from '@hcaptcha/react-hcaptcha';
@@ -23,11 +21,11 @@ import {
     removeNull,
     requiredCondition,
     requiredListCondition,
+    defaultEmptyArrayType,
 } from '@togglecorp/toggle-form';
 
 import { hCaptchaKey } from '#base/configs/hCaptcha';
 import HCaptcha from '#components/HCaptcha';
-import FileInput from '#components/FileInput';
 import useTranslation from '#hooks/useTranslation';
 import TinyMceEditorInput from '#components/TinyMceEditorInput';
 import useAlert from '#hooks/useAlert';
@@ -36,18 +34,16 @@ import {
     goodPracticesDashboard,
 } from '#base/configs/lang';
 import {
-    StageTypeEnum,
-    TypeEnum,
-    CreateGoodPracticeMutation,
-    CreateGoodPracticeMutationVariables,
+    PublicCreateGoodPracticeMutation,
+    PublicCreateGoodPracticeMutationVariables,
     OptionsForGoodPracticesQuery,
     OptionsForGoodPracticesQueryVariables,
 } from '#generated/types';
 
 import styles from './styles.css';
 
-const CREATE_GOOD_PRACTICE = gql`
-    mutation CreateGoodPractice (
+const PUBLIC_CREATE_GOOD_PRACTICE = gql`
+    mutation PublicCreateGoodPractice (
         $titleEn: String,
         $titleFr: String,
         $descriptionEn: String,
@@ -55,19 +51,21 @@ const CREATE_GOOD_PRACTICE = gql`
         $mediaAndResourceLinksEn: String,
         $mediaAndResourceLinksFr: String,
         $countries: [ID!]!,
-        $type: TypeEnum!,
         $implementingEntityEn: String,
         $implementingEntityFr: String,
-        $stage: StageTypeEnum!,
-        $driversOfDisplacement: [ID!]!,
-        $focusArea: [ID!]!,
-        $tags: [ID!]!,
-        $image: Upload,
+        $contactName: String!,
+        $contactEmail: String!,
+        $underReview: Boolean,
+        $driversOfDisplacement: [ID!],
+        $focusArea: [ID!],
+        $tags: [ID!],
         $startYear: Int!,
-        $endYear: Int!,
+        $endYear: Int,
         $captcha: String!,
+        $whatMakesThisPromisingPractice: String,
+        $descriptionOfKeyLessonsLearned: String,
     ) {
-        createGoodPractice(
+        publicCreateGoodPractice(
             input: {
                 titleEn: $titleEn,
                 titleFr: $titleFr,
@@ -76,17 +74,19 @@ const CREATE_GOOD_PRACTICE = gql`
                 mediaAndResourceLinksEn: $mediaAndResourceLinksEn,
                 mediaAndResourceLinksFr: $mediaAndResourceLinksFr,
                 countries: $countries,
-                type: $type,
+                contactName: $contactName,
+                contactEmail: $contactEmail,
+                underReview: $underReview,
                 implementingEntityEn: $implementingEntityEn,
                 implementingEntityFr: $implementingEntityFr,
-                stage: $stage,
                 driversOfDisplacement: $driversOfDisplacement,
                 focusArea: $focusArea,
                 tags: $tags,
-                image: $image,
                 startYear: $startYear,
                 endYear: $endYear,
                 captcha: $captcha,
+                whatMakesThisPromisingPractice: $whatMakesThisPromisingPractice,
+                descriptionOfKeyLessonsLearned: $descriptionOfKeyLessonsLearned,
             }
         ) {
             ok
@@ -101,56 +101,60 @@ const OPTIONS_FOR_GOOD_PRACTICES = gql`
             id
             name
         }
-        driversOfDisplacements {
-            id
-            name
-        }
-        focusAreas {
-            id
-            name
-        }
-        tags {
-            id
-            name
-        }
-        type: goodPracticeTypeEnums {
-            label
-            name
-        }
-        stages: goodPracticeStageTypeEnums {
-            label
-            name
-        }
     }
 `;
 
-type FormType = CreateGoodPracticeMutationVariables;
+type FormType = PublicCreateGoodPracticeMutationVariables;
 
-type PartialFormType = PartialForm<FormType> & { image?: File | undefined | null };
+type PartialFormType = PartialForm<FormType> & { isFrench?: boolean };
 type FormSchema = ObjectSchema<PartialFormType>;
 type FormSchemaFields = ReturnType<FormSchema['fields']>;
 
+const englishSchema: FormSchemaFields = {
+    titleEn: [requiredStringCondition],
+    descriptionEn: [requiredStringCondition],
+    mediaAndResourceLinksEn: [],
+    implementingEntityEn: [requiredStringCondition],
+
+    contactName: [requiredStringCondition],
+    contactEmail: [requiredStringCondition],
+    driversOfDisplacement: [defaultEmptyArrayType],
+    focusArea: [defaultEmptyArrayType],
+    tags: [defaultEmptyArrayType],
+    countries: [requiredListCondition],
+    startYear: [requiredCondition],
+    endYear: [],
+    captcha: [requiredStringCondition],
+    whatMakesThisPromisingPractice: [],
+    descriptionOfKeyLessonsLearned: [],
+};
+
+const frenchSchema: FormSchemaFields = {
+    descriptionFr: [requiredStringCondition],
+    titleFr: [requiredStringCondition],
+    implementingEntityFr: [requiredStringCondition],
+    mediaAndResourceLinksFr: [],
+
+    contactName: [requiredStringCondition],
+    contactEmail: [requiredStringCondition],
+    driversOfDisplacement: [defaultEmptyArrayType],
+    focusArea: [defaultEmptyArrayType],
+    tags: [defaultEmptyArrayType],
+    countries: [requiredListCondition],
+    startYear: [requiredCondition],
+    endYear: [],
+    captcha: [requiredStringCondition],
+    whatMakesThisPromisingPractice: [],
+    descriptionOfKeyLessonsLearned: [],
+};
+
 const schema: FormSchema = {
-    fields: (): FormSchemaFields => ({
-        titleEn: [],
-        titleFr: [],
-        descriptionEn: [],
-        descriptionFr: [],
-        mediaAndResourceLinksEn: [],
-        mediaAndResourceLinksFr: [],
-        countries: [requiredListCondition],
-        type: [requiredCondition],
-        implementingEntityEn: [],
-        implementingEntityFr: [],
-        stage: [requiredStringCondition],
-        driversOfDisplacement: [requiredListCondition],
-        focusArea: [requiredListCondition],
-        tags: [requiredListCondition],
-        startYear: [requiredCondition],
-        endYear: [requiredCondition],
-        captcha: [requiredStringCondition],
-        image: [],
-    }),
+    fields: (value): FormSchemaFields => {
+        if (value?.isFrench) {
+            return { ...frenchSchema };
+        }
+        return { ...englishSchema };
+    },
 };
 
 const defaultValues: PartialFormType = {};
@@ -158,32 +162,6 @@ const defaultValues: PartialFormType = {};
 type CountryType = NonNullable<OptionsForGoodPracticesQuery['countries']>[number];
 const countryKeySelector = (c: CountryType) => c.id;
 const countryLabelSelector = (c: CountryType) => c.name;
-
-type TypeType = {
-    name: string;
-    label: string;
-};
-const typeEnumKeySelector = (t: TypeType) => t.name as TypeEnum;
-const typeEnumLabelSelector = (t: TypeType) => t.label;
-
-type StageType = {
-    name: string;
-    label: string;
-};
-const stageKeySelector = (s: StageType) => s.name as StageTypeEnum;
-const stageLabelSelector = (s: StageType) => s.label;
-
-type FocusAreaType = NonNullable<OptionsForGoodPracticesQuery['focusAreas']>[number];
-const focusAreaKeySelector = (fa: FocusAreaType) => fa.id;
-const focusAreaLabelSelector = (fa: FocusAreaType) => fa.name;
-
-type DriversOfDisplacementType = NonNullable<OptionsForGoodPracticesQuery['driversOfDisplacements']>[number];
-const driversOfDisplacementKeySelector = (dod: DriversOfDisplacementType) => dod.id;
-const driversOfDisplacementLabelSelector = (dod: DriversOfDisplacementType) => dod.name;
-
-type TagType= NonNullable<OptionsForGoodPracticesQuery['tags']>[number];
-const tagsKeySelector = (tag: TagType) => tag.id;
-const tagsLabelSelector = (tag: TagType) => tag.name;
 
 interface Props {
     onModalClose: () => void;
@@ -207,9 +185,13 @@ function AddGoodPractice(props: Props) {
         validate,
         // setValue,
         setError,
-    } = useForm(schema, defaultValues);
+    } = useForm(
+        schema,
+        defaultValues,
+    );
 
-    const [frenchAvailable, setFrenchAvailable] = useState(false);
+    const [agreeTerms, setAgreeTerms] = useState(false);
+    const [ongoing, setOngoing] = useState(false);
 
     const error = getErrorObject(riskyError);
 
@@ -221,22 +203,17 @@ function AddGoodPractice(props: Props) {
     );
 
     const countries = optionsResponse?.countries;
-    const types = optionsResponse?.type;
-    const driversOfDisplacements = optionsResponse?.driversOfDisplacements;
-    const stages = optionsResponse?.stages;
-    const focusAreas = optionsResponse?.focusAreas;
-    const tags = optionsResponse?.tags;
 
     const [
         createNewGoodPractice,
         {
             loading: createNewGoodPracticeLoading,
         },
-    ] = useMutation<CreateGoodPracticeMutation, CreateGoodPracticeMutationVariables>(
-        CREATE_GOOD_PRACTICE,
+    ] = useMutation<PublicCreateGoodPracticeMutation, PublicCreateGoodPracticeMutationVariables>(
+        PUBLIC_CREATE_GOOD_PRACTICE,
         {
             onCompleted: (response) => {
-                const responseData = response?.createGoodPractice;
+                const responseData = response?.publicCreateGoodPractice;
 
                 const {
                     ok,
@@ -297,9 +274,9 @@ function AddGoodPractice(props: Props) {
                         Add new good practice
                         <Checkbox
                             className={styles.switch}
-                            name="french"
-                            value={frenchAvailable}
-                            onChange={setFrenchAvailable}
+                            name="isFrench"
+                            value={value?.isFrench}
+                            onChange={setFieldValue}
                             label={strings.alsoSubmitInFrenchLabel}
                             labelClassName={styles.switchLabel}
                         />
@@ -313,7 +290,7 @@ function AddGoodPractice(props: Props) {
                         type="submit"
                         variant="accent"
                         onClick={handleSubmit}
-                        disabled={pristine || createNewGoodPracticeLoading}
+                        disabled={pristine || createNewGoodPracticeLoading || !agreeTerms}
                         compact
                     >
                         {strings.submitLabel}
@@ -324,14 +301,60 @@ function AddGoodPractice(props: Props) {
                 <div className={styles.inline}>
                     <TextInput
                         className={styles.input}
-                        name="titleEn"
-                        label={strings.titleLabel}
-                        value={value?.titleEn}
-                        error={error?.titleEn}
+                        name="contactName"
+                        label={strings.contactNameLabel}
+                        value={value?.contactName}
+                        error={error?.contactName}
                         onChange={setFieldValue}
                         inputSectionClassName={styles.inputSection}
                     />
-                    {frenchAvailable && (
+                    <TextInput
+                        className={styles.input}
+                        name="contactEmail"
+                        label={strings.contactEmailLabel}
+                        value={value?.contactEmail}
+                        error={error?.contactEmail}
+                        onChange={setFieldValue}
+                        inputSectionClassName={styles.inputSection}
+                    />
+                </div>
+                <div className={styles.inline}>
+                    {!value?.isFrench && (
+                        <TextInput
+                            className={styles.input}
+                            name="implementingEntityEn"
+                            label={strings.implementingEntityLabel}
+                            value={value?.implementingEntityEn}
+                            inputSectionClassName={styles.inputSection}
+                            error={error?.implementingEntityEn}
+                            onChange={setFieldValue}
+                        />
+                    )}
+                    {value?.isFrench && (
+                        <TextInput
+                            className={styles.input}
+                            name="implementingEntityFr"
+                            label={strings.implementingEntityFrLabel}
+                            value={value?.implementingEntityFr}
+                            inputSectionClassName={styles.inputSection}
+                            error={error?.implementingEntityFr}
+                            onChange={setFieldValue}
+                        />
+                    )}
+                </div>
+                <div className={styles.inline}>
+                    {!value?.isFrench && (
+                        <TextInput
+                            className={styles.input}
+                            name="titleEn"
+                            label={strings.titleLabel}
+                            value={value?.titleEn}
+                            error={error?.titleEn}
+                            onChange={setFieldValue}
+                            inputSectionClassName={styles.inputSection}
+                        />
+                    )}
+                    {value?.isFrench && (
                         <TextInput
                             className={styles.input}
                             name="titleFr"
@@ -344,62 +367,23 @@ function AddGoodPractice(props: Props) {
                     )}
                 </div>
                 <div className={styles.inline}>
-                    <TinyMceEditorInput
-                        className={styles.input}
-                        value={value?.descriptionEn}
-                        onChange={setFieldValue}
-                        name="descriptionEn"
-                        label={strings.descriptionLabel}
-                    />
-                    {frenchAvailable && (
+                    {!value?.isFrench && (
+                        <TinyMceEditorInput
+                            className={styles.input}
+                            value={value?.descriptionEn}
+                            onChange={setFieldValue}
+                            name="descriptionEn"
+                            error={error?.descriptionEn}
+                            label={strings.descriptionLabel}
+                        />
+                    )}
+                    {value?.isFrench && (
                         <TinyMceEditorInput
                             className={styles.input}
                             name="descriptionFr"
                             label={strings.descriptionsFrLabel}
                             value={value?.descriptionFr}
                             error={error?.descriptionFr}
-                            onChange={setFieldValue}
-                        />
-                    )}
-                </div>
-                <div className={styles.inline}>
-                    <TinyMceEditorInput
-                        className={styles.input}
-                        name="mediaAndResourceLinksEn"
-                        label={strings.mediaAndResourceLinksLabel}
-                        value={value?.mediaAndResourceLinksEn}
-                        error={error?.mediaAndResourceLinksEn}
-                        onChange={setFieldValue}
-                    />
-                    {frenchAvailable && (
-                        <TinyMceEditorInput
-                            className={styles.input}
-                            name="mediaAndResourceLinksFr"
-                            label={strings.mediaAndResoureLinksFrLabel}
-                            value={value?.mediaAndResourceLinksFr}
-                            error={error?.mediaAndResourceLinksFr}
-                            onChange={setFieldValue}
-                        />
-                    )}
-                </div>
-                <div className={styles.inline}>
-                    <TextInput
-                        className={styles.input}
-                        name="implementingEntityEn"
-                        label={strings.implementingEntityLabel}
-                        value={value?.implementingEntityEn}
-                        inputSectionClassName={styles.inputSection}
-                        error={error?.implementingEntityEn}
-                        onChange={setFieldValue}
-                    />
-                    {frenchAvailable && (
-                        <TextInput
-                            className={styles.input}
-                            name="implementingEntityFr"
-                            label={strings.implementingEntityFrLabel}
-                            value={value?.implementingEntityFr}
-                            inputSectionClassName={styles.inputSection}
-                            error={error?.implementingEntityFr}
                             onChange={setFieldValue}
                         />
                     )}
@@ -418,73 +402,7 @@ function AddGoodPractice(props: Props) {
                         labelSelector={countryLabelSelector}
                         disabled={optionsLoading}
                     />
-                    <SelectInput
-                        className={styles.input}
-                        name="type"
-                        label={strings.typeLabel}
-                        inputSectionClassName={styles.inputSection}
-                        options={types}
-                        value={value?.type}
-                        error={error?.type}
-                        onChange={setFieldValue}
-                        keySelector={typeEnumKeySelector}
-                        labelSelector={typeEnumLabelSelector}
-                    />
                 </div>
-                <div className={styles.inline}>
-                    <MultiSelectInput
-                        className={_cs(styles.input)}
-                        name="driversOfDisplacement"
-                        label={strings.driversOfDisplacementLabel}
-                        inputSectionClassName={styles.inputSection}
-                        options={driversOfDisplacements}
-                        keySelector={driversOfDisplacementKeySelector}
-                        labelSelector={driversOfDisplacementLabelSelector}
-                        value={value?.driversOfDisplacement}
-                        error={getErrorString(error?.driversOfDisplacement)}
-                        onChange={setFieldValue}
-                        disabled={optionsLoading}
-                    />
-                    <SelectInput
-                        className={_cs(styles.input)}
-                        name="stage"
-                        label={strings.stageLabel}
-                        options={stages}
-                        inputSectionClassName={styles.inputSection}
-                        value={value?.stage}
-                        error={error?.stage}
-                        keySelector={stageKeySelector}
-                        labelSelector={stageLabelSelector}
-                        onChange={setFieldValue}
-                        disabled={optionsLoading}
-                    />
-                </div>
-                <MultiSelectInput
-                    name="focusArea"
-                    label={strings.focusAreaLabel}
-                    options={focusAreas}
-                    value={value?.focusArea}
-                    inputSectionClassName={styles.inputSection}
-                    error={getErrorString(error?.focusArea)}
-                    keySelector={focusAreaKeySelector}
-                    labelSelector={focusAreaLabelSelector}
-                    className={_cs(styles.input)}
-                    onChange={setFieldValue}
-                    disabled={optionsLoading}
-                />
-                <MultiSelectInput
-                    name="tags"
-                    label={strings.tagLabel}
-                    options={tags}
-                    value={value?.tags}
-                    inputSectionClassName={styles.inputSection}
-                    error={getErrorString(error?.tags)}
-                    keySelector={tagsKeySelector}
-                    className={_cs(styles.input)}
-                    labelSelector={tagsLabelSelector}
-                    onChange={setFieldValue}
-                    disabled={optionsLoading}
-                />
                 <div className={styles.inline}>
                     <NumberInput
                         className={styles.input}
@@ -495,28 +413,64 @@ function AddGoodPractice(props: Props) {
                         onChange={setFieldValue}
                         inputSectionClassName={styles.inputSection}
                     />
-                    <NumberInput
-                        className={styles.input}
-                        name="endYear"
-                        label={strings.endYearLabel}
-                        inputSectionClassName={styles.inputSection}
-                        value={value?.endYear}
-                        error={error?.endYear}
-                        onChange={setFieldValue}
+                    {!ongoing && (
+                        <NumberInput
+                            className={styles.input}
+                            name="endYear"
+                            label={strings.endYearLabel}
+                            inputSectionClassName={styles.inputSection}
+                            value={value?.endYear}
+                            error={error?.endYear}
+                            onChange={setFieldValue}
+                        />
+                    )}
+                    <Checkbox
+                        className={styles.ongoing}
+                        name="ongoing"
+                        value={ongoing}
+                        onChange={setOngoing}
+                        label={strings.ongoingLabel}
+                        labelClassName={styles.termsLabel}
                     />
                 </div>
-                <FileInput
-                    name="image"
-                    label={strings.coverImageLabel}
-                    title={strings.coverImageTitle}
-                    value={value?.image}
-                    error={error?.image}
+                <TinyMceEditorInput
+                    className={styles.input}
+                    name="whatMakesThisPromisingPractice"
+                    label={strings.promisingLabel}
+                    value={value?.whatMakesThisPromisingPractice}
+                    error={error?.whatMakesThisPromisingPractice}
                     onChange={setFieldValue}
-                    accept="image/*"
-                    overrideStatus
-                >
-                    Select Cover Image
-                </FileInput>
+                />
+                <TinyMceEditorInput
+                    className={styles.input}
+                    name="descriptionOfKeyLessonsLearned"
+                    label={strings.keyLessonsLabel}
+                    value={value?.descriptionOfKeyLessonsLearned}
+                    error={error?.descriptionOfKeyLessonsLearned}
+                    onChange={setFieldValue}
+                />
+                <div className={styles.inline}>
+                    {!value?.isFrench && (
+                        <TinyMceEditorInput
+                            className={styles.input}
+                            name="mediaAndResourceLinksEn"
+                            label={strings.mediaAndResourceLinksLabel}
+                            value={value?.mediaAndResourceLinksEn}
+                            error={error?.mediaAndResourceLinksEn}
+                            onChange={setFieldValue}
+                        />
+                    )}
+                    {value?.isFrench && (
+                        <TinyMceEditorInput
+                            className={styles.input}
+                            name="mediaAndResourceLinksFr"
+                            label={strings.mediaAndResoureLinksFrLabel}
+                            value={value?.mediaAndResourceLinksFr}
+                            error={error?.mediaAndResourceLinksFr}
+                            onChange={setFieldValue}
+                        />
+                    )}
+                </div>
                 <HCaptcha
                     name="captcha"
                     onChange={setFieldValue}
@@ -524,6 +478,14 @@ function AddGoodPractice(props: Props) {
                     error={error?.captcha}
                     elementRef={elementRef}
                     siteKey={hCaptchaKey}
+                />
+                <Checkbox
+                    className={styles.switch}
+                    name="agreement"
+                    value={agreeTerms}
+                    onChange={setAgreeTerms}
+                    label={strings.agreementTerms}
+                    labelClassName={styles.termsLabel}
                 />
             </Modal>
         </form>
