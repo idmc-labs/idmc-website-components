@@ -9,6 +9,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            font-size: var(--tui-font-size-medium);
         }
     }
 
@@ -26,6 +27,7 @@
     .inline {
         display: flex;
         flex-shrink: 0;
+        flex-wrap: wrap;
         gap: var(--tui-spacing-large);
 
         .input {
@@ -41,6 +43,10 @@
                 background-color: unset;
             }
         }
+    }
+
+    .field-input {
+        font-size: var(--tui-font-size-medium);
     }
 
     .terms-label {

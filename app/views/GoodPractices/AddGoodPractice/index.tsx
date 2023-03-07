@@ -271,7 +271,7 @@ function AddGoodPractice(props: Props) {
                 headingClassName={styles.headingContainer}
                 heading={(
                     <div className={styles.heading}>
-                        Add new good practice
+                        Submit a new Good Practice
                         <Checkbox
                             className={styles.switch}
                             name="isFrench"
@@ -301,8 +301,13 @@ function AddGoodPractice(props: Props) {
                 <div className={styles.inline}>
                     <TextInput
                         className={styles.input}
+                        labelContainerClassName={styles.fieldInput}
                         name="contactName"
-                        label={strings.contactNameLabel}
+                        label={
+                            value?.isFrench
+                                ? strings.contactNameLabelFr
+                                : strings.contactNameLabel
+                        }
                         value={value?.contactName}
                         error={error?.contactName}
                         onChange={setFieldValue}
@@ -310,8 +315,13 @@ function AddGoodPractice(props: Props) {
                     />
                     <TextInput
                         className={styles.input}
+                        labelContainerClassName={styles.fieldInput}
                         name="contactEmail"
-                        label={strings.contactEmailLabel}
+                        label={
+                            value?.isFrench
+                                ? strings.contactEmailLabelFr
+                                : strings.contactEmailLabel
+                        }
                         value={value?.contactEmail}
                         error={error?.contactEmail}
                         onChange={setFieldValue}
@@ -322,6 +332,7 @@ function AddGoodPractice(props: Props) {
                     {!value?.isFrench && (
                         <TextInput
                             className={styles.input}
+                            labelContainerClassName={styles.fieldInput}
                             name="implementingEntityEn"
                             label={strings.implementingEntityLabel}
                             value={value?.implementingEntityEn}
@@ -333,6 +344,7 @@ function AddGoodPractice(props: Props) {
                     {value?.isFrench && (
                         <TextInput
                             className={styles.input}
+                            labelContainerClassName={styles.fieldInput}
                             name="implementingEntityFr"
                             label={strings.implementingEntityFrLabel}
                             value={value?.implementingEntityFr}
@@ -346,6 +358,7 @@ function AddGoodPractice(props: Props) {
                     {!value?.isFrench && (
                         <TextInput
                             className={styles.input}
+                            labelContainerClassName={styles.fieldInput}
                             name="titleEn"
                             label={strings.titleLabel}
                             value={value?.titleEn}
@@ -357,6 +370,7 @@ function AddGoodPractice(props: Props) {
                     {value?.isFrench && (
                         <TextInput
                             className={styles.input}
+                            labelContainerClassName={styles.fieldInput}
                             name="titleFr"
                             label={strings.titleFrLabel}
                             value={value?.titleFr}
@@ -366,35 +380,40 @@ function AddGoodPractice(props: Props) {
                         />
                     )}
                 </div>
-                <div className={styles.inline}>
-                    {!value?.isFrench && (
-                        <TinyMceEditorInput
-                            className={styles.input}
-                            value={value?.descriptionEn}
-                            onChange={setFieldValue}
-                            name="descriptionEn"
-                            error={error?.descriptionEn}
-                            label={strings.descriptionLabel}
-                        />
-                    )}
-                    {value?.isFrench && (
-                        <TinyMceEditorInput
-                            className={styles.input}
-                            name="descriptionFr"
-                            label={strings.descriptionsFrLabel}
-                            value={value?.descriptionFr}
-                            error={error?.descriptionFr}
-                            onChange={setFieldValue}
-                        />
-                    )}
-                </div>
+                {!value?.isFrench && (
+                    <TinyMceEditorInput
+                        className={styles.input}
+                        labelContainerClassName={styles.fieldInput}
+                        value={value?.descriptionEn}
+                        onChange={setFieldValue}
+                        name="descriptionEn"
+                        error={error?.descriptionEn}
+                        label={strings.descriptionLabel}
+                    />
+                )}
+                {value?.isFrench && (
+                    <TinyMceEditorInput
+                        className={styles.input}
+                        labelContainerClassName={styles.fieldInput}
+                        name="descriptionFr"
+                        label={strings.descriptionsFrLabel}
+                        value={value?.descriptionFr}
+                        error={error?.descriptionFr}
+                        onChange={setFieldValue}
+                    />
+                )}
                 <div className={styles.inline}>
                     <MultiSelectInput
                         className={styles.input}
+                        labelContainerClassName={styles.fieldInput}
                         name="countries"
                         options={countries}
                         inputSectionClassName={styles.inputSection}
-                        label={strings.countryLabel}
+                        label={
+                            value?.isFrench
+                                ? strings.countryLabelFr
+                                : strings.countryLabel
+                        }
                         value={value?.countries}
                         error={getErrorString(error?.countries)}
                         onChange={setFieldValue}
@@ -406,8 +425,13 @@ function AddGoodPractice(props: Props) {
                 <div className={styles.inline}>
                     <NumberInput
                         className={styles.input}
+                        labelContainerClassName={styles.fieldInput}
                         name="startYear"
-                        label={strings.startYearLabel}
+                        label={
+                            value?.isFrench
+                                ? strings.startYearLabelFr
+                                : strings.startYearLabel
+                        }
                         value={value?.startYear}
                         error={error?.startYear}
                         onChange={setFieldValue}
@@ -416,8 +440,13 @@ function AddGoodPractice(props: Props) {
                     {!ongoing && (
                         <NumberInput
                             className={styles.input}
+                            labelContainerClassName={styles.fieldInput}
                             name="endYear"
-                            label={strings.endYearLabel}
+                            label={
+                                value?.isFrench
+                                    ? strings.endYearLabelFr
+                                    : strings.endYearLabel
+                            }
                             inputSectionClassName={styles.inputSection}
                             value={value?.endYear}
                             error={error?.endYear}
@@ -429,52 +458,70 @@ function AddGoodPractice(props: Props) {
                         name="ongoing"
                         value={ongoing}
                         onChange={setOngoing}
-                        label={strings.ongoingLabel}
+                        label={
+                            value?.isFrench
+                                ? strings.ongoingLabelFr
+                                : strings.ongoingLabel
+                        }
                         labelClassName={styles.termsLabel}
                     />
                 </div>
                 <TinyMceEditorInput
                     className={styles.input}
+                    labelContainerClassName={styles.fieldInput}
                     name="whatMakesThisPromisingPractice"
-                    label={strings.promisingLabel}
+                    label={
+                        value?.isFrench
+                            ? strings.promisingLabelFr
+                            : strings.promisingLabel
+                    }
                     value={value?.whatMakesThisPromisingPractice}
                     error={error?.whatMakesThisPromisingPractice}
                     onChange={setFieldValue}
                 />
                 <TinyMceEditorInput
                     className={styles.input}
+                    labelContainerClassName={styles.fieldInput}
                     name="descriptionOfKeyLessonsLearned"
-                    label={strings.keyLessonsLabel}
+                    label={
+                        value?.isFrench
+                            ? strings.keyLessonsLabelFr
+                            : strings.keyLessonsLabel
+                    }
                     value={value?.descriptionOfKeyLessonsLearned}
                     error={error?.descriptionOfKeyLessonsLearned}
                     onChange={setFieldValue}
                 />
-                <div className={styles.inline}>
-                    {!value?.isFrench && (
-                        <TinyMceEditorInput
-                            className={styles.input}
-                            name="mediaAndResourceLinksEn"
-                            label={strings.mediaAndResourceLinksLabel}
-                            value={value?.mediaAndResourceLinksEn}
-                            error={error?.mediaAndResourceLinksEn}
-                            onChange={setFieldValue}
-                        />
-                    )}
-                    {value?.isFrench && (
-                        <TinyMceEditorInput
-                            className={styles.input}
-                            name="mediaAndResourceLinksFr"
-                            label={strings.mediaAndResoureLinksFrLabel}
-                            value={value?.mediaAndResourceLinksFr}
-                            error={error?.mediaAndResourceLinksFr}
-                            onChange={setFieldValue}
-                        />
-                    )}
-                </div>
+                {!value?.isFrench && (
+                    <TinyMceEditorInput
+                        className={styles.input}
+                        labelContainerClassName={styles.fieldInput}
+                        name="mediaAndResourceLinksEn"
+                        label={strings.mediaAndResourceLinksLabel}
+                        value={value?.mediaAndResourceLinksEn}
+                        error={error?.mediaAndResourceLinksEn}
+                        onChange={setFieldValue}
+                    />
+                )}
+                {value?.isFrench && (
+                    <TinyMceEditorInput
+                        className={styles.input}
+                        labelContainerClassName={styles.fieldInput}
+                        name="mediaAndResourceLinksFr"
+                        label={strings.mediaAndResourceLinksFrLabel}
+                        value={value?.mediaAndResourceLinksFr}
+                        error={error?.mediaAndResourceLinksFr}
+                        onChange={setFieldValue}
+                    />
+                )}
                 <HCaptcha
                     name="captcha"
                     onChange={setFieldValue}
-                    label={strings.captchaLabel}
+                    label={
+                        value?.isFrench
+                            ? strings.captchaLabelFr
+                            : strings.captchaLabel
+                    }
                     error={error?.captcha}
                     elementRef={elementRef}
                     siteKey={hCaptchaKey}
@@ -484,7 +531,11 @@ function AddGoodPractice(props: Props) {
                     name="agreement"
                     value={agreeTerms}
                     onChange={setAgreeTerms}
-                    label={strings.agreementTerms}
+                    label={
+                        value?.isFrench
+                            ? strings.agreementTermsFr
+                            : strings.agreementTerms
+                    }
                     labelClassName={styles.termsLabel}
                 />
             </Modal>

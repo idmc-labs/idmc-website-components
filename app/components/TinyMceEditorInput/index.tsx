@@ -19,6 +19,7 @@ interface Props<N extends string> {
     onChange: (newVal: string | undefined, name: N) => void;
     error?: string;
     label?: string;
+    labelContainerClassName?: string;
     textLimit?: number;
 }
 
@@ -31,6 +32,7 @@ function TinyMceEditorInput<N extends string>(props: Props<N>) {
         name,
         onChange,
         textLimit,
+        labelContainerClassName,
     } = props;
 
     const strings = useTranslation(goodPracticesDashboard);
@@ -54,6 +56,7 @@ function TinyMceEditorInput<N extends string>(props: Props<N>) {
     return (
         <InputContainer
             label={label}
+            labelContainerClassName={labelContainerClassName}
             inputSectionClassName={styles.inputSection}
             className={_cs(styles.tinyMceEditorInput, className)}
             error={error}
