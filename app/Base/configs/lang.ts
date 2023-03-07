@@ -79,7 +79,11 @@ export const goodPracticesDashboard = {
     },
     countryLabel: {
         en: 'Country (select from list)',
-        fr: 'Pays (sélectionnez dans la liste) :',
+        fr: 'Pays (sélectionnez dans la liste)',
+    },
+    countryLabelFr: {
+        en: 'Pays (sélectionnez dans la liste)',
+        fr: 'Pays (sélectionnez dans la liste)',
     },
     driversOfDisplacementLabel: {
         en: 'Drivers of Displacement',
@@ -137,6 +141,10 @@ export const goodPracticesDashboard = {
         en: 'Captcha',
         fr: 'Captcha',
     },
+    captchaLabelFr: {
+        en: 'Captcha',
+        fr: 'Captcha',
+    },
     coverImageLabel: {
         en: 'Cover image',
         fr: 'Image de couverture',
@@ -149,9 +157,25 @@ export const goodPracticesDashboard = {
         en: 'Project start year',
         fr: 'Année de début du projet',
     },
+    startYearLabelFr: {
+        en: 'Année de début du projet',
+        fr: 'Année de début du projet',
+    },
     endYearLabel: {
-        en: 'Project end year or ongoing',
-        fr: 'Fin d`année du projet ou en cours',
+        en: 'Project end year (or ongoing)',
+        fr: 'Fin d`année du projet (ou en cours)',
+    },
+    endYearLabelFr: {
+        en: 'Fin d`année du projet (ou en cours)',
+        fr: 'Fin d`année du projet (ou en cours)',
+    },
+    ongoingLabel: {
+        en: 'Ongoing',
+        fr: 'en cours',
+    },
+    ongoingLabelFr: {
+        en: 'en cours',
+        fr: 'en cours',
     },
     tagLabel: {
         en: 'Tags',
@@ -165,8 +189,16 @@ export const goodPracticesDashboard = {
         en: 'Contact name',
         fr: 'Nom du contact',
     },
+    contactNameLabelFr: {
+        en: 'Nom du contact',
+        fr: 'Nom du contact',
+    },
     contactEmailLabel: {
         en: 'Contact email',
+        fr: 'Email du contact',
+    },
+    contactEmailLabelFr: {
+        en: 'Email du contact',
         fr: 'Email du contact',
     },
     implementingEntityLabel: {
@@ -174,33 +206,35 @@ export const goodPracticesDashboard = {
         fr: 'Entité de mise en œuvre',
     },
     implementingEntityFrLabel: {
-        en: 'Implementing organisation/entity (French)',
+        en: 'Entité de mise en œuvre',
         fr: 'Entité de mise en œuvre',
     },
     mediaAndResourceLinksLabel: {
-        en: 'Please provide links to any relevant reports, evaluations or other documents that will help us better understand the project and its impacts',
+        en: `Please provide links to any relevant reports,
+        evaluations or other documents that will help us better
+         understand the project and its impacts`,
         fr: `Veuillez fournir des liens vers tous les rapports,
          évaluations ou autres documents pertinents qui nous
          aideront à mieux comprendre le projet et ses impacts.`,
     },
-    mediaAndResoureLinksFrLabel: {
-        en: 'Media and Resource Links (French)',
-        fr: 'liens médias et ressources (français)',
+    mediaAndResourceLinksFrLabel: {
+        en: 'Description du projet (max 2 000 caractères)',
+        fr: 'liens médias et ressources',
     },
     descriptionLabel: {
         en: 'Description of the project (max 2,000 characters)',
         fr: 'Description du projet (max 2 000 caractères)',
     },
     descriptionsFrLabel: {
-        en: 'Description of the project (max 2,000 characters) (French)',
-        fr: 'Description du projet (max 2 000 caractères) (French)',
+        en: 'Description du projet (max 2 000 caractères)',
+        fr: 'Description du projet (max 2 000 caractères)',
     },
     titleLabel: {
         en: 'Name of project',
-        fr: 'Nom du projet:',
+        fr: 'Nom du projet',
     },
     titleFrLabel: {
-        en: 'Name of project (French)',
+        en: 'Nom du projet',
         fr: 'Nom du projet',
     },
     submitLabel: {
@@ -239,17 +273,35 @@ export const goodPracticesDashboard = {
         partie du texte soumis, selon son propre processus d'examen
         et de vérification.`,
     },
+    agreementTermsFr: {
+        en: `En soumettant ce formulaire, vous consentez à
+        ce que le contenu soit utilisé dans le référentiel
+        mondial des bonnes pratiques d'IDMC et d'autres produits
+        connexes. IDMC se réserve le droit de modifier tout ou
+        partie du texte soumis, selon son propre processus d'examen
+        et de vérification.`,
+        fr: `En soumettant ce formulaire, vous consentez à
+        ce que le contenu soit utilisé dans le référentiel
+        mondial des bonnes pratiques d'IDMC et d'autres produits
+        connexes. IDMC se réserve le droit de modifier tout ou
+        partie du texte soumis, selon son propre processus d'examen
+        et de vérification.`,
+    },
     promisingLabel: {
         en: 'What makes this a promising practice? (max 2,000 characters)',
+        fr: 'Qu`est-ce qui en fait une pratique prometteuse? (max 2 000 caractères)',
+    },
+    promisingLabelFr: {
+        en: 'Qu`est-ce qui en fait une pratique prometteuse? (max 2 000 caractères)',
         fr: 'Qu`est-ce qui en fait une pratique prometteuse? (max 2 000 caractères)',
     },
     keyLessonsLabel: {
         en: 'Briefly describe the key lessons learned (max 2,000 characters)',
         fr: 'Décrivez brièvement les principaux enseignements tirés (2 000 caractères maximum)',
     },
-    ongoingLabel: {
-        en: 'Ongoing',
-        fr: 'en cours',
+    keyLessonsLabelFr: {
+        en: 'Décrivez brièvement les principaux enseignements tirés (2 000 caractères maximum)',
+        fr: 'Décrivez brièvement les principaux enseignements tirés (2 000 caractères maximum)',
     },
 };
 

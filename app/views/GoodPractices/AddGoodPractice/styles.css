@@ -9,6 +9,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            font-size: var(--tui-font-size-medium);
         }
     }
 
@@ -26,21 +27,17 @@
     .inline {
         display: flex;
         flex-shrink: 0;
+        flex-wrap: wrap;
         gap: var(--tui-spacing-large);
 
         .input {
             flex-grow: 1;
             flex-shrink: 0;
         }
+    }
 
-        .ongoing {
-            flex-grow: 1;
-            flex-shrink: 0;
-
-            :hover {
-                background-color: unset;
-            }
-        }
+    .field-input {
+        font-size: var(--tui-font-size-medium);
     }
 
     .terms-label {
@@ -58,6 +55,12 @@
 
         :hover {
             background-color: unset;
+        }
+    }
+
+    .end-year-input-section {
+        >* {
+            width: auto;
         }
     }
 }
