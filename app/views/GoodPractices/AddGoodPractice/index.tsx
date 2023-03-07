@@ -1,12 +1,13 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { gql, useQuery, useMutation } from '@apollo/client';
+import { _cs } from '@togglecorp/fujs';
 import {
     Button,
     Modal,
     MultiSelectInput,
     Checkbox,
-    NumberInput,
     TextInput,
+    SelectInput,
 } from '@togglecorp/toggle-ui';
 import Captcha from '@hcaptcha/react-hcaptcha';
 
@@ -163,6 +164,14 @@ type CountryType = NonNullable<OptionsForGoodPracticesQuery['countries']>[number
 const countryKeySelector = (c: CountryType) => c.id;
 const countryLabelSelector = (c: CountryType) => c.name;
 
+const arrayRange = (start: number, stop: number, step: number) => Array.from(
+    { length: (start - stop) / step + 1 },
+    (_, index) => start - index * step,
+);
+
+const todaysDate = new Date();
+const yearOptions = arrayRange(todaysDate.getFullYear(), 1950, 1);
+
 interface Props {
     onModalClose: () => void;
 }
@@ -202,7 +211,17 @@ function AddGoodPractice(props: Props) {
         OPTIONS_FOR_GOOD_PRACTICES,
     );
 
-    const countries = optionsResponse?.countries;
+    const countries = optionsResponse?.countries.slice().sort((a, b) => {
+        const nameOne = a.name.toLowerCase();
+        const nameTwo = b.name.toLowerCase();
+        if (nameOne < nameTwo) {
+            return -1;
+        }
+        if (nameOne > nameTwo) {
+            return 1;
+        }
+        return 0;
+    });
 
     const [
         createNewGoodPractice,
@@ -243,6 +262,20 @@ function AddGoodPractice(props: Props) {
         },
     );
 
+    const ongoingCheckbox = (
+        <Checkbox
+            name="ongoing"
+            value={ongoing}
+            onChange={setOngoing}
+            label={
+                value?.isFrench
+                    ? strings.ongoingLabelFr
+                    : strings.ongoingLabel
+            }
+            labelClassName={styles.termsLabel}
+        />
+    );
+
     const handleSubmit = useCallback(() => {
         elementRef.current?.resetCaptcha();
         const submit = createSubmitHandler(
@@ -250,13 +283,17 @@ function AddGoodPractice(props: Props) {
             setError,
             (val) => {
                 createNewGoodPractice({
-                    variables: val as FormType,
+                    variables: {
+                        ...val,
+                        endYear: ongoing ? undefined : val.endYear,
+                    } as FormType,
                     context: { hasUpload: true },
                 });
             },
         );
         submit();
     }, [
+        ongoing,
         validate,
         setError,
         createNewGoodPractice,
@@ -423,7 +460,7 @@ function AddGoodPractice(props: Props) {
                     />
                 </div>
                 <div className={styles.inline}>
-                    <NumberInput
+                    <SelectInput
                         className={styles.input}
                         labelContainerClassName={styles.fieldInput}
                         name="startYear"
@@ -432,38 +469,38 @@ function AddGoodPractice(props: Props) {
                                 ? strings.startYearLabelFr
                                 : strings.startYearLabel
                         }
+                        options={yearOptions.map((year) => ({
+                            key: year,
+                            label: year.toString(),
+                        }))}
+                        keySelector={(option) => option.key}
+                        labelSelector={(option) => option.label}
                         value={value?.startYear}
                         error={error?.startYear}
                         onChange={setFieldValue}
                         inputSectionClassName={styles.inputSection}
                     />
-                    {!ongoing && (
-                        <NumberInput
-                            className={styles.input}
-                            labelContainerClassName={styles.fieldInput}
-                            name="endYear"
-                            label={
-                                value?.isFrench
-                                    ? strings.endYearLabelFr
-                                    : strings.endYearLabel
-                            }
-                            inputSectionClassName={styles.inputSection}
-                            value={value?.endYear}
-                            error={error?.endYear}
-                            onChange={setFieldValue}
-                        />
-                    )}
-                    <Checkbox
-                        className={styles.ongoing}
-                        name="ongoing"
-                        value={ongoing}
-                        onChange={setOngoing}
+                    <SelectInput
+                        className={styles.input}
+                        labelContainerClassName={styles.fieldInput}
+                        name="endYear"
                         label={
                             value?.isFrench
-                                ? strings.ongoingLabelFr
-                                : strings.ongoingLabel
+                                ? strings.endYearLabelFr
+                                : strings.endYearLabel
                         }
-                        labelClassName={styles.termsLabel}
+                        inputSectionClassName={_cs(styles.inputSection, styles.endYearInputSection)}
+                        options={yearOptions.map((year) => ({
+                            key: year,
+                            label: year.toString(),
+                        }))}
+                        keySelector={(option) => option.key}
+                        labelSelector={(option) => option.label}
+                        value={ongoing ? undefined : value?.endYear}
+                        error={error?.endYear}
+                        disabled={ongoing}
+                        onChange={setFieldValue}
+                        actions={ongoingCheckbox}
                     />
                 </div>
                 <TinyMceEditorInput
@@ -515,6 +552,7 @@ function AddGoodPractice(props: Props) {
                     />
                 )}
                 <HCaptcha
+                    labelContainerClassName={styles.fieldInput}
                     name="captcha"
                     onChange={setFieldValue}
                     label={
