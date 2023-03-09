@@ -63,8 +63,10 @@ jobs:
             REACT_APP_GRAPHQL_ENDPOINT: https://gidd-api.idmcdb.org/graphql/
             REACT_APP_ENVIRONMENT: prod
             REACT_APP_DRUPAL_ENDPOINT: https://www.internal-displacement.org
-            REACT_APP_SENTRY_DSN:  ${{ secrets.REACT_APP_SENTRY_DSN }}
+            REACT_APP_SENTRY_DSN: ${{ secrets.REACT_APP_SENTRY_DSN }}
             REACT_APP_MAPBOX_STYLE: mapbox://styles/togglecorp/cl50rwy0a002d14mo6w9zprio
+            REACT_APP_HCAPTCHA_SITEKEY: ${{ secrets.REACT_APP_HCAPTCHA_SITEKEY }}
+            REACT_APP_TINY_MCE_KEY: ${{ secrets.REACT_APP_TINY_MCE_KEY }}
             REACT_APP_MAPBOX_ACCESS_TOKEN: pk.eyJ1IjoidG9nZ2xlY29ycCIsImEiOiJjazk5ZXMza2YxZmQ1M2dvNWxneTEycnQwIn0.K3u-ns63rFzM7CzrnOBm2w
             # Not required for now.
             GRAPHQL_CODEGEN_ENDPOINT:
