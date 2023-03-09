@@ -333,7 +333,6 @@ function AddGoodPractice(props: Props) {
                         {strings.submitLabel}
                     </Button>
                 )}
-                backdropClassName={styles.backdrop}
                 size="cover"
             >
                 <div className={styles.inline}>
