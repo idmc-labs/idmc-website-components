@@ -15,11 +15,17 @@ import {
     getGoodPracticesLink,
     getGoodPracticeLink,
     getIduLink,
+    getConflictWidgetLink,
+    getDisasterWidgetLink,
+    getIduWidgetLink,
 } from '#utils/common';
 import CountryProfile from '#views/CountryProfile';
 import GoodPractice from '#views/GoodPractice';
 import GoodPractices from '#views/GoodPractices';
 import IduMap from '#views/IduMap';
+import ConflictWidget from '#views/ConflictWidget';
+import DisasterWidget from '#views/DisasterWidget';
+import IduWidget from '#views/IduWidget';
 
 import AlertContainer from '#components/AlertContainer';
 import AlertContext, { AlertOptions } from '#components/AlertContext';
@@ -209,6 +215,48 @@ function Base() {
                     <IduMap />
                 );
             }
+            if (currentPage === 'conflict-widget') {
+                if (!currentCountry) {
+                    return (
+                        <div>
+                            Query parameter iso3 is missing.
+                        </div>
+                    );
+                }
+                return (
+                    <ConflictWidget
+                        iso3={currentCountry}
+                    />
+                );
+            }
+            if (currentPage === 'disaster-widget') {
+                if (!currentCountry) {
+                    return (
+                        <div>
+                            Query parameter iso3 is missing.
+                        </div>
+                    );
+                }
+                return (
+                    <DisasterWidget
+                        iso3={currentCountry}
+                    />
+                );
+            }
+            if (currentPage === 'idu-widget') {
+                if (!currentCountry) {
+                    return (
+                        <div>
+                            Query parameter iso3 is missing.
+                        </div>
+                    );
+                }
+                return (
+                    <IduWidget
+                        iso3={currentCountry}
+                    />
+                );
+            }
             if (standaloneMode) {
                 return (
                     <>
@@ -241,6 +289,15 @@ function Base() {
                         </a>
                         <a href={getIduLink()}>
                             Idu Map
+                        </a>
+                        <a href={getConflictWidgetLink('NPL')}>
+                            Conflict Widget (NPL)
+                        </a>
+                        <a href={getDisasterWidgetLink('NPL')}>
+                            Disaster Widget (NPL)
+                        </a>
+                        <a href={getIduWidgetLink('NPL', 'Nepal')}>
+                            IDU Widget (NPL)
                         </a>
                     </>
                 );
