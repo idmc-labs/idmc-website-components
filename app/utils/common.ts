@@ -107,6 +107,31 @@ export function getIduLink() {
         : '/';
 }
 
+export function getConflictWidgetLink(iso3: string) {
+    const link = standaloneMode
+        ? `/?page=conflict-widget&iso3=${iso3}`
+        : `/conflict-widget/${iso3}`;
+    return link;
+}
+
+export function getDisasterWidgetLink(iso3: string) {
+    const link = standaloneMode
+        ? `/?page=disaster-widget&iso3=${iso3}`
+        : `/disaster-widget/${iso3}`;
+    return link;
+}
+
+export function getIduWidgetLink(iso3: string, countryName?: string) {
+    // NOTE: we need to also add countryName on standaloneMode url
+    let iduLink = standaloneMode
+        ? `/?page=idu-widget&iso3=${iso3}`
+        : `/idu-widget/${iso3}`;
+    if (countryName) {
+        iduLink = `${iduLink}&countryName=${countryName}`;
+    }
+    return iduLink;
+}
+
 export const monthList = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export const START_YEAR = 2008;
