@@ -129,6 +129,12 @@ export function getIduWidgetLink(iso3: string) {
     return iduLink;
 }
 
+export function getGiddLink() {
+    return standaloneMode
+        ? '/?page=gidd'
+        : '/';
+}
+
 export const monthList = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export const START_YEAR = 2008;

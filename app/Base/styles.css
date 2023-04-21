@@ -72,6 +72,8 @@
 
     --tui-radius-border-input-section: 0;
     --tui-radius-border-alerts: 0.24rem;
+
+    --tui-radius-border-large: 0.8rem;
 }
 
 .base {

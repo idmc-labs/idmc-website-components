@@ -13,6 +13,7 @@ import {
     getGoodPracticesLink,
     // getGoodPracticeLink,
     getIduLink,
+    getGiddLink,
     getConflictWidgetLink,
     getDisasterWidgetLink,
     getIduWidgetLink,
@@ -112,6 +113,14 @@ function Home() {
                     </h2>
                     <a href={getIduLink()}>
                         Global
+                    </a>
+                </div>
+                <div className={styles.section}>
+                    <h2>
+                        GIDD
+                    </h2>
+                    <a href={getGiddLink()}>
+                        Latest
                     </a>
                 </div>
             </div>
