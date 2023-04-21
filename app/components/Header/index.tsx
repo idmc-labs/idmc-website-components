@@ -16,8 +16,8 @@ export interface Props {
     actions?: React.ReactNode;
     description?: React.ReactNode;
     headingDescription?: React.ReactNode;
-    headingSize?: HeadingSizeType,
-    inlineHeadingDescription?: boolean,
+    headingSize?: HeadingSizeType;
+    inlineHeadingDescription?: boolean;
     headingTitle?: React.ReactNode;
     hideHeadingBorder?: boolean;
 }

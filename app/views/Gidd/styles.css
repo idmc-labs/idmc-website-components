@@ -1,0 +1,151 @@
+.body-container {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    background-color: var(--tui-color-background);
+    height: 100vh;
+    overflow-y: auto;
+
+    .gidd {
+        display: flex;
+        flex-direction: column;
+        padding: var(--tui-spacing-extra-large);
+        width: 100%;
+        max-width: var(--width-page-max);
+        gap: var(--tui-spacing-extra-large);
+    }
+
+    .filter-container {
+        border-radius: var(--tui-radius-border-large);
+        background-color: var(--tui-color-brand);
+        padding: var(--tui-spacing-medium);
+        color: var(--color-text-on-dark);
+
+        .filter-body-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--tui-spacing-large);
+
+            .filter-section {
+                display: flex;
+                flex-basis: calc(100% / 3 - 2 * var(--tui-spacing-large) / 3);
+                flex-direction: column;
+                flex-grow: 1;
+                flex-wrap: wrap;
+                gap: var(--tui-spacing-large);
+
+                .input {
+                    background-color: var(--tui-color-background);
+                }
+
+                .slider-input {
+                    border-radius: 0.25rem;
+                    padding: var(--tui-spacing-extra-extra-small);
+                }
+            }
+
+            .right {
+                display: flex;
+                align-self: flex-start;
+                flex-basis: calc(100% / 3 * 2 - 2 * var(--tui-spacing-large) / 3);
+                flex-direction: column;
+                gap: var(--tui-spacing-medium);
+
+                .top {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: var(--tui-spacing-large);
+                }
+
+                .border {
+                    border-bottom: var(--tui-width-separator-medium) solid #fff;
+                }
+
+                .switch {
+                    color: #fff;
+
+                    .switch-label {
+                        padding: 0;
+                        font-size: var(--tui-font-size-small);
+                    }
+                }
+
+                .disaster-filters {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: var(--tui-spacing-large);
+
+                    >* {
+                        flex-grow: 1;
+                    }
+                }
+            }
+
+            .heading-description {
+                font-size: var(--tui-font-size-small);
+            }
+
+            .download-section {
+                display: flex;
+                flex-direction: column;
+                border-radius: var(--tui-radius-border-large);
+                background-color: var(--tui-color-background);
+                padding: var(--tui-spacing-medium);
+
+                .download-description {
+                    color: #000;
+                    font-size: var(--tui-font-size-extra-small);
+                }
+            }
+        }
+    }
+
+    .stats-container {
+        display: flex;
+        gap: var(--tui-spacing-extra-large);
+
+        .stat-box {
+            display: flex;
+            flex-direction: column;
+            border-radius: var(--tui-radius-border-large);
+            background-color: var(--tui-color-foreground);
+            padding: var(--tui-spacing-large);
+            gap: var(--tui-spacing-medium);
+
+            .border {
+                border-bottom: var(--tui-width-separator-medium) solid var(--tui-color-separator);
+            }
+
+            .causes-block {
+                display: flex;
+                gap: var(--tui-spacing-medium);
+            }
+        }
+    }
+
+    .select-input {
+        .input-section {
+            border-radius: 0.25rem;
+            background-color: var(--tui-filter-background-color);
+            height: 2.5rem;
+
+            >*{
+                justify-content: flex-end;
+                padding-right: 0;
+                width: 4.5rem;
+            }:hover{
+                background-color: unset;
+            }
+        }
+    }
+    @media (max-width: 1000px) {
+        .select-input {
+            .input-section {
+                margin-right: var(--tui-spacing-medium);
+                border-radius: 0.25rem;
+                height: 3rem;
+            }
+        }
+    }
+}
+

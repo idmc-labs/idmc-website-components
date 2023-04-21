@@ -12,6 +12,7 @@ import { setMapboxToken } from '@togglecorp/re-map';
 
 import Home from '#views/Home';
 import CountryProfile from '#views/CountryProfile';
+import Gidd from '#views/Gidd';
 import GoodPractice from '#views/GoodPractice';
 import GoodPractices from '#views/GoodPractices';
 import IduMap from '#views/IduMap';
@@ -185,6 +186,11 @@ function Base() {
                     <GoodPractices
                         className={styles.view}
                     />
+                );
+            }
+            if (currentPage === 'gidd') {
+                return (
+                    <Gidd />
                 );
             }
             if (currentPage === 'good-practice' && currentId) {
