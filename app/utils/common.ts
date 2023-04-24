@@ -1,7 +1,9 @@
 import { memo } from 'react';
 import {
     isFalsy,
+    isDefined,
     isFalsyString,
+    sum,
     caseInsensitiveSubmatch,
     compareStringSearch,
 } from '@togglecorp/fujs';
@@ -139,3 +141,8 @@ export const monthList = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'
 
 export const START_YEAR = 2008;
 export const END_YEAR = 2021;
+
+export function add(args: (number | undefined)[]) {
+    const newArgs = args.filter(isDefined);
+    return sum(newArgs) === 0 ? undefined : sum(newArgs);
+}

@@ -1,0 +1,19 @@
+.header {
+    * {
+        padding: 0 var(--tui-spacing-ultra-small)!important;
+        text-align: right!important;
+    }
+
+    &.conflict {
+        color: var(--color-conflict);
+    }
+
+    &.disaster {
+        color: var(--color-disaster);
+    }
+}
+
+.number {
+    display: block;
+    text-align: right;
+}

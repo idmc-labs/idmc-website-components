@@ -1,20 +1,43 @@
-import React, { useState } from 'react';
-import { _cs } from '@togglecorp/fujs';
+import React, { useMemo, useState } from 'react';
+import {
+    _cs,
+    isNotDefined,
+    isDefined,
+} from '@togglecorp/fujs';
 import {
     Button,
     Switch,
     SelectInput,
     MultiSelectInput,
+    Table,
+    Pager,
+    SortContext,
+    useSortState,
 } from '@togglecorp/toggle-ui';
 import {
+    formatNumber,
     START_YEAR,
+    add,
     END_YEAR,
 } from '#utils/common';
 import {
     gql,
     useQuery,
 } from '@apollo/client';
+import {
+    ResponsiveContainer,
+    CartesianGrid,
+    XAxis,
+    YAxis,
+    Tooltip,
+    Legend,
+    LineChart,
+    Line,
+    BarChart,
+    Bar,
+} from 'recharts';
 
+import ErrorBoundary from '#components/ErrorBoundary';
 import SliderInput from '#components/SliderInput';
 import Heading from '#components/Heading';
 import Header from '#components/Header';
@@ -23,14 +46,84 @@ import useInputState from '#hooks/useInputState';
 import GridFilterInputContainer from '#components/GridFilterInputContainer';
 import useDebouncedValue from '#hooks/useDebouncedValue';
 import {
+    createTextColumn,
+    createNumberColumn,
+} from '#components/tableHelpers';
+import {
     CountryFilterChoicesQuery,
     CountryFilterChoicesQueryVariables,
 } from '#generated/types';
 
 import styles from './styles.css';
 
+const MAX_ITEMS = 10;
+
+const chartMargins = { top: 16, left: 5, right: 5, bottom: 5 };
+
 const lorem = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.';
 const lorem2 = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.';
+
+const dummyStockData = [
+    {
+        year: 2008,
+        disaster: 200000,
+        conflict: 300000,
+    },
+    {
+        year: 2009,
+        disaster: 300000,
+        conflict: 200000,
+    },
+    {
+        year: 2010,
+        disaster: 400000,
+        conflict: 220000,
+    },
+    {
+        year: 2018,
+        disaster: 700000,
+        conflict: 320000,
+    },
+];
+
+interface DisplacementData {
+    id: string;
+    countryName: string;
+    year: number;
+    disasterStock: number;
+    conflictStock: number;
+    disasterFlow: number;
+    conflictFlow: number;
+    totalStock: number;
+    totalFlow: number;
+}
+
+const dummyOverviewTable: DisplacementData[] = [
+    {
+        id: '1',
+        countryName: 'Afghanistan',
+        year: 2008,
+        disasterStock: 200000,
+        conflictStock: 300000,
+        disasterFlow: 200000,
+        conflictFlow: 300000,
+        totalStock: 500000,
+        totalFlow: 500000,
+    },
+    {
+        id: '2',
+        countryName: 'Afghanistan',
+        year: 2009,
+        disasterStock: 600000,
+        conflictStock: 200000,
+        disasterFlow: 300000,
+        conflictFlow: 800000,
+        totalStock: 900000,
+        totalFlow: 1000000,
+    },
+];
+
+const displacementItemKeySelector = (item: { id: string }) => item.id;
 
 const COUNTRY_FILTER_CHOICES = gql`
 query CountryFilterChoices {
@@ -92,15 +185,18 @@ type GoodPracticeFilter = NonNullable<CountryFilterChoicesQuery>['goodPracticeFi
 type CountryType = NonNullable<GoodPracticeFilter['countries']>[number]['name'];
 
 function Gidd() {
-    const [disasterTimeRangeActual, setDisasterTimeRange] = useState([START_YEAR, END_YEAR]);
+    const [timeRangeActual, setDisasterTimeRange] = useState([START_YEAR, END_YEAR]);
     const [displacementCause, setDisplacementCause] = useState<Cause | undefined>();
     const [displacementCategory, setDisplacementCategory] = useState<Category | undefined>();
-    const disasterTimeRange = useDebouncedValue(disasterTimeRangeActual);
+    const timeRange = useDebouncedValue(timeRangeActual);
     const [disasterFiltersShown, setDisasterFilterVisibility] = useState(false);
     const [
         countries,
         setCountries,
     ] = useInputState<CountryType[]>([]);
+    const sortState = useSortState({ name: 'countryName', direction: 'asc' });
+    const { sorting } = sortState;
+    const [activePage, setActivePage] = useState<number>(1);
 
     const { data: countryFilterResponse } = useQuery<
         CountryFilterChoicesQuery,
@@ -111,7 +207,80 @@ function Gidd() {
 
     const countriesOptions = countryFilterResponse?.goodPracticeFilterChoices?.countries;
 
-    console.warn('here', disasterTimeRange);
+    const isDisasterDataShown = displacementCause === 'disaster' || isNotDefined(displacementCause);
+    const isConflictDataShown = displacementCause === 'conflict' || isNotDefined(displacementCause);
+
+    const columns = useMemo(
+        () => ([
+            createTextColumn<DisplacementData, string>(
+                'geo_name',
+                'Country / Territory',
+                (item) => item.countryName,
+                { sortable: true },
+            ),
+            createNumberColumn<DisplacementData, string>(
+                'year',
+                'Year',
+                (item) => item.year,
+                {
+                    sortable: true,
+                    separator: '',
+                },
+            ),
+            isConflictDataShown ? createNumberColumn<DisplacementData, string>(
+                'conflict_new_displacements',
+                'Conflict Internal Displacement',
+                (item) => item.conflictFlow,
+                {
+                    sortable: true,
+                    variant: 'conflict',
+                },
+            ) : undefined,
+            isConflictDataShown ? createNumberColumn<DisplacementData, string>(
+                'conflict_stock_displacement',
+                'Conflict Total number of IDPs',
+                (item) => item.conflictStock,
+                {
+                    sortable: true,
+                    variant: 'conflict',
+                },
+            ) : undefined,
+            isDisasterDataShown ? createNumberColumn<DisplacementData, string>(
+                'disaster_new_displacements',
+                'Disaster Internal Displacement',
+                (item) => item.disasterFlow,
+                {
+                    sortable: true,
+                    variant: 'disaster',
+                },
+            ) : undefined,
+            isDisasterDataShown ? createNumberColumn<DisplacementData, string>(
+                'disaster_stock_displacement',
+                'Disaster Total number of IDPs',
+                (item) => item.disasterStock,
+                {
+                    sortable: true,
+                    variant: 'disaster',
+                },
+            ) : undefined,
+            createNumberColumn<DisplacementData, string>(
+                'totalNew',
+                'Total Internal Displacement',
+                (item) => add([item.disasterFlow, item.conflictFlow]),
+                { sortable: true },
+            ),
+            createNumberColumn<DisplacementData, string>(
+                'totalStock',
+                'Total number of IDPS',
+                (item) => add([item.disasterStock, item.conflictStock]),
+                { sortable: true },
+            ),
+        ]).filter(isDefined),
+        [
+            isConflictDataShown,
+            isDisasterDataShown,
+        ],
+    );
 
     return (
         <div className={styles.bodyContainer}>
@@ -186,7 +355,7 @@ function Gidd() {
                                     />
                                     <GridFilterInputContainer
                                         label="Timescale"
-                                        labelDescription={`${disasterTimeRangeActual[0]} - ${disasterTimeRangeActual[1]}`}
+                                        labelDescription={`${timeRangeActual[0]} - ${timeRangeActual[1]}`}
                                         helpText="Select Timescale"
                                         input={(
                                             <SliderInput
@@ -196,7 +365,7 @@ function Gidd() {
                                                 max={END_YEAR}
                                                 step={1}
                                                 minDistance={0}
-                                                value={disasterTimeRangeActual}
+                                                value={timeRangeActual}
                                                 onChange={setDisasterTimeRange}
                                             />
                                         )}
@@ -267,7 +436,7 @@ function Gidd() {
                                 />
                             )}
                             <div className={styles.causesBlock}>
-                                {displacementCause !== 'disaster' && (
+                                {isConflictDataShown && (
                                     <NumberBlock
                                         label="Total by Conflict and Violence"
                                         size={displacementCause ? 'large' : 'medium'}
@@ -276,7 +445,7 @@ function Gidd() {
                                         value={30000000}
                                     />
                                 )}
-                                {displacementCause !== 'conflict' && (
+                                {isDisasterDataShown && (
                                     <NumberBlock
                                         label="Total by Disasters"
                                         size={displacementCause ? 'large' : 'medium'}
@@ -287,6 +456,52 @@ function Gidd() {
                                 )}
                             </div>
                             <div className={styles.border} />
+                            <div className={styles.chartContainer}>
+                                <ErrorBoundary>
+                                    <ResponsiveContainer>
+                                        <BarChart
+                                            data={dummyStockData}
+                                            margin={chartMargins}
+                                        >
+                                            <CartesianGrid
+                                                vertical={false}
+                                                strokeDasharray="3 3"
+                                            />
+                                            <XAxis
+                                                dataKey="year"
+                                                axisLine={false}
+                                                type="number"
+                                                allowDecimals={false}
+                                                domain={timeRange}
+                                            />
+                                            <YAxis
+                                                axisLine={false}
+                                                tickFormatter={formatNumber}
+                                            />
+                                            <Tooltip
+                                                formatter={formatNumber}
+                                            />
+                                            <Legend />
+                                            {isDisasterDataShown && (
+                                                <Bar
+                                                    dataKey="disaster"
+                                                    stackId="bar"
+                                                    fill="var(--color-disaster)"
+                                                    name="Disaster Internal Displacements"
+                                                />
+                                            )}
+                                            {isConflictDataShown && (
+                                                <Bar
+                                                    dataKey="conflict"
+                                                    stackId="bar"
+                                                    fill="var(--color-conflict)"
+                                                    name="Conflict Internal Displacements"
+                                                />
+                                            )}
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </ErrorBoundary>
+                            </div>
                         </div>
                     )}
                     {displacementCategory !== 'stock' && (
@@ -305,7 +520,7 @@ function Gidd() {
                                 />
                             )}
                             <div className={styles.causesBlock}>
-                                {displacementCause !== 'disaster' && (
+                                {isConflictDataShown && (
                                     <NumberBlock
                                         label="Total by Conflict and Violence"
                                         variant="conflict"
@@ -314,7 +529,7 @@ function Gidd() {
                                         value={30000000}
                                     />
                                 )}
-                                {displacementCause !== 'conflict' && (
+                                {isDisasterDataShown && (
                                     <NumberBlock
                                         label="Total by Disasters"
                                         size={displacementCause ? 'large' : 'medium'}
@@ -325,8 +540,82 @@ function Gidd() {
                                 )}
                             </div>
                             <div className={styles.border} />
+                            <div className={styles.chartContainer}>
+                                <ErrorBoundary>
+                                    <ResponsiveContainer>
+                                        <LineChart
+                                            data={dummyStockData}
+                                            margin={chartMargins}
+                                        >
+                                            <CartesianGrid
+                                                vertical={false}
+                                                strokeDasharray="3 3"
+                                            />
+                                            <XAxis
+                                                dataKey="year"
+                                                axisLine={false}
+                                                type="number"
+                                                allowDecimals={false}
+                                                domain={timeRange}
+                                            />
+                                            <YAxis
+                                                axisLine={false}
+                                                tickFormatter={formatNumber}
+                                            />
+                                            <Tooltip
+                                                formatter={formatNumber}
+                                            />
+                                            <Legend />
+                                            {isDisasterDataShown && (
+                                                <Line
+                                                    dataKey="disaster"
+                                                    key="disaster"
+                                                    stroke="var(--color-disaster)"
+                                                    name="Disaster Internal Displacements"
+                                                    strokeWidth={2}
+                                                    connectNulls
+                                                    dot
+                                                />
+                                            )}
+                                            {isConflictDataShown && (
+                                                <Line
+                                                    dataKey="conflict"
+                                                    key="conflict"
+                                                    stroke="var(--color-conflict)"
+                                                    name="Conflict Internal Displacements"
+                                                    strokeWidth={2}
+                                                    connectNulls
+                                                    dot
+                                                />
+                                            )}
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </ErrorBoundary>
+                            </div>
                         </div>
                     )}
+                </div>
+                <div className={styles.tableContainer}>
+                    <Header
+                        heading="Data Table"
+                        headingDescription={lorem}
+                    />
+                    <div className={styles.tableContainer}>
+                        <SortContext.Provider value={sortState}>
+                            <Pager
+                                activePage={activePage}
+                                itemsCount={dummyStockData?.length ?? 0}
+                                maxItemsPerPage={MAX_ITEMS}
+                                onActivePageChange={setActivePage}
+                                itemsPerPageControlHidden
+                            />
+                            <Table
+                                data={dummyOverviewTable}
+                                keySelector={displacementItemKeySelector}
+                                columns={columns}
+                            />
+                        </SortContext.Provider>
+                    </div>
                 </div>
             </div>
         </div>
