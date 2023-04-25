@@ -41,13 +41,15 @@ import {
 } from 'recharts';
 
 import {
+    StatsQuery,
+    StatsQueryVariables,
     CountryProfileQuery,
     CountryProfileQueryVariables,
     RelatedMaterialsQuery,
     RelatedMaterialsQueryVariables,
     DisasterDataQuery,
     DisasterDataQueryVariables,
-    CategoryStatisticsType,
+    GiddCategoryStatisticsType,
     ConflictDataQuery,
     ConflictDataQueryVariables,
 } from '#generated/types';
@@ -79,7 +81,6 @@ import {
 import useIduMap from '#components/IduMap/useIduMap';
 
 import useDebouncedValue from '../../hooks/useDebouncedValue';
-// import FigureAnalysis from './FigureAnalysis';
 
 import { countryMetadata } from './data';
 
@@ -107,7 +108,7 @@ function getContentTypeLabel(val: string | undefined) {
 }
 
 const DRUPAL_ENDPOINT = process.env.REACT_APP_DRUPAL_ENDPOINT as string || '';
-const REST_ENDPOINT = process.env.REACT_APP_REST_ENDPOINT as string;
+const GIDD_REST_ENDPOINT = process.env.REACT_APP_GIDD_REST_ENDPOINT as string;
 
 function suffixDrupalEndpoint(path: string) {
     return `${DRUPAL_ENDPOINT}${path}`;
@@ -126,10 +127,10 @@ function replaceWithDrupalEndpoint(image: string | null | undefined) {
 }
 
 function suffixGiddRestEndpoint(path: string) {
-    return `${REST_ENDPOINT}${path}`;
+    return `${GIDD_REST_ENDPOINT}${path}`;
 }
 
-const disasterCategoryKeySelector = (d: CategoryStatisticsType) => d.label;
+const disasterCategoryKeySelector = (d: GiddCategoryStatisticsType) => d.label;
 
 const giddDisplacementDataLink = suffixDrupalEndpoint('/database/displacement-data');
 const giddLink = suffixDrupalEndpoint('/database');
@@ -148,7 +149,8 @@ const chartMargins = { top: 16, left: 5, right: 5, bottom: 5 };
 
 const COUNTRY_PROFILE = gql`
     query CountryProfile($iso3: String!) {
-        country(iso3: $iso3) {
+        # Get this from gidd
+        countryProfile(iso3: $iso3) {
             id
             name
             boundingBox
@@ -163,17 +165,6 @@ const COUNTRY_PROFILE = gql`
                 year
                 updatedAt
             }
-            figureAnalysis {
-                id
-                idpCaveatsAndChallenges
-                idpFigures
-                idpMethodologyAndSources
-                ndCaveatsAndChallenges
-                ndFigures
-                ndMethodologyAndSources
-                year
-                crisisType
-            }
             contactPersonDescription
             contactPersonImage {
                 url
@@ -183,11 +174,18 @@ const COUNTRY_PROFILE = gql`
             displacementDataDescription
             internalDisplacementDescription
         }
-        conflictStatistics(filters: { countriesIso3: [$iso3] }) {
+    }
+`;
+
+const STATS = gql`
+    query Stats($iso3: String!) {
+        # Get this from helix
+        giddConflictStatistics(countriesIso3: [$iso3]) {
             newDisplacements
             totalIdps
         }
-        disasterStatistics(filters: { countriesIso3: [$iso3] }) {
+        # Get this from helix
+        giddDisasterStatistics(countriesIso3: [$iso3]) {
             newDisplacements
 
             categories {
@@ -199,8 +197,13 @@ const COUNTRY_PROFILE = gql`
 `;
 
 const CONFLICT_DATA = gql`
-    query ConflictData($countryIso3: String!, $startYear: Int, $endYear: Int) {
-        conflictStatistics(filters: { countriesIso3: [$countryIso3], endYear: $endYear, startYear: $startYear }) {
+    query ConflictData($countryIso3: String!, $startYear: Float, $endYear: Float) {
+        # Get this from helix
+        giddConflictStatistics(
+            countriesIso3: [$countryIso3],
+            endYear: $endYear,
+            startYear: $startYear,
+        ) {
             newDisplacements
             totalIdps
             idpsTimeseries {
@@ -216,8 +219,14 @@ const CONFLICT_DATA = gql`
 `;
 
 const DISASTER_DATA = gql`
-    query DisasterData($countryIso3: String!, $startYear: Int, $endYear: Int, $categories: [String!]) {
-        disasterStatistics(filters: { countriesIso3: [$countryIso3], endYear: $endYear, startYear: $startYear, categories: $categories}) {
+    query DisasterData($countryIso3: String!, $startYear: Float, $endYear: Float, $categories: [String!]) {
+        # Get this from helix
+        giddDisasterStatistics(
+            countriesIso3: [$countryIso3],
+            endYear: $endYear,
+            startYear: $startYear,
+            categories: $categories
+        ) {
             newDisplacements
             totalEvents
             categories {
@@ -319,15 +328,33 @@ function CountryProfile(props: Props) {
                 iso3: currentCountry,
             },
             onCompleted: (response) => {
-                if (!response.country) {
+                if (!response.countryProfile) {
                     return;
                 }
                 const {
                     overviews,
-                } = response.country;
+                } = response.countryProfile;
                 if (overviews && overviews.length > 0) {
                     setOverviewActiveYear(overviews[0].year.toString());
                 }
+            },
+        },
+    );
+
+    const {
+        previousData: previousStatsData,
+        data: statsData = previousStatsData,
+        // FIXME: handle loading and error
+        // loading: countryProfileLoading,
+        // error: countryProfileError,
+    } = useQuery<StatsQuery, StatsQueryVariables>(
+        STATS,
+        {
+            variables: {
+                iso3: currentCountry,
+            },
+            context: {
+                clientName: 'helix',
             },
         },
     );
@@ -347,6 +374,9 @@ function CountryProfile(props: Props) {
                 endYear: disasterTimeRange[1],
                 categories: disasterCategories,
             },
+            context: {
+                clientName: 'helix',
+            },
         },
     );
 
@@ -363,6 +393,9 @@ function CountryProfile(props: Props) {
                 countryIso3: currentCountry,
                 startYear: conflictTimeRange[0],
                 endYear: conflictTimeRange[1],
+            },
+            context: {
+                clientName: 'helix',
             },
         },
     );
@@ -402,7 +435,7 @@ function CountryProfile(props: Props) {
     );
 
     const relatedMaterials = relatedMaterialsResponse?.relatedMaterials?.rows;
-    const countryInfo = countryProfileData?.country;
+    const countryInfo = countryProfileData?.countryProfile;
 
     const countryOverviewSortedByYear = useMemo(() => {
         if (countryInfo?.overviews) {
@@ -527,7 +560,7 @@ function CountryProfile(props: Props) {
     );
 
     const disasterSection = (
-        (countryProfileData?.disasterStatistics?.newDisplacements ?? 0) > 0
+        (statsData?.giddDisasterStatistics?.newDisplacements ?? 0) > 0
     ) && (
         <Container
             heading={countryMetadata.disasterHeader}
@@ -587,7 +620,7 @@ function CountryProfile(props: Props) {
                                 placeholder="Disaster Category"
                                 name="disasterCategory"
                                 value={disasterCategories}
-                                options={countryProfileData?.disasterStatistics.categories}
+                                options={statsData?.giddDisasterStatistics.categories}
                                 keySelector={disasterCategoryKeySelector}
                                 labelSelector={disasterCategoryKeySelector}
                                 onChange={setDisasterCategories}
@@ -601,7 +634,7 @@ function CountryProfile(props: Props) {
                 <Infographic
                     className={styles.disasterInfographic}
                     totalValue={disasterData
-                        ?.disasterStatistics.newDisplacements || 0}
+                        ?.giddDisasterStatistics.newDisplacements || 0}
                     description={(
                         <div>
                             <Header
@@ -617,11 +650,11 @@ function CountryProfile(props: Props) {
                         </div>
                     )}
                     date={`${disasterTimeRangeActual[0]} - ${disasterTimeRangeActual[1]}`}
-                    chart={disasterData?.disasterStatistics.timeseries && (
+                    chart={disasterData?.giddDisasterStatistics.timeseries && (
                         <ErrorBoundary>
                             <ResponsiveContainer>
                                 <LineChart
-                                    data={disasterData.disasterStatistics.timeseries}
+                                    data={disasterData.giddDisasterStatistics.timeseries}
                                     margin={chartMargins}
                                 >
                                     <CartesianGrid
@@ -660,7 +693,7 @@ function CountryProfile(props: Props) {
                 <Infographic
                     className={styles.disasterInfographic}
                     totalValue={disasterData
-                        ?.disasterStatistics.totalEvents || 0}
+                        ?.giddDisasterStatistics.totalEvents || 0}
                     description={(
                         <Header
                             headingClassName={styles.heading}
@@ -674,7 +707,7 @@ function CountryProfile(props: Props) {
                         />
                     )}
                     date={`${disasterTimeRangeActual[0]} - ${disasterTimeRangeActual[1]}`}
-                    chart={disasterData?.disasterStatistics.categories && (
+                    chart={disasterData?.giddDisasterStatistics.categories && (
                         <ErrorBoundary>
                             <ResponsiveContainer>
                                 <PieChart>
@@ -683,12 +716,12 @@ function CountryProfile(props: Props) {
                                     />
                                     <Legend />
                                     <Pie
-                                        data={disasterData.disasterStatistics.categories}
+                                        data={disasterData.giddDisasterStatistics.categories}
                                         dataKey="total"
                                         nameKey="label"
                                     >
                                         {disasterData
-                                            ?.disasterStatistics
+                                            ?.giddDisasterStatistics
                                             ?.categories
                                             ?.map(({ label }, index) => (
                                                 <Cell
@@ -709,8 +742,8 @@ function CountryProfile(props: Props) {
     );
 
     const conflictSection = ((
-        (countryProfileData?.conflictStatistics?.newDisplacements ?? 0)
-        + (countryProfileData?.conflictStatistics?.totalIdps ?? 0)
+        (statsData?.giddConflictStatistics?.newDisplacements ?? 0)
+        + (statsData?.giddConflictStatistics?.totalIdps ?? 0)
     ) > 0) && (
         <Container
             heading={countryMetadata.conflictAndViolenceHeader}
@@ -767,7 +800,7 @@ function CountryProfile(props: Props) {
             <div className={styles.infographicList}>
                 <Infographic
                     className={styles.conflictInfographic}
-                    totalValue={conflictData?.conflictStatistics.newDisplacements || 0}
+                    totalValue={conflictData?.giddConflictStatistics.newDisplacements || 0}
                     description={(
                         <Header
                             headingClassName={styles.heading}
@@ -781,11 +814,12 @@ function CountryProfile(props: Props) {
                         />
                     )}
                     date={`${conflictTimeRangeActual[0]} - ${conflictTimeRangeActual[1]}`}
-                    chart={conflictData?.conflictStatistics.newDisplacementTimeseries && (
+                    chart={conflictData?.giddConflictStatistics.newDisplacementTimeseries && (
                         <ErrorBoundary>
                             <ResponsiveContainer>
                                 <LineChart
-                                    data={conflictData.conflictStatistics.newDisplacementTimeseries}
+                                    data={conflictData.giddConflictStatistics
+                                        .newDisplacementTimeseries}
                                     margin={chartMargins}
                                 >
                                     <CartesianGrid
@@ -822,7 +856,7 @@ function CountryProfile(props: Props) {
                 />
                 <Infographic
                     className={styles.conflictInfographic}
-                    totalValue={conflictData?.conflictStatistics.totalIdps || 0}
+                    totalValue={conflictData?.giddConflictStatistics.totalIdps || 0}
                     description={(
                         <Header
                             headingClassName={styles.heading}
@@ -836,11 +870,11 @@ function CountryProfile(props: Props) {
                         />
                     )}
                     date={`As of end of ${conflictTimeRangeActual[1]}`}
-                    chart={conflictData?.conflictStatistics.idpsTimeseries && (
+                    chart={conflictData?.giddConflictStatistics.idpsTimeseries && (
                         <ErrorBoundary>
                             <ResponsiveContainer>
                                 <BarChart
-                                    data={conflictData.conflictStatistics.idpsTimeseries}
+                                    data={conflictData.giddConflictStatistics.idpsTimeseries}
                                     margin={chartMargins}
                                 >
                                     <CartesianGrid
@@ -901,11 +935,6 @@ function CountryProfile(props: Props) {
                     value={countryInfo?.displacementDataDescription}
                 />
             </EllipsizedContent>
-            {/*
-            <FigureAnalysis
-                data={countryInfo?.figureAnalysis}
-            />
-              */}
             <div className={styles.infographics}>
                 {conflictSection}
                 {disasterSection}
