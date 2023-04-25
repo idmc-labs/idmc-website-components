@@ -91,7 +91,7 @@ const GOOD_PRACTICE_PAGE_SIZE = 6;
 
 const FAQS = gql`
     query Faqs {
-            faqs {
+        faqs {
             answer
             id
             question
@@ -168,7 +168,7 @@ query GoodPracticeListingStaticPage {
 
 const GOOD_PRACTICE_MAP = gql`
 query GoodPracticeMap {
-    countries {
+    countryProfiles {
         id
         name
         centerPoint
@@ -710,7 +710,7 @@ function GoodPractices(props: Props) {
         </div>
     );
 
-    const countries = mapResponse?.countries;
+    const countries = mapResponse?.countryProfiles;
     const goodPracticeGeojson : GoodPracticeGeoJSON = useMemo(
         () => ({
             type: 'FeatureCollection',

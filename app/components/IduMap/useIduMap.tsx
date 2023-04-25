@@ -35,6 +35,8 @@ import useInputState from '../../hooks/useInputState';
 
 import styles from './styles.css';
 
+const HELIX_CLIENT_ID = process.env.REACT_APP_HELIX_CLIENT_ID as string || '';
+
 // FIXME: move this somewhere else
 const DRUPAL_ENDPOINT = process.env.REACT_APP_DRUPAL_ENDPOINT as string || '';
 function suffixDrupalEndpoing(path: string) {
@@ -43,12 +45,12 @@ function suffixDrupalEndpoing(path: string) {
 const giddLink = suffixDrupalEndpoing('/database/displacement-data');
 
 const IDU_DATA = gql`
-    query IduData {
-        idu @rest(
+    query IduData($clientId: String!) {
+        idu(clientId: $clientId) @rest(
             type: "[IduData]",
             method: "GET",
             endpoint: "helix",
-            path: "/external-api/idus?client_id=IDMCWSHSOLO009"
+            path: "/external-api/idus?client_id={args.clientId}"
         ) {
             id
             country
@@ -133,6 +135,11 @@ function useIduQuery(
         // error: iduDataError,
     } = useQuery<IduDataQuery, IduDataQueryVariables>(
         IDU_DATA,
+        {
+            variables: {
+                clientId: HELIX_CLIENT_ID,
+            },
+        },
     );
 
     const idus = React.useMemo(() => (

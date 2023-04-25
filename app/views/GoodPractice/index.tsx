@@ -78,7 +78,6 @@ query GoodPracticeDetails($id: ID!) {
         startYear
         title
     }
-
     regionList: __type(name: "GoodPracticeRegion") {
         enumValues {
             name

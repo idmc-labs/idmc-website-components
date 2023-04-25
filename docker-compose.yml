@@ -2,7 +2,6 @@ version: '3.3'
 
 services:
   react:
-    build: .
     command: sh -c 'yarn install && yarn start'
     build:
       context: ./
@@ -10,11 +9,11 @@ services:
     tty: true
     environment:
       NODE_OPTIONS: --openssl-legacy-provider
-      GRAPHQL_CODEGEN_ENDPOINT: ${GRAPHQL_CODEGEN_ENDPOINT:-http://localhost:7000/graphql/}
-      REACT_APP_GRAPHQL_ENDPOINT: ${REACT_APP_GRAPHQL_ENDPOINT:-http://localhost:7000/graphql/}
+      GRAPHQL_CODEGEN_ENDPOINT: ${GRAPHQL_CODEGEN_ENDPOINT:-http://localhost:9000/graphql/}
+      REACT_APP_GRAPHQL_ENDPOINT: ${REACT_APP_GRAPHQL_ENDPOINT:-http://localhost:9000/graphql/}
     env_file:
       - .env
     volumes:
       - .:/code
     ports:
-      - '3080:3080'
+      - '3081:3081'
