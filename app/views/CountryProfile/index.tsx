@@ -108,7 +108,8 @@ function getContentTypeLabel(val: string | undefined) {
 }
 
 const DRUPAL_ENDPOINT = process.env.REACT_APP_DRUPAL_ENDPOINT as string || '';
-const GIDD_REST_ENDPOINT = process.env.REACT_APP_GIDD_REST_ENDPOINT as string;
+const HELIX_REST_ENDPOINT = process.env.REACT_APP_HELIX_REST_ENDPOINT as string;
+const HELIX_CLIENT_ID = process.env.REACT_APP_HELIX_CLIENT_ID as string || '';
 
 function suffixDrupalEndpoint(path: string) {
     return `${DRUPAL_ENDPOINT}${path}`;
@@ -126,8 +127,8 @@ function replaceWithDrupalEndpoint(image: string | null | undefined) {
     return suffixDrupalEndpoint(path);
 }
 
-function suffixGiddRestEndpoint(path: string) {
-    return `${GIDD_REST_ENDPOINT}${path}`;
+function suffixHelixRestEndpoint(path: string) {
+    return `${HELIX_REST_ENDPOINT}${path}`;
 }
 
 const disasterCategoryKeySelector = (d: GiddCategoryStatisticsType) => d.label;
@@ -575,7 +576,7 @@ function CountryProfile(props: Props) {
             footerActions={(
                 <>
                     <ButtonLikeLink
-                        href={suffixGiddRestEndpoint(`/countries/${currentCountry}/disaster-export/?start_year=${disasterTimeRange[0]}&end_year=${disasterTimeRange[1]}&hazard_type=${disasterCategories.join(',')}`)}
+                        href={suffixHelixRestEndpoint(`/countries/${currentCountry}/disaster-export/?start_year=${disasterTimeRange[0]}&end_year=${disasterTimeRange[1]}&hazard_type=${disasterCategories.join(',')}&client_id=${HELIX_CLIENT_ID}`)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={styles.disasterButton}
@@ -775,7 +776,7 @@ function CountryProfile(props: Props) {
             footerActions={(
                 <>
                     <ButtonLikeLink
-                        href={suffixGiddRestEndpoint(`/countries/${currentCountry}/conflict-export/?start_year=${conflictTimeRange[0]}&end_year=${conflictTimeRange[1]}`)}
+                        href={suffixHelixRestEndpoint(`/countries/${currentCountry}/conflict-export/?start_year=${conflictTimeRange[0]}&end_year=${conflictTimeRange[1]}&client_id=${HELIX_CLIENT_ID}`)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={styles.conflictButton}
