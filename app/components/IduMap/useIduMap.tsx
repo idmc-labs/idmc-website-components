@@ -39,10 +39,10 @@ const HELIX_CLIENT_ID = process.env.REACT_APP_HELIX_CLIENT_ID as string || '';
 
 // FIXME: move this somewhere else
 const DRUPAL_ENDPOINT = process.env.REACT_APP_DRUPAL_ENDPOINT as string || '';
-function suffixDrupalEndpoing(path: string) {
+function suffixDrupalEndpoint(path: string) {
     return `${DRUPAL_ENDPOINT}${path}`;
 }
-const giddLink = suffixDrupalEndpoing('/database/displacement-data');
+const giddLink = suffixDrupalEndpoint('/database/displacement-data');
 
 const IDU_DATA = gql`
     query IduData($clientId: String!) {
@@ -50,7 +50,7 @@ const IDU_DATA = gql`
             type: "[IduData]",
             method: "GET",
             endpoint: "helix",
-            path: "/external-api/idus?client_id={args.clientId}"
+            path: "/idus?client_id={args.clientId}"
         ) {
             id
             country
