@@ -1,0 +1,38 @@
+.progress-bar {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    gap: var(--tui-spacing-extra-extra-small);
+
+    .title {
+        display: flex;
+        align-items: center;
+        gap: var(--tui-spacing-extra-extra-small);
+    }
+
+    .bottom {
+        display: flex;
+        align-items: center;
+        gap: var(--tui-spacing-extra-extra-small);
+    }
+
+    .line {
+        flex-grow: 1;
+        background-color: var(--color-progress-line-background);
+        height: var(--height-bar);
+
+        .progress {
+            transition: var(--tui-duration-transition-slow) width ease-in-out;
+            background-color: var(--color-disaster);
+            height: 100%;
+        }
+
+        &.small {
+            --height-bar: 0.6em;
+        }
+
+        &.large {
+            --height-bar: 0.8em;
+        }
+    }
+}

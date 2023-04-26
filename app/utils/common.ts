@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import {
     isFalsy,
+    isNotDefined,
     isDefined,
     isFalsyString,
     sum,
@@ -144,5 +145,24 @@ export const END_YEAR = 2021;
 
 export function add(args: (number | undefined)[]) {
     const newArgs = args.filter(isDefined);
-    return sum(newArgs) === 0 ? undefined : sum(newArgs);
+    const total = sum(newArgs);
+    return total === 0 ? undefined : total;
+}
+
+export function roundAndRemoveZero(data?: number) {
+    if (isNotDefined(data) || data === 0) {
+        return undefined;
+    }
+    const absoluteData = Math.abs(data);
+    const sign = data > 0 ? 1 : -1;
+    if (absoluteData <= 100) {
+        return sign * absoluteData;
+    }
+    if (absoluteData <= 1000) {
+        return sign * Math.round(absoluteData / 10) * 10;
+    }
+    if (absoluteData <= 10000) {
+        return sign * Math.round(absoluteData / 100) * 100;
+    }
+    return sign * Math.round(data / 1000) * 1000;
 }

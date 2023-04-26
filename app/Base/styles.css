@@ -74,6 +74,7 @@
     --tui-radius-border-alerts: 0.24rem;
 
     --tui-radius-border-large: 0.8rem;
+    --color-progress-line-background: #f0f0f0;
 }
 
 .base {
