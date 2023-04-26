@@ -212,6 +212,7 @@ function useIduQuery(
                 <>
                     <div className={styles.timeRangeContainer}>
                         <SliderInput
+                            label="Timescale"
                             hideValues
                             className={styles.timeRangeInput}
                             min={0}

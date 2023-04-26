@@ -1,0 +1,34 @@
+.button {
+    border-radius: 0;
+    padding: 0;
+    text-align: left;
+    color: var(--tui-color-brand);
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.modal {
+    .content {
+        display: flex;
+        gap: var(--tui-spacing-medium);
+
+        .right,
+        .left {
+            flex-basis: calc(100% / 2 - var(--tui-spacing-medium) * 2);
+            flex-grow: 0;
+            flex-shrink: 1;
+        }
+
+        .border {
+            border-left: var(--tui-width-separator-thin) solid var(--tui-color-separator);
+        }
+
+        .left {
+            display: flex;
+            flex-direction: column;
+            gap: var(--tui-spacing-medium);
+        }
+    }
+}

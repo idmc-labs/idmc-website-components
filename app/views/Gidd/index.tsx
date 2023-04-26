@@ -1,8 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useCallback, useState } from 'react';
 import {
     _cs,
     isNotDefined,
     isDefined,
+    compareNumber,
 } from '@togglecorp/fujs';
 import {
     Button,
@@ -10,20 +11,28 @@ import {
     SelectInput,
     MultiSelectInput,
     Table,
+    TableHeaderCell,
+    TableHeaderCellProps,
+    TableColumn,
     Pager,
     SortContext,
     useSortState,
+    createDateColumn,
+    List,
 } from '@togglecorp/toggle-ui';
+import { removeNull } from '@togglecorp/toggle-form';
 import {
     formatNumber,
     START_YEAR,
     add,
     END_YEAR,
+    roundAndRemoveZero,
 } from '#utils/common';
 import {
     gql,
     useQuery,
 } from '@apollo/client';
+import { IoExitOutline } from 'react-icons/io5';
 import {
     ResponsiveContainer,
     CartesianGrid,
@@ -41,6 +50,7 @@ import ErrorBoundary from '#components/ErrorBoundary';
 import SliderInput from '#components/SliderInput';
 import Heading from '#components/Heading';
 import Header from '#components/Header';
+import ProgressLine from '#components/ProgressLine';
 import NumberBlock from '#components/NumberBlock';
 import useInputState from '#hooks/useInputState';
 import GridFilterInputContainer from '#components/GridFilterInputContainer';
@@ -50,9 +60,11 @@ import {
     createNumberColumn,
 } from '#components/tableHelpers';
 import {
-    CountryFilterChoicesQuery,
-    CountryFilterChoicesQueryVariables,
+    GiddFilterOptionsQuery,
+    GiddFilterOptionsQueryVariables,
 } from '#generated/types';
+
+import EventTitle, { Props as EventTitleProps } from './EventTitle';
 
 import styles from './styles.css';
 
@@ -123,15 +135,79 @@ const dummyOverviewTable: DisplacementData[] = [
     },
 ];
 
+interface EventData {
+    id: string;
+    countryName: string;
+    year: number;
+    eventName: string;
+    eventStartDate: string;
+    disasterFlow: number;
+    hazardCategory: string;
+    hazardType: string;
+    glideNumber: string;
+}
+
+const dummyEventTable: EventData[] = [
+    {
+        id: '1',
+        countryName: 'Afghanistan',
+        year: 2018,
+        eventName: 'Afghanistan Floods: 20 people displaced',
+        eventStartDate: '12/12/2022',
+        disasterFlow: 200,
+        hazardCategory: 'Weather Related',
+        hazardType: 'Flood',
+        glideNumber: '1-012/9asd',
+    },
+];
+
+interface HazardData {
+    id: string;
+    icon: React.ReactNode;
+    displacement: number;
+    hazardName: string;
+}
+
+const hazardKeySelector = (item: HazardData) => item.id;
+
+const hazardDummyData: HazardData[] = [
+    {
+        id: '1',
+        icon: <IoExitOutline />,
+        displacement: 1000000,
+        hazardName: 'Flood',
+    },
+    {
+        id: '2',
+        icon: <IoExitOutline />,
+        displacement: 2000000,
+        hazardName: 'Earthquake',
+    },
+    {
+        id: '3',
+        icon: <IoExitOutline />,
+        displacement: 5000000,
+        hazardName: 'Landslide',
+    },
+];
+
+const eventKeySelector = (item: { id: string }) => item.id;
 const displacementItemKeySelector = (item: { id: string }) => item.id;
 
-const COUNTRY_FILTER_CHOICES = gql`
-query CountryFilterChoices {
-    goodPracticeFilterChoices {
-        countries {
+const GIDD_FILTER_OPTIONS = gql`
+query GiddFilterOptions {
+    giddPublicCountryList {
+        id
+        idmcShortName
+        iso3
+        region {
             id
             name
         }
+    }
+    giddHazardSubType {
+        id
+        name
     }
 }
 `;
@@ -140,7 +216,11 @@ function idSelector(d: { id: string }) {
     return d.id;
 }
 
-function nameSelector(d: { name: string }) {
+function nameSelector(d: { idmcShortName: string }) {
+    return d.idmcShortName;
+}
+
+function hazardLabelSelector(d: { name: string }) {
     return d.name;
 }
 
@@ -181,9 +261,6 @@ const displacementCategoryOptions: CategoryOption[] = [
     },
 ];
 
-type GoodPracticeFilter = NonNullable<CountryFilterChoicesQuery>['goodPracticeFilterChoices'];
-type CountryType = NonNullable<GoodPracticeFilter['countries']>[number]['name'];
-
 function Gidd() {
     const [timeRangeActual, setDisasterTimeRange] = useState([START_YEAR, END_YEAR]);
     const [displacementCause, setDisplacementCause] = useState<Cause | undefined>();
@@ -193,19 +270,37 @@ function Gidd() {
     const [
         countries,
         setCountries,
-    ] = useInputState<CountryType[]>([]);
-    const sortState = useSortState({ name: 'countryName', direction: 'asc' });
-    const { sorting } = sortState;
+    ] = useInputState<string[]>([]);
+    const [
+        hazardSubTypes,
+        setHazardSubTypes,
+    ] = useInputState<string[]>([]);
+    const overallDataSortState = useSortState({ name: 'countryName', direction: 'asc' });
+    const { sorting } = overallDataSortState;
+
+    const eventDataSortState = useSortState({ name: 'countryName', direction: 'asc' });
+    const { sorting: eventSorting } = eventDataSortState;
     const [activePage, setActivePage] = useState<number>(1);
 
     const { data: countryFilterResponse } = useQuery<
-        CountryFilterChoicesQuery,
-        CountryFilterChoicesQueryVariables
+        GiddFilterOptionsQuery,
+        GiddFilterOptionsQueryVariables
     >(
-        COUNTRY_FILTER_CHOICES,
+        GIDD_FILTER_OPTIONS,
+        {
+            context: {
+                clientName: 'helix',
+            },
+        },
     );
 
-    const countriesOptions = countryFilterResponse?.goodPracticeFilterChoices?.countries;
+    const countriesOptions = removeNull(
+        countryFilterResponse?.giddPublicCountryList,
+    )?.filter(isDefined);
+
+    const hazardOptions = removeNull(
+        countryFilterResponse?.giddHazardSubType,
+    )?.filter(isDefined);
 
     const isDisasterDataShown = displacementCause === 'disaster' || isNotDefined(displacementCause);
     const isConflictDataShown = displacementCause === 'conflict' || isNotDefined(displacementCause);
@@ -281,6 +376,87 @@ function Gidd() {
             isDisasterDataShown,
         ],
     );
+
+    const eventColumns = useMemo(
+        () => {
+            const eventTitle: TableColumn<
+                EventData, string, EventTitleProps, TableHeaderCellProps
+            > = {
+                id: 'TITLE',
+                title: 'Event Name',
+                headerCellRenderer: TableHeaderCell,
+                headerCellRendererParams: {
+                    sortable: true,
+                },
+                cellRenderer: EventTitle,
+                cellRendererParams: (_, data) => ({
+                    title: data.eventName,
+                    label: data.eventName,
+                    eventId: data.id,
+                }),
+                columnWidth: 160,
+            };
+
+            return ([
+                createTextColumn<EventData, string>(
+                    'countryName',
+                    'Country / Territory',
+                    (item) => item.countryName,
+                    { sortable: true },
+                ),
+                createNumberColumn<EventData, string>(
+                    'year',
+                    'Year',
+                    (item) => Number(item.year),
+                    {
+                        sortable: true,
+                        separator: '',
+                        columnClassName: styles.year,
+                    },
+                ),
+                eventTitle,
+                createDateColumn<EventData, string>(
+                    'startDate',
+                    'Date of event (start)',
+                    (item) => item.eventStartDate,
+                    {
+                        sortable: true,
+                        columnClassName: styles.date,
+                    },
+                ),
+                createNumberColumn<EventData, string>(
+                    'disasterFlow',
+                    'Disaster Internal Displacements',
+                    (item) => roundAndRemoveZero(item.disasterFlow),
+                    { sortable: true },
+                ),
+                createTextColumn<EventData, string>(
+                    'hazardCategory',
+                    'Hazard Category',
+                    (item) => item.hazardCategory,
+                    { sortable: true },
+                ),
+                createTextColumn<EventData, string>(
+                    'hazardType',
+                    'Hazard Type',
+                    (item) => item.hazardType,
+                    { sortable: true },
+                ),
+            ]);
+        },
+        [],
+    );
+
+    const sortedHazards = useMemo(() => (
+        hazardDummyData.sort((foo, bar) => compareNumber(foo.displacement, bar.displacement, -1))
+    ), []);
+
+    const hazardRendererParams = useCallback((_: string, hazard: HazardData) => ({
+        total: sortedHazards[0]?.displacement,
+        value: hazard.displacement,
+        icon: hazard.icon,
+        title: 'Internal Displacement',
+    }), [sortedHazards]);
 
     return (
         <div className={styles.bodyContainer}>
@@ -390,26 +566,11 @@ function Gidd() {
                                             <MultiSelectInput
                                                 name="disasterHazard"
                                                 className={styles.selectInput}
-                                                value={countries}
-                                                options={countriesOptions}
+                                                value={hazardSubTypes}
+                                                options={hazardOptions ?? undefined}
                                                 keySelector={idSelector}
-                                                labelSelector={nameSelector}
-                                                onChange={setCountries}
-                                                inputSectionClassName={styles.inputSection}
-                                            />
-                                        )}
-                                    />
-                                    <GridFilterInputContainer
-                                        label="Disaster Event Name"
-                                        input={(
-                                            <MultiSelectInput
-                                                name="eventName"
-                                                className={styles.selectInput}
-                                                value={countries}
-                                                options={countriesOptions}
-                                                keySelector={idSelector}
-                                                labelSelector={nameSelector}
-                                                onChange={setCountries}
+                                                labelSelector={hazardLabelSelector}
+                                                onChange={setHazardSubTypes}
                                                 inputSectionClassName={styles.inputSection}
                                             />
                                         )}
@@ -420,7 +581,7 @@ function Gidd() {
                     </div>
                 </div>
                 <div className={styles.statsContainer}>
-                    {displacementCategory !== 'flow' && (
+                    {displacementCategory !== 'stock' && (
                         <div className={styles.statBox}>
                             <Header
                                 heading="Internal Displacement Data"
@@ -502,9 +663,27 @@ function Gidd() {
                                     </ResponsiveContainer>
                                 </ErrorBoundary>
                             </div>
+                            {displacementCause === 'disaster' && (
+                                <>
+                                    <NumberBlock
+                                        label=""
+                                        size="medium"
+                                        variant="disaster"
+                                        subLabel="Disaster Events Reported"
+                                        value={400000000}
+                                    />
+                                    <div className={styles.border} />
+                                    <List
+                                        rendererParams={hazardRendererParams}
+                                        renderer={ProgressLine}
+                                        keySelector={hazardKeySelector}
+                                        data={sortedHazards}
+                                    />
+                                </>
+                            )}
                         </div>
                     )}
-                    {displacementCategory !== 'stock' && (
+                    {displacementCategory !== 'flow' && (
                         <div className={styles.statBox}>
                             <Header
                                 heading="Total Number of IDPs Data"
@@ -601,15 +780,16 @@ function Gidd() {
                         headingDescription={lorem}
                     />
                     <div className={styles.tableContainer}>
-                        <SortContext.Provider value={sortState}>
+                        <SortContext.Provider value={overallDataSortState}>
                             <Pager
                                 activePage={activePage}
-                                itemsCount={dummyStockData?.length ?? 0}
+                                itemsCount={dummyOverviewTable?.length ?? 0}
                                 maxItemsPerPage={MAX_ITEMS}
                                 onActivePageChange={setActivePage}
                                 itemsPerPageControlHidden
                             />
                             <Table
+                                className={styles.table}
                                 data={dummyOverviewTable}
                                 keySelector={displacementItemKeySelector}
                                 columns={columns}
@@ -617,6 +797,31 @@ function Gidd() {
                         </SortContext.Provider>
                     </div>
                 </div>
+                {displacementCause === 'disaster' && (
+                    <div className={styles.tableContainer}>
+                        <Header
+                            heading="Events Table"
+                            headingDescription={lorem}
+                        />
+                        <div className={styles.tableContainer}>
+                            <SortContext.Provider value={eventDataSortState}>
+                                <Pager
+                                    activePage={activePage}
+                                    itemsCount={dummyEventTable?.length ?? 0}
+                                    maxItemsPerPage={MAX_ITEMS}
+                                    onActivePageChange={setActivePage}
+                                    itemsPerPageControlHidden
+                                />
+                                <Table
+                                    className={styles.table}
+                                    data={dummyEventTable}
+                                    keySelector={eventKeySelector}
+                                    columns={eventColumns}
+                                />
+                            </SortContext.Provider>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -135,6 +135,22 @@
         background-color: var(--tui-color-foreground);
         padding: var(--tui-spacing-large);
         gap: var(--tui-spacing-medium);
+
+        .table {
+            width: 100%;
+
+            .year {
+                width: 96px;
+            }
+
+            .date {
+                width: 120px;
+            }
+
+            .event {
+                width: 320px;
+            }
+        }
     }
 
     .select-input {
