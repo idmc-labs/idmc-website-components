@@ -70,7 +70,7 @@ const STATS = gql`
 `;
 
 const CONFLICT_DATA = gql`
-    query ConflictDataGidd($countryIso3: String!, $startYear: Float, $endYear: Float) {
+    query ConflictData($countryIso3: String!, $startYear: Float, $endYear: Float) {
         giddConflictStatistics(countriesIso3: [$countryIso3], endYear: $endYear, startYear: $startYear) {
             newDisplacements
             totalIdps

@@ -17,7 +17,6 @@ import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
 import TooltipIcon from '#components/TooltipIcon';
-import Container from '#components/Container';
 import DisplacementIcon from '#components/DisplacementIcon';
 
 import {
@@ -117,7 +116,7 @@ function IduWidget(props: IduWidgetProps) {
             </p>
             <EllipsizedContent>
                 <HTMLOutput
-                    value={countryInfo.internalDisplacementDescription}
+                    value={countryInfo?.internalDisplacementDescription}
                 />
             </EllipsizedContent>
             {idus && idus.length > 0 && (

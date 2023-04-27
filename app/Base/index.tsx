@@ -10,15 +10,7 @@ import '@togglecorp/toggle-ui/build/index.css';
 
 import { setMapboxToken } from '@togglecorp/re-map';
 
-import {
-    getCountryProfileLink,
-    getGoodPracticesLink,
-    getGoodPracticeLink,
-    getIduLink,
-    getConflictWidgetLink,
-    getDisasterWidgetLink,
-    getIduWidgetLink,
-} from '#utils/common';
+import Home from '#views/Home';
 import CountryProfile from '#views/CountryProfile';
 import GoodPractice from '#views/GoodPractice';
 import GoodPractices from '#views/GoodPractices';
@@ -259,47 +251,7 @@ function Base() {
             }
             if (standaloneMode) {
                 return (
-                    <>
-                        <a href={getCountryProfileLink('NPL', 'Nepal')}>
-                            Country Profile (NPL)
-                        </a>
-                        <a href={getCountryProfileLink('IND', 'India')}>
-                            Country Profile (IND)
-                        </a>
-                        <a href={getCountryProfileLink('MMR', 'Myanmar')}>
-                            Country Profile (MMR)
-                        </a>
-                        <a href={getCountryProfileLink('JPN', 'Japan')}>
-                            Country Profile (JPN)
-                        </a>
-                        <a href={getGoodPracticesLink()}>
-                            Good Practices
-                        </a>
-                        <a href={getGoodPracticeLink('1')}>
-                            Good Practice (1)
-                        </a>
-                        <a href={getGoodPracticeLink('2')}>
-                            Good Practice (2)
-                        </a>
-                        <a href={getGoodPracticeLink('3')}>
-                            Good Practice (3)
-                        </a>
-                        <a href={getGoodPracticeLink('4')}>
-                            Good Practice (4)
-                        </a>
-                        <a href={getIduLink()}>
-                            Idu Map
-                        </a>
-                        <a href={getConflictWidgetLink('NPL')}>
-                            Conflict Widget (NPL)
-                        </a>
-                        <a href={getDisasterWidgetLink('NPL')}>
-                            Disaster Widget (NPL)
-                        </a>
-                        <a href={getIduWidgetLink('NPL', 'Nepal')}>
-                            IDU Widget (NPL)
-                        </a>
-                    </>
+                    <Home />
                 );
             }
             return null;

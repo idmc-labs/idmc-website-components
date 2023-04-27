@@ -9,7 +9,8 @@ import {
     useQuery,
 } from '@apollo/client';
 import {
-    FaqsQueryVariables, FaqsQuery,
+    FaqsQueryVariables,
+    FaqsQuery,
     GoodPracticesQuery,
     GoodPracticesQueryVariables,
     GoodPracticeListingStaticPageQuery,
@@ -170,6 +171,7 @@ const GOOD_PRACTICE_MAP = gql`
 query GoodPracticeMap {
     countryProfiles {
         id
+        iso3
         name
         centerPoint
         goodPracticesCount

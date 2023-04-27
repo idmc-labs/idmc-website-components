@@ -1,0 +1,16 @@
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tui-spacing-large);
+
+    .sections {
+        display: flex;
+        gap: var(--tui-spacing-large);
+
+        .section {
+            display: flex;
+            flex-direction: column;
+            gap: var(--tui-spacing-small);
+        }
+    }
+}
