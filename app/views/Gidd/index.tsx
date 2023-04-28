@@ -62,6 +62,8 @@ import {
 import {
     GiddFilterOptionsQuery,
     GiddFilterOptionsQueryVariables,
+    GiddEventsQuery,
+    GiddEventsQueryVariables,
 } from '#generated/types';
 
 import EventTitle, { Props as EventTitleProps } from './EventTitle';
@@ -135,31 +137,7 @@ const dummyOverviewTable: DisplacementData[] = [
     },
 ];
 
-interface EventData {
-    id: string;
-    countryName: string;
-    year: number;
-    eventName: string;
-    eventStartDate: string;
-    disasterFlow: number;
-    hazardCategory: string;
-    hazardType: string;
-    glideNumber: string;
-}
-
-const dummyEventTable: EventData[] = [
-    {
-        id: '1',
-        countryName: 'Afghanistan',
-        year: 2018,
-        eventName: 'Afghanistan Floods: 20 people displaced',
-        eventStartDate: '12/12/2022',
-        disasterFlow: 200,
-        hazardCategory: 'Weather Related',
-        hazardType: 'Flood',
-        glideNumber: '1-012/9asd',
-    },
-];
+type EventData = NonNullable<NonNullable<GiddEventsQuery['giddDisasters']>['results']>[number];
 
 interface HazardData {
     id: string;
@@ -208,6 +186,44 @@ query GiddFilterOptions {
     giddHazardSubType {
         id
         name
+    }
+}
+`;
+
+const EVENTS_TABLE_PAGE_SIZE = 20;
+
+const GIDD_EVENTS = gql`
+query GiddEvents(
+    $page: Int,
+    $ordering: String,
+    $pageSize: Int,
+){
+    giddDisasters(
+        ordering: $ordering,
+        pageSize: $pageSize,
+        page: $page,
+    ){
+        results {
+            id
+            countryName
+            createdAt
+            endDate
+            event {
+                id
+            }
+            eventName
+            hazardCategoryName
+            hazardSubCategoryName
+            hazardSubTypeName
+            hazardTypeName
+            iso3
+            newDisplacement
+            startDate
+            year
+        }
+        totalCount
+        page
+        pageSize
     }
 }
 `;
@@ -276,11 +292,11 @@ function Gidd() {
         setHazardSubTypes,
     ] = useInputState<string[]>([]);
     const overallDataSortState = useSortState({ name: 'countryName', direction: 'asc' });
-    const { sorting } = overallDataSortState;
 
     const eventDataSortState = useSortState({ name: 'countryName', direction: 'asc' });
     const { sorting: eventSorting } = eventDataSortState;
     const [activePage, setActivePage] = useState<number>(1);
+    const [eventsActivePage, setEventsActivePage] = useState<number>(1);
 
     const { data: countryFilterResponse } = useQuery<
         GiddFilterOptionsQuery,
@@ -288,6 +304,32 @@ function Gidd() {
     >(
         GIDD_FILTER_OPTIONS,
         {
+            context: {
+                clientName: 'helix',
+            },
+        },
+    );
+
+    const giddEventsVariables = useMemo(() => ({
+        ordering: `${eventSorting?.direction === 'asc' ? '' : '-'}${eventSorting?.name}`,
+        page: (eventsActivePage - 1) * EVENTS_TABLE_PAGE_SIZE,
+    }), [
+        eventSorting,
+        eventsActivePage,
+    ]);
+
+    const {
+        previousData: previousEventsResponse,
+        data: eventsResponse = previousEventsResponse,
+    } = useQuery<
+        GiddEventsQuery,
+        GiddEventsQueryVariables
+    >(
+        GIDD_EVENTS,
+        {
+            variables: giddEventsVariables,
+            // FIXME: Skip is not working
+            // skip: displacementCause !== 'disaster',
             context: {
                 clientName: 'helix',
             },
@@ -382,7 +424,7 @@ function Gidd() {
             const eventTitle: TableColumn<
                 EventData, string, EventTitleProps, TableHeaderCellProps
             > = {
-                id: 'TITLE',
+                id: 'eventName',
                 title: 'Event Name',
                 headerCellRenderer: TableHeaderCell,
                 headerCellRendererParams: {
@@ -394,7 +436,7 @@ function Gidd() {
                     label: data.eventName,
                     eventId: data.id,
                 }),
-                columnWidth: 160,
+                columnWidth: 320,
             };
 
             return ([
@@ -418,28 +460,28 @@ function Gidd() {
                 createDateColumn<EventData, string>(
                     'startDate',
                     'Date of event (start)',
-                    (item) => item.eventStartDate,
+                    (item) => item.startDate,
                     {
                         sortable: true,
                         columnClassName: styles.date,
                     },
                 ),
                 createNumberColumn<EventData, string>(
-                    'disasterFlow',
+                    'newDisplacement',
                     'Disaster Internal Displacements',
-                    (item) => roundAndRemoveZero(item.disasterFlow),
+                    (item) => roundAndRemoveZero(item.newDisplacement ?? undefined),
                     { sortable: true },
                 ),
                 createTextColumn<EventData, string>(
-                    'hazardCategory',
+                    'hazardCategoryName',
                     'Hazard Category',
-                    (item) => item.hazardCategory,
+                    (item) => item.hazardCategoryName,
                     { sortable: true },
                 ),
                 createTextColumn<EventData, string>(
-                    'hazardType',
+                    'hazardTypeName',
                     'Hazard Type',
-                    (item) => item.hazardType,
+                    (item) => item.hazardTypeName,
                     { sortable: true },
                 ),
             ]);
@@ -466,7 +508,7 @@ function Gidd() {
                         IDMC Query Tool
                     </Heading>
                     <div className={styles.filterBodyContainer}>
-                        <div className={_cs(styles.left, styles.filterSection)}>
+                        <div className={_cs(styles.filterSection)}>
                             <p className={styles.headingDescription}>{lorem}</p>
                             <div className={styles.downloadSection}>
                                 <p className={styles.downloadDescription}>{lorem2}</p>
@@ -779,23 +821,22 @@ function Gidd() {
                         heading="Data Table"
                         headingDescription={lorem}
                     />
-                    <div className={styles.tableContainer}>
-                        <SortContext.Provider value={overallDataSortState}>
-                            <Pager
-                                activePage={activePage}
-                                itemsCount={dummyOverviewTable?.length ?? 0}
-                                maxItemsPerPage={MAX_ITEMS}
-                                onActivePageChange={setActivePage}
-                                itemsPerPageControlHidden
-                            />
-                            <Table
-                                className={styles.table}
-                                data={dummyOverviewTable}
-                                keySelector={displacementItemKeySelector}
-                                columns={columns}
-                            />
-                        </SortContext.Provider>
-                    </div>
+                    <SortContext.Provider value={overallDataSortState}>
+                        <Pager
+                            className={styles.pager}
+                            activePage={activePage}
+                            itemsCount={dummyOverviewTable?.length ?? 0}
+                            maxItemsPerPage={MAX_ITEMS}
+                            onActivePageChange={setActivePage}
+                            itemsPerPageControlHidden
+                        />
+                        <Table
+                            className={styles.table}
+                            data={dummyOverviewTable}
+                            keySelector={displacementItemKeySelector}
+                            columns={columns}
+                        />
+                    </SortContext.Provider>
                 </div>
                 {displacementCause === 'disaster' && (
                     <div className={styles.tableContainer}>
@@ -803,23 +844,22 @@ function Gidd() {
                             heading="Events Table"
                             headingDescription={lorem}
                         />
-                        <div className={styles.tableContainer}>
-                            <SortContext.Provider value={eventDataSortState}>
-                                <Pager
-                                    activePage={activePage}
-                                    itemsCount={dummyEventTable?.length ?? 0}
-                                    maxItemsPerPage={MAX_ITEMS}
-                                    onActivePageChange={setActivePage}
-                                    itemsPerPageControlHidden
-                                />
-                                <Table
-                                    className={styles.table}
-                                    data={dummyEventTable}
-                                    keySelector={eventKeySelector}
-                                    columns={eventColumns}
-                                />
-                            </SortContext.Provider>
-                        </div>
+                        <SortContext.Provider value={eventDataSortState}>
+                            <Pager
+                                className={styles.pager}
+                                activePage={eventsActivePage}
+                                itemsCount={eventsResponse?.giddDisasters?.totalCount ?? 0}
+                                maxItemsPerPage={EVENTS_TABLE_PAGE_SIZE}
+                                onActivePageChange={setEventsActivePage}
+                                itemsPerPageControlHidden
+                            />
+                            <Table
+                                className={styles.table}
+                                data={eventsResponse?.giddDisasters?.results}
+                                keySelector={eventKeySelector}
+                                columns={eventColumns}
+                            />
+                        </SortContext.Provider>
                     </div>
                 )}
             </div>
