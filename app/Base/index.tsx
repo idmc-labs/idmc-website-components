@@ -255,12 +255,8 @@ function Base() {
                     />
                 );
             }
-            if (standaloneMode) {
-                return (
-                    <Home />
-                );
-            }
-            return null;
+
+            return standaloneMode ? <Home /> : null;
         },
         [],
     );

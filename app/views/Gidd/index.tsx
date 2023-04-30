@@ -174,7 +174,7 @@ const displacementItemKeySelector = (item: { id: string }) => item.id;
 
 const GIDD_FILTER_OPTIONS = gql`
 query GiddFilterOptions {
-    giddPublicCountryList {
+    giddPublicCountries {
         id
         idmcShortName
         iso3
@@ -183,7 +183,7 @@ query GiddFilterOptions {
             name
         }
     }
-    giddHazardSubType {
+    giddHazardSubTypes {
         id
         name
     }
@@ -337,11 +337,11 @@ function Gidd() {
     );
 
     const countriesOptions = removeNull(
-        countryFilterResponse?.giddPublicCountryList,
+        countryFilterResponse?.giddPublicCountries,
     )?.filter(isDefined);
 
     const hazardOptions = removeNull(
-        countryFilterResponse?.giddHazardSubType,
+        countryFilterResponse?.giddHazardSubTypes,
     )?.filter(isDefined);
 
     const isDisasterDataShown = displacementCause === 'disaster' || isNotDefined(displacementCause);
