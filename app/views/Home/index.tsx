@@ -8,6 +8,7 @@ import {
     AllCountriesQuery,
     AllCountriesQueryVariables,
 } from '#generated/types';
+import { compareString } from '@togglecorp/fujs';
 import {
     getCountryProfileLink,
     getGoodPracticesLink,
@@ -37,7 +38,10 @@ function Home() {
         AllCountriesQueryVariables
     >(GOOD_PRACTICE_MAP);
 
-    const countries = mapResponse?.countryProfiles;
+    const countriesFromResponse = mapResponse?.countryProfiles;
+    const countries = countriesFromResponse
+        ? [...countriesFromResponse].sort((a, b) => compareString(a.name, b.name))
+        : undefined;
 
     return (
         <div
@@ -51,53 +55,61 @@ function Home() {
                     <h2>
                         Country Profile
                     </h2>
-                    {countries?.map((country) => (
-                        <a
-                            key={country.iso3}
-                            href={getCountryProfileLink(country.iso3, country.name)}
-                        >
-                            {country.name}
-                        </a>
-                    ))}
+                    <div className={styles.items}>
+                        {countries?.map((country) => (
+                            <a
+                                key={country.iso3}
+                                href={getCountryProfileLink(country.iso3, country.name)}
+                            >
+                                {country.name}
+                            </a>
+                        ))}
+                    </div>
                 </div>
                 <div className={styles.section}>
                     <h2>
                         Conflict Widget
                     </h2>
-                    {countries?.map((country) => (
-                        <a
-                            key={country.iso3}
-                            href={getConflictWidgetLink(country.iso3)}
-                        >
-                            {country.name}
-                        </a>
-                    ))}
+                    <div className={styles.items}>
+                        {countries?.map((country) => (
+                            <a
+                                key={country.iso3}
+                                href={getConflictWidgetLink(country.iso3)}
+                            >
+                                {country.name}
+                            </a>
+                        ))}
+                    </div>
                 </div>
                 <div className={styles.section}>
                     <h2>
                         Disaster Widget
                     </h2>
-                    {countries?.map((country) => (
-                        <a
-                            key={country.iso3}
-                            href={getDisasterWidgetLink(country.iso3)}
-                        >
-                            {country.name}
-                        </a>
-                    ))}
+                    <div className={styles.items}>
+                        {countries?.map((country) => (
+                            <a
+                                key={country.iso3}
+                                href={getDisasterWidgetLink(country.iso3)}
+                            >
+                                {country.name}
+                            </a>
+                        ))}
+                    </div>
                 </div>
                 <div className={styles.section}>
                     <h2>
                         IDU Widget
                     </h2>
-                    {countries?.map((country) => (
-                        <a
-                            key={country.iso3}
-                            href={getIduWidgetLink('NPL')}
-                        >
-                            {country.name}
-                        </a>
-                    ))}
+                    <div className={styles.items}>
+                        {countries?.map((country) => (
+                            <a
+                                key={country.iso3}
+                                href={getIduWidgetLink('NPL')}
+                            >
+                                {country.name}
+                            </a>
+                        ))}
+                    </div>
                 </div>
                 <div className={styles.section}>
                     <h2>
@@ -120,7 +132,7 @@ function Home() {
                         GIDD
                     </h2>
                     <a href={getGiddLink()}>
-                        Latest
+                        Global
                     </a>
                 </div>
             </div>
