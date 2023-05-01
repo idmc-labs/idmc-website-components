@@ -2,8 +2,11 @@ import React, { useMemo, useCallback, useState } from 'react';
 import {
     _cs,
     isNotDefined,
+    listToMap,
+    listToGroupList,
     isDefined,
     compareNumber,
+    randomString,
 } from '@togglecorp/fujs';
 import {
     Button,
@@ -64,11 +67,633 @@ import {
     GiddFilterOptionsQueryVariables,
     GiddEventsQuery,
     GiddEventsQueryVariables,
+    GiddStatisticsQuery,
+    GiddStatisticsQueryVariables,
 } from '#generated/types';
 
 import EventTitle, { Props as EventTitleProps } from './EventTitle';
 
 import styles from './styles.css';
+
+const dummyConflictIdpsTimeseries = [
+    {
+        total: 560000,
+        year: 2009,
+    },
+    {
+        total: 700000,
+        year: 2010,
+    },
+    {
+        total: 700000,
+        year: 2011,
+    },
+    {
+        total: 1050000,
+        year: 2012,
+    },
+    {
+        total: 576000,
+        year: 2013,
+    },
+    {
+        total: 903900,
+        year: 2014,
+    },
+    {
+        total: 661763,
+        year: 2015,
+    },
+    {
+        total: 846275,
+        year: 2016,
+    },
+    {
+        total: 805746,
+        year: 2017,
+    },
+    {
+        total: 479446,
+        year: 2018,
+    },
+    {
+        total: 469624,
+        year: 2019,
+    },
+    {
+        total: 473079,
+        year: 2020,
+    },
+    {
+        total: 505667,
+        year: 2021,
+    },
+];
+
+const dummyDisasterIdpsTimeseries = [
+    {
+        total: 260000,
+        year: 2009,
+    },
+    {
+        total: 600000,
+        year: 2010,
+    },
+    {
+        total: 800000,
+        year: 2011,
+    },
+    {
+        total: 1050000,
+        year: 2012,
+    },
+    {
+        total: 776000,
+        year: 2013,
+    },
+    {
+        total: 703900,
+        year: 2014,
+    },
+    {
+        total: 961763,
+        year: 2015,
+    },
+    {
+        total: 246275,
+        year: 2016,
+    },
+    {
+        total: 505746,
+        year: 2017,
+    },
+    {
+        total: 479446,
+        year: 2018,
+    },
+    {
+        total: 969624,
+        year: 2019,
+    },
+    {
+        total: 673079,
+        year: 2020,
+    },
+    {
+        total: 605667,
+        year: 2021,
+    },
+];
+
+const dummyConflictIdpsTimeseriesByCountry = [
+    {
+        country: {
+            countryName: 'India',
+            id: 52,
+            iso3: 'IND',
+        },
+        total: 6662165,
+        year: '2008',
+    },
+    {
+        country: {
+            countryName: 'Nepal',
+            id: 84,
+            iso3: 'NPL',
+        },
+        total: 550000,
+        year: '2008',
+    },
+    {
+        country: {
+            countryName: 'India',
+            id: 52,
+            iso3: 'IND',
+        },
+        total: 5304000,
+        year: '2009',
+    },
+    {
+        country: {
+            countryName: 'Nepal',
+            id: 84,
+            iso3: 'NPL',
+        },
+        total: 18300,
+        year: '2009',
+    },
+    {
+        country: {
+            countryName: 'India',
+            id: 52,
+            iso3: 'IND',
+        },
+        total: 1411285,
+        year: '2010',
+    },
+    {
+        country: {
+            countryName: 'India',
+            id: 52,
+            iso3: 'IND',
+        },
+        total: 1503320,
+        year: '2011',
+    },
+    {
+        country: {
+            countryName: 'Nepal',
+            id: 84,
+            iso3: 'NPL',
+        },
+        total: 1647600,
+        year: '2011',
+    },
+    {
+        country: {
+            countryName: 'India',
+            id: 52,
+            iso3: 'IND',
+        },
+        total: 9110000,
+        year: '2012',
+    },
+    {
+        country: {
+            countryName: 'Nepal',
+            id: 84,
+            iso3: 'NPL',
+        },
+        total: 600,
+        year: '2012',
+    },
+    {
+        country: {
+            countryName: 'India',
+            id: 52,
+            iso3: 'IND',
+        },
+        total: 2144671,
+        year: '2013',
+    },
+    {
+        country: {
+            countryName: 'Nepal',
+            id: 84,
+            iso3: 'NPL',
+        },
+        total: 12474,
+        year: '2013',
+    },
+    {
+        country: {
+            countryName: 'India',
+            id: 52,
+            iso3: 'IND',
+        },
+        total: 3427618,
+        year: '2014',
+    },
+    {
+        country: {
+            countryName: 'Nepal',
+            id: 84,
+            iso3: 'NPL',
+        },
+        total: 74400,
+        year: '2014',
+    },
+    {
+        country: {
+            countryName: 'India',
+            id: 52,
+            iso3: 'IND',
+        },
+        total: 3654637,
+        year: '2015',
+    },
+    {
+        country: {
+            countryName: 'Nepal',
+            id: 84,
+            iso3: 'NPL',
+        },
+        total: 2622828,
+        year: '2015',
+    },
+    {
+        country: {
+            countryName: 'India',
+            id: 52,
+            iso3: 'IND',
+        },
+        total: 2400307,
+        year: '2016',
+    },
+    {
+        country: {
+            countryName: 'Nepal',
+            id: 84,
+            iso3: 'NPL',
+        },
+        total: 31338,
+        year: '2016',
+    },
+    {
+        country: {
+            countryName: 'India',
+            id: 52,
+            iso3: 'IND',
+        },
+        total: 1345994,
+        year: '2017',
+    },
+    {
+        country: {
+            countryName: 'Nepal',
+            id: 84,
+            iso3: 'NPL',
+        },
+        total: 383904,
+        year: '2017',
+    },
+    {
+        country: {
+            countryName: 'India',
+            id: 52,
+            iso3: 'IND',
+        },
+        total: 2675414,
+        year: '2018',
+    },
+    {
+        country: {
+            countryName: 'Nepal',
+            id: 84,
+            iso3: 'NPL',
+        },
+        total: 12191,
+        year: '2018',
+    },
+    {
+        country: {
+            countryName: 'India',
+            id: 52,
+            iso3: 'IND',
+        },
+        total: 5017722,
+        year: '2019',
+    },
+    {
+        country: {
+            countryName: 'Nepal',
+            id: 84,
+            iso3: 'NPL',
+        },
+        total: 120899,
+        year: '2019',
+    },
+    {
+        country: {
+            countryName: 'India',
+            id: 52,
+            iso3: 'IND',
+        },
+        total: 3856213,
+        year: '2020',
+    },
+    {
+        country: {
+            countryName: 'Nepal',
+            id: 84,
+            iso3: 'NPL',
+        },
+        total: 48141,
+        year: '2020',
+    },
+    {
+        country: {
+            countryName: 'India',
+            id: 52,
+            iso3: 'IND',
+        },
+        total: 4903210,
+        year: '2021',
+    },
+    {
+        country: {
+            countryName: 'Nepal',
+            id: 84,
+            iso3: 'NPL',
+        },
+        total: 32492,
+        year: '2021',
+    },
+];
+
+const dummyDisasterIdpsTimeseriesByCountry = [
+    {
+        country: {
+            countryName: 'India',
+            id: 52,
+            iso3: 'IND',
+        },
+        total: 8662165,
+        year: '2008',
+    },
+    {
+        country: {
+            countryName: 'Nepal',
+            id: 84,
+            iso3: 'NPL',
+        },
+        total: 350000,
+        year: '2008',
+    },
+    {
+        country: {
+            countryName: 'India',
+            id: 52,
+            iso3: 'IND',
+        },
+        total: 5304000,
+        year: '2009',
+    },
+    {
+        country: {
+            countryName: 'Nepal',
+            id: 84,
+            iso3: 'NPL',
+        },
+        total: 18300,
+        year: '2009',
+    },
+    {
+        country: {
+            countryName: 'India',
+            id: 52,
+            iso3: 'IND',
+        },
+        total: 1411285,
+        year: '2010',
+    },
+    {
+        country: {
+            countryName: 'India',
+            id: 52,
+            iso3: 'IND',
+        },
+        total: 1503320,
+        year: '2011',
+    },
+    {
+        country: {
+            countryName: 'Nepal',
+            id: 84,
+            iso3: 'NPL',
+        },
+        total: 46476,
+        year: '2011',
+    },
+    {
+        country: {
+            countryName: 'India',
+            id: 52,
+            iso3: 'IND',
+        },
+        total: 9110000,
+        year: '2012',
+    },
+    {
+        country: {
+            countryName: 'Nepal',
+            id: 84,
+            iso3: 'NPL',
+        },
+        total: 600,
+        year: '2012',
+    },
+    {
+        country: {
+            countryName: 'India',
+            id: 52,
+            iso3: 'IND',
+        },
+        total: 2144671,
+        year: '2013',
+    },
+    {
+        country: {
+            countryName: 'Nepal',
+            id: 84,
+            iso3: 'NPL',
+        },
+        total: 12474,
+        year: '2013',
+    },
+    {
+        country: {
+            countryName: 'India',
+            id: 52,
+            iso3: 'IND',
+        },
+        total: 3427618,
+        year: '2014',
+    },
+    {
+        country: {
+            countryName: 'Nepal',
+            id: 84,
+            iso3: 'NPL',
+        },
+        total: 74400,
+        year: '2014',
+    },
+    {
+        country: {
+            countryName: 'India',
+            id: 52,
+            iso3: 'IND',
+        },
+        total: 3654637,
+        year: '2015',
+    },
+    {
+        country: {
+            countryName: 'Nepal',
+            id: 84,
+            iso3: 'NPL',
+        },
+        total: 2622828,
+        year: '2015',
+    },
+    {
+        country: {
+            countryName: 'India',
+            id: 52,
+            iso3: 'IND',
+        },
+        total: 2400307,
+        year: '2016',
+    },
+    {
+        country: {
+            countryName: 'Nepal',
+            id: 84,
+            iso3: 'NPL',
+        },
+        total: 31338,
+        year: '2016',
+    },
+    {
+        country: {
+            countryName: 'India',
+            id: 52,
+            iso3: 'IND',
+        },
+        total: 1345994,
+        year: '2017',
+    },
+    {
+        country: {
+            countryName: 'Nepal',
+            id: 84,
+            iso3: 'NPL',
+        },
+        total: 383904,
+        year: '2017',
+    },
+    {
+        country: {
+            countryName: 'India',
+            id: 52,
+            iso3: 'IND',
+        },
+        total: 2675414,
+        year: '2018',
+    },
+    {
+        country: {
+            countryName: 'Nepal',
+            id: 84,
+            iso3: 'NPL',
+        },
+        total: 12191,
+        year: '2018',
+    },
+    {
+        country: {
+            countryName: 'India',
+            id: 52,
+            iso3: 'IND',
+        },
+        total: 5017722,
+        year: '2019',
+    },
+    {
+        country: {
+            countryName: 'Nepal',
+            id: 84,
+            iso3: 'NPL',
+        },
+        total: 120899,
+        year: '2019',
+    },
+    {
+        country: {
+            countryName: 'India',
+            id: 52,
+            iso3: 'IND',
+        },
+        total: 3856213,
+        year: '2020',
+    },
+    {
+        country: {
+            countryName: 'Nepal',
+            id: 84,
+            iso3: 'NPL',
+        },
+        total: 48141,
+        year: '2020',
+    },
+    {
+        country: {
+            countryName: 'India',
+            id: 52,
+            iso3: 'IND',
+        },
+        total: 2903210,
+        year: '2021',
+    },
+    {
+        country: {
+            countryName: 'Nepal',
+            id: 84,
+            iso3: 'NPL',
+        },
+        total: 52492,
+        year: '2021',
+    },
+];
+
+const brandColorsRange = [
+    '#193256',
+    '#6e7892',
+    '#c3c7d2',
+];
+
+const conflictColorsRange = [
+    'rgb(239, 125, 0)',
+    'rgb(242, 179, 120)',
+    'rgb(247, 204, 166)',
+];
+
+const disasterColorsRange = [
+    'rgb(1, 142, 202)',
+    'rgb(45, 183, 226)',
+    'rgb(94, 217, 238)',
+];
 
 const MAX_ITEMS = 10;
 
@@ -76,29 +701,6 @@ const chartMargins = { top: 16, left: 5, right: 5, bottom: 5 };
 
 const lorem = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.';
 const lorem2 = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.';
-
-const dummyStockData = [
-    {
-        year: 2008,
-        disaster: 200000,
-        conflict: 300000,
-    },
-    {
-        year: 2009,
-        disaster: 300000,
-        conflict: 200000,
-    },
-    {
-        year: 2010,
-        disaster: 400000,
-        conflict: 220000,
-    },
-    {
-        year: 2018,
-        disaster: 700000,
-        conflict: 320000,
-    },
-];
 
 interface DisplacementData {
     id: string;
@@ -190,6 +792,48 @@ query GiddFilterOptions {
 }
 `;
 
+const GIDD_STATISTICS = gql`
+query GiddStatistics(
+    $countriesIso3: [String!],
+    $endYear: Float,
+    $startYear: Float,
+){
+    giddConflictStatistics(
+        countriesIso3: $countriesIso3,
+        endYear: $endYear,
+        startYear: $startYear,
+    ) {
+        idpsTimeseries {
+            total
+            year
+        }
+        newDisplacementTimeseries {
+            total
+            year
+        }
+        newDisplacements
+        totalIdps
+    }
+    giddDisasterStatistics(
+        countriesIso3: $countriesIso3,
+        endYear: $endYear,
+        startYear: $startYear,
+    ){
+        timeseries {
+            country {
+                countryName
+                id
+                iso3
+            }
+            total
+            year
+        }
+        newDisplacements
+        totalEvents
+    }
+}
+`;
+
 const EVENTS_TABLE_PAGE_SIZE = 20;
 
 const GIDD_EVENTS = gql`
@@ -259,6 +903,25 @@ const displacementCauseOptions: CauseOption[] = [
     },
 ];
 
+type ChartType = 'combine' | 'compare';
+type ChartTypeOption = {
+    key: ChartType;
+    label: string;
+};
+const chartTypeKeySelector = (option: ChartTypeOption) => option.key;
+const chartTypeLabelSelector = (option: ChartTypeOption) => option.label;
+
+const chartTypeOptions: ChartTypeOption[] = [
+    {
+        key: 'combine',
+        label: 'Combined',
+    },
+    {
+        key: 'compare',
+        label: 'Compared',
+    },
+];
+
 type Category = 'flow' | 'stock';
 type CategoryOption = {
     key: Category;
@@ -280,13 +943,21 @@ const displacementCategoryOptions: CategoryOption[] = [
 function Gidd() {
     const [timeRangeActual, setDisasterTimeRange] = useState([START_YEAR, END_YEAR]);
     const [displacementCause, setDisplacementCause] = useState<Cause | undefined>();
+    const [causeChartType, setCauseChartType] = useState<ChartType>('compare');
     const [displacementCategory, setDisplacementCategory] = useState<Category | undefined>();
     const timeRange = useDebouncedValue(timeRangeActual);
+    const timeRangeArray = useMemo(() => (
+        Array.from(
+            { length: (timeRange[1] - timeRange[0]) + 1 },
+            (_, index) => timeRange[0] + index,
+        )
+    ), [timeRange]);
     const [disasterFiltersShown, setDisasterFilterVisibility] = useState(false);
     const [
         countries,
         setCountries,
-    ] = useInputState<string[]>([]);
+    ] = useInputState<string[]>(['NPL', 'IND']);
+    const [countriesChartType, setCountriesChartType] = useState<ChartType>('compare');
     const [
         hazardSubTypes,
         setHazardSubTypes,
@@ -309,6 +980,394 @@ function Gidd() {
             },
         },
     );
+
+    const statisticsVariables = useMemo(() => ({
+        countriesIso3: countries,
+        startYear: timeRange[0],
+        endYear: timeRange[1],
+    }), [
+        timeRange,
+        countries,
+    ]);
+
+    const {
+        data: statisticsResponse,
+    } = useQuery<GiddStatisticsQuery, GiddStatisticsQueryVariables>(
+        GIDD_STATISTICS,
+        {
+            variables: statisticsVariables,
+            context: {
+                clientName: 'helix',
+            },
+        },
+    );
+
+    const conflictStats = statisticsResponse?.giddConflictStatistics;
+    const disasterStats = statisticsResponse?.giddDisasterStatistics;
+
+    const [
+        stockTimeseries,
+        lineConfigs,
+    ] = useMemo(() => {
+        const showCombinedCountries = countriesChartType === 'combine' || countries.length > 3;
+
+        if (causeChartType === 'combine' && showCombinedCountries) {
+            const disasterDataByYear = listToMap(
+                dummyDisasterIdpsTimeseries,
+                (item) => item.year,
+                (item) => item.total,
+            );
+            const conflictDataByYear = listToMap(
+                dummyConflictIdpsTimeseries,
+                (item) => item.year,
+                (item) => item.total,
+            );
+            return [
+                timeRangeArray.map((year) => ({
+                    year,
+                    total: add([disasterDataByYear[year], conflictDataByYear[year]]),
+                })),
+                [
+                    {
+                        dataKey: 'total',
+                        key: 'total',
+                        stackId: 'total',
+                        fill: 'var(--tui-color-brand)',
+                        name: 'total',
+                    },
+                ],
+            ];
+        }
+        if (causeChartType === 'compare' && showCombinedCountries) {
+            const timeseries = [
+                ...dummyConflictIdpsTimeseries.map((item) => ({
+                    year: item.year,
+                    conflict: item.total,
+                })),
+                ...dummyDisasterIdpsTimeseries.map((item) => ({
+                    year: item.year,
+                    disaster: item.total,
+                })),
+            ];
+            return [
+                timeseries,
+                [
+                    {
+                        dataKey: 'disaster',
+                        key: 'disaster',
+                        stackId: 'total',
+                        fill: 'var(--color-disaster)',
+                        name: 'disaster',
+                    },
+                    {
+                        dataKey: 'conflict',
+                        key: 'conflict',
+                        stackId: 'total',
+                        fill: 'var(--color-conflict)',
+                        name: 'conflict',
+                    },
+                ],
+            ];
+        }
+        if (causeChartType === 'compare' && !showCombinedCountries) {
+            const disasterDataByCountries = Object.values(listToGroupList(
+                dummyDisasterIdpsTimeseriesByCountry,
+                (item) => item.country.id,
+                (item) => ({
+                    iso3: item.country.iso3,
+                    countryName: item.country.countryName,
+                    year: Number(item.year),
+                    [`disaster-${item.country.iso3}`]: item.total,
+                }),
+            )).flat();
+            const conflictDataByCountries = Object.values(listToGroupList(
+                dummyConflictIdpsTimeseriesByCountry,
+                (item) => item.country.id,
+                (item) => ({
+                    iso3: item.country.iso3,
+                    countryName: item.country.countryName,
+                    year: Number(item.year),
+                    [`conflict-${item.country.iso3}`]: item.total,
+                }),
+            )).flat();
+
+            return [
+                [
+                    ...disasterDataByCountries,
+                    ...conflictDataByCountries,
+                ],
+                countries.flatMap((country, index) => ([
+                    {
+                        dataKey: `disaster-${country}`,
+                        key: `disaster-${country}`,
+                        stackId: `total-${country}`,
+                        fill: disasterColorsRange[index],
+                        name: `${country} Disaster`,
+                    },
+                    {
+                        dataKey: `conflict-${country}`,
+                        key: `conflict-${country}`,
+                        stackId: `total-${country}`,
+                        fill: conflictColorsRange[index],
+                        name: `${country} Conflict`,
+                    },
+                ])),
+            ];
+        }
+        if (causeChartType === 'combine' && !showCombinedCountries) {
+            const timeRangeByCountry = timeRangeArray.flatMap((year) => (
+                countries.map((country) => `${year}-${country}`)
+            ));
+            const disasterDataByCountries = listToMap(
+                dummyDisasterIdpsTimeseriesByCountry,
+                (item) => `${item.year}-${item.country.iso3}` as string,
+                (item) => ({
+                    year: Number(item.year),
+                    countryName: item.country.countryName,
+                    iso3: item.country.iso3,
+                    total: item.total,
+                }),
+            );
+            const conflictDataByCountries = listToMap(
+                dummyConflictIdpsTimeseriesByCountry,
+                (item) => `${item.year}-${item.country.iso3}` as string,
+                (item) => ({
+                    year: Number(item.year),
+                    countryName: item.country.countryName,
+                    iso3: item.country.iso3,
+                    total: item.total,
+                }),
+            );
+
+            return [
+                timeRangeByCountry.map((year) => ({
+                    year: (disasterDataByCountries[year]?.year
+                        ?? conflictDataByCountries[year]?.year),
+                    countryName: (disasterDataByCountries[year]?.countryName
+                        ?? conflictDataByCountries[year]?.countryName),
+                    iso3: (disasterDataByCountries[year]?.iso3
+                        ?? conflictDataByCountries[year]?.iso3),
+                    [`total-${disasterDataByCountries[year]?.iso3 ?? conflictDataByCountries[year]?.iso3}`]: add([
+                        disasterDataByCountries[year]?.total,
+                        conflictDataByCountries[year]?.total,
+                    ]),
+                })).filter((item) => isDefined(item.year)),
+                countries.map((country, index) => ({
+                    dataKey: `total-${country}`,
+                    key: `total-${country}`,
+                    stackId: country,
+                    fill: brandColorsRange[index],
+                    name: `Total for ${country}`,
+                })),
+            ];
+        }
+
+        return [
+            [],
+            [],
+        ];
+    }, [
+        countries,
+        countriesChartType,
+        timeRangeArray,
+        causeChartType,
+    ]);
+
+    const [
+        flowTimeseries,
+        barConfigs,
+    ] = useMemo(() => {
+        const showCombinedCountries = countriesChartType === 'combine' || countries.length > 3;
+
+        if (causeChartType === 'combine' && showCombinedCountries) {
+            const disasterDataByYear = listToMap(
+                dummyDisasterIdpsTimeseries,
+                (item) => item.year,
+                (item) => item.total,
+            );
+            const conflictDataByYear = listToMap(
+                dummyConflictIdpsTimeseries,
+                (item) => item.year,
+                (item) => item.total,
+            );
+            return [
+                timeRangeArray.map((year) => ({
+                    year,
+                    total: add([disasterDataByYear[year], conflictDataByYear[year]]),
+                })),
+                [
+                    {
+                        dataKey: 'total',
+                        key: 'total',
+                        stackId: 'total',
+                        fill: 'var(--tui-color-brand)',
+                        name: 'total',
+                    },
+                ],
+            ];
+        }
+        if (causeChartType === 'compare' && showCombinedCountries) {
+            const disasterDataByYear = listToMap(
+                dummyDisasterIdpsTimeseries,
+                (item) => item.year,
+                (item) => item.total,
+            );
+            const conflictDataByYear = listToMap(
+                dummyConflictIdpsTimeseries,
+                (item) => item.year,
+                (item) => item.total,
+            );
+            return [
+                timeRangeArray.map((year) => ({
+                    year,
+                    conflict: conflictDataByYear[year],
+                    disaster: disasterDataByYear[year],
+                })),
+                [
+                    {
+                        dataKey: 'disaster',
+                        key: 'disaster',
+                        stackId: 'total',
+                        fill: 'var(--color-disaster)',
+                        name: 'disaster',
+                    },
+                    {
+                        dataKey: 'conflict',
+                        key: 'conflict',
+                        stackId: 'total',
+                        fill: 'var(--color-conflict)',
+                        name: 'conflict',
+                    },
+                ],
+            ];
+        }
+        if (causeChartType === 'compare' && !showCombinedCountries) {
+            const disasterDataByCountries = Object.values(listToGroupList(
+                dummyDisasterIdpsTimeseriesByCountry,
+                (item) => item.country.id,
+                (item) => ({
+                    year: Number(item.year),
+                    [`disaster-${item.country.iso3}`]: item.total,
+                }),
+            )).flat();
+            const conflictDataByCountries = Object.values(listToGroupList(
+                dummyConflictIdpsTimeseriesByCountry,
+                (item) => item.country.id,
+                (item) => ({
+                    year: Number(item.year),
+                    [`conflict-${item.country.iso3}`]: item.total,
+                }),
+            )).flat();
+
+            const timeseries = [
+                ...disasterDataByCountries,
+                ...conflictDataByCountries,
+            ].reduce((acc, item) => {
+                const indexForCurrentYear = acc.findIndex(
+                    (accItem) => accItem.year === item.year,
+                );
+                if (indexForCurrentYear !== -1) {
+                    const newItem = {
+                        ...acc[indexForCurrentYear],
+                        ...item,
+                    };
+                    const newList = [...acc];
+                    newList.splice(indexForCurrentYear, 1, newItem);
+                    return newList;
+                }
+                return [...acc, item];
+            }, [] as { year: number; }[]);
+
+            return [
+                timeseries,
+                countries.flatMap((country, index) => ([
+                    {
+                        dataKey: `disaster-${country}`,
+                        key: `disaster-${country}`,
+                        stackId: `total-${country}`,
+                        fill: disasterColorsRange[index],
+                        name: `${country} Disaster`,
+                    },
+                    {
+                        dataKey: `conflict-${country}`,
+                        key: `conflict-${country}`,
+                        stackId: `total-${country}`,
+                        fill: conflictColorsRange[index],
+                        name: `${country} Conflict`,
+                    },
+                ])),
+            ];
+        }
+        if (causeChartType === 'combine' && !showCombinedCountries) {
+            const timeRangeByCountry = timeRangeArray.flatMap((year) => (
+                countries.map((country) => `${year}-${country}`)
+            ));
+            const disasterDataByCountries = listToMap(
+                dummyDisasterIdpsTimeseriesByCountry,
+                (item) => `${item.year}-${item.country.iso3}` as string,
+                (item) => ({
+                    year: Number(item.year),
+                    countryName: item.country.countryName,
+                    iso3: item.country.iso3,
+                    total: item.total,
+                }),
+            );
+            const conflictDataByCountries = listToMap(
+                dummyConflictIdpsTimeseriesByCountry,
+                (item) => `${item.year}-${item.country.iso3}` as string,
+                (item) => ({
+                    year: Number(item.year),
+                    countryName: item.country.countryName,
+                    iso3: item.country.iso3,
+                    total: item.total,
+                }),
+            );
+
+            const timeseries = timeRangeByCountry.map((year) => ({
+                year: (disasterDataByCountries[year]?.year
+                    ?? conflictDataByCountries[year]?.year),
+                [`total-${disasterDataByCountries[year]?.iso3 ?? conflictDataByCountries[year]?.iso3}`]: add([
+                    disasterDataByCountries[year]?.total,
+                    conflictDataByCountries[year]?.total,
+                ]),
+            })).filter((item) => isDefined(item.year)).reduce((acc, item) => {
+                const indexForCurrentYear = acc.findIndex(
+                    (accItem) => accItem.year === item.year,
+                );
+                if (indexForCurrentYear !== -1) {
+                    const newItem = {
+                        ...acc[indexForCurrentYear],
+                        ...item,
+                    };
+                    const newList = [...acc];
+                    newList.splice(indexForCurrentYear, 1, newItem);
+                    return newList;
+                }
+                return [...acc, item];
+            }, [] as { year: number; }[]);
+
+            return [
+                timeseries,
+                countries.map((country, index) => ({
+                    dataKey: `total-${country}`,
+                    key: `total-${country}`,
+                    stackId: country,
+                    fill: brandColorsRange[index],
+                    name: `Total for ${country}`,
+                })),
+            ];
+        }
+
+        return [
+            [],
+            [],
+        ];
+    }, [
+        countries,
+        countriesChartType,
+        timeRangeArray,
+        causeChartType,
+    ]);
 
     const giddEventsVariables = useMemo(() => ({
         ordering: `${eventSorting?.direction === 'asc' ? '' : '-'}${eventSorting?.name}`,
@@ -528,6 +1587,7 @@ function Gidd() {
                                         helpText="Select internal displacement or total number of IDPs"
                                         input={(
                                             <SelectInput
+                                                name="category"
                                                 className={styles.selectInput}
                                                 inputSectionClassName={styles.inputSection}
                                                 keySelector={categoryKeySelector}
@@ -541,6 +1601,22 @@ function Gidd() {
                                     <GridFilterInputContainer
                                         label="Regions, Countries, and/or Territories"
                                         labelDescription="*In compared view, up to 3 countries, regions, or territories can be selected"
+                                        secondaryInput={(
+                                            <SelectInput
+                                                name="countriesChartType"
+                                                className={styles.selectInput}
+                                                inputSectionClassName={_cs(
+                                                    styles.inputSection,
+                                                    styles.chartType,
+                                                )}
+                                                keySelector={chartTypeKeySelector}
+                                                labelSelector={chartTypeLabelSelector}
+                                                value={countriesChartType}
+                                                onChange={setCountriesChartType}
+                                                options={chartTypeOptions}
+                                                nonClearable
+                                            />
+                                        )}
                                         input={(
                                             <MultiSelectInput
                                                 name="country"
@@ -559,8 +1635,25 @@ function Gidd() {
                                     <GridFilterInputContainer
                                         label="Conflict and Violence or Disaster"
                                         helpText="Select Conflict and Violence or Disaster"
+                                        secondaryInput={(
+                                            <SelectInput
+                                                name="causeChartType"
+                                                className={styles.selectInput}
+                                                inputSectionClassName={_cs(
+                                                    styles.inputSection,
+                                                    styles.chartType,
+                                                )}
+                                                keySelector={chartTypeKeySelector}
+                                                labelSelector={chartTypeLabelSelector}
+                                                value={causeChartType}
+                                                onChange={setCauseChartType}
+                                                options={chartTypeOptions}
+                                                nonClearable
+                                            />
+                                        )}
                                         input={(
                                             <SelectInput
+                                                name="cause"
                                                 className={styles.selectInput}
                                                 inputSectionClassName={styles.inputSection}
                                                 keySelector={causeKeySelector}
@@ -663,7 +1756,7 @@ function Gidd() {
                                 <ErrorBoundary>
                                     <ResponsiveContainer>
                                         <BarChart
-                                            data={dummyStockData}
+                                            data={flowTimeseries}
                                             margin={chartMargins}
                                         >
                                             <CartesianGrid
@@ -685,6 +1778,16 @@ function Gidd() {
                                                 formatter={formatNumber}
                                             />
                                             <Legend />
+                                            {barConfigs.map((barConfig) => (
+                                                <Bar
+                                                    dataKey={barConfig.dataKey}
+                                                    stackId={barConfig.stackId}
+                                                    key={randomString()}
+                                                    fill={barConfig.fill}
+                                                    name={barConfig.name}
+                                                />
+                                            ))}
+                                            {/*
                                             {isDisasterDataShown && (
                                                 <Bar
                                                     dataKey="disaster"
@@ -701,6 +1804,7 @@ function Gidd() {
                                                     name="Conflict Internal Displacements"
                                                 />
                                             )}
+                                            */}
                                         </BarChart>
                                     </ResponsiveContainer>
                                 </ErrorBoundary>
@@ -765,7 +1869,7 @@ function Gidd() {
                                 <ErrorBoundary>
                                     <ResponsiveContainer>
                                         <LineChart
-                                            data={dummyStockData}
+                                            data={stockTimeseries}
                                             margin={chartMargins}
                                         >
                                             <CartesianGrid
@@ -787,6 +1891,18 @@ function Gidd() {
                                                 formatter={formatNumber}
                                             />
                                             <Legend />
+                                            {lineConfigs.map((lineConfig) => (
+                                                <Line
+                                                    dataKey={lineConfig.dataKey}
+                                                    key={lineConfig.key}
+                                                    stroke={lineConfig.fill}
+                                                    name={lineConfig.name}
+                                                    strokeWidth={2}
+                                                    connectNulls
+                                                    dot
+                                                />
+                                            ))}
+                                            {/*
                                             {isDisasterDataShown && (
                                                 <Line
                                                     dataKey="disaster"
@@ -809,6 +1925,7 @@ function Gidd() {
                                                     dot
                                                 />
                                             )}
+                                            */}
                                         </LineChart>
                                     </ResponsiveContainer>
                                 </ErrorBoundary>

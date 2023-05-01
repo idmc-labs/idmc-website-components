@@ -10,6 +10,7 @@ interface Props {
     label?: string | React.ReactNode;
     labelDescription?: string | React.ReactNode;
     helpText?: string;
+    secondaryInput?: React.ReactNode;
 }
 
 function GridFilterInputContainer(props: Props) {
@@ -19,6 +20,7 @@ function GridFilterInputContainer(props: Props) {
         label,
         labelDescription,
         helpText,
+        secondaryInput,
     } = props;
 
     return (
@@ -39,7 +41,16 @@ function GridFilterInputContainer(props: Props) {
                     </div>
                 )}
             </header>
-            {input}
+            <div className={styles.inputsContainer}>
+                <div className={styles.input}>
+                    {input}
+                </div>
+                {secondaryInput && (
+                    <div className={styles.secondaryInput}>
+                        {secondaryInput}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
