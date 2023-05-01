@@ -31,7 +31,7 @@
 
     --tui-color-primary: rgb(65, 131, 196);
     --tui-color-accent: rgb(65, 131, 196);
-    --tui-color-brand: rgb(25, 50, 86);
+    --tui-color-brand: #193256;
     --tui-color-brand-hover: #06179E;
 
     --tui-color-text: rgb(100,99,99);
@@ -51,8 +51,8 @@
     --color-text-on-dark: #ffffff;
     --color-text: #333333;
 
-    --color-orange: rgb(239, 125, 0);
-    --color-blue: rgb(1, 142, 202);
+    --color-orange: #ef7d00;
+    --color-blue: #018eca;
     --color-green: rgb(41, 181, 115);
 
     --color-conflict: var(--color-orange);

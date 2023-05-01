@@ -173,30 +173,27 @@
     }
 
     .select-input {
+        --tui-spacing-super-small: 1px;
+        --tui-spacing-extra-small: 3px;
+        --tui-spacing-small: 6px;
+        --tui-spacing-small-medium: 8px;
+        --tui-spacing-medium: 10px;
+        --tui-spacing-large-medium: 13px;
+        --tui-spacing-large: 16px;
+        --tui-spacing-extra-large: 24px;
+
         .input-section {
             border-radius: 0.25rem;
             background-color: var(--tui-filter-background-color);
             height: 2.5rem;
 
-            >*{
-                justify-content: flex-end;
-                padding-right: 0;
-                width: 4.5rem;
-            }:hover{
-                background-color: unset;
-            }
-        }
-    }
-    @media (max-width: 1000px) {
-        .select-input {
-            .input-section {
-                margin-right: var(--tui-spacing-medium);
-                border-radius: 0.25rem;
-                height: 3rem;
+            &.chart-type {
+                background-color: #c0c0c0;
             }
         }
     }
 }
+
 :global {
     .recharts-tooltip-wrapper {
         width: 12rem;
