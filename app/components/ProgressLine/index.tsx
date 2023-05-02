@@ -49,7 +49,7 @@ function ProgressLine(props: Props) {
             </div>
             <div className={styles.bottom}>
                 {icon && (
-                    <div>
+                    <div className={styles.icon}>
                         {icon}
                     </div>
                 )}

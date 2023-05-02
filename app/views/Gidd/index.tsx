@@ -36,7 +36,6 @@ import {
     gql,
     useQuery,
 } from '@apollo/client';
-import { IoExitOutline } from 'react-icons/io5';
 import {
     ResponsiveContainer,
     CartesianGrid,
@@ -59,6 +58,7 @@ import NumberBlock from '#components/NumberBlock';
 import useInputState from '#hooks/useInputState';
 import GridFilterInputContainer from '#components/GridFilterInputContainer';
 import useDebouncedValue from '#hooks/useDebouncedValue';
+import DisplacementIcon from '#components/DisplacementIcon';
 import {
     createTextColumn,
     createNumberColumn,
@@ -68,6 +68,8 @@ import {
     GiddFilterOptionsQueryVariables,
     GiddEventsQuery,
     GiddEventsQueryVariables,
+    GiddDisplacementsQuery,
+    GiddDisplacementsQueryVariables,
     GiddStatisticsQuery,
     GiddStatisticsQueryVariables,
 } from '#generated/types';
@@ -75,608 +77,6 @@ import {
 import EventTitle, { Props as EventTitleProps } from './EventTitle';
 
 import styles from './styles.css';
-
-const dummyConflictIdpsTimeseries = [
-    {
-        total: 560000,
-        year: 2009,
-    },
-    {
-        total: 700000,
-        year: 2010,
-    },
-    {
-        total: 700000,
-        year: 2011,
-    },
-    {
-        total: 1050000,
-        year: 2012,
-    },
-    {
-        total: 576000,
-        year: 2013,
-    },
-    {
-        total: 903900,
-        year: 2014,
-    },
-    {
-        total: 661763,
-        year: 2015,
-    },
-    {
-        total: 846275,
-        year: 2016,
-    },
-    {
-        total: 805746,
-        year: 2017,
-    },
-    {
-        total: 479446,
-        year: 2018,
-    },
-    {
-        total: 469624,
-        year: 2019,
-    },
-    {
-        total: 473079,
-        year: 2020,
-    },
-    {
-        total: 505667,
-        year: 2021,
-    },
-];
-
-const dummyDisasterIdpsTimeseries = [
-    {
-        total: 260000,
-        year: 2009,
-    },
-    {
-        total: 600000,
-        year: 2010,
-    },
-    {
-        total: 800000,
-        year: 2011,
-    },
-    {
-        total: 1050000,
-        year: 2012,
-    },
-    {
-        total: 776000,
-        year: 2013,
-    },
-    {
-        total: 703900,
-        year: 2014,
-    },
-    {
-        total: 961763,
-        year: 2015,
-    },
-    {
-        total: 246275,
-        year: 2016,
-    },
-    {
-        total: 505746,
-        year: 2017,
-    },
-    {
-        total: 479446,
-        year: 2018,
-    },
-    {
-        total: 969624,
-        year: 2019,
-    },
-    {
-        total: 673079,
-        year: 2020,
-    },
-    {
-        total: 605667,
-        year: 2021,
-    },
-];
-
-const dummyConflictIdpsTimeseriesByCountry = [
-    {
-        country: {
-            countryName: 'India',
-            id: 52,
-            iso3: 'IND',
-        },
-        total: 6662165,
-        year: '2008',
-    },
-    {
-        country: {
-            countryName: 'Nepal',
-            id: 84,
-            iso3: 'NPL',
-        },
-        total: 550000,
-        year: '2008',
-    },
-    {
-        country: {
-            countryName: 'India',
-            id: 52,
-            iso3: 'IND',
-        },
-        total: 5304000,
-        year: '2009',
-    },
-    {
-        country: {
-            countryName: 'Nepal',
-            id: 84,
-            iso3: 'NPL',
-        },
-        total: 18300,
-        year: '2009',
-    },
-    {
-        country: {
-            countryName: 'India',
-            id: 52,
-            iso3: 'IND',
-        },
-        total: 1411285,
-        year: '2010',
-    },
-    {
-        country: {
-            countryName: 'India',
-            id: 52,
-            iso3: 'IND',
-        },
-        total: 1503320,
-        year: '2011',
-    },
-    {
-        country: {
-            countryName: 'Nepal',
-            id: 84,
-            iso3: 'NPL',
-        },
-        total: 1647600,
-        year: '2011',
-    },
-    {
-        country: {
-            countryName: 'India',
-            id: 52,
-            iso3: 'IND',
-        },
-        total: 9110000,
-        year: '2012',
-    },
-    {
-        country: {
-            countryName: 'Nepal',
-            id: 84,
-            iso3: 'NPL',
-        },
-        total: 600,
-        year: '2012',
-    },
-    {
-        country: {
-            countryName: 'India',
-            id: 52,
-            iso3: 'IND',
-        },
-        total: 2144671,
-        year: '2013',
-    },
-    {
-        country: {
-            countryName: 'Nepal',
-            id: 84,
-            iso3: 'NPL',
-        },
-        total: 12474,
-        year: '2013',
-    },
-    {
-        country: {
-            countryName: 'India',
-            id: 52,
-            iso3: 'IND',
-        },
-        total: 3427618,
-        year: '2014',
-    },
-    {
-        country: {
-            countryName: 'Nepal',
-            id: 84,
-            iso3: 'NPL',
-        },
-        total: 74400,
-        year: '2014',
-    },
-    {
-        country: {
-            countryName: 'India',
-            id: 52,
-            iso3: 'IND',
-        },
-        total: 3654637,
-        year: '2015',
-    },
-    {
-        country: {
-            countryName: 'Nepal',
-            id: 84,
-            iso3: 'NPL',
-        },
-        total: 2622828,
-        year: '2015',
-    },
-    {
-        country: {
-            countryName: 'India',
-            id: 52,
-            iso3: 'IND',
-        },
-        total: 2400307,
-        year: '2016',
-    },
-    {
-        country: {
-            countryName: 'Nepal',
-            id: 84,
-            iso3: 'NPL',
-        },
-        total: 31338,
-        year: '2016',
-    },
-    {
-        country: {
-            countryName: 'India',
-            id: 52,
-            iso3: 'IND',
-        },
-        total: 1345994,
-        year: '2017',
-    },
-    {
-        country: {
-            countryName: 'Nepal',
-            id: 84,
-            iso3: 'NPL',
-        },
-        total: 383904,
-        year: '2017',
-    },
-    {
-        country: {
-            countryName: 'India',
-            id: 52,
-            iso3: 'IND',
-        },
-        total: 2675414,
-        year: '2018',
-    },
-    {
-        country: {
-            countryName: 'Nepal',
-            id: 84,
-            iso3: 'NPL',
-        },
-        total: 12191,
-        year: '2018',
-    },
-    {
-        country: {
-            countryName: 'India',
-            id: 52,
-            iso3: 'IND',
-        },
-        total: 5017722,
-        year: '2019',
-    },
-    {
-        country: {
-            countryName: 'Nepal',
-            id: 84,
-            iso3: 'NPL',
-        },
-        total: 120899,
-        year: '2019',
-    },
-    {
-        country: {
-            countryName: 'India',
-            id: 52,
-            iso3: 'IND',
-        },
-        total: 3856213,
-        year: '2020',
-    },
-    {
-        country: {
-            countryName: 'Nepal',
-            id: 84,
-            iso3: 'NPL',
-        },
-        total: 48141,
-        year: '2020',
-    },
-    {
-        country: {
-            countryName: 'India',
-            id: 52,
-            iso3: 'IND',
-        },
-        total: 4903210,
-        year: '2021',
-    },
-    {
-        country: {
-            countryName: 'Nepal',
-            id: 84,
-            iso3: 'NPL',
-        },
-        total: 32492,
-        year: '2021',
-    },
-];
-
-const dummyDisasterIdpsTimeseriesByCountry = [
-    {
-        country: {
-            countryName: 'India',
-            id: 52,
-            iso3: 'IND',
-        },
-        total: 8662165,
-        year: '2008',
-    },
-    {
-        country: {
-            countryName: 'Nepal',
-            id: 84,
-            iso3: 'NPL',
-        },
-        total: 350000,
-        year: '2008',
-    },
-    {
-        country: {
-            countryName: 'India',
-            id: 52,
-            iso3: 'IND',
-        },
-        total: 5304000,
-        year: '2009',
-    },
-    {
-        country: {
-            countryName: 'Nepal',
-            id: 84,
-            iso3: 'NPL',
-        },
-        total: 18300,
-        year: '2009',
-    },
-    {
-        country: {
-            countryName: 'India',
-            id: 52,
-            iso3: 'IND',
-        },
-        total: 1411285,
-        year: '2010',
-    },
-    {
-        country: {
-            countryName: 'India',
-            id: 52,
-            iso3: 'IND',
-        },
-        total: 1503320,
-        year: '2011',
-    },
-    {
-        country: {
-            countryName: 'Nepal',
-            id: 84,
-            iso3: 'NPL',
-        },
-        total: 46476,
-        year: '2011',
-    },
-    {
-        country: {
-            countryName: 'India',
-            id: 52,
-            iso3: 'IND',
-        },
-        total: 9110000,
-        year: '2012',
-    },
-    {
-        country: {
-            countryName: 'Nepal',
-            id: 84,
-            iso3: 'NPL',
-        },
-        total: 600,
-        year: '2012',
-    },
-    {
-        country: {
-            countryName: 'India',
-            id: 52,
-            iso3: 'IND',
-        },
-        total: 2144671,
-        year: '2013',
-    },
-    {
-        country: {
-            countryName: 'Nepal',
-            id: 84,
-            iso3: 'NPL',
-        },
-        total: 12474,
-        year: '2013',
-    },
-    {
-        country: {
-            countryName: 'India',
-            id: 52,
-            iso3: 'IND',
-        },
-        total: 3427618,
-        year: '2014',
-    },
-    {
-        country: {
-            countryName: 'Nepal',
-            id: 84,
-            iso3: 'NPL',
-        },
-        total: 74400,
-        year: '2014',
-    },
-    {
-        country: {
-            countryName: 'India',
-            id: 52,
-            iso3: 'IND',
-        },
-        total: 3654637,
-        year: '2015',
-    },
-    {
-        country: {
-            countryName: 'Nepal',
-            id: 84,
-            iso3: 'NPL',
-        },
-        total: 2622828,
-        year: '2015',
-    },
-    {
-        country: {
-            countryName: 'India',
-            id: 52,
-            iso3: 'IND',
-        },
-        total: 2400307,
-        year: '2016',
-    },
-    {
-        country: {
-            countryName: 'Nepal',
-            id: 84,
-            iso3: 'NPL',
-        },
-        total: 31338,
-        year: '2016',
-    },
-    {
-        country: {
-            countryName: 'India',
-            id: 52,
-            iso3: 'IND',
-        },
-        total: 1345994,
-        year: '2017',
-    },
-    {
-        country: {
-            countryName: 'Nepal',
-            id: 84,
-            iso3: 'NPL',
-        },
-        total: 383904,
-        year: '2017',
-    },
-    {
-        country: {
-            countryName: 'India',
-            id: 52,
-            iso3: 'IND',
-        },
-        total: 2675414,
-        year: '2018',
-    },
-    {
-        country: {
-            countryName: 'Nepal',
-            id: 84,
-            iso3: 'NPL',
-        },
-        total: 12191,
-        year: '2018',
-    },
-    {
-        country: {
-            countryName: 'India',
-            id: 52,
-            iso3: 'IND',
-        },
-        total: 5017722,
-        year: '2019',
-    },
-    {
-        country: {
-            countryName: 'Nepal',
-            id: 84,
-            iso3: 'NPL',
-        },
-        total: 120899,
-        year: '2019',
-    },
-    {
-        country: {
-            countryName: 'India',
-            id: 52,
-            iso3: 'IND',
-        },
-        total: 3856213,
-        year: '2020',
-    },
-    {
-        country: {
-            countryName: 'Nepal',
-            id: 84,
-            iso3: 'NPL',
-        },
-        total: 48141,
-        year: '2020',
-    },
-    {
-        country: {
-            countryName: 'India',
-            id: 52,
-            iso3: 'IND',
-        },
-        total: 2903210,
-        year: '2021',
-    },
-    {
-        country: {
-            countryName: 'Nepal',
-            id: 84,
-            iso3: 'NPL',
-        },
-        total: 52492,
-        year: '2021',
-    },
-];
 
 const brandColorsRange = [
     '#193256',
@@ -696,81 +96,16 @@ const disasterColorsRange = [
     'rgb(94, 217, 238)',
 ];
 
-const MAX_ITEMS = 10;
-
 const chartMargins = { top: 16, left: 5, right: 5, bottom: 5 };
 
 const lorem = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.';
 const lorem2 = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.';
 
-interface DisplacementData {
-    id: string;
-    countryName: string;
-    year: number;
-    disasterStock: number;
-    conflictStock: number;
-    disasterFlow: number;
-    conflictFlow: number;
-    totalStock: number;
-    totalFlow: number;
-}
-
-const dummyOverviewTable: DisplacementData[] = [
-    {
-        id: '1',
-        countryName: 'Afghanistan',
-        year: 2008,
-        disasterStock: 200000,
-        conflictStock: 300000,
-        disasterFlow: 200000,
-        conflictFlow: 300000,
-        totalStock: 500000,
-        totalFlow: 500000,
-    },
-    {
-        id: '2',
-        countryName: 'Afghanistan',
-        year: 2009,
-        disasterStock: 600000,
-        conflictStock: 200000,
-        disasterFlow: 300000,
-        conflictFlow: 800000,
-        totalStock: 900000,
-        totalFlow: 1000000,
-    },
-];
-
 type EventData = NonNullable<NonNullable<GiddEventsQuery['giddDisasters']>['results']>[number];
-
-interface HazardData {
-    id: string;
-    icon: React.ReactNode;
-    displacement: number;
-    hazardName: string;
-}
+type DisplacementData = NonNullable<NonNullable<GiddDisplacementsQuery['giddDisplacements']>['results']>[number];
+type HazardData = NonNullable<NonNullable<GiddStatisticsQuery['giddDisasterStatistics']>['displacementsByHazardType']>[number];
 
 const hazardKeySelector = (item: HazardData) => item.id;
-
-const hazardDummyData: HazardData[] = [
-    {
-        id: '1',
-        icon: <IoExitOutline />,
-        displacement: 1000000,
-        hazardName: 'Flood',
-    },
-    {
-        id: '2',
-        icon: <IoExitOutline />,
-        displacement: 2000000,
-        hazardName: 'Earthquake',
-    },
-    {
-        id: '3',
-        icon: <IoExitOutline />,
-        displacement: 5000000,
-        hazardName: 'Landslide',
-    },
-];
 
 const eventKeySelector = (item: { id: string }) => item.id;
 const displacementItemKeySelector = (item: { id: string }) => item.id;
@@ -796,6 +131,7 @@ query GiddFilterOptions {
 const GIDD_STATISTICS = gql`
 query GiddStatistics(
     $countriesIso3: [String!],
+    $hazardSubTypes: [String!],
     $endYear: Float,
     $startYear: Float,
     $releaseEnvironment: String!,
@@ -814,16 +150,40 @@ query GiddStatistics(
             total
             year
         }
+        totalDisplacementTimeseriesByCountry {
+            country {
+                countryName
+                id
+                iso3
+            }
+            total
+            year
+        }
+        newDisplacementTimeseriesByCountry {
+            country {
+                countryName
+                id
+                iso3
+            }
+            total
+            year
+        }
         newDisplacements
         totalDisplacements
         totalCountries
     }
     giddDisasterStatistics(
+        categories: $hazardSubTypes,
         countriesIso3: $countriesIso3,
         endYear: $endYear,
         startYear: $startYear,
         releaseEnvironment: $releaseEnvironment,
     ){
+        displacementsByHazardType {
+            id
+            label
+            newDisplacements
+        }
         totalDisplacementTimeseriesByYear {
             total
             year
@@ -832,14 +192,66 @@ query GiddStatistics(
             total
             year
         }
+        totalDisplacementTimeseriesByCountry {
+            country {
+                countryName
+                id
+                iso3
+            }
+            total
+            year
+        }
+        newDisplacementTimeseriesByCountry {
+            country {
+                countryName
+                id
+                iso3
+            }
+            total
+            year
+        }
         newDisplacements
         totalDisplacements
         totalCountries
+        totalEvents
     }
 }
 `;
 
-const EVENTS_TABLE_PAGE_SIZE = 20;
+const EVENTS_TABLE_PAGE_SIZE = 10;
+const DISPLACEMENTS_TABLE_PAGE_SIZE = 10;
+
+const GIDD_DISPLACEMENTS = gql`
+query GiddDisplacements(
+    $page: Int,
+    $ordering: String,
+    $pageSize: Int,
+    $releaseEnvironment: String!,
+){
+    giddDisplacements(
+        ordering: $ordering,
+        pageSize: $pageSize,
+        page: $page,
+        releaseEnvironment: $releaseEnvironment,
+    ){
+        results {
+            conflictNewDisplacement
+            conflictTotalDisplacement
+            countryName
+            disasterNewDisplacement
+            disasterTotalDisplacement
+            id
+            iso3
+            totalInternalDisplacement
+            totalNewDisplacement
+            year
+        }
+        totalCount
+        page
+        pageSize
+    }
+}
+`;
 
 const GIDD_EVENTS = gql`
 query GiddEvents(
@@ -967,13 +379,14 @@ function Gidd() {
     const [
         countries,
         setCountries,
-    ] = useInputState<string[]>(['NPL', 'IND']);
+    ] = useInputState<string[]>([]);
     const [countriesChartType, setCountriesChartType] = useState<ChartType>('compare');
     const [
         hazardSubTypes,
         setHazardSubTypes,
     ] = useInputState<string[]>([]);
     const overallDataSortState = useSortState({ name: 'countryName', direction: 'asc' });
+    const { sorting } = overallDataSortState;
 
     const eventDataSortState = useSortState({ name: 'countryName', direction: 'asc' });
     const { sorting: eventSorting } = eventDataSortState;
@@ -994,10 +407,12 @@ function Gidd() {
 
     const statisticsVariables = useMemo(() => ({
         countriesIso3: countries,
+        hazardSubTypes,
         startYear: timeRange[0],
         endYear: timeRange[1],
         releaseEnvironment: DATA_RELEASE,
     }), [
+        hazardSubTypes,
         timeRange,
         countries,
     ]);
@@ -1014,30 +429,33 @@ function Gidd() {
         },
     );
 
-    const conflictStats = statisticsResponse?.giddConflictStatistics;
-    const disasterStats = statisticsResponse?.giddDisasterStatistics;
+    const conflictStats = removeNull(statisticsResponse?.giddConflictStatistics);
+    const disasterStats = removeNull(statisticsResponse?.giddDisasterStatistics);
 
     const [
         stockTimeseries,
         lineConfigs,
     ] = useMemo(() => {
-        const showCombinedCountries = countriesChartType === 'combine' || countries.length > 3;
+        const showCombinedCountries = countriesChartType === 'combine' || countries.length > 3 || countries.length === 0;
 
         if (causeChartType === 'combine' && showCombinedCountries) {
             const disasterDataByYear = listToMap(
-                dummyDisasterIdpsTimeseries,
+                disasterStats?.totalDisplacementTimeseriesByYear,
                 (item) => item.year,
                 (item) => item.total,
             );
             const conflictDataByYear = listToMap(
-                dummyConflictIdpsTimeseries,
+                conflictStats?.totalDisplacementTimeseriesByYear,
                 (item) => item.year,
                 (item) => item.total,
             );
             return [
                 timeRangeArray.map((year) => ({
                     year,
-                    total: sumAndRemoveZero([disasterDataByYear[year], conflictDataByYear[year]]),
+                    total: sumAndRemoveZero([
+                        disasterDataByYear?.[year],
+                        conflictDataByYear?.[year],
+                    ]),
                 })),
                 [
                     {
@@ -1052,14 +470,14 @@ function Gidd() {
         }
         if (causeChartType === 'compare' && showCombinedCountries) {
             const timeseries = [
-                ...dummyConflictIdpsTimeseries.map((item) => ({
+                ...(conflictStats?.totalDisplacementTimeseriesByYear?.map((item) => ({
                     year: item.year,
                     conflict: item.total,
-                })),
-                ...dummyDisasterIdpsTimeseries.map((item) => ({
+                })) ?? []),
+                ...(disasterStats?.totalDisplacementTimeseriesByYear?.map((item) => ({
                     year: item.year,
                     disaster: item.total,
-                })),
+                })) ?? []),
             ];
             return [
                 timeseries,
@@ -1083,7 +501,7 @@ function Gidd() {
         }
         if (causeChartType === 'compare' && !showCombinedCountries) {
             const disasterDataByCountries = Object.values(listToGroupList(
-                dummyDisasterIdpsTimeseriesByCountry,
+                disasterStats?.totalDisplacementTimeseriesByCountry ?? [],
                 (item) => item.country.id,
                 (item) => ({
                     iso3: item.country.iso3,
@@ -1093,7 +511,7 @@ function Gidd() {
                 }),
             )).flat();
             const conflictDataByCountries = Object.values(listToGroupList(
-                dummyConflictIdpsTimeseriesByCountry,
+                conflictStats?.totalDisplacementTimeseriesByCountry ?? [],
                 (item) => item.country.id,
                 (item) => ({
                     iso3: item.country.iso3,
@@ -1131,7 +549,7 @@ function Gidd() {
                 countries.map((country) => `${year}-${country}`)
             ));
             const disasterDataByCountries = listToMap(
-                dummyDisasterIdpsTimeseriesByCountry,
+                disasterStats?.totalDisplacementTimeseriesByCountry ?? [],
                 (item) => `${item.year}-${item.country.iso3}` as string,
                 (item) => ({
                     year: Number(item.year),
@@ -1141,7 +559,7 @@ function Gidd() {
                 }),
             );
             const conflictDataByCountries = listToMap(
-                dummyConflictIdpsTimeseriesByCountry,
+                conflictStats?.totalDisplacementTimeseriesByCountry ?? [],
                 (item) => `${item.year}-${item.country.iso3}` as string,
                 (item) => ({
                     year: Number(item.year),
@@ -1160,8 +578,8 @@ function Gidd() {
                     iso3: (disasterDataByCountries[year]?.iso3
                         ?? conflictDataByCountries[year]?.iso3),
                     [`total-${disasterDataByCountries[year]?.iso3 ?? conflictDataByCountries[year]?.iso3}`]: sumAndRemoveZero([
-                        disasterDataByCountries[year]?.total,
-                        conflictDataByCountries[year]?.total,
+                        disasterDataByCountries[year]?.total ?? undefined,
+                        conflictDataByCountries[year]?.total ?? undefined,
                     ]),
                 })).filter((item) => isDefined(item.year)),
                 countries.map((country, index) => ({
@@ -1179,6 +597,8 @@ function Gidd() {
             [],
         ];
     }, [
+        conflictStats,
+        disasterStats,
         countries,
         countriesChartType,
         timeRangeArray,
@@ -1189,23 +609,26 @@ function Gidd() {
         flowTimeseries,
         barConfigs,
     ] = useMemo(() => {
-        const showCombinedCountries = countriesChartType === 'combine' || countries.length > 3;
+        const showCombinedCountries = countriesChartType === 'combine' || countries.length > 3 || countries.length === 0;
 
         if (causeChartType === 'combine' && showCombinedCountries) {
             const disasterDataByYear = listToMap(
-                dummyDisasterIdpsTimeseries,
+                disasterStats?.newDisplacementTimeseriesByYear,
                 (item) => item.year,
                 (item) => item.total,
             );
             const conflictDataByYear = listToMap(
-                dummyConflictIdpsTimeseries,
+                conflictStats?.newDisplacementTimeseriesByYear,
                 (item) => item.year,
                 (item) => item.total,
             );
             return [
                 timeRangeArray.map((year) => ({
                     year,
-                    total: sumAndRemoveZero([disasterDataByYear[year], conflictDataByYear[year]]),
+                    total: sumAndRemoveZero([
+                        disasterDataByYear?.[year] ?? undefined,
+                        conflictDataByYear?.[year] ?? undefined,
+                    ]),
                 })),
                 [
                     {
@@ -1220,20 +643,20 @@ function Gidd() {
         }
         if (causeChartType === 'compare' && showCombinedCountries) {
             const disasterDataByYear = listToMap(
-                dummyDisasterIdpsTimeseries,
+                disasterStats?.newDisplacementTimeseriesByYear,
                 (item) => item.year,
                 (item) => item.total,
             );
             const conflictDataByYear = listToMap(
-                dummyConflictIdpsTimeseries,
+                conflictStats?.newDisplacementTimeseriesByYear,
                 (item) => item.year,
                 (item) => item.total,
             );
             return [
                 timeRangeArray.map((year) => ({
                     year,
-                    conflict: conflictDataByYear[year],
-                    disaster: disasterDataByYear[year],
+                    conflict: conflictDataByYear?.[year],
+                    disaster: disasterDataByYear?.[year],
                 })),
                 [
                     {
@@ -1255,7 +678,7 @@ function Gidd() {
         }
         if (causeChartType === 'compare' && !showCombinedCountries) {
             const disasterDataByCountries = Object.values(listToGroupList(
-                dummyDisasterIdpsTimeseriesByCountry,
+                disasterStats?.totalDisplacementTimeseriesByCountry ?? [],
                 (item) => item.country.id,
                 (item) => ({
                     year: Number(item.year),
@@ -1263,7 +686,7 @@ function Gidd() {
                 }),
             )).flat();
             const conflictDataByCountries = Object.values(listToGroupList(
-                dummyConflictIdpsTimeseriesByCountry,
+                conflictStats?.totalDisplacementTimeseriesByCountry ?? [],
                 (item) => item.country.id,
                 (item) => ({
                     year: Number(item.year),
@@ -1312,10 +735,10 @@ function Gidd() {
         }
         if (causeChartType === 'combine' && !showCombinedCountries) {
             const timeRangeByCountry = timeRangeArray.flatMap((year) => (
-                countries.map((country) => `${year}-${country}`)
+                countries.map((country) => (`${year}-${country}`))
             ));
             const disasterDataByCountries = listToMap(
-                dummyDisasterIdpsTimeseriesByCountry,
+                disasterStats?.totalDisplacementTimeseriesByCountry ?? [],
                 (item) => `${item.year}-${item.country.iso3}` as string,
                 (item) => ({
                     year: Number(item.year),
@@ -1325,7 +748,7 @@ function Gidd() {
                 }),
             );
             const conflictDataByCountries = listToMap(
-                dummyConflictIdpsTimeseriesByCountry,
+                conflictStats?.totalDisplacementTimeseriesByCountry ?? [],
                 (item) => `${item.year}-${item.country.iso3}` as string,
                 (item) => ({
                     year: Number(item.year),
@@ -1339,8 +762,8 @@ function Gidd() {
                 year: (disasterDataByCountries[year]?.year
                     ?? conflictDataByCountries[year]?.year),
                 [`total-${disasterDataByCountries[year]?.iso3 ?? conflictDataByCountries[year]?.iso3}`]: sumAndRemoveZero([
-                    disasterDataByCountries[year]?.total,
-                    conflictDataByCountries[year]?.total,
+                    disasterDataByCountries[year]?.total ?? undefined,
+                    conflictDataByCountries[year]?.total ?? undefined,
                 ]),
             })).filter((item) => isDefined(item.year)).reduce((acc, item) => {
                 const indexForCurrentYear = acc.findIndex(
@@ -1375,20 +798,49 @@ function Gidd() {
             [],
         ];
     }, [
+        conflictStats,
+        disasterStats,
         countries,
         countriesChartType,
         timeRangeArray,
         causeChartType,
     ]);
 
+    const giddDisplacementsVariables = useMemo(() => ({
+        ordering: `${sorting?.direction === 'asc' ? '' : '-'}${sorting?.name}`,
+        page: activePage,
+        pageSize: DISPLACEMENTS_TABLE_PAGE_SIZE,
+        releaseEnvironment: DATA_RELEASE,
+    }), [
+        sorting,
+        activePage,
+    ]);
+
     const giddEventsVariables = useMemo(() => ({
         ordering: `${eventSorting?.direction === 'asc' ? '' : '-'}${eventSorting?.name}`,
-        page: (eventsActivePage - 1) * EVENTS_TABLE_PAGE_SIZE,
+        page: eventsActivePage,
+        pageSize: EVENTS_TABLE_PAGE_SIZE,
         releaseEnvironment: DATA_RELEASE,
     }), [
         eventSorting,
         eventsActivePage,
     ]);
+
+    const {
+        previousData: previousDisplacementsResponse,
+        data: displacementsResponse = previousDisplacementsResponse,
+    } = useQuery<
+        GiddDisplacementsQuery,
+        GiddDisplacementsQueryVariables
+    >(
+        GIDD_DISPLACEMENTS,
+        {
+            variables: giddDisplacementsVariables,
+            context: {
+                clientName: 'helix',
+            },
+        },
+    );
 
     const {
         previousData: previousEventsResponse,
@@ -1422,7 +874,7 @@ function Gidd() {
     const columns = useMemo(
         () => ([
             createTextColumn<DisplacementData, string>(
-                'geo_name',
+                'countryName',
                 'Country / Territory',
                 (item) => item.countryName,
                 { sortable: true },
@@ -1437,51 +889,51 @@ function Gidd() {
                 },
             ),
             isConflictDataShown ? createNumberColumn<DisplacementData, string>(
-                'conflict_new_displacements',
+                'conflictNewDisplacements',
                 'Conflict Internal Displacement',
-                (item) => item.conflictFlow,
+                (item) => item.conflictNewDisplacement,
                 {
                     sortable: true,
                     variant: 'conflict',
                 },
             ) : undefined,
             isConflictDataShown ? createNumberColumn<DisplacementData, string>(
-                'conflict_stock_displacement',
+                'conflictTotalDisplacement',
                 'Conflict Total number of IDPs',
-                (item) => item.conflictStock,
+                (item) => item.conflictTotalDisplacement,
                 {
                     sortable: true,
                     variant: 'conflict',
                 },
             ) : undefined,
             isDisasterDataShown ? createNumberColumn<DisplacementData, string>(
-                'disaster_new_displacements',
+                'disasterNewDisplacement',
                 'Disaster Internal Displacement',
-                (item) => item.disasterFlow,
+                (item) => item.disasterNewDisplacement,
                 {
                     sortable: true,
                     variant: 'disaster',
                 },
             ) : undefined,
             isDisasterDataShown ? createNumberColumn<DisplacementData, string>(
-                'disaster_stock_displacement',
+                'disasterTotalDisplacement',
                 'Disaster Total number of IDPs',
-                (item) => item.disasterStock,
+                (item) => item.disasterTotalDisplacement,
                 {
                     sortable: true,
                     variant: 'disaster',
                 },
             ) : undefined,
             createNumberColumn<DisplacementData, string>(
-                'totalNew',
+                'totalNewDisplacement',
                 'Total Internal Displacement',
-                (item) => sumAndRemoveZero([item.disasterFlow, item.conflictFlow]),
+                (item) => item.totalNewDisplacement,
                 { sortable: true },
             ),
             createNumberColumn<DisplacementData, string>(
-                'totalStock',
+                'totalInternalDisplacement',
                 'Total number of IDPS',
-                (item) => sumAndRemoveZero([item.disasterStock, item.conflictStock]),
+                (item) => item.totalInternalDisplacement,
                 { sortable: true },
             ),
         ]).filter(isDefined),
@@ -1562,15 +1014,37 @@ function Gidd() {
     );
 
     const sortedHazards = useMemo(() => (
-        hazardDummyData.sort((foo, bar) => compareNumber(foo.displacement, bar.displacement, -1))
-    ), []);
+        disasterStats?.displacementsByHazardType?.sort(
+            (foo, bar) => compareNumber(foo.newDisplacements, bar.newDisplacements, -1),
+        )), [disasterStats?.displacementsByHazardType]);
 
     const hazardRendererParams = useCallback((_: string, hazard: HazardData) => ({
-        total: sortedHazards[0]?.displacement,
-        value: hazard.displacement,
-        icon: hazard.icon,
-        title: 'Internal Displacement',
+        total: sortedHazards?.[0]?.newDisplacements ?? undefined,
+        value: hazard.newDisplacements ?? undefined,
+        hazardType: hazard.label,
+        icon: (
+            <DisplacementIcon
+                displacementType="Disaster"
+                disasterType={hazard.label}
+            />
+        ),
+        title: hazard.label,
     }), [sortedHazards]);
+
+    const stockTotal = sumAndRemoveZero([
+        conflictStats?.totalDisplacements,
+        disasterStats?.totalDisplacements,
+    ]);
+
+    const totalCountries = Math.max(
+        conflictStats?.totalCountries ?? 0,
+        disasterStats?.totalCountries ?? 0,
+    );
+
+    const flowTotal = sumAndRemoveZero([
+        conflictStats?.newDisplacements,
+        disasterStats?.newDisplacements,
+    ]);
 
     return (
         <div className={styles.bodyContainer}>
@@ -1740,8 +1214,8 @@ function Gidd() {
                                 <NumberBlock
                                     label="Total"
                                     size="large"
-                                    subLabel="In XX countries and territories"
-                                    value={400000000}
+                                    subLabel={`In ${totalCountries} countries and territories`}
+                                    value={stockTotal}
                                 />
                             )}
                             <div className={styles.causesBlock}>
@@ -1750,8 +1224,8 @@ function Gidd() {
                                         label="Total by Conflict and Violence"
                                         size={displacementCause ? 'large' : 'medium'}
                                         variant="conflict"
-                                        subLabel="In XX countries and territories"
-                                        value={30000000}
+                                        subLabel={`In ${conflictStats?.totalCountries} countries and territories`}
+                                        value={conflictStats?.totalDisplacements}
                                     />
                                 )}
                                 {isDisasterDataShown && (
@@ -1759,8 +1233,8 @@ function Gidd() {
                                         label="Total by Disasters"
                                         size={displacementCause ? 'large' : 'medium'}
                                         variant="disaster"
-                                        subLabel="In XX countries and territories"
-                                        value={2000000}
+                                        subLabel={`In ${disasterStats?.totalCountries} countries and territories`}
+                                        value={disasterStats?.totalDisplacements}
                                     />
                                 )}
                             </div>
@@ -1829,7 +1303,7 @@ function Gidd() {
                                         size="medium"
                                         variant="disaster"
                                         subLabel="Disaster Events Reported"
-                                        value={400000000}
+                                        value={disasterStats?.totalEvents}
                                     />
                                     <div className={styles.border} />
                                     <List
@@ -1853,8 +1327,8 @@ function Gidd() {
                                 <NumberBlock
                                     label="Total"
                                     size="large"
-                                    subLabel="In XX countries and territories"
-                                    value={400000000}
+                                    subLabel={`In ${totalCountries} countries and territories`}
+                                    value={flowTotal}
                                 />
                             )}
                             <div className={styles.causesBlock}>
@@ -1863,8 +1337,8 @@ function Gidd() {
                                         label="Total by Conflict and Violence"
                                         variant="conflict"
                                         size={displacementCause ? 'large' : 'medium'}
-                                        subLabel="In XX countries and territories"
-                                        value={30000000}
+                                        subLabel={`In ${conflictStats?.totalCountries} countries and territories`}
+                                        value={conflictStats?.newDisplacements}
                                     />
                                 )}
                                 {isDisasterDataShown && (
@@ -1872,8 +1346,8 @@ function Gidd() {
                                         label="Total by Disasters"
                                         size={displacementCause ? 'large' : 'medium'}
                                         variant="disaster"
-                                        subLabel="In XX countries and territories"
-                                        value={2000000}
+                                        subLabel={`In ${disasterStats?.totalCountries} countries and territories`}
+                                        value={disasterStats?.newDisplacements}
                                     />
                                 )}
                             </div>
@@ -1955,15 +1429,15 @@ function Gidd() {
                         <Pager
                             className={styles.pager}
                             activePage={activePage}
-                            itemsCount={dummyOverviewTable?.length ?? 0}
-                            maxItemsPerPage={MAX_ITEMS}
+                            itemsCount={displacementsResponse?.giddDisplacements?.totalCount ?? 0}
+                            maxItemsPerPage={DISPLACEMENTS_TABLE_PAGE_SIZE}
                             onActivePageChange={setActivePage}
                             itemsPerPageControlHidden
                         />
                         <Table
                             className={styles.table}
-                            data={dummyOverviewTable}
                             keySelector={displacementItemKeySelector}
+                            data={displacementsResponse?.giddDisplacements?.results}
                             columns={columns}
                         />
                     </SortContext.Provider>
