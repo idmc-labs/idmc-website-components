@@ -317,7 +317,7 @@ function DisasterWidget(props: DisasterProps) {
                                                 .giddDisasterStatistics
                                                 .displacementsByHazardType
                                         )}
-                                        dataKey="total"
+                                        dataKey="newDisplacements"
                                         nameKey="label"
                                     >
                                         {disasterData
