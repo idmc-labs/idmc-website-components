@@ -9,6 +9,9 @@ import styles from './styles.css';
 
 interface Props<N> {
     className?: string;
+    headerContainerClassName?: string;
+    childrenClassName?: string;
+    headerClassName?: string;
     header?: React.ReactNode;
     children?: React.ReactNode;
     isExpanded?: boolean;
@@ -21,6 +24,9 @@ function CollapsibleContent<N>(props: Props<N>) {
         className,
         header,
         children,
+        headerContainerClassName,
+        childrenClassName,
+        headerClassName,
         isExpanded,
         name,
         onExpansionChange,
@@ -35,10 +41,10 @@ function CollapsibleContent<N>(props: Props<N>) {
     return (
         <div className={_cs(styles.collapsibleContent, className)}>
             <div // eslint-disable-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events, max-len
-                className={styles.headerContainer}
+                className={_cs(styles.headerContainer, headerContainerClassName)}
                 onClick={handleHeaderClick}
             >
-                <div className={styles.header}>
+                <div className={_cs(styles.header, headerClassName)}>
                     {header}
                 </div>
                 {isExpanded ? (
@@ -48,7 +54,7 @@ function CollapsibleContent<N>(props: Props<N>) {
                 )}
             </div>
             {isExpanded && (
-                <div className={styles.children}>
+                <div className={_cs(styles.children, childrenClassName)}>
                     {children}
                 </div>
             )}

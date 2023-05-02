@@ -29,6 +29,7 @@ import EllipsizedContent from '#components/EllipsizedContent';
 import TextOutput from '#components/TextOutput';
 import RelatedMaterialItem from '#components/RelatedMaterialItem';
 import TooltipIcon from '#components/TooltipIcon';
+import FigureAnalysis from '#components/FigureAnalysis';
 
 import {
     // START_YEAR,
@@ -340,7 +341,15 @@ function CountryProfile(props: Props) {
             </EllipsizedContent>
             <div className={styles.infographics}>
                 {conflictSection}
+                <FigureAnalysis
+                    iso3={currentCountry}
+                    cause="CONFLICT"
+                />
                 {disasterSection}
+                <FigureAnalysis
+                    iso3={currentCountry}
+                    cause="DISASTER"
+                />
             </div>
         </section>
     );

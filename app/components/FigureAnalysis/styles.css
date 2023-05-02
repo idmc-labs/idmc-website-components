@@ -1,0 +1,56 @@
+.figure-analysis {
+    display: block;
+
+    .header-container {
+        .header {
+            color: var(--color-text-on-dark);
+            font-family: var(--tui-font-family-heading);
+            font-size: var(--tui-font-size-large);
+            font-weight: var(--tui-font-weight-heading);
+        }
+
+        &.conflict {
+            background-color: var(--color-conflict);
+        }
+        &.disaster {
+            background-color: var(--color-disaster);
+        }
+    }
+
+    .children {
+        display: flex;
+        flex-direction: column;
+        border: var(--tui-width-separator-thin) solid var(--tui-color-separator);
+        gap: var(--tui-spacing-medium);
+        border-top: 0;
+
+        .select-input {
+            --tui-spacing-super-small: 1px;
+            --tui-spacing-extra-small: 3px;
+            --tui-spacing-small: 6px;
+            --tui-spacing-small-medium: 8px;
+            --tui-spacing-medium: 10px;
+            --tui-spacing-large-medium: 13px;
+            --tui-spacing-large: 16px;
+            --tui-spacing-extra-large: 24px;
+
+            width: 14rem;
+
+            .input-section {
+                border-radius: 0.25rem;
+                background-color: var(--tui-filter-background-color);
+                height: 2.5rem;
+            }
+        }
+
+        .separator {
+            border-bottom: var(--tui-width-separator-thin) solid var(--tui-color-separator);
+        }
+
+        .details {
+            display: flex;
+            flex-direction: column;
+            gap: var(--tui-spacing-medium);
+        }
+    }
+}
