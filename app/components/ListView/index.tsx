@@ -31,7 +31,7 @@ export type Props<
     compactEmptyMessage?: boolean;
     compactAndVerticalEmptyMessage?: boolean;
     compactPendingMessage?: boolean;
-    // FIXME: need proper documentation for direction
+    // FIXME: add proper documentation for direction
     direction?: 'horizontal' | 'vertical';
     messageShown?: boolean;
     messageIconShown?: boolean;

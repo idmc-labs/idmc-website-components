@@ -20,13 +20,6 @@ import { genericMemo } from '../../utils';
 
 import styles from './styles.css';
 
-// FIXME: remove this (only used in stories)
-export function Separator({ className }: { className?: string }) {
-    return (
-        <hr className={_cs(styles.separator, className)} />
-    );
-}
-
 interface BaseProps extends ElementFragmentProps {
     className?: string;
 }

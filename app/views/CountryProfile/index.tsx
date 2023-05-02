@@ -33,6 +33,7 @@ import TooltipIcon from '#components/TooltipIcon';
 import {
     // START_YEAR,
     END_YEAR,
+    replaceWithDrupalEndpoint,
 } from '#utils/common';
 
 import IduWidget from '../IduWidget';
@@ -62,24 +63,6 @@ function getContentTypeLabel(val: string | undefined) {
         return 'Unknown';
     }
     return contentTypeLabelMapping[val] || 'Unknown';
-}
-
-const DRUPAL_ENDPOINT = process.env.REACT_APP_DRUPAL_ENDPOINT as string || '';
-
-function suffixDrupalEndpoint(path: string) {
-    return `${DRUPAL_ENDPOINT}${path}`;
-}
-
-function replaceWithDrupalEndpoint(image: null): null;
-function replaceWithDrupalEndpoint(image: undefined): undefined;
-function replaceWithDrupalEndpoint(image: string): string;
-function replaceWithDrupalEndpoint(image: string | null | undefined): string | null | undefined;
-function replaceWithDrupalEndpoint(image: string | null | undefined) {
-    if (!image || !DRUPAL_ENDPOINT) {
-        return image;
-    }
-    const path = new URL(image).pathname;
-    return suffixDrupalEndpoint(path);
 }
 
 const COUNTRY_PROFILE = gql`
@@ -163,7 +146,7 @@ function CountryProfile(props: Props) {
     const {
         previousData,
         data: countryProfileData = previousData,
-        // FIXME: handle loading and error
+        // TODO: handle loading and error
         // loading: countryProfileLoading,
         // error: countryProfileError,
     } = useQuery<CountryProfileQuery, CountryProfileQueryVariables>(
@@ -203,7 +186,7 @@ function CountryProfile(props: Props) {
     const {
         previousData: relatedMaterialsPreviousData,
         data: relatedMaterialsResponse = relatedMaterialsPreviousData,
-        // FIXME: handle loading and error
+        // TODO: handle loading and error
         // error,
     } = useQuery<RelatedMaterialsQuery, RelatedMaterialsQueryVariables>(
         RELATED_MATERIALS,
@@ -391,8 +374,8 @@ function CountryProfile(props: Props) {
                         url={gp.metatag.value.canonical_url}
                         heading={gp.metatag.value.title}
                         description={gp.metatag.value.description}
-                        // FIXME: pass date
-                        // FIXME: pass doc type
+                        // TODO: pass date
+                        // TODO: pass doc type
                         type={getContentTypeLabel(gp?.type?.[0]?.target_id)}
                         date={gp?.field_published?.[0]?.value}
                     />
