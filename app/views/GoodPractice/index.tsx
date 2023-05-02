@@ -45,9 +45,6 @@ import { getGoodPracticesLink } from '#utils/common';
 
 import styles from './styles.css';
 
-// TODO: remove this
-const defaultCover = 'https://images.unsplash.com/photo-1465917566611-efba2904dd8a?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1476&q=80';
-
 const GOOD_PRACTICE = gql`
 query GoodPracticeDetails($id: ID!) {
     goodPractice(pk: $id) {
@@ -237,7 +234,7 @@ function GoodPractice(props: Props) {
                 <div
                     className={styles.basicInfo}
                     style={{
-                        backgroundImage: `url("${data?.goodPractice?.image?.url ?? defaultCover}")`,
+                        backgroundImage: `url("${data?.goodPractice?.image?.url}")`,
                     }}
                 >
                     <div className={styles.container}>

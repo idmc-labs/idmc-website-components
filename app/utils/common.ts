@@ -13,7 +13,11 @@ import {
     getAutoPrecision,
 } from '#components/Numeral';
 
-const standaloneMode = (window as { standaloneMode?: boolean }).standaloneMode ?? false;
+export const DRUPAL_ENDPOINT = process.env.REACT_APP_DRUPAL_ENDPOINT as string || '';
+export const HELIX_REST_ENDPOINT = process.env.REACT_APP_HELIX_REST_ENDPOINT as string;
+export const HELIX_CLIENT_ID = process.env.REACT_APP_HELIX_CLIENT_ID as string || '';
+
+export const standaloneMode = (window as { standaloneMode?: boolean }).standaloneMode ?? false;
 
 export function rankedSearchOnList<T>(
     list: T[],
@@ -143,7 +147,7 @@ export const monthList = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'
 export const START_YEAR = 2008;
 export const END_YEAR = 2021;
 
-export function add(args: (number | undefined)[]) {
+export function sumAndRemoveZero(args: (number | undefined)[]) {
     const newArgs = args.filter(isDefined);
     const total = sum(newArgs);
     return total === 0 ? undefined : total;
@@ -165,4 +169,36 @@ export function roundAndRemoveZero(data?: number) {
         return sign * Math.round(absoluteData / 100) * 100;
     }
     return sign * Math.round(data / 1000) * 1000;
+}
+
+export function suffixDrupalEndpoint(path: string) {
+    return `${DRUPAL_ENDPOINT}${path}`;
+}
+
+export function replaceWithDrupalEndpoint(image: null): null;
+export function replaceWithDrupalEndpoint(image: undefined): undefined;
+export function replaceWithDrupalEndpoint(image: string): string;
+export function replaceWithDrupalEndpoint(image: string | null | undefined): string | null | undefined;
+export function replaceWithDrupalEndpoint(image: string | null | undefined) {
+    if (!image || !DRUPAL_ENDPOINT) {
+        return image;
+    }
+    const path = new URL(image).pathname;
+    return suffixDrupalEndpoint(path);
+}
+
+export function suffixHelixRestEndpoint(path: string) {
+    if (path.includes('?')) {
+        return `${HELIX_REST_ENDPOINT}${path}&client_id=${HELIX_CLIENT_ID}`;
+    }
+    return `${HELIX_REST_ENDPOINT}${path}?cliend_id=${HELIX_CLIENT_ID}`;
+}
+
+
+export function readStorage(key: string) {
+    const langValueFromStorage = localStorage.getItem(key);
+    if (langValueFromStorage) {
+        return JSON.parse(langValueFromStorage);
+    }
+    return undefined;
 }

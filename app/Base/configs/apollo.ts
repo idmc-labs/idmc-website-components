@@ -7,25 +7,20 @@ import {
     from,
     concat,
 } from '@apollo/client';
+import {
+    HELIX_REST_ENDPOINT,
+    DRUPAL_ENDPOINT,
+    readStorage,
+} from '#utils/common';
 import { ApolloLink } from 'apollo-link';
 import { RestLink } from 'apollo-link-rest';
 import { createUploadLink } from 'apollo-upload-client';
 
 // FIXME: move this to utils
 const langStorageKey = 'idmc-website-language';
-function readStorage(key: string) {
-    const langValueFromStorage = localStorage.getItem(key);
-    if (langValueFromStorage) {
-        return JSON.parse(langValueFromStorage);
-    }
-    return undefined;
-}
 
 const GIDD_GRAPHQL_ENDPOINT = process.env.REACT_APP_GIDD_GRAPHQL_ENDPOINT as string;
 const HELIX_GRAPHQL_ENDPOINT = process.env.REACT_APP_HELIX_GRAPHQL_ENDPOINT as string;
-
-const HELIX_REST_ENDPOINT = process.env.REACT_APP_HELIX_REST_ENDPOINT as string;
-const DRUPAL_ENDPOINT = (process.env.REACT_APP_DRUPAL_ENDPOINT || '') as string;
 
 const giddGqlLink = new HttpLink({
     uri: GIDD_GRAPHQL_ENDPOINT,

@@ -27,7 +27,7 @@ import { removeNull } from '@togglecorp/toggle-form';
 import {
     formatNumber,
     START_YEAR,
-    add,
+    sumAndRemoveZero,
     END_YEAR,
     roundAndRemoveZero,
 } from '#utils/common';
@@ -841,11 +841,13 @@ query GiddEvents(
     $page: Int,
     $ordering: String,
     $pageSize: Int,
+    $releaseEnvironment: String!,
 ){
     giddDisasters(
         ordering: $ordering,
         pageSize: $pageSize,
         page: $page,
+        releaseEnvironment: $releaseEnvironment,
     ){
         results {
             id
@@ -1462,13 +1464,13 @@ function Gidd() {
             createNumberColumn<DisplacementData, string>(
                 'totalNew',
                 'Total Internal Displacement',
-                (item) => add([item.disasterFlow, item.conflictFlow]),
+                (item) => sumAndRemoveZero([item.disasterFlow, item.conflictFlow]),
                 { sortable: true },
             ),
             createNumberColumn<DisplacementData, string>(
                 'totalStock',
                 'Total number of IDPS',
-                (item) => add([item.disasterStock, item.conflictStock]),
+                (item) => sumAndRemoveZero([item.disasterStock, item.conflictStock]),
                 { sortable: true },
             ),
         ]).filter(isDefined),

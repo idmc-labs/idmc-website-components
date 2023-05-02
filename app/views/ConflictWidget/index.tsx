@@ -33,6 +33,8 @@ import {
     formatNumber,
     START_YEAR,
     END_YEAR,
+    suffixDrupalEndpoint,
+    suffixHelixRestEndpoint,
 } from '#utils/common';
 import {
     ConflictDataQuery,
@@ -45,40 +47,29 @@ import { countryMetadata } from '../CountryProfile/data';
 import useDebouncedValue from '../../hooks/useDebouncedValue';
 import styles from './styles.css';
 
-const HELIX_REST_ENDPOINT = process.env.REACT_APP_HELIX_REST_ENDPOINT as string;
-const HELIX_CLIENT_ID = process.env.REACT_APP_HELIX_CLIENT_ID as string || '';
-const DRUPAL_ENDPOINT = process.env.REACT_APP_DRUPAL_ENDPOINT as string || '';
-
 const chartMargins = { top: 16, left: 5, right: 5, bottom: 5 };
-
-function suffixHelixRestEndpoint(path: string) {
-    return `${HELIX_REST_ENDPOINT}${path}`;
-}
-function suffixDrupalEndpoint(path: string) {
-    return `${DRUPAL_ENDPOINT}${path}`;
-}
 
 const giddDisplacementDataLink = suffixDrupalEndpoint('/database/displacement-data');
 
 const STATS = gql`
-    query ConflictStats($iso3: String!, $startYear: Float, $endYear: Float) {
-        giddConflictStatistics(countriesIso3: [$iso3], endYear: $endYear, startYear: $startYear) {
+    query ConflictStats($iso3: String!, $startYear: Float, $endYear: Float, $releaseEnvironment: String!) {
+        giddConflictStatistics(countriesIso3: [$iso3], endYear: $endYear, startYear: $startYear, releaseEnvironment: $releaseEnvironment) {
             newDisplacements
-            totalIdps
+            totalDisplacements
         }
     }
 `;
 
 const CONFLICT_DATA = gql`
-    query ConflictData($countryIso3: String!, $startYear: Float, $endYear: Float) {
-        giddConflictStatistics(countriesIso3: [$countryIso3], endYear: $endYear, startYear: $startYear) {
+    query ConflictData($countryIso3: String!, $startYear: Float, $endYear: Float, $releaseEnvironment: String!) {
+        giddConflictStatistics(countriesIso3: [$countryIso3], endYear: $endYear, startYear: $startYear, releaseEnvironment: $releaseEnvironment) {
             newDisplacements
-            totalIdps
-            idpsTimeseries {
+            totalDisplacements
+            totalDisplacementTimeseriesByYear {
                 year
                 total
             }
-            newDisplacementTimeseries {
+            newDisplacementTimeseriesByYear {
                 year
                 total
             }
@@ -99,7 +90,7 @@ function ConflictWidget(props: ConflictProps) {
     const {
         previousData: previousStatsData,
         data: statsData = previousStatsData,
-        // FIXME: handle loading and error
+        // TODO: handle loading and error
         // loading: countryProfileLoading,
         // error: countryProfileError,
     } = useQuery<ConflictStatsQuery, ConflictStatsQueryVariables>(
@@ -119,7 +110,7 @@ function ConflictWidget(props: ConflictProps) {
     const {
         previousData: previousConflictData,
         data: conflictData = previousConflictData,
-        // FIXME: handle loading and error
+        // TODO: handle loading and error
         // loading: conflictDataLoading,
         // error: conflictDataError,
     } = useQuery<ConflictDataQuery, ConflictDataQueryVariables>(
@@ -174,7 +165,7 @@ function ConflictWidget(props: ConflictProps) {
             footerActions={(
                 <>
                     <ButtonLikeLink
-                        href={suffixHelixRestEndpoint(`/countries/${iso3}/conflict-export/?start_year=${conflictTimeRange[0]}&end_year=${conflictTimeRange[1]}&client_id=${HELIX_CLIENT_ID}`)}
+                        href={suffixHelixRestEndpoint(`/countries/${iso3}/conflict-export/?start_year=${conflictTimeRange[0]}&end_year=${conflictTimeRange[1]}`)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={styles.conflictButton}

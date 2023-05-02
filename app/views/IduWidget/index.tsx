@@ -24,15 +24,10 @@ import {
     CountryProfileIduQueryVariables,
 } from '#generated/types';
 
+import { suffixDrupalEndpoint } from '#utils/common';
 import { countryMetadata } from '../CountryProfile/data';
 import styles from './styles.css';
 
-const DRUPAL_ENDPOINT = process.env.REACT_APP_DRUPAL_ENDPOINT as string || '';
-
-// FIXME: move this to utils
-function suffixDrupalEndpoint(path: string) {
-    return `${DRUPAL_ENDPOINT}${path}`;
-}
 const giddLink = suffixDrupalEndpoint('/database');
 const monitoringLink = suffixDrupalEndpoint('/monitoring-tools');
 
@@ -63,7 +58,7 @@ function IduWidget(props: IduWidgetProps) {
     const {
         previousData,
         data: countryProfileData = previousData,
-        // FIXME: handle loading and error
+        // TODO: handle loading and error
         // loading: countryProfileLoading,
         // error: countryProfileError,
     } = useQuery<CountryProfileIduQuery, CountryProfileIduQueryVariables>(

@@ -29,7 +29,7 @@ import browserHistory from '#base/configs/history';
 import sentryConfig from '#base/configs/sentry';
 import apolloConfig from '#base/configs/apollo';
 import { trackingId, gaConfig } from '#base/configs/googleAnalytics';
-import { mapboxToken } from '#base/configs/env';
+import { mapboxToken } from '#base/configs/mapbox';
 import useLocalStorage from '#hooks/useLocalStorage';
 
 import styles from './styles.css';

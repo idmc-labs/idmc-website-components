@@ -15,6 +15,7 @@ import {
 } from 'mapbox-gl';
 import { isDefined, isNotDefined } from '@togglecorp/fujs';
 
+import { mapboxStyle } from '#base/configs/mapbox';
 import HTMLOutput from '#components/HTMLOutput';
 import {
     IduDataQuery,
@@ -66,7 +67,7 @@ const sourceOption: mapboxgl.GeoJSONSourceRaw = {
     type: 'geojson',
 };
 
-const lightStyle = process.env.REACT_APP_MAPBOX_STYLE || 'mapbox://styles/mapbox/light-v10';
+const lightStyle = mapboxStyle || 'mapbox://styles/mapbox/light-v10';
 
 interface Props {
     idus: IduDataQuery['idu'] | undefined;

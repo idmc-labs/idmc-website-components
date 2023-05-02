@@ -27,7 +27,11 @@ import Header from '#components/Header';
 import SliderInput from '#components/SliderInput';
 import Container from '#components/Container';
 
-import { monthList } from '#utils/common';
+import {
+    monthList,
+    suffixDrupalEndpoint,
+    HELIX_CLIENT_ID,
+} from '#utils/common';
 import LegendElement from '#components/LegendElement';
 
 import RawIduMap from './RawIduMap';
@@ -35,13 +39,6 @@ import useInputState from '../../hooks/useInputState';
 
 import styles from './styles.css';
 
-const HELIX_CLIENT_ID = process.env.REACT_APP_HELIX_CLIENT_ID as string || '';
-
-// FIXME: move this somewhere else
-const DRUPAL_ENDPOINT = process.env.REACT_APP_DRUPAL_ENDPOINT as string || '';
-function suffixDrupalEndpoint(path: string) {
-    return `${DRUPAL_ENDPOINT}${path}`;
-}
 const giddLink = suffixDrupalEndpoint('/database/displacement-data');
 
 const IDU_DATA = gql`
@@ -130,7 +127,7 @@ function useIduQuery(
     const {
         previousData: previousIduData,
         data: iduData = previousIduData,
-        // FIXME: handle loading and error
+        // TODO: handle loading and error
         // loading: iduDataLoading,
         // error: iduDataError,
     } = useQuery<IduDataQuery, IduDataQueryVariables>(
