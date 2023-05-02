@@ -393,6 +393,9 @@ function Gidd() {
     const [activePage, setActivePage] = useState<number>(1);
     const [eventsActivePage, setEventsActivePage] = useState<number>(1);
 
+    const isDisasterDataShown = displacementCause === 'disaster' || isNotDefined(displacementCause);
+    const isConflictDataShown = displacementCause === 'conflict' || isNotDefined(displacementCause);
+
     const { data: countryFilterResponse } = useQuery<
         GiddFilterOptionsQuery,
         GiddFilterOptionsQueryVariables
@@ -453,8 +456,8 @@ function Gidd() {
                 timeRangeArray.map((year) => ({
                     year,
                     total: sumAndRemoveZero([
-                        disasterDataByYear?.[year],
-                        conflictDataByYear?.[year],
+                        isDisasterDataShown ? disasterDataByYear?.[year] : undefined,
+                        isConflictDataShown ? conflictDataByYear?.[year] : undefined,
                     ]),
                 })),
                 [
@@ -482,21 +485,21 @@ function Gidd() {
             return [
                 timeseries,
                 [
-                    {
+                    isDisasterDataShown && {
                         dataKey: 'disaster',
                         key: 'disaster',
                         stackId: 'total',
                         fill: 'var(--color-disaster)',
                         name: 'disaster',
                     },
-                    {
+                    isConflictDataShown && {
                         dataKey: 'conflict',
                         key: 'conflict',
                         stackId: 'total',
                         fill: 'var(--color-conflict)',
                         name: 'conflict',
                     },
-                ],
+                ].filter(isDefined),
             ];
         }
         if (causeChartType === 'compare' && !showCombinedCountries) {
@@ -527,21 +530,21 @@ function Gidd() {
                     ...conflictDataByCountries,
                 ],
                 countries.flatMap((country, index) => ([
-                    {
+                    isDisasterDataShown ? {
                         dataKey: `disaster-${country}`,
                         key: `disaster-${country}`,
                         stackId: `total-${country}`,
                         fill: disasterColorsRange[index],
                         name: `${country} Disaster`,
-                    },
-                    {
+                    } : undefined,
+                    isConflictDataShown ? {
                         dataKey: `conflict-${country}`,
                         key: `conflict-${country}`,
                         stackId: `total-${country}`,
                         fill: conflictColorsRange[index],
                         name: `${country} Conflict`,
-                    },
-                ])),
+                    } : undefined,
+                ])).filter(isDefined),
             ];
         }
         if (causeChartType === 'combine' && !showCombinedCountries) {
@@ -578,8 +581,8 @@ function Gidd() {
                     iso3: (disasterDataByCountries[year]?.iso3
                         ?? conflictDataByCountries[year]?.iso3),
                     [`total-${disasterDataByCountries[year]?.iso3 ?? conflictDataByCountries[year]?.iso3}`]: sumAndRemoveZero([
-                        disasterDataByCountries[year]?.total ?? undefined,
-                        conflictDataByCountries[year]?.total ?? undefined,
+                        isDisasterDataShown ? disasterDataByCountries[year]?.total : undefined,
+                        isConflictDataShown ? conflictDataByCountries[year]?.total : undefined,
                     ]),
                 })).filter((item) => isDefined(item.year)),
                 countries.map((country, index) => ({
@@ -597,6 +600,8 @@ function Gidd() {
             [],
         ];
     }, [
+        isConflictDataShown,
+        isDisasterDataShown,
         conflictStats,
         disasterStats,
         countries,
@@ -626,8 +631,8 @@ function Gidd() {
                 timeRangeArray.map((year) => ({
                     year,
                     total: sumAndRemoveZero([
-                        disasterDataByYear?.[year] ?? undefined,
-                        conflictDataByYear?.[year] ?? undefined,
+                        isDisasterDataShown ? disasterDataByYear?.[year] : undefined,
+                        isConflictDataShown ? conflictDataByYear?.[year] : undefined,
                     ]),
                 })),
                 [
@@ -659,21 +664,21 @@ function Gidd() {
                     disaster: disasterDataByYear?.[year],
                 })),
                 [
-                    {
+                    isDisasterDataShown && {
                         dataKey: 'disaster',
                         key: 'disaster',
                         stackId: 'total',
                         fill: 'var(--color-disaster)',
                         name: 'disaster',
                     },
-                    {
+                    isConflictDataShown && {
                         dataKey: 'conflict',
                         key: 'conflict',
                         stackId: 'total',
                         fill: 'var(--color-conflict)',
                         name: 'conflict',
                     },
-                ],
+                ].filter(isDefined),
             ];
         }
         if (causeChartType === 'compare' && !showCombinedCountries) {
@@ -716,21 +721,21 @@ function Gidd() {
             return [
                 timeseries,
                 countries.flatMap((country, index) => ([
-                    {
+                    isDisasterDataShown && {
                         dataKey: `disaster-${country}`,
                         key: `disaster-${country}`,
                         stackId: `total-${country}`,
                         fill: disasterColorsRange[index],
                         name: `${country} Disaster`,
                     },
-                    {
+                    isConflictDataShown && {
                         dataKey: `conflict-${country}`,
                         key: `conflict-${country}`,
                         stackId: `total-${country}`,
                         fill: conflictColorsRange[index],
                         name: `${country} Conflict`,
                     },
-                ])),
+                ])).filter(isDefined),
             ];
         }
         if (causeChartType === 'combine' && !showCombinedCountries) {
@@ -762,8 +767,8 @@ function Gidd() {
                 year: (disasterDataByCountries[year]?.year
                     ?? conflictDataByCountries[year]?.year),
                 [`total-${disasterDataByCountries[year]?.iso3 ?? conflictDataByCountries[year]?.iso3}`]: sumAndRemoveZero([
-                    disasterDataByCountries[year]?.total ?? undefined,
-                    conflictDataByCountries[year]?.total ?? undefined,
+                    isDisasterDataShown ? disasterDataByCountries[year]?.total : undefined,
+                    isConflictDataShown ? conflictDataByCountries[year]?.total : undefined,
                 ]),
             })).filter((item) => isDefined(item.year)).reduce((acc, item) => {
                 const indexForCurrentYear = acc.findIndex(
@@ -798,6 +803,8 @@ function Gidd() {
             [],
         ];
     }, [
+        isConflictDataShown,
+        isDisasterDataShown,
         conflictStats,
         disasterStats,
         countries,
@@ -867,9 +874,6 @@ function Gidd() {
     const hazardOptions = removeNull(
         countryFilterResponse?.giddHazardSubTypes,
     )?.filter(isDefined);
-
-    const isDisasterDataShown = displacementCause === 'disaster' || isNotDefined(displacementCause);
-    const isConflictDataShown = displacementCause === 'conflict' || isNotDefined(displacementCause);
 
     const columns = useMemo(
         () => ([
