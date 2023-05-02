@@ -41,7 +41,6 @@ export function createExternalLinkColumn<D, K>(
     } = {
         id,
         title,
-        cellAsHeader: options?.cellAsHeader,
         headerCellRenderer: TableHeaderCell,
         columnClassName: options?.columnClassName,
         headerCellRendererParams: {
@@ -87,7 +86,6 @@ export function createTextColumn<D, K>(
     } = {
         id,
         title,
-        cellAsHeader: options?.cellAsHeader,
         headerCellRenderer: TableHeaderCell,
         columnClassName: options?.columnClassName,
         headerCellRendererParams: {
@@ -129,7 +127,6 @@ export function createNumberColumn<D, K>(
     } = {
         id,
         title,
-        cellAsHeader: options?.cellAsHeader,
         headerCellRenderer: TableHeaderCell,
         columnClassName: options?.columnClassName,
         headerCellRendererParams: {
