@@ -35,7 +35,6 @@ import TooltipIcon from '#components/TooltipIcon';
 import {
     formatNumber,
     START_YEAR,
-    END_YEAR,
     suffixDrupalEndpoint,
     suffixHelixRestEndpoint,
     DATA_RELEASE,
@@ -96,13 +95,14 @@ const DISASTER_DATA = gql`
 
 interface DisasterProps {
     iso3: string;
+    endYear: number;
 }
 
 function DisasterWidget(props: DisasterProps) {
-    const { iso3 } = props;
+    const { iso3, endYear: year } = props;
     // Disaster section
     const [disasterCategories, setDisasterCategories] = useState<string[]>([]);
-    const [disasterTimeRangeActual, setDisasterTimeRange] = useState([START_YEAR, END_YEAR]);
+    const [disasterTimeRangeActual, setDisasterTimeRange] = useState([START_YEAR, year]);
     const disasterTimeRange = useDebouncedValue(disasterTimeRangeActual);
 
     const {
@@ -117,7 +117,7 @@ function DisasterWidget(props: DisasterProps) {
             variables: {
                 iso3,
                 startYear: START_YEAR,
-                endYear: END_YEAR,
+                endYear: year,
                 releaseEnvironment: DATA_RELEASE,
             },
             context: {
@@ -192,7 +192,7 @@ function DisasterWidget(props: DisasterProps) {
                         className={styles.timeRangeContainer}
                         hideValues
                         min={START_YEAR}
-                        max={END_YEAR}
+                        max={year}
                         labelDescription={`${disasterTimeRangeActual[0]} - ${disasterTimeRangeActual[1]}`}
                         step={1}
                         minDistance={0}

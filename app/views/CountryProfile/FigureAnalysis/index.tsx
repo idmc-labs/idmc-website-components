@@ -21,7 +21,6 @@ import Numeral from '#components/Numeral';
 import {
     CountryProfileQuery,
 } from '#generated/types';
-import { END_YEAR } from '#utils/common';
 
 import styles from './styles.css';
 
@@ -96,12 +95,14 @@ function ItemTable(props: ItemTableProps) {
 interface Props {
     className?: string;
     data: FigureAnalysisItem[] | undefined | null;
+    year: number;
 }
 
 function FigureAnalysis(props: Props) {
     const {
         className,
         data,
+        year,
     } = props;
 
     const [
@@ -113,7 +114,7 @@ function FigureAnalysis(props: Props) {
     const [
         figureAnalysisActiveYear,
         setFigureAnalysisActiveYear,
-    ] = useState<string>(String(END_YEAR));
+    ] = useState<string>(String(year));
 
     const figureAnalysisByYear = useMemo(() => {
         if (!data) {

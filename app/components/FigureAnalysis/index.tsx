@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { _cs, randomString } from '@togglecorp/fujs';
+import { _cs } from '@togglecorp/fujs';
 import { SelectInput } from '@togglecorp/toggle-ui';
 import {
     gql,
@@ -16,19 +16,11 @@ import TextOutput from '#components/TextOutput';
 import MarkdownViewer from '#components/MarkdownViewer';
 import {
     START_YEAR,
-    END_YEAR,
     DATA_RELEASE,
 } from '#utils/common';
 import CollapsibleContent from '#components/CollapsibleContent';
 
 import styles from './styles.css';
-
-const timeRangeArray = (
-    Array.from(
-        { length: (END_YEAR - START_YEAR) + 1 },
-        (_, index) => ({ year: START_YEAR + index }),
-    )
-);
 
 const yearKeySelector = (item: { year: number }) => String(item.year);
 
@@ -44,6 +36,7 @@ query GiddCountryPfa(
         releaseEnvironment: $releaseEnvironment,
     ) {
         results {
+            id
             description
             figureCategory
             figureCategoryDisplay
@@ -61,6 +54,7 @@ interface Props {
     className?: string;
     cause: 'CONFLICT' | 'DISASTER';
     iso3: string;
+    endYear: number;
 }
 
 function FigureAnalysis(props: Props) {
@@ -68,10 +62,21 @@ function FigureAnalysis(props: Props) {
         className,
         cause,
         iso3,
+        endYear: year,
     } = props;
 
-    const [selectedYear, setSelectedYear] = useState(String(END_YEAR));
+    const [selectedYear, setSelectedYear] = useState(String(year));
     const [isExpanded, setContentExpansion] = useState(false);
+
+    const timeRangeArray = useMemo(
+        () => (
+            Array.from(
+                { length: (year - START_YEAR) + 1 },
+                (_, index) => ({ year: START_YEAR + index }),
+            )
+        ),
+        [year],
+    );
 
     const pfaVariables = useMemo(() => ({
         iso3,
@@ -95,11 +100,15 @@ function FigureAnalysis(props: Props) {
         },
     );
 
-    const finalResults = pfaResponse?.giddPublicFigureAnalysisList?.results?.filter(
-        (item) => item.figureCause === cause,
+    const finalResults = useMemo(
+        () => (
+            pfaResponse?.giddPublicFigureAnalysisList?.results?.filter(
+                (item) => item.figureCause === cause,
+            )
+        ),
+        [pfaResponse],
     );
 
-    console.warn('here', finalResults);
     return (
         <CollapsibleContent
             name={undefined}
@@ -140,7 +149,7 @@ function FigureAnalysis(props: Props) {
             {finalResults?.map((details) => (
                 <div
                     className={styles.details}
-                    key={randomString()}
+                    key={details.id}
                 >
                     <Heading size="small">
                         {`Total number of ${details.figureCategoryDisplay} as of ${selectedYear}`}
