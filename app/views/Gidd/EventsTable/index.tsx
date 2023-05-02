@@ -91,7 +91,7 @@ function EventsTable(props: Props) {
         className,
     } = props;
 
-    const eventDataSortState = useSortState({ name: 'countryName', direction: 'asc' });
+    const eventDataSortState = useSortState({ name: 'year', direction: 'dsc' });
     const { sorting: eventSorting } = eventDataSortState;
     const [eventsActivePage, setEventsActivePage] = useState<number>(1);
     const [eventSearchText, setEventSearchText] = useState<string | undefined>();
