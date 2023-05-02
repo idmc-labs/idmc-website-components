@@ -14,13 +14,9 @@ import {
     SelectInput,
     MultiSelectInput,
     Table,
-    TableHeaderCell,
-    TableHeaderCellProps,
-    TableColumn,
     Pager,
     SortContext,
     useSortState,
-    createDateColumn,
     List,
 } from '@togglecorp/toggle-ui';
 import { removeNull } from '@togglecorp/toggle-form';
@@ -29,7 +25,6 @@ import {
     START_YEAR,
     sumAndRemoveZero,
     END_YEAR,
-    roundAndRemoveZero,
     DATA_RELEASE,
 } from '#utils/common';
 import {
@@ -66,15 +61,13 @@ import {
 import {
     GiddFilterOptionsQuery,
     GiddFilterOptionsQueryVariables,
-    GiddEventsQuery,
-    GiddEventsQueryVariables,
     GiddDisplacementsQuery,
     GiddDisplacementsQueryVariables,
     GiddStatisticsQuery,
     GiddStatisticsQueryVariables,
 } from '#generated/types';
 
-import EventTitle, { Props as EventTitleProps } from './EventTitle';
+import EventsTable from './EventsTable';
 
 import styles from './styles.css';
 
@@ -101,13 +94,11 @@ const chartMargins = { top: 16, left: 5, right: 5, bottom: 5 };
 const lorem = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.';
 const lorem2 = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.';
 
-type EventData = NonNullable<NonNullable<GiddEventsQuery['giddDisasters']>['results']>[number];
 type DisplacementData = NonNullable<NonNullable<GiddDisplacementsQuery['giddDisplacements']>['results']>[number];
 type HazardData = NonNullable<NonNullable<GiddStatisticsQuery['giddDisasterStatistics']>['displacementsByHazardType']>[number];
 
 const hazardKeySelector = (item: HazardData) => item.id;
 
-const eventKeySelector = (item: { id: string }) => item.id;
 const displacementItemKeySelector = (item: { id: string }) => item.id;
 
 const GIDD_FILTER_OPTIONS = gql`
@@ -218,7 +209,6 @@ query GiddStatistics(
 }
 `;
 
-const EVENTS_TABLE_PAGE_SIZE = 10;
 const DISPLACEMENTS_TABLE_PAGE_SIZE = 10;
 
 const GIDD_DISPLACEMENTS = gql`
@@ -244,41 +234,6 @@ query GiddDisplacements(
             iso3
             totalInternalDisplacement
             totalNewDisplacement
-            year
-        }
-        totalCount
-        page
-        pageSize
-    }
-}
-`;
-
-const GIDD_EVENTS = gql`
-query GiddEvents(
-    $page: Int,
-    $ordering: String,
-    $pageSize: Int,
-    $releaseEnvironment: String!,
-){
-    giddDisasters(
-        ordering: $ordering,
-        pageSize: $pageSize,
-        page: $page,
-        releaseEnvironment: $releaseEnvironment,
-    ){
-        results {
-            id
-            countryName
-            endDate
-            eventId
-            eventName
-            hazardCategoryName
-            hazardSubCategoryName
-            hazardSubTypeName
-            hazardTypeName
-            iso3
-            newDisplacement
-            startDate
             year
         }
         totalCount
@@ -385,10 +340,7 @@ function Gidd() {
     const overallDataSortState = useSortState({ name: 'countryName', direction: 'asc' });
     const { sorting } = overallDataSortState;
 
-    const eventDataSortState = useSortState({ name: 'countryName', direction: 'asc' });
-    const { sorting: eventSorting } = eventDataSortState;
     const [activePage, setActivePage] = useState<number>(1);
-    const [eventsActivePage, setEventsActivePage] = useState<number>(1);
 
     const isDisasterDataShown = displacementCause === 'disaster' || isNotDefined(displacementCause);
     const isConflictDataShown = displacementCause === 'conflict' || isNotDefined(displacementCause);
@@ -820,16 +772,6 @@ function Gidd() {
         activePage,
     ]);
 
-    const giddEventsVariables = useMemo(() => ({
-        ordering: `${eventSorting?.direction === 'asc' ? '' : '-'}${eventSorting?.name}`,
-        page: eventsActivePage,
-        pageSize: EVENTS_TABLE_PAGE_SIZE,
-        releaseEnvironment: DATA_RELEASE,
-    }), [
-        eventSorting,
-        eventsActivePage,
-    ]);
-
     const {
         previousData: previousDisplacementsResponse,
         data: displacementsResponse = previousDisplacementsResponse,
@@ -840,24 +782,6 @@ function Gidd() {
         GIDD_DISPLACEMENTS,
         {
             variables: giddDisplacementsVariables,
-            context: {
-                clientName: 'helix',
-            },
-        },
-    );
-
-    const {
-        previousData: previousEventsResponse,
-        data: eventsResponse = previousEventsResponse,
-    } = useQuery<
-        GiddEventsQuery,
-        GiddEventsQueryVariables
-    >(
-        GIDD_EVENTS,
-        {
-            variables: giddEventsVariables,
-            // FIXME: Skip is not working
-            // skip: displacementCause !== 'disaster',
             context: {
                 clientName: 'helix',
             },
@@ -942,76 +866,6 @@ function Gidd() {
             isConflictDataShown,
             isDisasterDataShown,
         ],
-    );
-
-    const eventColumns = useMemo(
-        () => {
-            const eventTitle: TableColumn<
-                EventData, string, EventTitleProps, TableHeaderCellProps
-            > = {
-                id: 'eventName',
-                title: 'Event Name',
-                headerCellRenderer: TableHeaderCell,
-                headerCellRendererParams: {
-                    sortable: true,
-                },
-                cellRenderer: EventTitle,
-                cellRendererParams: (_, data) => ({
-                    title: data.eventName,
-                    label: data.eventName,
-                    eventId: data.eventId ?? undefined,
-                }),
-                columnWidth: 320,
-            };
-
-            return ([
-                createTextColumn<EventData, string>(
-                    'countryName',
-                    'Country / Territory',
-                    (item) => item.countryName,
-                    { sortable: true },
-                ),
-                createNumberColumn<EventData, string>(
-                    'year',
-                    'Year',
-                    (item) => Number(item.year),
-                    {
-                        sortable: true,
-                        separator: '',
-                        columnClassName: styles.year,
-                    },
-                ),
-                eventTitle,
-                createDateColumn<EventData, string>(
-                    'startDate',
-                    'Date of event (start)',
-                    (item) => item.startDate,
-                    {
-                        sortable: true,
-                        columnClassName: styles.date,
-                    },
-                ),
-                createNumberColumn<EventData, string>(
-                    'newDisplacement',
-                    'Disaster Internal Displacements',
-                    (item) => roundAndRemoveZero(item.newDisplacement ?? undefined),
-                    { sortable: true },
-                ),
-                createTextColumn<EventData, string>(
-                    'hazardCategoryName',
-                    'Hazard Category',
-                    (item) => item.hazardCategoryName,
-                    { sortable: true },
-                ),
-                createTextColumn<EventData, string>(
-                    'hazardTypeName',
-                    'Hazard Type',
-                    (item) => item.hazardTypeName,
-                    { sortable: true },
-                ),
-            ]);
-        },
-        [],
     );
 
     const sortedHazards = useMemo(() => (
@@ -1444,28 +1298,7 @@ function Gidd() {
                     </SortContext.Provider>
                 </div>
                 {displacementCause === 'disaster' && (
-                    <div className={styles.tableContainer}>
-                        <Header
-                            heading="Events Table"
-                            headingDescription={lorem}
-                        />
-                        <SortContext.Provider value={eventDataSortState}>
-                            <Pager
-                                className={styles.pager}
-                                activePage={eventsActivePage}
-                                itemsCount={eventsResponse?.giddDisasters?.totalCount ?? 0}
-                                maxItemsPerPage={EVENTS_TABLE_PAGE_SIZE}
-                                onActivePageChange={setEventsActivePage}
-                                itemsPerPageControlHidden
-                            />
-                            <Table
-                                className={styles.table}
-                                data={eventsResponse?.giddDisasters?.results}
-                                keySelector={eventKeySelector}
-                                columns={eventColumns}
-                            />
-                        </SortContext.Provider>
-                    </div>
+                    <EventsTable />
                 )}
             </div>
         </div>
