@@ -1,7 +1,10 @@
 import React, { useCallback, useMemo } from 'react';
 // import { Router } from 'react-router-dom';
 import { init, ErrorBoundary } from '@sentry/react';
-import { ApolloClient, ApolloProvider } from '@apollo/client';
+import {
+    ApolloClient,
+    ApolloProvider,
+} from '@apollo/client';
 import ReactGA from 'react-ga';
 import { listToMap, unique } from '@togglecorp/fujs';
 
@@ -9,16 +12,6 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import '@togglecorp/toggle-ui/build/index.css';
 
 import { setMapboxToken } from '@togglecorp/re-map';
-
-import Home from '#views/Home';
-import CountryProfile from '#views/CountryProfile';
-import Gidd from '#views/Gidd';
-import GoodPractice from '#views/GoodPractice';
-import GoodPractices from '#views/GoodPractices';
-import IduMap from '#views/IduMap';
-import ConflictWidget from '#views/ConflictWidget';
-import DisasterWidget from '#views/DisasterWidget';
-import IduWidget from '#views/IduWidget';
 
 import AlertContainer from '#components/AlertContainer';
 import AlertContext, { AlertOptions } from '#components/AlertContext';
@@ -32,6 +25,7 @@ import { trackingId, gaConfig } from '#base/configs/googleAnalytics';
 import { mapboxToken } from '#base/configs/mapbox';
 import useLocalStorage from '#hooks/useLocalStorage';
 
+import Page from './Page';
 import styles from './styles.css';
 
 setMapboxToken(mapboxToken);
@@ -81,6 +75,7 @@ const currentPage = (window as Win).page || query.page;
 
 const currentCountry = (window as Win).iso3
     || query.iso3;
+
 const currentCountryName = (window as Win).countryName
     || query.countryName;
 
@@ -163,104 +158,6 @@ function Base() {
         [alerts, addAlert, updateAlertContent, removeAlert],
     );
 
-    const page = useMemo(
-        () => {
-            if (currentPage === 'country-profile' && currentCountry) {
-                if (!currentCountry) {
-                    return (
-                        <div>
-                            Query parameter iso3 is missing.
-                        </div>
-                    );
-                }
-                return (
-                    <CountryProfile
-                        className={styles.view}
-                        iso3={currentCountry}
-                        countryName={currentCountryName}
-                    />
-                );
-            }
-            if (currentPage === 'good-practices') {
-                return (
-                    <GoodPractices
-                        className={styles.view}
-                    />
-                );
-            }
-            if (currentPage === 'gidd') {
-                return (
-                    <Gidd />
-                );
-            }
-            if (currentPage === 'good-practice' && currentId) {
-                if (!currentId) {
-                    return (
-                        <div>
-                            Query parameter id is missing.
-                        </div>
-                    );
-                }
-                return (
-                    <GoodPractice
-                        className={styles.view}
-                        id={currentId}
-                    />
-                );
-            }
-            if (currentPage === 'idu-map') {
-                return (
-                    <IduMap />
-                );
-            }
-            if (currentPage === 'conflict-widget') {
-                if (!currentCountry) {
-                    return (
-                        <div>
-                            Query parameter iso3 is missing.
-                        </div>
-                    );
-                }
-                return (
-                    <ConflictWidget
-                        iso3={currentCountry}
-                    />
-                );
-            }
-            if (currentPage === 'disaster-widget') {
-                if (!currentCountry) {
-                    return (
-                        <div>
-                            Query parameter iso3 is missing.
-                        </div>
-                    );
-                }
-                return (
-                    <DisasterWidget
-                        iso3={currentCountry}
-                    />
-                );
-            }
-            if (currentPage === 'idu-widget') {
-                if (!currentCountry) {
-                    return (
-                        <div>
-                            Query parameter iso3 is missing.
-                        </div>
-                    );
-                }
-                return (
-                    <IduWidget
-                        iso3={currentCountry}
-                    />
-                );
-            }
-
-            return standaloneMode ? <Home /> : null;
-        },
-        [],
-    );
-
     return (
         <div className={styles.base}>
             <ErrorBoundary
@@ -276,7 +173,14 @@ function Base() {
                     <LanguageContext.Provider value={languageContext}>
                         <AlertContext.Provider value={alertContext}>
                             <AlertContainer className={styles.alertContainer} />
-                            {page}
+                            <Page
+                                iso3={currentCountry}
+                                className={styles.view}
+                                page={currentPage}
+                                standaloneMode={standaloneMode}
+                                countryName={currentCountryName}
+                                id={currentId}
+                            />
                         </AlertContext.Provider>
                     </LanguageContext.Provider>
                 </ApolloProvider>
