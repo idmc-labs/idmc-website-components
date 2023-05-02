@@ -19,6 +19,9 @@ import TextOutput from '#components/TextOutput';
 import NumberBlock from '#components/NumberBlock';
 import Message from '#components/Message';
 import {
+    DATA_RELEASE,
+} from '#utils/common';
+import {
     GiddEventDetailsQuery,
     GiddEventDetailsQueryVariables,
 } from '#generated/types';
@@ -28,9 +31,11 @@ import styles from './styles.css';
 const GIDD_EVENT_DETAILS = gql`
 query GiddEventDetails(
     $eventId: ID!,
+    $releaseEnvironment: String,
 ){
     giddEvent(
         eventId: $eventId,
+        releaseEnvironment: $releaseEnvironment,
     ) {
         affectedCountries {
             countryName
@@ -52,7 +57,7 @@ query GiddEventDetails(
 
 type Country = NonNullable<NonNullable<GiddEventDetailsQuery['giddEvent']>['affectedCountries']>[number];
 
-const hazardKeySelector = (item: Country) => item?.iso3 ?? '';
+const countryKeySelector = (item: Country) => item?.iso3 ?? '';
 
 export type Props = {
     className?: string;
@@ -71,6 +76,7 @@ function EventModal(props: Props) {
 
     const eventVariables = useMemo(() => ({
         eventId,
+        releaseEnvironment: DATA_RELEASE,
     }), [eventId]);
 
     const {
@@ -161,7 +167,7 @@ function EventModal(props: Props) {
                 <List
                     rendererParams={countryRendererParams}
                     renderer={ProgressLine}
-                    keySelector={hazardKeySelector}
+                    keySelector={countryKeySelector}
                     data={sortedCountries}
                 />
             </div>

@@ -32,8 +32,6 @@ import TooltipIcon from '#components/TooltipIcon';
 import FigureAnalysis from '#components/FigureAnalysis';
 
 import {
-    // START_YEAR,
-    END_YEAR,
     replaceWithDrupalEndpoint,
 } from '#utils/common';
 
@@ -131,6 +129,7 @@ interface Props {
     className?: string;
     iso3: string;
     countryName?: string;
+    endYear: number;
 }
 
 function CountryProfile(props: Props) {
@@ -138,10 +137,11 @@ function CountryProfile(props: Props) {
         className,
         iso3: currentCountry,
         countryName,
+        endYear: year,
     } = props;
 
     // Overview section
-    const [overviewActiveYear, setOverviewActiveYear] = useState<string>(String(END_YEAR));
+    const [overviewActiveYear, setOverviewActiveYear] = useState<string>(String(year));
 
     // IDU map section
     const {
@@ -310,10 +310,12 @@ function CountryProfile(props: Props) {
 
     const disasterSection = DisasterWidget({
         iso3: currentCountry,
+        endYear: year,
     });
 
     const conflictSection = ConflictWidget({
         iso3: currentCountry,
+        endYear: year,
     });
 
     const displacementDataSection = (
@@ -343,11 +345,13 @@ function CountryProfile(props: Props) {
                 {conflictSection}
                 <FigureAnalysis
                     iso3={currentCountry}
+                    endYear={year}
                     cause="CONFLICT"
                 />
                 {disasterSection}
                 <FigureAnalysis
                     iso3={currentCountry}
+                    endYear={year}
                     cause="DISASTER"
                 />
             </div>

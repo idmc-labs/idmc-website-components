@@ -32,7 +32,6 @@ import TooltipIcon from '#components/TooltipIcon';
 import {
     formatNumber,
     START_YEAR,
-    END_YEAR,
     suffixDrupalEndpoint,
     suffixHelixRestEndpoint,
     DATA_RELEASE,
@@ -80,12 +79,13 @@ const CONFLICT_DATA = gql`
 
 interface ConflictProps {
     iso3: string;
+    endYear: number;
 }
 
 function ConflictWidget(props: ConflictProps) {
-    const { iso3 } = props;
+    const { iso3, endYear: year } = props;
 
-    const [conflictTimeRangeActual, setConflictTimeRange] = useState([START_YEAR, END_YEAR]);
+    const [conflictTimeRangeActual, setConflictTimeRange] = useState([START_YEAR, year]);
     const conflictTimeRange = useDebouncedValue(conflictTimeRangeActual);
 
     const {
@@ -100,7 +100,7 @@ function ConflictWidget(props: ConflictProps) {
             variables: {
                 iso3,
                 startYear: START_YEAR,
-                endYear: END_YEAR,
+                endYear: year,
                 releaseEnvironment: DATA_RELEASE,
             },
             context: {
@@ -155,7 +155,7 @@ function ConflictWidget(props: ConflictProps) {
                         hideValues
                         min={START_YEAR}
                         labelDescription={`${conflictTimeRangeActual[0]} - ${conflictTimeRangeActual[1]}`}
-                        max={END_YEAR}
+                        max={year}
                         step={1}
                         minDistance={0}
                         value={conflictTimeRangeActual}

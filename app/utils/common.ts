@@ -146,7 +146,6 @@ export function getGiddLink() {
 export const monthList = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export const START_YEAR = 2008;
-export const END_YEAR = 2021;
 
 export function sumAndRemoveZero(args: (number | undefined)[]) {
     const newArgs = args.filter(isDefined);

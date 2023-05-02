@@ -68,11 +68,13 @@ function Page(props: Props) {
         },
     );
 
-    if (loading || data?.giddYear?.year) {
+    const giddYear = data?.giddYear?.year;
+
+    if (loading || !giddYear) {
         return null;
     }
 
-    if (page === 'country-profile' && currentCountry) {
+    if (page === 'country-profile') {
         if (!currentCountry) {
             return (
                 <div>
@@ -85,7 +87,7 @@ function Page(props: Props) {
                 className={className}
                 iso3={currentCountry}
                 countryName={currentCountryName}
-                endYear={data.giddYear.year}
+                endYear={giddYear}
             />
         );
     }
@@ -99,11 +101,11 @@ function Page(props: Props) {
     if (page === 'gidd') {
         return (
             <Gidd
-                endYear={data.giddYear.year}
+                endYear={giddYear}
             />
         );
     }
-    if (page === 'good-practice' && currentId) {
+    if (page === 'good-practice') {
         if (!currentId) {
             return (
                 <div>
@@ -115,15 +117,12 @@ function Page(props: Props) {
             <GoodPractice
                 className={className}
                 id={currentId}
-                endYear={data.giddYear.year}
             />
         );
     }
     if (page === 'idu-map') {
         return (
-            <IduMap
-                endYear={data.giddYear.year}
-            />
+            <IduMap />
         );
     }
     if (page === 'conflict-widget') {
@@ -137,7 +136,7 @@ function Page(props: Props) {
         return (
             <ConflictWidget
                 iso3={currentCountry}
-                endYear={data.giddYear.year}
+                endYear={giddYear}
             />
         );
     }
@@ -152,7 +151,7 @@ function Page(props: Props) {
         return (
             <DisasterWidget
                 iso3={currentCountry}
-                endYear={data.giddYear.year}
+                endYear={giddYear}
             />
         );
     }
@@ -166,107 +165,6 @@ function Page(props: Props) {
         }
         return (
             <IduWidget
-                iso3={currentCountry}
-                endYear={data.giddYear.year}
-            />
-        );
-    }
-
-    return standaloneMode ? <Home /> : null;
-    if (page === 'country-profile' && currentCountry) {
-        if (!currentCountry) {
-            return (
-                <div>
-                    Query parameter iso3 is missing.
-                </div>
-            );
-        }
-        return (
-            <CountryProfile
-                className={className}
-                iso3={currentCountry}
-                countryName={currentCountryName}
-                endYear={data.giddYear.year}
-            />
-        );
-    }
-    if (page === 'good-practices') {
-        return (
-            <GoodPractices
-                className={className}
-                endYear={data.giddYear.year}
-            />
-        );
-    }
-    if (page === 'gidd') {
-        return (
-            <Gidd />
-        );
-    }
-    if (page === 'good-practice' && currentId) {
-        if (!currentId) {
-            return (
-                <div>
-                    Query parameter id is missing.
-                </div>
-            );
-        }
-        return (
-            <GoodPractice
-                className={className}
-                id={currentId}
-                endYear={data.giddYear.year}
-            />
-        );
-    }
-    if (page === 'idu-map') {
-        return (
-            <IduMap
-                endYear={data.giddYear.year}
-            />
-        );
-    }
-    if (page === 'conflict-widget') {
-        if (!currentCountry) {
-            return (
-                <div>
-                    Query parameter iso3 is missing.
-                </div>
-            );
-        }
-        return (
-            <ConflictWidget
-                iso3={currentCountry}
-                endYear={data.giddYear.year}
-            />
-        );
-    }
-    if (page === 'disaster-widget') {
-        if (!currentCountry) {
-            return (
-                <div>
-                    Query parameter iso3 is missing.
-                </div>
-            );
-        }
-        return (
-            <DisasterWidget
-                iso3={currentCountry}
-                endYear={data.giddYear.year}
-            />
-        );
-    }
-    if (page === 'idu-widget') {
-        if (!currentCountry) {
-            return (
-                <div>
-                    Query parameter iso3 is missing.
-                </div>
-            );
-        }
-        return (
-            <IduWidget
-                endYear={data.giddYear.year}
                 iso3={currentCountry}
             />
         );

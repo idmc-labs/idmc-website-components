@@ -24,7 +24,6 @@ import {
     formatNumber,
     START_YEAR,
     sumAndRemoveZero,
-    END_YEAR,
     DATA_RELEASE,
 } from '#utils/common';
 import {
@@ -315,8 +314,14 @@ const displacementCategoryOptions: CategoryOption[] = [
     },
 ];
 
-function Gidd() {
-    const [timeRangeActual, setDisasterTimeRange] = useState([START_YEAR, END_YEAR]);
+interface Props {
+    endYear: number;
+}
+
+function Gidd(props: Props) {
+    const { endYear } = props;
+
+    const [timeRangeActual, setDisasterTimeRange] = useState([START_YEAR, endYear]);
     const [displacementCause, setDisplacementCause] = useState<Cause | undefined>();
     const [causeChartType, setCauseChartType] = useState<ChartType>('compare');
     const [displacementCategory, setDisplacementCategory] = useState<Category | undefined>();
@@ -868,13 +873,17 @@ function Gidd() {
         ],
     );
 
-    const sortedHazards = useMemo(() => (
-        disasterStats?.displacementsByHazardType?.sort(
+    const sortedHazards = useMemo(
+        () => ([...(disasterStats?.displacementsByHazardType ?? [])].sort(
             (foo, bar) => compareNumber(foo.newDisplacements, bar.newDisplacements, -1),
-        )), [disasterStats?.displacementsByHazardType]);
+        )),
+        [disasterStats?.displacementsByHazardType],
+    );
+
+    const maxDisplacementValue = sortedHazards[0]?.newDisplacements ?? undefined;
 
     const hazardRendererParams = useCallback((_: string, hazard: HazardData) => ({
-        total: sortedHazards?.[0]?.newDisplacements ?? undefined,
+        total: maxDisplacementValue,
         value: hazard.newDisplacements ?? undefined,
         hazardType: hazard.label,
         icon: (
@@ -884,7 +893,7 @@ function Gidd() {
             />
         ),
         title: hazard.label,
-    }), [sortedHazards]);
+    }), [maxDisplacementValue]);
 
     const stockTotal = sumAndRemoveZero([
         conflictStats?.totalDisplacements,
@@ -916,6 +925,7 @@ function Gidd() {
                                 <Button
                                     name={undefined}
                                     variant="primary"
+                                    disabled
                                 >
                                     Download Dataset
                                 </Button>
@@ -1015,7 +1025,7 @@ function Gidd() {
                                                 className={_cs(styles.sliderInput, styles.input)}
                                                 hideValues
                                                 min={START_YEAR}
-                                                max={END_YEAR}
+                                                max={endYear}
                                                 step={1}
                                                 minDistance={0}
                                                 value={timeRangeActual}
