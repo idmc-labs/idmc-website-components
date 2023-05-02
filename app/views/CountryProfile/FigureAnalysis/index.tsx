@@ -95,14 +95,14 @@ function ItemTable(props: ItemTableProps) {
 interface Props {
     className?: string;
     data: FigureAnalysisItem[] | undefined | null;
-    year: number;
+    endYear: number;
 }
 
 function FigureAnalysis(props: Props) {
     const {
         className,
         data,
-        year,
+        endYear,
     } = props;
 
     const [
@@ -114,7 +114,7 @@ function FigureAnalysis(props: Props) {
     const [
         figureAnalysisActiveYear,
         setFigureAnalysisActiveYear,
-    ] = useState<string>(String(year));
+    ] = useState<string>(String(endYear));
 
     const figureAnalysisByYear = useMemo(() => {
         if (!data) {

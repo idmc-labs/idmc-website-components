@@ -88,7 +88,8 @@ function FigureAnalysis(props: Props) {
     ]);
 
     const {
-        data: pfaResponse,
+        previousData,
+        data: pfaResponse = previousData,
         loading,
     } = useQuery<GiddCountryPfaQuery, GiddCountryPfaQueryVariables>(
         GIDD_COUNTRY_PFA,

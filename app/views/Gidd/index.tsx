@@ -342,7 +342,7 @@ function Gidd(props: Props) {
         hazardSubTypes,
         setHazardSubTypes,
     ] = useInputState<string[]>([]);
-    const overallDataSortState = useSortState({ name: 'countryName', direction: 'asc' });
+    const overallDataSortState = useSortState({ name: 'year', direction: 'dsc' });
     const { sorting } = overallDataSortState;
 
     const [activePage, setActivePage] = useState<number>(1);
@@ -819,7 +819,7 @@ function Gidd(props: Props) {
                 },
             ),
             isConflictDataShown ? createNumberColumn<DisplacementData, string>(
-                'conflictNewDisplacements',
+                'conflictNewDisplacement',
                 'Conflict Internal Displacement',
                 (item) => item.conflictNewDisplacement,
                 {
