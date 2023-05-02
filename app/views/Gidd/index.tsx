@@ -30,6 +30,7 @@ import {
     sumAndRemoveZero,
     END_YEAR,
     roundAndRemoveZero,
+    DATA_RELEASE,
 } from '#utils/common';
 import {
     gql,
@@ -797,39 +798,43 @@ query GiddStatistics(
     $countriesIso3: [String!],
     $endYear: Float,
     $startYear: Float,
+    $releaseEnvironment: String!,
 ){
     giddConflictStatistics(
         countriesIso3: $countriesIso3,
         endYear: $endYear,
         startYear: $startYear,
+        releaseEnvironment: $releaseEnvironment,
     ) {
-        idpsTimeseries {
+        totalDisplacementTimeseriesByYear {
             total
             year
         }
-        newDisplacementTimeseries {
+        newDisplacementTimeseriesByYear {
             total
             year
         }
         newDisplacements
-        totalIdps
+        totalDisplacements
+        totalCountries
     }
     giddDisasterStatistics(
         countriesIso3: $countriesIso3,
         endYear: $endYear,
         startYear: $startYear,
+        releaseEnvironment: $releaseEnvironment,
     ){
-        timeseries {
-            country {
-                countryName
-                id
-                iso3
-            }
+        totalDisplacementTimeseriesByYear {
+            total
+            year
+        }
+        newDisplacementTimeseriesByYear {
             total
             year
         }
         newDisplacements
-        totalEvents
+        totalDisplacements
+        totalCountries
     }
 }
 `;
@@ -876,6 +881,10 @@ query GiddEvents(
 
 function idSelector(d: { id: string }) {
     return d.id;
+}
+
+function countryKeySelector(d: { iso3: string }) {
+    return d.iso3;
 }
 
 function nameSelector(d: { idmcShortName: string }) {
@@ -987,6 +996,7 @@ function Gidd() {
         countriesIso3: countries,
         startYear: timeRange[0],
         endYear: timeRange[1],
+        releaseEnvironment: DATA_RELEASE,
     }), [
         timeRange,
         countries,
@@ -1027,7 +1037,7 @@ function Gidd() {
             return [
                 timeRangeArray.map((year) => ({
                     year,
-                    total: add([disasterDataByYear[year], conflictDataByYear[year]]),
+                    total: sumAndRemoveZero([disasterDataByYear[year], conflictDataByYear[year]]),
                 })),
                 [
                     {
@@ -1149,7 +1159,7 @@ function Gidd() {
                         ?? conflictDataByCountries[year]?.countryName),
                     iso3: (disasterDataByCountries[year]?.iso3
                         ?? conflictDataByCountries[year]?.iso3),
-                    [`total-${disasterDataByCountries[year]?.iso3 ?? conflictDataByCountries[year]?.iso3}`]: add([
+                    [`total-${disasterDataByCountries[year]?.iso3 ?? conflictDataByCountries[year]?.iso3}`]: sumAndRemoveZero([
                         disasterDataByCountries[year]?.total,
                         conflictDataByCountries[year]?.total,
                     ]),
@@ -1195,7 +1205,7 @@ function Gidd() {
             return [
                 timeRangeArray.map((year) => ({
                     year,
-                    total: add([disasterDataByYear[year], conflictDataByYear[year]]),
+                    total: sumAndRemoveZero([disasterDataByYear[year], conflictDataByYear[year]]),
                 })),
                 [
                     {
@@ -1328,7 +1338,7 @@ function Gidd() {
             const timeseries = timeRangeByCountry.map((year) => ({
                 year: (disasterDataByCountries[year]?.year
                     ?? conflictDataByCountries[year]?.year),
-                [`total-${disasterDataByCountries[year]?.iso3 ?? conflictDataByCountries[year]?.iso3}`]: add([
+                [`total-${disasterDataByCountries[year]?.iso3 ?? conflictDataByCountries[year]?.iso3}`]: sumAndRemoveZero([
                     disasterDataByCountries[year]?.total,
                     conflictDataByCountries[year]?.total,
                 ]),
@@ -1374,6 +1384,7 @@ function Gidd() {
     const giddEventsVariables = useMemo(() => ({
         ordering: `${eventSorting?.direction === 'asc' ? '' : '-'}${eventSorting?.name}`,
         page: (eventsActivePage - 1) * EVENTS_TABLE_PAGE_SIZE,
+        releaseEnvironment: DATA_RELEASE,
     }), [
         eventSorting,
         eventsActivePage,
@@ -1625,7 +1636,7 @@ function Gidd() {
                                                 className={styles.selectInput}
                                                 value={countries}
                                                 options={countriesOptions}
-                                                keySelector={idSelector}
+                                                keySelector={countryKeySelector}
                                                 labelSelector={nameSelector}
                                                 onChange={setCountries}
                                                 inputSectionClassName={styles.inputSection}

@@ -35,6 +35,7 @@ import {
     END_YEAR,
     suffixDrupalEndpoint,
     suffixHelixRestEndpoint,
+    DATA_RELEASE,
 } from '#utils/common';
 import {
     ConflictDataQuery,
@@ -100,6 +101,7 @@ function ConflictWidget(props: ConflictProps) {
                 iso3,
                 startYear: START_YEAR,
                 endYear: END_YEAR,
+                releaseEnvironment: DATA_RELEASE,
             },
             context: {
                 clientName: 'helix',
@@ -120,6 +122,7 @@ function ConflictWidget(props: ConflictProps) {
                 countryIso3: iso3,
                 startYear: conflictTimeRange[0],
                 endYear: conflictTimeRange[1],
+                releaseEnvironment: DATA_RELEASE,
             },
             context: {
                 clientName: 'helix',
@@ -129,7 +132,7 @@ function ConflictWidget(props: ConflictProps) {
 
     if ((
         (statsData?.giddConflictStatistics?.newDisplacements ?? 0)
-        + (statsData?.giddConflictStatistics?.totalIdps ?? 0)
+        + (statsData?.giddConflictStatistics?.totalDisplacements ?? 0)
     ) <= 0) {
         return null;
     }
@@ -204,13 +207,13 @@ function ConflictWidget(props: ConflictProps) {
                         />
                     )}
                     date={`${conflictTimeRangeActual[0]} - ${conflictTimeRangeActual[1]}`}
-                    chart={conflictData?.giddConflictStatistics.newDisplacementTimeseries && (
+                    chart={conflictData?.giddConflictStatistics.newDisplacementTimeseriesByYear && (
                         <ErrorBoundary>
                             <ResponsiveContainer>
                                 <LineChart
                                     data={
                                         conflictData
-                                            ?.giddConflictStatistics.newDisplacementTimeseries
+                                            ?.giddConflictStatistics.newDisplacementTimeseriesByYear
                                     }
                                     margin={chartMargins}
                                 >
@@ -248,7 +251,7 @@ function ConflictWidget(props: ConflictProps) {
                 />
                 <Infographic
                     className={styles.conflictInfographic}
-                    totalValue={conflictData?.giddConflictStatistics.totalIdps || 0}
+                    totalValue={conflictData?.giddConflictStatistics.totalDisplacements || 0}
                     description={(
                         <Header
                             headingClassName={styles.heading}
@@ -262,11 +265,15 @@ function ConflictWidget(props: ConflictProps) {
                         />
                     )}
                     date={`As of end of ${conflictTimeRangeActual[1]}`}
-                    chart={conflictData?.giddConflictStatistics.idpsTimeseries && (
+                    chart={conflictData
+                        ?.giddConflictStatistics.totalDisplacementTimeseriesByYear && (
                         <ErrorBoundary>
                             <ResponsiveContainer>
                                 <BarChart
-                                    data={conflictData.giddConflictStatistics.idpsTimeseries}
+                                    data={(conflictData
+                                        .giddConflictStatistics
+                                        .totalDisplacementTimeseriesByYear
+                                    )}
                                     margin={chartMargins}
                                 >
                                     <CartesianGrid

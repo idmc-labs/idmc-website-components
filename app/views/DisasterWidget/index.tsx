@@ -38,9 +38,9 @@ import {
     END_YEAR,
     suffixDrupalEndpoint,
     suffixHelixRestEndpoint,
+    DATA_RELEASE,
 } from '#utils/common';
 import {
-    GiddCategoryStatisticsType,
     DisasterDataQuery,
     DisasterDataQueryVariables,
     DisasterStatsQuery,
@@ -53,7 +53,7 @@ import styles from './styles.css';
 
 const chartMargins = { top: 16, left: 5, right: 5, bottom: 5 };
 
-const disasterCategoryKeySelector = (d: GiddCategoryStatisticsType) => d.label;
+const disasterCategoryKeySelector = (d: { label: string }) => d.label;
 
 const giddDisplacementDataLink = suffixDrupalEndpoint('/database/displacement-data');
 const categoricalColorScheme = [
@@ -118,6 +118,7 @@ function DisasterWidget(props: DisasterProps) {
                 iso3,
                 startYear: START_YEAR,
                 endYear: END_YEAR,
+                releaseEnvironment: DATA_RELEASE,
             },
             context: {
                 clientName: 'helix',
@@ -138,6 +139,7 @@ function DisasterWidget(props: DisasterProps) {
                 startYear: disasterTimeRange[0],
                 endYear: disasterTimeRange[1],
                 categories: disasterCategories,
+                releaseEnvironment: DATA_RELEASE,
             },
             context: {
                 clientName: 'helix',
@@ -208,7 +210,10 @@ function DisasterWidget(props: DisasterProps) {
                                 placeholder="Disaster Category"
                                 name="disasterCategory"
                                 value={disasterCategories}
-                                options={statsData?.giddDisasterStatistics.categories}
+                                options={(
+                                    statsData?.giddDisasterStatistics.displacementsByHazardType
+                                    ?? undefined
+                                )}
                                 keySelector={disasterCategoryKeySelector}
                                 labelSelector={disasterCategoryKeySelector}
                                 onChange={setDisasterCategories}
@@ -238,11 +243,14 @@ function DisasterWidget(props: DisasterProps) {
                         </div>
                     )}
                     date={`${disasterTimeRangeActual[0]} - ${disasterTimeRangeActual[1]}`}
-                    chart={disasterData?.giddDisasterStatistics.timeseries && (
+                    chart={disasterData?.giddDisasterStatistics.newDisplacementTimeseriesByYear && (
                         <ErrorBoundary>
                             <ResponsiveContainer>
                                 <LineChart
-                                    data={disasterData.giddDisasterStatistics.timeseries}
+                                    data={(
+                                        disasterData
+                                            .giddDisasterStatistics.newDisplacementTimeseriesByYear
+                                    )}
                                     margin={chartMargins}
                                 >
                                     <CartesianGrid
@@ -295,7 +303,7 @@ function DisasterWidget(props: DisasterProps) {
                         />
                     )}
                     date={`${disasterTimeRangeActual[0]} - ${disasterTimeRangeActual[1]}`}
-                    chart={disasterData?.giddDisasterStatistics.categories && (
+                    chart={disasterData?.giddDisasterStatistics.displacementsByHazardType && (
                         <ErrorBoundary>
                             <ResponsiveContainer>
                                 <PieChart>
@@ -304,13 +312,17 @@ function DisasterWidget(props: DisasterProps) {
                                     />
                                     <Legend />
                                     <Pie
-                                        data={disasterData.giddDisasterStatistics.categories}
+                                        data={(
+                                            disasterData
+                                                .giddDisasterStatistics
+                                                .displacementsByHazardType
+                                        )}
                                         dataKey="total"
                                         nameKey="label"
                                     >
                                         {disasterData
                                             ?.giddDisasterStatistics
-                                            ?.categories
+                                            ?.displacementsByHazardType
                                             ?.map(({ label }, index) => (
                                                 <Cell
                                                     key={label}
