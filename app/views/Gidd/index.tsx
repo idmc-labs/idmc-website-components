@@ -173,7 +173,7 @@ query GiddStatistics(
         totalCountries
     }
     giddDisasterStatistics(
-        categories: $hazardSubTypes,
+        hazardSubTypes: $hazardSubTypes,
         countriesIso3: $countriesIso3,
         endYear: $endYear,
         startYear: $startYear,
@@ -269,11 +269,8 @@ query GiddEvents(
         results {
             id
             countryName
-            createdAt
             endDate
-            event {
-                id
-            }
+            eventId
             eventName
             hazardCategoryName
             hazardSubCategoryName
@@ -485,20 +482,20 @@ function Gidd() {
             return [
                 timeseries,
                 [
-                    isDisasterDataShown && {
+                    isDisasterDataShown ? {
                         dataKey: 'disaster',
                         key: 'disaster',
                         stackId: 'total',
                         fill: 'var(--color-disaster)',
                         name: 'disaster',
-                    },
-                    isConflictDataShown && {
+                    } : undefined,
+                    isConflictDataShown ? {
                         dataKey: 'conflict',
                         key: 'conflict',
                         stackId: 'total',
                         fill: 'var(--color-conflict)',
                         name: 'conflict',
-                    },
+                    } : undefined,
                 ].filter(isDefined),
             ];
         }
@@ -664,20 +661,20 @@ function Gidd() {
                     disaster: disasterDataByYear?.[year],
                 })),
                 [
-                    isDisasterDataShown && {
+                    isDisasterDataShown ? {
                         dataKey: 'disaster',
                         key: 'disaster',
                         stackId: 'total',
                         fill: 'var(--color-disaster)',
                         name: 'disaster',
-                    },
-                    isConflictDataShown && {
+                    } : undefined,
+                    isConflictDataShown ? {
                         dataKey: 'conflict',
                         key: 'conflict',
                         stackId: 'total',
                         fill: 'var(--color-conflict)',
                         name: 'conflict',
-                    },
+                    } : undefined,
                 ].filter(isDefined),
             ];
         }
@@ -721,20 +718,20 @@ function Gidd() {
             return [
                 timeseries,
                 countries.flatMap((country, index) => ([
-                    isDisasterDataShown && {
+                    isDisasterDataShown ? {
                         dataKey: `disaster-${country}`,
                         key: `disaster-${country}`,
                         stackId: `total-${country}`,
                         fill: disasterColorsRange[index],
                         name: `${country} Disaster`,
-                    },
-                    isConflictDataShown && {
+                    } : undefined,
+                    isConflictDataShown ? {
                         dataKey: `conflict-${country}`,
                         key: `conflict-${country}`,
                         stackId: `total-${country}`,
                         fill: conflictColorsRange[index],
                         name: `${country} Conflict`,
-                    },
+                    } : undefined,
                 ])).filter(isDefined),
             ];
         }
@@ -962,7 +959,7 @@ function Gidd() {
                 cellRendererParams: (_, data) => ({
                     title: data.eventName,
                     label: data.eventName,
-                    eventId: data.id,
+                    eventId: data.eventId ?? undefined,
                 }),
                 columnWidth: 320,
             };
