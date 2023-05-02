@@ -79,7 +79,7 @@ const STATS = gql`
 
 const DISASTER_DATA = gql`
     query DisasterData($countryIso3: String!, $startYear: Float, $endYear: Float, $categories: [String!], $releaseEnvironment: String!) {
-        giddDisasterStatistics(countriesIso3: [$countryIso3], endYear: $endYear, startYear: $startYear, categories: $categories, releaseEnvironment: $releaseEnvironment) {
+        giddDisasterStatistics(countriesIso3: [$countryIso3], endYear: $endYear, startYear: $startYear, hazardSubTypes: $categories, releaseEnvironment: $releaseEnvironment) {
             newDisplacements
             totalEvents
             newDisplacementTimeseriesByYear {
