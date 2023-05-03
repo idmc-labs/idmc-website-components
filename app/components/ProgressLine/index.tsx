@@ -43,9 +43,14 @@ function ProgressLine(props: Props) {
                 className,
             )}
         >
-            <div className={_cs(styles.title, titleClassName)}>
-                <Numeral value={value} />
-                {title}
+            <div className={_cs(styles.titleContainer, titleClassName)}>
+                <div className={styles.title}>
+                    {title}
+                </div>
+                <Numeral
+                    value={value}
+                    abbreviate
+                />
             </div>
             <div className={styles.bottom}>
                 {icon && (

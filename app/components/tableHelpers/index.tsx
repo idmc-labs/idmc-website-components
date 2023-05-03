@@ -26,7 +26,6 @@ export function createExternalLinkColumn<D, K>(
         link: string | undefined | null,
     } | undefined | null,
     options?: {
-        cellAsHeader?: boolean,
         sortable?: boolean,
         defaultSortDirection?: TableSortDirection,
         filterType?: TableFilterType,
@@ -48,6 +47,7 @@ export function createExternalLinkColumn<D, K>(
             filterType: options?.filterType,
             orderable: options?.orderable,
             hideable: options?.hideable,
+            titleClassName: styles.title,
         },
         cellRenderer: ExternalLink,
         cellRendererParams: (_: K, datum: D): ExternalLinkProps => {
@@ -71,13 +71,13 @@ export function createTextColumn<D, K>(
     title: string,
     accessor: (item: D) => string | undefined | null,
     options?: {
-        cellAsHeader?: boolean,
         sortable?: boolean,
         defaultSortDirection?: TableSortDirection,
         filterType?: TableFilterType,
         orderable?: boolean;
         hideable?: boolean;
         columnClassName?: string;
+        columnWidth?: number;
     },
 ) {
     const item: TableColumn<D, K, TextProps, TableHeaderCellProps> & {
@@ -93,8 +93,11 @@ export function createTextColumn<D, K>(
             filterType: options?.filterType,
             orderable: options?.orderable,
             hideable: options?.hideable,
+            titleClassName: styles.title,
         },
         cellRenderer: Text,
+        columnWidth: options?.columnWidth,
+        headerCellRendererClassName: styles.header,
         cellRendererParams: (_: K, datum: D): TextProps => ({
             value: accessor(datum),
         }),
@@ -109,7 +112,6 @@ export function createNumberColumn<D, K>(
     title: string,
     accessor: (item: D) => number | undefined | null,
     options?: {
-        cellAsHeader?: boolean,
         sortable?: boolean,
         defaultSortDirection?: TableSortDirection,
         filterType?: TableFilterType,
@@ -119,6 +121,7 @@ export function createNumberColumn<D, K>(
         separator?: string;
         placeholder?: string;
         columnClassName?: string;
+        columnWidth?: number;
     },
 ) {
     const item: TableColumn<D, K, NumeralProps, TableHeaderCellProps> & {
@@ -134,10 +137,13 @@ export function createNumberColumn<D, K>(
             filterType: options?.filterType,
             orderable: options?.orderable,
             hideable: options?.hideable,
+            titleClassName: styles.title,
         },
         cellRenderer: Numeral,
+        columnWidth: options?.columnWidth,
         headerCellRendererClassName: _cs(
             styles.header,
+            styles.numberHeader,
             options?.variant && styles[options.variant],
         ),
         cellRendererClassName: styles.number,

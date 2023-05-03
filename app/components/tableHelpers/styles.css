@@ -1,7 +1,7 @@
 .header {
     * {
         padding: 0 var(--tui-spacing-ultra-small)!important;
-        text-align: right!important;
+        font-size: var(--tui-font-size-medium)!important;
     }
 
     &.conflict {
@@ -10,6 +10,18 @@
 
     &.disaster {
         color: var(--color-disaster);
+    }
+
+    &.number-header {
+        * {
+            text-align: right!important;
+        }
+
+        .title {
+            > div {
+                flex-grow: 1;
+            }
+        }
     }
 }
 

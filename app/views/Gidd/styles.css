@@ -161,14 +161,6 @@
             --tui-spacing-extra-large: 24px;
 
             width: 100%;
-
-            .year {
-                width: 96px;
-            }
-
-            .date {
-                width: 120px;
-            }
         }
     }
 
