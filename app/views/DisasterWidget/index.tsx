@@ -93,12 +93,12 @@ const DISASTER_DATA = gql`
     }
 `;
 
-interface DisasterProps {
+export interface Props {
     iso3: string;
     endYear: number;
 }
 
-function DisasterWidget(props: DisasterProps) {
+function DisasterWidget(props: Props) {
     const { iso3, endYear: year } = props;
     // Disaster section
     const [disasterCategories, setDisasterCategories] = useState<string[]>([]);

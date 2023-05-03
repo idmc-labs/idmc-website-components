@@ -5,13 +5,13 @@ import {
 } from '@apollo/client';
 
 import Home from '#views/Home';
-import CountryProfile from '#views/CountryProfile';
-import Gidd from '#views/Gidd';
+import CountryProfile, { Props as CountryProfileProps } from '#views/CountryProfile';
+import Gidd, { Props as GiddProps } from '#views/Gidd';
 import GoodPractice from '#views/GoodPractice';
 import GoodPractices from '#views/GoodPractices';
 import IduMap from '#views/IduMap';
-import ConflictWidget from '#views/ConflictWidget';
-import DisasterWidget from '#views/DisasterWidget';
+import ConflictWidget, { Props as ConflictWidgetProps } from '#views/ConflictWidget';
+import DisasterWidget, { Props as DisasterWidgetProps } from '#views/DisasterWidget';
 import IduWidget from '#views/IduWidget';
 import {
     DATA_RELEASE,
@@ -22,16 +22,93 @@ import {
 } from '#generated/types';
 
 const GIDD_YEAR = gql`
-query GiddYear(
-    $releaseEnvironment: String!,
-){
-    giddYear(
-        releaseEnvironment: $releaseEnvironment,
-    ) {
-        year
+    query GiddYear(
+        $releaseEnvironment: String!,
+    ){
+        giddYear(
+            releaseEnvironment: $releaseEnvironment,
+        ) {
+            year
+        }
     }
-}
 `;
+
+function useYear() {
+    const variables = useMemo(() => ({
+        releaseEnvironment: DATA_RELEASE,
+    }), []);
+
+    const {
+        previousData,
+        data = previousData,
+        loading,
+    } = useQuery<GiddYearQuery, GiddYearQueryVariables>(
+        GIDD_YEAR,
+        {
+            variables,
+            context: {
+                clientName: 'helix',
+            },
+        },
+    );
+
+    const giddYear = data?.giddYear?.year;
+
+    return { loading, year: giddYear };
+}
+
+function CountryProfileWithYear(props: Omit<CountryProfileProps, 'endYear'>) {
+    const { loading, year } = useYear();
+    if (loading || !year) {
+        return null;
+    }
+    return (
+        <CountryProfile
+            {...props}
+            endYear={year}
+        />
+    );
+}
+
+function GiddWithYear(props: Omit<GiddProps, 'endYear'>) {
+    const { loading, year } = useYear();
+    if (loading || !year) {
+        return null;
+    }
+    return (
+        <Gidd
+            {...props}
+            endYear={year}
+        />
+    );
+}
+
+function ConflictWidgetWithYear(props: Omit<ConflictWidgetProps, 'endYear'>) {
+    const { loading, year } = useYear();
+    if (loading || !year) {
+        return null;
+    }
+    return (
+        <ConflictWidget
+            {...props}
+            endYear={year}
+        />
+    );
+}
+
+function DisasterWidgetWithYear(props: Omit<DisasterWidgetProps, 'endYear'>) {
+    const { loading, year } = useYear();
+    if (loading || !year) {
+        return null;
+    }
+    return (
+        <DisasterWidget
+            {...props}
+            endYear={year}
+        />
+    );
+}
+
 interface Props {
     className?: string;
     page?: string;
@@ -51,29 +128,6 @@ function Page(props: Props) {
         iso3: currentCountry,
     } = props;
 
-    const variables = useMemo(() => ({
-        releaseEnvironment: DATA_RELEASE,
-    }), []);
-
-    const {
-        data,
-        loading,
-    } = useQuery<GiddYearQuery, GiddYearQueryVariables>(
-        GIDD_YEAR,
-        {
-            variables,
-            context: {
-                clientName: 'helix',
-            },
-        },
-    );
-
-    const giddYear = data?.giddYear?.year;
-
-    if (loading || !giddYear) {
-        return null;
-    }
-
     if (page === 'country-profile') {
         if (!currentCountry) {
             return (
@@ -83,11 +137,10 @@ function Page(props: Props) {
             );
         }
         return (
-            <CountryProfile
+            <CountryProfileWithYear
                 className={className}
                 iso3={currentCountry}
                 countryName={currentCountryName}
-                endYear={giddYear}
             />
         );
     }
@@ -100,9 +153,7 @@ function Page(props: Props) {
     }
     if (page === 'gidd') {
         return (
-            <Gidd
-                endYear={giddYear}
-            />
+            <GiddWithYear />
         );
     }
     if (page === 'good-practice') {
@@ -134,9 +185,8 @@ function Page(props: Props) {
             );
         }
         return (
-            <ConflictWidget
+            <ConflictWidgetWithYear
                 iso3={currentCountry}
-                endYear={giddYear}
             />
         );
     }
@@ -149,9 +199,8 @@ function Page(props: Props) {
             );
         }
         return (
-            <DisasterWidget
+            <DisasterWidgetWithYear
                 iso3={currentCountry}
-                endYear={giddYear}
             />
         );
     }

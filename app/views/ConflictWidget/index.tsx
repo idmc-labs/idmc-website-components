@@ -77,12 +77,12 @@ const CONFLICT_DATA = gql`
     }
 `;
 
-interface ConflictProps {
+export interface Props {
     iso3: string;
     endYear: number;
 }
 
-function ConflictWidget(props: ConflictProps) {
+function ConflictWidget(props: Props) {
     const { iso3, endYear: year } = props;
 
     const [conflictTimeRangeActual, setConflictTimeRange] = useState([START_YEAR, year]);

@@ -205,7 +205,8 @@ function AddGoodPractice(props: Props) {
     const error = getErrorObject(riskyError);
 
     const {
-        data: optionsResponse,
+        previousData,
+        data: optionsResponse = previousData,
         loading: optionsLoading,
     } = useQuery<OptionsForGoodPracticesQuery, OptionsForGoodPracticesQueryVariables>(
         OPTIONS_FOR_GOOD_PRACTICES,
