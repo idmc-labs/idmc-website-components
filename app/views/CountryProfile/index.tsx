@@ -125,7 +125,7 @@ const RELATED_MATERIALS = gql`
     }
 `;
 
-interface Props {
+export interface Props {
     className?: string;
     iso3: string;
     countryName?: string;

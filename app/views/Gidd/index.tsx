@@ -101,146 +101,147 @@ const hazardKeySelector = (item: HazardData) => item.id;
 const displacementItemKeySelector = (item: { id: string }) => item.id;
 
 const GIDD_FILTER_OPTIONS = gql`
-query GiddFilterOptions {
-    giddPublicCountries {
-        id
-        idmcShortName
-        iso3
-        region {
+    query GiddFilterOptions {
+        giddPublicCountries {
+            id
+            idmcShortName
+            iso3
+            region {
+                id
+                name
+            }
+        }
+        giddHazardSubTypes {
             id
             name
         }
     }
-    giddHazardSubTypes {
-        id
-        name
-    }
-}
 `;
 
 const GIDD_STATISTICS = gql`
-query GiddStatistics(
-    $countriesIso3: [String!],
-    $hazardSubTypes: [String!],
-    $endYear: Float,
-    $startYear: Float,
-    $releaseEnvironment: String!,
-){
-    giddConflictStatistics(
-        countriesIso3: $countriesIso3,
-        endYear: $endYear,
-        startYear: $startYear,
-        releaseEnvironment: $releaseEnvironment,
-    ) {
-        totalDisplacementTimeseriesByYear {
-            total
-            year
-        }
-        newDisplacementTimeseriesByYear {
-            total
-            year
-        }
-        totalDisplacementTimeseriesByCountry {
-            country {
-                countryName
-                id
-                iso3
-            }
-            total
-            year
-        }
-        newDisplacementTimeseriesByCountry {
-            country {
-                countryName
-                id
-                iso3
-            }
-            total
-            year
-        }
-        newDisplacements
-        totalDisplacements
-        totalCountries
-    }
-    giddDisasterStatistics(
-        hazardSubTypes: $hazardSubTypes,
-        countriesIso3: $countriesIso3,
-        endYear: $endYear,
-        startYear: $startYear,
-        releaseEnvironment: $releaseEnvironment,
+    query GiddStatistics(
+        $countriesIso3: [String!],
+        $hazardSubTypes: [String!],
+        $endYear: Float,
+        $startYear: Float,
+        $releaseEnvironment: String!,
+        $combineCountries: Boolean!,
     ){
-        displacementsByHazardType {
-            id
-            label
+        giddConflictStatistics(
+            countriesIso3: $countriesIso3,
+            endYear: $endYear,
+            startYear: $startYear,
+            releaseEnvironment: $releaseEnvironment,
+        ) {
+            totalDisplacementTimeseriesByYear @include(if: $combineCountries) {
+                total
+                year
+            }
+            newDisplacementTimeseriesByYear @include(if: $combineCountries) {
+                total
+                year
+            }
+            totalDisplacementTimeseriesByCountry @skip(if: $combineCountries) {
+                country {
+                    countryName
+                    id
+                    iso3
+                }
+                total
+                year
+            }
+            newDisplacementTimeseriesByCountry @skip(if: $combineCountries) {
+                country {
+                    countryName
+                    id
+                    iso3
+                }
+                total
+                year
+            }
             newDisplacements
+            totalDisplacements
+            totalCountries
         }
-        totalDisplacementTimeseriesByYear {
-            total
-            year
-        }
-        newDisplacementTimeseriesByYear {
-            total
-            year
-        }
-        totalDisplacementTimeseriesByCountry {
-            country {
-                countryName
+        giddDisasterStatistics(
+            hazardSubTypes: $hazardSubTypes,
+            countriesIso3: $countriesIso3,
+            endYear: $endYear,
+            startYear: $startYear,
+            releaseEnvironment: $releaseEnvironment,
+        ){
+            displacementsByHazardType {
                 id
-                iso3
+                label
+                newDisplacements
             }
-            total
-            year
-        }
-        newDisplacementTimeseriesByCountry {
-            country {
-                countryName
-                id
-                iso3
+            totalDisplacementTimeseriesByYear @include(if: $combineCountries) {
+                total
+                year
             }
-            total
-            year
+            newDisplacementTimeseriesByYear @include(if: $combineCountries) {
+                total
+                year
+            }
+            totalDisplacementTimeseriesByCountry @skip(if: $combineCountries) {
+                country {
+                    countryName
+                    id
+                    iso3
+                }
+                total
+                year
+            }
+            newDisplacementTimeseriesByCountry @skip(if: $combineCountries) {
+                country {
+                    countryName
+                    id
+                    iso3
+                }
+                total
+                year
+            }
+            newDisplacements
+            totalDisplacements
+            totalCountries
+            totalEvents
         }
-        newDisplacements
-        totalDisplacements
-        totalCountries
-        totalEvents
     }
-}
+`;
+
+const GIDD_DISPLACEMENTS = gql`
+    query GiddDisplacements(
+        $page: Int,
+        $ordering: String,
+        $pageSize: Int,
+        $releaseEnvironment: String!,
+    ){
+        giddDisplacements(
+            ordering: $ordering,
+            pageSize: $pageSize,
+            page: $page,
+            releaseEnvironment: $releaseEnvironment,
+        ){
+            results {
+                conflictNewDisplacement
+                conflictTotalDisplacement
+                countryName
+                disasterNewDisplacement
+                disasterTotalDisplacement
+                id
+                iso3
+                totalInternalDisplacement
+                totalNewDisplacement
+                year
+            }
+            totalCount
+            page
+            pageSize
+        }
+    }
 `;
 
 const DISPLACEMENTS_TABLE_PAGE_SIZE = 10;
-
-const GIDD_DISPLACEMENTS = gql`
-query GiddDisplacements(
-    $page: Int,
-    $ordering: String,
-    $pageSize: Int,
-    $releaseEnvironment: String!,
-){
-    giddDisplacements(
-        ordering: $ordering,
-        pageSize: $pageSize,
-        page: $page,
-        releaseEnvironment: $releaseEnvironment,
-    ){
-        results {
-            conflictNewDisplacement
-            conflictTotalDisplacement
-            countryName
-            disasterNewDisplacement
-            disasterTotalDisplacement
-            id
-            iso3
-            totalInternalDisplacement
-            totalNewDisplacement
-            year
-        }
-        totalCount
-        page
-        pageSize
-    }
-}
-`;
 
 function idSelector(d: { id: string }) {
     return d.id;
@@ -314,7 +315,7 @@ const displacementCategoryOptions: CategoryOption[] = [
     },
 ];
 
-interface Props {
+export interface Props {
     endYear: number;
 }
 
@@ -350,7 +351,10 @@ function Gidd(props: Props) {
     const isDisasterDataShown = displacementCause === 'disaster' || isNotDefined(displacementCause);
     const isConflictDataShown = displacementCause === 'conflict' || isNotDefined(displacementCause);
 
-    const { data: countryFilterResponse } = useQuery<
+    const {
+        previousData: previousCountryFilterData,
+        data: countryFilterResponse = previousCountryFilterData,
+    } = useQuery<
         GiddFilterOptionsQuery,
         GiddFilterOptionsQueryVariables
     >(
@@ -362,20 +366,25 @@ function Gidd(props: Props) {
         },
     );
 
+    const showCombinedCountries = countriesChartType === 'combine' || countries.length > 3 || countries.length === 0;
+
     const statisticsVariables = useMemo(() => ({
         countriesIso3: countries,
+        combineCountries: showCombinedCountries,
         hazardSubTypes,
         startYear: timeRange[0],
         endYear: timeRange[1],
         releaseEnvironment: DATA_RELEASE,
     }), [
         hazardSubTypes,
+        showCombinedCountries,
         timeRange,
         countries,
     ]);
 
     const {
-        data: statisticsResponse,
+        previousData: previousStatisticsData,
+        data: statisticsResponse = previousStatisticsData,
     } = useQuery<GiddStatisticsQuery, GiddStatisticsQueryVariables>(
         GIDD_STATISTICS,
         {
@@ -393,8 +402,6 @@ function Gidd(props: Props) {
         stockTimeseries,
         lineConfigs,
     ] = useMemo(() => {
-        const showCombinedCountries = countriesChartType === 'combine' || countries.length > 3 || countries.length === 0;
-
         if (causeChartType === 'combine' && showCombinedCountries) {
             const disasterDataByYear = listToMap(
                 disasterStats?.totalDisplacementTimeseriesByYear,
@@ -548,7 +555,6 @@ function Gidd(props: Props) {
                 })),
             ];
         }
-
         return [
             [],
             [],
@@ -559,17 +565,15 @@ function Gidd(props: Props) {
         conflictStats,
         disasterStats,
         countries,
-        countriesChartType,
         timeRangeArray,
         causeChartType,
+        showCombinedCountries,
     ]);
 
     const [
         flowTimeseries,
         barConfigs,
     ] = useMemo(() => {
-        const showCombinedCountries = countriesChartType === 'combine' || countries.length > 3 || countries.length === 0;
-
         if (causeChartType === 'combine' && showCombinedCountries) {
             const disasterDataByYear = listToMap(
                 disasterStats?.newDisplacementTimeseriesByYear,
@@ -751,7 +755,6 @@ function Gidd(props: Props) {
                 })),
             ];
         }
-
         return [
             [],
             [],
@@ -762,9 +765,9 @@ function Gidd(props: Props) {
         conflictStats,
         disasterStats,
         countries,
-        countriesChartType,
         timeRangeArray,
         causeChartType,
+        showCombinedCountries,
     ]);
 
     const giddDisplacementsVariables = useMemo(() => ({

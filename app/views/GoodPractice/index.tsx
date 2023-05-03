@@ -160,7 +160,8 @@ function GoodPractice(props: Props) {
     }, [incrementPageCount, id]);
 
     const {
-        data,
+        previousData: previousGoodPracticeData,
+        data = previousGoodPracticeData,
     } = useQuery<GoodPracticeDetailsQuery, GoodPracticeDetailsQueryVariables>(
         GOOD_PRACTICE,
         {
@@ -182,7 +183,8 @@ function GoodPractice(props: Props) {
             ?? []).join(', ') || '-';
 
     const {
-        data: relatedData,
+        previousData: previousRelatedData,
+        data: relatedData = previousRelatedData,
     } = useQuery<RelatedGoodPracticeListQuery, RelatedGoodPracticeListQueryVariables>(
         RELATED_GOOD_PRACTICE,
         {
@@ -191,7 +193,10 @@ function GoodPractice(props: Props) {
         },
     );
 
-    const { data: staticPageResponse } = useQuery<
+    const {
+        previousData: previousStatusPageData,
+        data: staticPageResponse = previousStatusPageData,
+    } = useQuery<
         GoodPracticeListingStaticPageQuery,
         GoodPracticeListingStaticPageQueryVariables
     >(STATIC_PAGES);

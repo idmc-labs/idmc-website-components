@@ -80,7 +80,8 @@ function EventModal(props: Props) {
     }), [eventId]);
 
     const {
-        data,
+        previousData,
+        data = previousData,
         loading,
     } = useQuery<GiddEventDetailsQuery, GiddEventDetailsQueryVariables>(
         GIDD_EVENT_DETAILS,
