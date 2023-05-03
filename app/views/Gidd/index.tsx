@@ -25,6 +25,7 @@ import {
     START_YEAR,
     sumAndRemoveZero,
     DATA_RELEASE,
+    roundAndRemoveZero,
 } from '#utils/common';
 import {
     gql,
@@ -427,7 +428,7 @@ function Gidd(props: Props) {
                         key: 'total',
                         stackId: 'total',
                         fill: 'var(--tui-color-brand)',
-                        name: 'total',
+                        name: 'Total',
                     },
                 ],
             ];
@@ -451,14 +452,14 @@ function Gidd(props: Props) {
                         key: 'disaster',
                         stackId: 'total',
                         fill: 'var(--color-disaster)',
-                        name: 'disaster',
+                        name: 'Disaster',
                     } : undefined,
                     isConflictDataShown ? {
                         dataKey: 'conflict',
                         key: 'conflict',
                         stackId: 'total',
                         fill: 'var(--color-conflict)',
-                        name: 'conflict',
+                        name: 'Conflict',
                     } : undefined,
                 ].filter(isDefined),
             ];
@@ -599,7 +600,7 @@ function Gidd(props: Props) {
                         key: 'total',
                         stackId: 'total',
                         fill: 'var(--tui-color-brand)',
-                        name: 'total',
+                        name: 'Total',
                     },
                 ],
             ];
@@ -627,14 +628,14 @@ function Gidd(props: Props) {
                         key: 'disaster',
                         stackId: 'total',
                         fill: 'var(--color-disaster)',
-                        name: 'disaster',
+                        name: 'Disaster',
                     } : undefined,
                     isConflictDataShown ? {
                         dataKey: 'conflict',
                         key: 'conflict',
                         stackId: 'total',
                         fill: 'var(--color-conflict)',
-                        name: 'conflict',
+                        name: 'Conflict',
                     } : undefined,
                 ].filter(isDefined),
             ];
@@ -819,12 +820,13 @@ function Gidd(props: Props) {
                 {
                     sortable: true,
                     separator: '',
+                    columnWidth: 64,
                 },
             ),
             isConflictDataShown ? createNumberColumn<DisplacementData, string>(
                 'conflictNewDisplacement',
-                'Conflict Internal Displacement',
-                (item) => item.conflictNewDisplacement,
+                'Conflict New Displacement',
+                (item) => roundAndRemoveZero(item.conflictNewDisplacement ?? undefined),
                 {
                     sortable: true,
                     variant: 'conflict',
@@ -832,8 +834,8 @@ function Gidd(props: Props) {
             ) : undefined,
             isConflictDataShown ? createNumberColumn<DisplacementData, string>(
                 'conflictTotalDisplacement',
-                'Conflict Total number of IDPs',
-                (item) => item.conflictTotalDisplacement,
+                'Conflict IDPs',
+                (item) => roundAndRemoveZero(item.conflictTotalDisplacement ?? undefined),
                 {
                     sortable: true,
                     variant: 'conflict',
@@ -841,8 +843,8 @@ function Gidd(props: Props) {
             ) : undefined,
             isDisasterDataShown ? createNumberColumn<DisplacementData, string>(
                 'disasterNewDisplacement',
-                'Disaster Internal Displacement',
-                (item) => item.disasterNewDisplacement,
+                'Disaster New Displacement',
+                (item) => roundAndRemoveZero(item.disasterNewDisplacement ?? undefined),
                 {
                     sortable: true,
                     variant: 'disaster',
@@ -850,8 +852,8 @@ function Gidd(props: Props) {
             ) : undefined,
             isDisasterDataShown ? createNumberColumn<DisplacementData, string>(
                 'disasterTotalDisplacement',
-                'Disaster Total number of IDPs',
-                (item) => item.disasterTotalDisplacement,
+                'Disaster IDPs',
+                (item) => roundAndRemoveZero(item.disasterTotalDisplacement ?? undefined),
                 {
                     sortable: true,
                     variant: 'disaster',
@@ -859,14 +861,14 @@ function Gidd(props: Props) {
             ) : undefined,
             createNumberColumn<DisplacementData, string>(
                 'totalNewDisplacement',
-                'Total Internal Displacement',
-                (item) => item.totalNewDisplacement,
+                'Total New Displacement',
+                (item) => roundAndRemoveZero(item.totalNewDisplacement ?? undefined),
                 { sortable: true },
             ),
             createNumberColumn<DisplacementData, string>(
                 'totalInternalDisplacement',
-                'Total number of IDPS',
-                (item) => item.totalInternalDisplacement,
+                'Total IDPs',
+                (item) => roundAndRemoveZero(item.totalInternalDisplacement ?? undefined),
                 { sortable: true },
             ),
         ]).filter(isDefined),
@@ -887,7 +889,7 @@ function Gidd(props: Props) {
 
     const hazardRendererParams = useCallback((_: string, hazard: HazardData) => ({
         total: maxDisplacementValue,
-        value: hazard.newDisplacements ?? undefined,
+        value: roundAndRemoveZero(hazard.newDisplacements ?? undefined),
         hazardType: hazard.label,
         icon: (
             <DisplacementIcon
