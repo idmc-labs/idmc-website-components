@@ -4,6 +4,11 @@
     --tui-font-family-sans-serif: 'proxima-nova', sans-serif;
     --tui-font-family-heading: 'freight-big-pro', sans-serif;
 
+    --tui-color-background-scrollbar: transparent;
+    --tui-color-foreground-scrollbar: #cccccc;
+    --tui-width-scrollbar: 0.5rem;
+    --tui-radius-scrollbar-border: 0.25rem;
+
     --tui-font-weight-light: 300;
     --tui-font-weight-medium: 400;
     --tui-font-weight-bold: 700;
@@ -15,6 +20,7 @@
     --tui-font-size-large: 1.26rem;
     --tui-font-size-extra-large: 1.6rem;
     --tui-font-size-super-large: 2.2rem;
+    --tui-font-size-massive-large: 2.8rem;
     --tui-font-size-mega-large: 3rem;
     --tui-font-size-ultra-large: 4rem;
 

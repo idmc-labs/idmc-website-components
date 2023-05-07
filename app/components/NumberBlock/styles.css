@@ -37,7 +37,7 @@
 
     &.large {
         .value {
-            font-size: var(--tui-font-size-ultra-large);
+            font-size: var(--tui-font-size-massive-large);
         }
     }
 
