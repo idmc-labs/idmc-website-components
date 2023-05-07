@@ -23,7 +23,6 @@ import {
     useQuery,
 } from '@apollo/client';
 
-import Header from '#components/Header';
 import {
     createTextColumn,
     createNumberColumn,
@@ -199,24 +198,17 @@ function EventsTable(props: Props) {
 
     return (
         <div className={_cs(className, styles.eventsTable)}>
-            <Header
-                heading="Events Table"
-                headingDescription={(
-                    <>
-                        {lorem}
-                        <TextInput
-                            icons={(
-                                <IoSearchOutline />
-                            )}
-                            className={styles.input}
-                            inputSectionClassName={styles.inputSection}
-                            name="eventTitle"
-                            label="Search Events"
-                            value={eventSearchText}
-                            onChange={setEventSearchText}
-                        />
-                    </>
+            {lorem}
+            <TextInput
+                icons={(
+                    <IoSearchOutline />
                 )}
+                className={styles.input}
+                inputSectionClassName={styles.inputSection}
+                name="eventTitle"
+                label="Search Events"
+                value={eventSearchText}
+                onChange={setEventSearchText}
             />
             <SortContext.Provider value={eventDataSortState}>
                 <Pager
@@ -228,7 +220,7 @@ function EventsTable(props: Props) {
                     itemsPerPageControlHidden
                 />
                 <Table
-                    className={styles.table}
+                    containerClassName={styles.table}
                     data={eventsResponse?.giddDisasters?.results}
                     keySelector={eventKeySelector}
                     columns={eventColumns}

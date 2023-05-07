@@ -1,6 +1,7 @@
 import React, { useMemo, useCallback, useState } from 'react';
 import {
     _cs,
+    compareString,
     isNotDefined,
     listToMap,
     listToGroupList,
@@ -13,10 +14,6 @@ import {
     Switch,
     SelectInput,
     MultiSelectInput,
-    Table,
-    Pager,
-    SortContext,
-    useSortState,
     List,
 } from '@togglecorp/toggle-ui';
 import { removeNull } from '@togglecorp/toggle-form';
@@ -50,24 +47,23 @@ import Heading from '#components/Heading';
 import Header from '#components/Header';
 import ProgressLine from '#components/ProgressLine';
 import NumberBlock from '#components/NumberBlock';
+import Tabs from '#components/Tabs';
+import Tab from '#components/Tabs/Tab';
+import TabList from '#components/Tabs/TabList';
+import TabPanel from '#components/Tabs/TabPanel';
 import useInputState from '#hooks/useInputState';
 import GridFilterInputContainer from '#components/GridFilterInputContainer';
 import useDebouncedValue from '#hooks/useDebouncedValue';
 import DisplacementIcon from '#components/DisplacementIcon';
 import {
-    createTextColumn,
-    createNumberColumn,
-} from '#components/tableHelpers';
-import {
     GiddFilterOptionsQuery,
     GiddFilterOptionsQueryVariables,
-    GiddDisplacementsQuery,
-    GiddDisplacementsQueryVariables,
     GiddStatisticsQuery,
     GiddStatisticsQueryVariables,
 } from '#generated/types';
 
 import EventsTable from './EventsTable';
+import DataTable from './DataTable';
 
 import styles from './styles.css';
 
@@ -89,17 +85,16 @@ const disasterColorsRange = [
     'rgb(94, 217, 238)',
 ];
 
-const chartMargins = { top: 16, left: 5, right: 5, bottom: 5 };
+const chartMargins = { top: 16, left: 0, right: 0, bottom: 5 };
 
 const lorem = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.';
 const lorem2 = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.';
+const flowDetails = 'The internal displacements figure refers to the number of forced movements of people within the borders of their country recorded during the year. Figures may include individuals who have been displaced more than once.';
+const stockDetails = 'The total number of IDPs (internally displaced people) is a snapshot of all the people living in internal displacement at the end of the year.';
 
-type DisplacementData = NonNullable<NonNullable<GiddDisplacementsQuery['giddDisplacements']>['results']>[number];
 type HazardData = NonNullable<NonNullable<GiddStatisticsQuery['giddDisasterStatistics']>['displacementsByHazardType']>[number];
 
 const hazardKeySelector = (item: HazardData) => item.id;
-
-const displacementItemKeySelector = (item: { id: string }) => item.id;
 
 const GIDD_FILTER_OPTIONS = gql`
     query GiddFilterOptions {
@@ -210,40 +205,6 @@ const GIDD_STATISTICS = gql`
     }
 `;
 
-const GIDD_DISPLACEMENTS = gql`
-    query GiddDisplacements(
-        $page: Int,
-        $ordering: String,
-        $pageSize: Int,
-        $releaseEnvironment: String!,
-    ){
-        giddDisplacements(
-            ordering: $ordering,
-            pageSize: $pageSize,
-            page: $page,
-            releaseEnvironment: $releaseEnvironment,
-        ){
-            results {
-                conflictNewDisplacement
-                conflictTotalDisplacement
-                countryName
-                disasterNewDisplacement
-                disasterTotalDisplacement
-                id
-                iso3
-                totalInternalDisplacement
-                totalNewDisplacement
-                year
-            }
-            totalCount
-            page
-            pageSize
-        }
-    }
-`;
-
-const DISPLACEMENTS_TABLE_PAGE_SIZE = 10;
-
 function idSelector(d: { id: string }) {
     return d.id;
 }
@@ -279,25 +240,6 @@ const displacementCauseOptions: CauseOption[] = [
     },
 ];
 
-type ChartType = 'combine' | 'compare';
-type ChartTypeOption = {
-    key: ChartType;
-    label: string;
-};
-const chartTypeKeySelector = (option: ChartTypeOption) => option.key;
-const chartTypeLabelSelector = (option: ChartTypeOption) => option.label;
-
-const chartTypeOptions: ChartTypeOption[] = [
-    {
-        key: 'combine',
-        label: 'Combined',
-    },
-    {
-        key: 'compare',
-        label: 'Compared',
-    },
-];
-
 type Category = 'flow' | 'stock';
 type CategoryOption = {
     key: Category;
@@ -325,9 +267,11 @@ function Gidd(props: Props) {
 
     const [timeRangeActual, setDisasterTimeRange] = useState([START_YEAR, endYear]);
     const [displacementCause, setDisplacementCause] = useState<Cause | undefined>();
-    const [causeChartType, setCauseChartType] = useState<ChartType>('compare');
+    const [combineCauseCharts, setCombineCauseCharts] = useState(false);
     const [displacementCategory, setDisplacementCategory] = useState<Category | undefined>();
     const timeRange = useDebouncedValue(timeRangeActual);
+    const [selectedTable, setSelectedTable] = useState<'events' | 'data'>('data');
+
     const timeRangeArray = useMemo(() => (
         Array.from(
             { length: (timeRange[1] - timeRange[0]) + 1 },
@@ -335,19 +279,21 @@ function Gidd(props: Props) {
         )
     ), [timeRange]);
     const [disasterFiltersShown, setDisasterFilterVisibility] = useState(false);
+    const handleAdditionalFiltersChange = useCallback((newVal) => {
+        if (newVal) {
+            setDisplacementCause('disaster');
+        }
+        setDisasterFilterVisibility(newVal);
+    }, []);
     const [
         countries,
         setCountries,
     ] = useInputState<string[]>([]);
-    const [countriesChartType, setCountriesChartType] = useState<ChartType>('compare');
+    const [combineCountriesChart, setCombineCountriesChart] = useState(false);
     const [
         hazardSubTypes,
         setHazardSubTypes,
     ] = useInputState<string[]>([]);
-    const overallDataSortState = useSortState({ name: 'year', direction: 'dsc' });
-    const { sorting } = overallDataSortState;
-
-    const [activePage, setActivePage] = useState<number>(1);
 
     const isDisasterDataShown = displacementCause === 'disaster' || isNotDefined(displacementCause);
     const isConflictDataShown = displacementCause === 'conflict' || isNotDefined(displacementCause);
@@ -367,16 +313,18 @@ function Gidd(props: Props) {
         },
     );
 
-    const showCombinedCountries = countriesChartType === 'combine' || countries.length > 3 || countries.length === 0;
+    const showCombinedCountries = combineCountriesChart
+        || countries.length > 3 || countries.length === 0;
 
     const statisticsVariables = useMemo(() => ({
         countriesIso3: countries,
         combineCountries: showCombinedCountries,
-        hazardSubTypes,
+        hazardSubTypes: displacementCause === 'disaster' ? hazardSubTypes : undefined,
         startYear: timeRange[0],
         endYear: timeRange[1],
         releaseEnvironment: DATA_RELEASE,
     }), [
+        displacementCause,
         hazardSubTypes,
         showCombinedCountries,
         timeRange,
@@ -403,7 +351,7 @@ function Gidd(props: Props) {
         stockTimeseries,
         lineConfigs,
     ] = useMemo(() => {
-        if (causeChartType === 'combine' && showCombinedCountries) {
+        if (combineCauseCharts && showCombinedCountries) {
             const disasterDataByYear = listToMap(
                 disasterStats?.totalDisplacementTimeseriesByYear,
                 (item) => item.year,
@@ -433,7 +381,7 @@ function Gidd(props: Props) {
                 ],
             ];
         }
-        if (causeChartType === 'compare' && showCombinedCountries) {
+        if (!combineCauseCharts && showCombinedCountries) {
             const timeseries = [
                 ...(conflictStats?.totalDisplacementTimeseriesByYear?.map((item) => ({
                     year: item.year,
@@ -464,7 +412,7 @@ function Gidd(props: Props) {
                 ].filter(isDefined),
             ];
         }
-        if (causeChartType === 'compare' && !showCombinedCountries) {
+        if (!combineCauseCharts && !showCombinedCountries) {
             const disasterDataByCountries = Object.values(listToGroupList(
                 disasterStats?.totalDisplacementTimeseriesByCountry ?? [],
                 (item) => item.country.id,
@@ -509,7 +457,7 @@ function Gidd(props: Props) {
                 ])).filter(isDefined),
             ];
         }
-        if (causeChartType === 'combine' && !showCombinedCountries) {
+        if (combineCauseCharts && !showCombinedCountries) {
             const timeRangeByCountry = timeRangeArray.flatMap((year) => (
                 countries.map((country) => `${year}-${country}`)
             ));
@@ -567,7 +515,7 @@ function Gidd(props: Props) {
         disasterStats,
         countries,
         timeRangeArray,
-        causeChartType,
+        combineCauseCharts,
         showCombinedCountries,
     ]);
 
@@ -575,7 +523,7 @@ function Gidd(props: Props) {
         flowTimeseries,
         barConfigs,
     ] = useMemo(() => {
-        if (causeChartType === 'combine' && showCombinedCountries) {
+        if (combineCauseCharts && showCombinedCountries) {
             const disasterDataByYear = listToMap(
                 disasterStats?.newDisplacementTimeseriesByYear,
                 (item) => item.year,
@@ -605,7 +553,7 @@ function Gidd(props: Props) {
                 ],
             ];
         }
-        if (causeChartType === 'compare' && showCombinedCountries) {
+        if (!combineCauseCharts && showCombinedCountries) {
             const disasterDataByYear = listToMap(
                 disasterStats?.newDisplacementTimeseriesByYear,
                 (item) => item.year,
@@ -640,7 +588,7 @@ function Gidd(props: Props) {
                 ].filter(isDefined),
             ];
         }
-        if (causeChartType === 'compare' && !showCombinedCountries) {
+        if (!combineCauseCharts && !showCombinedCountries) {
             const disasterDataByCountries = Object.values(listToGroupList(
                 disasterStats?.totalDisplacementTimeseriesByCountry ?? [],
                 (item) => item.country.id,
@@ -697,7 +645,7 @@ function Gidd(props: Props) {
                 ])).filter(isDefined),
             ];
         }
-        if (causeChartType === 'combine' && !showCombinedCountries) {
+        if (combineCauseCharts && !showCombinedCountries) {
             const timeRangeByCountry = timeRangeArray.flatMap((year) => (
                 countries.map((country) => (`${year}-${country}`))
             ));
@@ -767,116 +715,19 @@ function Gidd(props: Props) {
         disasterStats,
         countries,
         timeRangeArray,
-        causeChartType,
+        combineCauseCharts,
         showCombinedCountries,
     ]);
 
-    const giddDisplacementsVariables = useMemo(() => ({
-        ordering: `${sorting?.direction === 'asc' ? '' : '-'}${sorting?.name}`,
-        page: activePage,
-        pageSize: DISPLACEMENTS_TABLE_PAGE_SIZE,
-        releaseEnvironment: DATA_RELEASE,
-    }), [
-        sorting,
-        activePage,
-    ]);
-
-    const {
-        previousData: previousDisplacementsResponse,
-        data: displacementsResponse = previousDisplacementsResponse,
-    } = useQuery<
-        GiddDisplacementsQuery,
-        GiddDisplacementsQueryVariables
-    >(
-        GIDD_DISPLACEMENTS,
-        {
-            variables: giddDisplacementsVariables,
-            context: {
-                clientName: 'helix',
-            },
-        },
-    );
-
     const countriesOptions = removeNull(
-        countryFilterResponse?.giddPublicCountries,
+        [...(countryFilterResponse?.giddPublicCountries ?? [])]?.sort(
+            (foo, bar) => compareString(foo.idmcShortName, bar.idmcShortName),
+        ),
     )?.filter(isDefined);
 
     const hazardOptions = removeNull(
         countryFilterResponse?.giddHazardSubTypes,
     )?.filter(isDefined);
-
-    const columns = useMemo(
-        () => ([
-            createTextColumn<DisplacementData, string>(
-                'countryName',
-                'Country / Territory',
-                (item) => item.countryName,
-                { sortable: true },
-            ),
-            createNumberColumn<DisplacementData, string>(
-                'year',
-                'Year',
-                (item) => item.year,
-                {
-                    sortable: true,
-                    separator: '',
-                    columnWidth: 64,
-                },
-            ),
-            isConflictDataShown ? createNumberColumn<DisplacementData, string>(
-                'conflictNewDisplacement',
-                'Conflict New Displacement',
-                (item) => roundAndRemoveZero(item.conflictNewDisplacement ?? undefined),
-                {
-                    sortable: true,
-                    variant: 'conflict',
-                },
-            ) : undefined,
-            isConflictDataShown ? createNumberColumn<DisplacementData, string>(
-                'conflictTotalDisplacement',
-                'Conflict IDPs',
-                (item) => roundAndRemoveZero(item.conflictTotalDisplacement ?? undefined),
-                {
-                    sortable: true,
-                    variant: 'conflict',
-                },
-            ) : undefined,
-            isDisasterDataShown ? createNumberColumn<DisplacementData, string>(
-                'disasterNewDisplacement',
-                'Disaster New Displacement',
-                (item) => roundAndRemoveZero(item.disasterNewDisplacement ?? undefined),
-                {
-                    sortable: true,
-                    variant: 'disaster',
-                },
-            ) : undefined,
-            isDisasterDataShown ? createNumberColumn<DisplacementData, string>(
-                'disasterTotalDisplacement',
-                'Disaster IDPs',
-                (item) => roundAndRemoveZero(item.disasterTotalDisplacement ?? undefined),
-                {
-                    sortable: true,
-                    variant: 'disaster',
-                },
-            ) : undefined,
-            createNumberColumn<DisplacementData, string>(
-                'totalNewDisplacement',
-                'Total New Displacement',
-                (item) => roundAndRemoveZero(item.totalNewDisplacement ?? undefined),
-                { sortable: true },
-            ),
-            createNumberColumn<DisplacementData, string>(
-                'totalInternalDisplacement',
-                'Total IDPs',
-                (item) => roundAndRemoveZero(item.totalInternalDisplacement ?? undefined),
-                { sortable: true },
-            ),
-        ]).filter(isDefined),
-        [
-            isConflictDataShown,
-            isDisasterDataShown,
-        ],
-    );
 
     const sortedHazards = useMemo(
         () => ([...(disasterStats?.displacementsByHazardType ?? [])].sort(
@@ -915,6 +766,33 @@ function Gidd(props: Props) {
         disasterStats?.newDisplacements,
     ]);
 
+    const chartTypeSelection = (
+        <div className={styles.chartTypeContainer}>
+            {isNotDefined(displacementCause) && (
+                <Switch
+                    className={styles.switch}
+                    labelClassName={styles.switchLabel}
+                    checkmarkClassName={styles.knob}
+                    name="combineCauseCharts"
+                    value={combineCauseCharts}
+                    onChange={setCombineCauseCharts}
+                    label="Combine by Cause"
+                />
+            )}
+            {countries.length > 1 && countries.length <= 3 && (
+                <Switch
+                    className={styles.switch}
+                    labelClassName={styles.switchLabel}
+                    checkmarkClassName={styles.knob}
+                    name="combineCountriesChart"
+                    value={combineCountriesChart}
+                    onChange={setCombineCountriesChart}
+                    label="Combine by Countries"
+                />
+            )}
+        </div>
+    );
+
     return (
         <div className={styles.bodyContainer}>
             <div className={styles.gidd}>
@@ -923,7 +801,7 @@ function Gidd(props: Props) {
                         IDMC Query Tool
                     </Heading>
                     <div className={styles.filterBodyContainer}>
-                        <div className={_cs(styles.filterSection)}>
+                        <div className={_cs(styles.filterSection, styles.leftSection)}>
                             <p className={styles.headingDescription}>{lorem}</p>
                             <div className={styles.downloadSection}>
                                 <p className={styles.downloadDescription}>{lorem2}</p>
@@ -958,22 +836,6 @@ function Gidd(props: Props) {
                                     <GridFilterInputContainer
                                         label="Regions, Countries, and/or Territories"
                                         labelDescription="*In compared view, up to 3 countries, regions, or territories can be selected"
-                                        secondaryInput={(
-                                            <SelectInput
-                                                name="countriesChartType"
-                                                className={styles.selectInput}
-                                                inputSectionClassName={_cs(
-                                                    styles.inputSection,
-                                                    styles.chartType,
-                                                )}
-                                                keySelector={chartTypeKeySelector}
-                                                labelSelector={chartTypeLabelSelector}
-                                                value={countriesChartType}
-                                                onChange={setCountriesChartType}
-                                                options={chartTypeOptions}
-                                                nonClearable
-                                            />
-                                        )}
                                         input={(
                                             <MultiSelectInput
                                                 name="country"
@@ -992,22 +854,6 @@ function Gidd(props: Props) {
                                     <GridFilterInputContainer
                                         label="Conflict and Violence or Disaster"
                                         helpText="Select Conflict and Violence or Disaster"
-                                        secondaryInput={(
-                                            <SelectInput
-                                                name="causeChartType"
-                                                className={styles.selectInput}
-                                                inputSectionClassName={_cs(
-                                                    styles.inputSection,
-                                                    styles.chartType,
-                                                )}
-                                                keySelector={chartTypeKeySelector}
-                                                labelSelector={chartTypeLabelSelector}
-                                                value={causeChartType}
-                                                onChange={setCauseChartType}
-                                                options={chartTypeOptions}
-                                                nonClearable
-                                            />
-                                        )}
                                         input={(
                                             <SelectInput
                                                 name="cause"
@@ -1022,8 +868,7 @@ function Gidd(props: Props) {
                                         )}
                                     />
                                     <GridFilterInputContainer
-                                        label="Timescale"
-                                        labelDescription={`${timeRangeActual[0]} - ${timeRangeActual[1]}`}
+                                        label={`Timescale ${`${timeRangeActual[0]} - ${timeRangeActual[1]}`}`}
                                         helpText="Select Timescale"
                                         input={(
                                             <SliderInput
@@ -1040,15 +885,13 @@ function Gidd(props: Props) {
                                     />
                                 </div>
                             </div>
-                            <div className={styles.border} />
                             <Switch
                                 className={styles.switch}
                                 labelClassName={styles.switchLabel}
                                 name="additionalFilters"
                                 value={displacementCause === 'disaster' && disasterFiltersShown}
-                                onChange={setDisasterFilterVisibility}
+                                onChange={handleAdditionalFiltersChange}
                                 label="Additional Disaster Filters"
-                                disabled={displacementCause !== 'disaster'}
                             />
                             {disasterFiltersShown && displacementCause === 'disaster' && (
                                 <div className={styles.disasterFilters}>
@@ -1074,100 +917,92 @@ function Gidd(props: Props) {
                 </div>
                 <div className={styles.statsContainer}>
                     {displacementCategory !== 'stock' && (
-                        <div className={styles.statBox}>
-                            <Header
-                                heading="Internal Displacement Data"
-                                headingDescription={lorem}
-                            />
-                            <div className={styles.border} />
-                            {!displacementCause && (
-                                <NumberBlock
-                                    label="Total"
-                                    size="large"
-                                    subLabel={`In ${totalCountries} countries and territories`}
-                                    value={stockTotal}
-                                />
+                        <div
+                            className={_cs(
+                                styles.statBox,
+                                !isConflictDataShown && styles.disasterStatBox,
+                                isDefined(displacementCategory) && styles.onlyOneSelected,
                             )}
-                            <div className={styles.causesBlock}>
-                                {isConflictDataShown && (
+                        >
+                            <div className={styles.topStats}>
+                                <Header
+                                    heading="Internal Displacement Data"
+                                    headingSize="medium"
+                                    headingDescription={flowDetails}
+                                    headingDescriptionClassName={styles.detailsText}
+                                />
+                                {!displacementCause && (
                                     <NumberBlock
-                                        label="Total by Conflict and Violence"
-                                        size={displacementCause ? 'large' : 'medium'}
-                                        variant="conflict"
-                                        subLabel={`In ${conflictStats?.totalCountries} countries and territories`}
-                                        value={conflictStats?.totalDisplacements}
+                                        label="Total"
+                                        size="large"
+                                        subLabel={`In ${totalCountries} countries and territories`}
+                                        value={stockTotal}
                                     />
                                 )}
-                                {isDisasterDataShown && (
-                                    <NumberBlock
-                                        label="Total by Disasters"
-                                        size={displacementCause ? 'large' : 'medium'}
-                                        variant="disaster"
-                                        subLabel={`In ${disasterStats?.totalCountries} countries and territories`}
-                                        value={disasterStats?.totalDisplacements}
-                                    />
-                                )}
-                            </div>
-                            <div className={styles.border} />
-                            <div className={styles.chartContainer}>
-                                <ErrorBoundary>
-                                    <ResponsiveContainer>
-                                        <BarChart
-                                            data={flowTimeseries}
-                                            margin={chartMargins}
-                                        >
-                                            <CartesianGrid
-                                                vertical={false}
-                                                strokeDasharray="3 3"
-                                            />
-                                            <XAxis
-                                                dataKey="year"
-                                                axisLine={false}
-                                                type="number"
-                                                allowDecimals={false}
-                                                domain={timeRange}
-                                            />
-                                            <YAxis
-                                                axisLine={false}
-                                                tickFormatter={formatNumber}
-                                            />
-                                            <Tooltip
-                                                formatter={formatNumber}
-                                            />
-                                            <Legend />
-                                            {barConfigs.map((barConfig) => (
-                                                <Bar
-                                                    dataKey={barConfig.dataKey}
-                                                    stackId={barConfig.stackId}
-                                                    key={randomString()}
-                                                    fill={barConfig.fill}
-                                                    name={barConfig.name}
+                                <div className={styles.causesBlock}>
+                                    {isConflictDataShown && (
+                                        <NumberBlock
+                                            label="Total by Conflict and Violence"
+                                            size={displacementCause ? 'large' : 'medium'}
+                                            variant="conflict"
+                                            subLabel={`In ${conflictStats?.totalCountries} countries and territories`}
+                                            value={conflictStats?.totalDisplacements}
+                                        />
+                                    )}
+                                    {isDisasterDataShown && (
+                                        <NumberBlock
+                                            label="Total by Disasters"
+                                            size={displacementCause ? 'large' : 'medium'}
+                                            variant="disaster"
+                                            subLabel={`In ${disasterStats?.totalCountries} countries and territories`}
+                                            value={disasterStats?.totalDisplacements}
+                                        />
+                                    )}
+                                </div>
+                                <div className={styles.chartContainer}>
+                                    <ErrorBoundary>
+                                        <ResponsiveContainer>
+                                            <BarChart
+                                                data={flowTimeseries}
+                                                margin={chartMargins}
+                                            >
+                                                <CartesianGrid
+                                                    vertical={false}
+                                                    strokeDasharray="3 3"
                                                 />
-                                            ))}
-                                            {/*
-                                            {isDisasterDataShown && (
-                                                <Bar
-                                                    dataKey="disaster"
-                                                    stackId="bar"
-                                                    fill="var(--color-disaster)"
-                                                    name="Disaster Internal Displacements"
+                                                <XAxis
+                                                    dataKey="year"
+                                                    axisLine={false}
+                                                    type="number"
+                                                    allowDecimals={false}
+                                                    domain={timeRange}
                                                 />
-                                            )}
-                                            {isConflictDataShown && (
-                                                <Bar
-                                                    dataKey="conflict"
-                                                    stackId="bar"
-                                                    fill="var(--color-conflict)"
-                                                    name="Conflict Internal Displacements"
+                                                <YAxis
+                                                    axisLine={false}
+                                                    tickFormatter={formatNumber}
                                                 />
-                                            )}
-                                            */}
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                </ErrorBoundary>
+                                                <Tooltip
+                                                    formatter={formatNumber}
+                                                />
+                                                <Legend />
+                                                {barConfigs.map((barConfig) => (
+                                                    <Bar
+                                                        maxBarSize={6}
+                                                        dataKey={barConfig.dataKey}
+                                                        stackId={barConfig.stackId}
+                                                        key={randomString()}
+                                                        fill={barConfig.fill}
+                                                        name={barConfig.name}
+                                                    />
+                                                ))}
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </ErrorBoundary>
+                                </div>
+                                {chartTypeSelection}
                             </div>
                             {displacementCause === 'disaster' && (
-                                <>
+                                <div className={styles.disasterStats}>
                                     <NumberBlock
                                         label=""
                                         size="medium"
@@ -1175,24 +1010,29 @@ function Gidd(props: Props) {
                                         subLabel="Disaster Events Reported"
                                         value={disasterStats?.totalEvents}
                                     />
-                                    <div className={styles.border} />
                                     <List
                                         rendererParams={hazardRendererParams}
                                         renderer={ProgressLine}
                                         keySelector={hazardKeySelector}
                                         data={sortedHazards}
                                     />
-                                </>
+                                </div>
                             )}
                         </div>
                     )}
                     {displacementCategory !== 'flow' && (
-                        <div className={styles.statBox}>
+                        <div
+                            className={_cs(
+                                styles.statBox,
+                                isDefined(displacementCategory) && styles.onlyOneSelected,
+                            )}
+                        >
                             <Header
                                 heading="Total Number of IDPs Data"
-                                headingDescription={lorem}
+                                headingSize="medium"
+                                headingDescription={stockDetails}
+                                headingDescriptionClassName={styles.detailsText}
                             />
-                            <div className={styles.border} />
                             {!displacementCause && (
                                 <NumberBlock
                                     label="Total"
@@ -1221,7 +1061,6 @@ function Gidd(props: Props) {
                                     />
                                 )}
                             </div>
-                            <div className={styles.border} />
                             <div className={styles.chartContainer}>
                                 <ErrorBoundary>
                                     <ResponsiveContainer>
@@ -1287,34 +1126,47 @@ function Gidd(props: Props) {
                                     </ResponsiveContainer>
                                 </ErrorBoundary>
                             </div>
+                            {chartTypeSelection}
                         </div>
                     )}
                 </div>
                 <div className={styles.tableContainer}>
-                    <Header
-                        heading="Data Table"
-                        headingDescription={lorem}
-                    />
-                    <SortContext.Provider value={overallDataSortState}>
-                        <Pager
-                            className={styles.pager}
-                            activePage={activePage}
-                            itemsCount={displacementsResponse?.giddDisplacements?.totalCount ?? 0}
-                            maxItemsPerPage={DISPLACEMENTS_TABLE_PAGE_SIZE}
-                            onActivePageChange={setActivePage}
-                            itemsPerPageControlHidden
+                    <Tabs
+                        value={displacementCause === 'disaster' ? selectedTable : 'data'}
+                        onChange={setSelectedTable}
+                        variant="primary"
+                    >
+                        <Header
+                            headingSize="small"
+                            heading={(
+                                <TabList position="left">
+                                    <Tab name="data">
+                                        Data Table
+                                    </Tab>
+                                    {displacementCause === 'disaster' && (
+                                        <Tab name="events">
+                                            Events Table
+                                        </Tab>
+                                    )}
+                                </TabList>
+                            )}
                         />
-                        <Table
-                            className={styles.table}
-                            keySelector={displacementItemKeySelector}
-                            data={displacementsResponse?.giddDisplacements?.results}
-                            columns={columns}
-                        />
-                    </SortContext.Provider>
+                        <TabPanel name="data">
+                            <DataTable
+                                isConflictDataShown={isConflictDataShown}
+                                isDisasterDataShown={isDisasterDataShown}
+                                countriesIso3={countries}
+                                startYear={timeRange[0]}
+                                endYear={timeRange[1]}
+                            />
+                        </TabPanel>
+                        {displacementCause === 'disaster' && (
+                            <TabPanel name="events">
+                                <EventsTable />
+                            </TabPanel>
+                        )}
+                    </Tabs>
                 </div>
-                {displacementCause === 'disaster' && (
-                    <EventsTable />
-                )}
             </div>
         </div>
     );

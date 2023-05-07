@@ -1,4 +1,4 @@
-.events-table {
+.data-table {
     display: flex;
     flex-direction: column;
     gap: var(--tui-spacing-medium);
@@ -18,25 +18,6 @@
         justify-content: flex-end;
     }
 
-    .input {
-        --tui-spacing-super-small: 1px;
-        --tui-spacing-extra-small: 3px;
-        --tui-spacing-small: 6px;
-        --tui-spacing-small-medium: 8px;
-        --tui-spacing-medium: 10px;
-        --tui-spacing-large-medium: 13px;
-        --tui-spacing-large: 16px;
-        --tui-spacing-extra-large: 24px;
-
-        width: 20rem;
-
-        .input-section {
-            border-radius: 0.25rem;
-            background-color: var(--tui-filter-background-color);
-            height: 2.5rem;
-        }
-    }
-
     .table {
         --tui-spacing-super-small: 1px;
         --tui-spacing-extra-small: 3px;
@@ -50,13 +31,5 @@
         width: 100%;
         min-height: 60vh;
         overflow-x: auto;
-
-        .year {
-            width: 96px;
-        }
-
-        .date {
-            width: 120px;
-        }
     }
 }
