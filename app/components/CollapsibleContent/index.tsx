@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     IoChevronForward,
     IoChevronDown,
@@ -7,7 +7,7 @@ import { _cs } from '@togglecorp/fujs';
 
 import styles from './styles.css';
 
-interface Props<N> {
+type Props<N> = {
     className?: string;
     headerContainerClassName?: string;
     childrenClassName?: string;
@@ -15,9 +15,14 @@ interface Props<N> {
     header?: React.ReactNode;
     children?: React.ReactNode;
     isExpanded?: boolean;
-    name: N,
+    name: N;
+} & ({
     onExpansionChange: (isExpanded: boolean, name: N) => void;
-}
+    uncontrolled?: false;
+} | {
+    onExpansionChange?: (isExpanded: boolean, name: N) => void;
+    uncontrolled: true;
+});
 
 function CollapsibleContent<N>(props: Props<N>) {
     const {
@@ -27,16 +32,30 @@ function CollapsibleContent<N>(props: Props<N>) {
         headerContainerClassName,
         childrenClassName,
         headerClassName,
-        isExpanded,
+        isExpanded: isExpandedFromProps,
         name,
         onExpansionChange,
+        uncontrolled,
     } = props;
+
+    const [
+        isExpanded,
+        setExpansion,
+    ] = useState(isExpandedFromProps);
 
     const handleHeaderClick = React.useCallback(() => {
         if (onExpansionChange) {
             onExpansionChange(!isExpanded, name);
         }
-    }, [onExpansionChange, name, isExpanded]);
+        if (uncontrolled) {
+            setExpansion(!isExpanded);
+        }
+    }, [
+        uncontrolled,
+        onExpansionChange,
+        name,
+        isExpanded,
+    ]);
 
     return (
         <div className={_cs(styles.collapsibleContent, className)}>
@@ -47,13 +66,13 @@ function CollapsibleContent<N>(props: Props<N>) {
                 <div className={_cs(styles.header, headerClassName)}>
                     {header}
                 </div>
-                {isExpanded ? (
+                {(uncontrolled ? isExpanded : isExpandedFromProps) ? (
                     <IoChevronDown className={styles.icon} />
                 ) : (
                     <IoChevronForward className={styles.icon} />
                 )}
             </div>
-            {isExpanded && (
+            {(uncontrolled ? isExpanded : isExpandedFromProps) && (
                 <div className={_cs(styles.children, childrenClassName)}>
                     {children}
                 </div>
