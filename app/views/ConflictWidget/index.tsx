@@ -22,7 +22,6 @@ import {
 
 import ButtonLikeLink from '#components/ButtonLikeLink';
 import Header from '#components/Header';
-import RoundedBar from '#components/RoundedBar';
 import ErrorBoundary from '#components/ErrorBoundary';
 import Infographic from '#components/Infographic';
 import SliderInput from '#components/SliderInput';
@@ -210,11 +209,12 @@ function ConflictWidget(props: Props) {
                     chart={conflictData?.giddConflictStatistics.newDisplacementTimeseriesByYear && (
                         <ErrorBoundary>
                             <ResponsiveContainer>
-                                <LineChart
-                                    data={
+                                <BarChart
+                                    data={(
                                         conflictData
-                                            ?.giddConflictStatistics.newDisplacementTimeseriesByYear
-                                    }
+                                            ?.giddConflictStatistics
+                                            .newDisplacementTimeseriesByYear
+                                    )}
                                     margin={chartMargins}
                                 >
                                     <CartesianGrid
@@ -226,6 +226,7 @@ function ConflictWidget(props: Props) {
                                         axisLine={false}
                                         type="number"
                                         allowDecimals={false}
+                                        padding={{ left: 20, right: 20 }}
                                         domain={conflictTimeRange}
                                     />
                                     <YAxis
@@ -236,15 +237,13 @@ function ConflictWidget(props: Props) {
                                         formatter={formatNumber}
                                     />
                                     <Legend />
-                                    <Line
+                                    <Bar
                                         dataKey="total"
-                                        stroke="var(--color-conflict)"
                                         name="Internal Displacements"
-                                        strokeWidth={2}
-                                        connectNulls
-                                        dot
+                                        fill="var(--color-conflict)"
+                                        maxBarSize={6}
                                     />
-                                </LineChart>
+                                </BarChart>
                             </ResponsiveContainer>
                         </ErrorBoundary>
                     )}
@@ -269,7 +268,7 @@ function ConflictWidget(props: Props) {
                         ?.giddConflictStatistics.totalDisplacementTimeseriesByYear && (
                         <ErrorBoundary>
                             <ResponsiveContainer>
-                                <BarChart
+                                <LineChart
                                     data={(conflictData
                                         .giddConflictStatistics
                                         .totalDisplacementTimeseriesByYear
@@ -285,6 +284,7 @@ function ConflictWidget(props: Props) {
                                         axisLine={false}
                                         type="number"
                                         allowDecimals={false}
+                                        padding={{ left: 20, right: 20 }}
                                         domain={conflictTimeRange}
                                     />
                                     <YAxis
@@ -295,14 +295,15 @@ function ConflictWidget(props: Props) {
                                         formatter={formatNumber}
                                     />
                                     <Legend />
-                                    <Bar
+                                    <Line
                                         dataKey="total"
+                                        stroke="var(--color-conflict)"
                                         name="Total Number of IDPs"
-                                        fill="var(--color-conflict)"
-                                        shape={<RoundedBar />}
-                                        maxBarSize={6}
+                                        strokeWidth={2}
+                                        connectNulls
+                                        dot
                                     />
-                                </BarChart>
+                                </LineChart>
                             </ResponsiveContainer>
                         </ErrorBoundary>
                     )}
