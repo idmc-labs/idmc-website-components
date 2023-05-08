@@ -21,6 +21,7 @@ interface Props {
     children?: React.ReactNode;
     filters?: React.ReactNode;
     filtersClassName?: string;
+    childrenClassName?: string;
 }
 
 function Container(props: Props) {
@@ -38,6 +39,7 @@ function Container(props: Props) {
         children,
         filters,
         filtersClassName,
+        childrenClassName,
     } = props;
 
     return (
@@ -58,7 +60,7 @@ function Container(props: Props) {
                     {filters}
                 </div>
             )}
-            <div>
+            <div className={childrenClassName}>
                 {children}
             </div>
             {(footerActions || footer) && (

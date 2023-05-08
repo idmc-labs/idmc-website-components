@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import { _cs } from '@togglecorp/fujs';
-import { SelectInput } from '@togglecorp/toggle-ui';
 import {
     gql,
     useQuery,
@@ -10,19 +9,18 @@ import {
     GiddCountryPfaQuery,
     GiddCountryPfaQueryVariables,
 } from '#generated/types';
-import Heading from '#components/Heading';
 import Message from '#components/Message';
 import TextOutput from '#components/TextOutput';
 import MarkdownViewer from '#components/MarkdownViewer';
 import {
-    START_YEAR,
     DATA_RELEASE,
 } from '#utils/common';
+import Container from '#components/Container';
 import CollapsibleContent from '#components/CollapsibleContent';
 
 import styles from './styles.css';
 
-const yearKeySelector = (item: { year: number }) => String(item.year);
+// const yearKeySelector = (item: { year: number }) => String(item.year);
 
 const GIDD_COUNTRY_PFA = gql`
 query GiddCountryPfa(
@@ -65,9 +63,8 @@ function FigureAnalysis(props: Props) {
         endYear: year,
     } = props;
 
-    const [selectedYear, setSelectedYear] = useState(String(year));
-    const [isExpanded, setContentExpansion] = useState(false);
-
+    const [selectedYear] = useState(String(year));
+    /*
     const timeRangeArray = useMemo(
         () => (
             Array.from(
@@ -77,6 +74,7 @@ function FigureAnalysis(props: Props) {
         ),
         [year],
     );
+    */
 
     const pfaVariables = useMemo(() => ({
         iso3,
@@ -107,27 +105,33 @@ function FigureAnalysis(props: Props) {
                 (item) => item.figureCause === cause,
             )
         ),
-        [pfaResponse],
+        [
+            pfaResponse,
+            cause,
+        ],
     );
 
+    if ((finalResults?.length ?? 0) === 0) {
+        return null;
+    }
+
     return (
-        <CollapsibleContent
-            name={undefined}
+        <Container
             className={_cs(className, styles.figureAnalysis)}
-            isExpanded={isExpanded}
-            headerContainerClassName={_cs(
+            headerClassName={_cs(
                 styles.headerContainer,
                 cause === 'CONFLICT' ? styles.conflict : styles.disaster,
             )}
-            header={(
+            heading={(
                 cause === 'CONFLICT'
                     ? 'Figure Analysis - Displacement Associated with Conflict and Violence'
                     : 'Figure Analysis - Displacement Associated with Disaster'
             )}
-            headerClassName={styles.header}
+            headingClassName={styles.heading}
+            headingSize="small"
             childrenClassName={styles.children}
-            onExpansionChange={setContentExpansion}
         >
+            {/*
             <SelectInput
                 name="year"
                 className={styles.selectInput}
@@ -140,7 +144,7 @@ function FigureAnalysis(props: Props) {
                 options={timeRangeArray}
                 nonClearable
             />
-            <div className={styles.separator} />
+            */}
             <Message
                 pending={loading}
                 pendingMessage="Loading"
@@ -148,13 +152,14 @@ function FigureAnalysis(props: Props) {
                 emptyMessage="Looks like there are no public figure analysis for this country for the selected year"
             />
             {finalResults?.map((details) => (
-                <div
+                <CollapsibleContent
                     className={styles.details}
+                    name={details.id}
+                    header={`Total number of ${details.figureCategoryDisplay} as of ${selectedYear}`}
+                    childrenClassName={styles.collapsibleChildren}
                     key={details.id}
+                    uncontrolled
                 >
-                    <Heading size="small">
-                        {`Total number of ${details.figureCategoryDisplay} as of ${selectedYear}`}
-                    </Heading>
                     <TextOutput
                         label="Figure"
                         displayType="block"
@@ -164,10 +169,9 @@ function FigureAnalysis(props: Props) {
                     <MarkdownViewer
                         markdown={details.description ?? 'N/A'}
                     />
-                    <div className={styles.separator} />
-                </div>
+                </CollapsibleContent>
             ))}
-        </CollapsibleContent>
+        </Container>
     );
 }
 
