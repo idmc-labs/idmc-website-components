@@ -120,6 +120,8 @@ const GIDD_STATISTICS = gql`
         $hazardSubTypes: [String!],
         $endYear: Float,
         $startYear: Float,
+        $endYearForTimeseries: Float,
+        $startYearForTimeseries: Float,
         $releaseEnvironment: String!,
         $combineCountries: Boolean!,
     ){
@@ -127,6 +129,33 @@ const GIDD_STATISTICS = gql`
             countriesIso3: $countriesIso3,
             endYear: $endYear,
             startYear: $startYear,
+            releaseEnvironment: $releaseEnvironment,
+        ) {
+            totalDisplacements
+            newDisplacements
+            totalCountries
+        }
+        giddDisasterStatistics(
+            hazardSubTypes: $hazardSubTypes,
+            countriesIso3: $countriesIso3,
+            endYear: $endYear,
+            startYear: $startYear,
+            releaseEnvironment: $releaseEnvironment,
+        ){
+            displacementsByHazardType {
+                id
+                label
+                newDisplacements
+            }
+            newDisplacements
+            totalDisplacements
+            totalCountries
+            totalEvents
+        }
+        giddConflictTimeseries: giddConflictStatistics(
+            countriesIso3: $countriesIso3,
+            endYear: $endYearForTimeseries,
+            startYear: $startYearForTimeseries,
             releaseEnvironment: $releaseEnvironment,
         ) {
             totalDisplacementTimeseriesByYear @include(if: $combineCountries) {
@@ -155,22 +184,14 @@ const GIDD_STATISTICS = gql`
                 total
                 year
             }
-            newDisplacements
-            totalDisplacements
-            totalCountries
         }
-        giddDisasterStatistics(
+        giddDisasterTimeseries: giddDisasterStatistics(
             hazardSubTypes: $hazardSubTypes,
             countriesIso3: $countriesIso3,
-            endYear: $endYear,
-            startYear: $startYear,
+            endYear: $endYearForTimeseries,
+            startYear: $startYearForTimeseries,
             releaseEnvironment: $releaseEnvironment,
-        ){
-            displacementsByHazardType {
-                id
-                label
-                newDisplacements
-            }
+        ) {
             totalDisplacementTimeseriesByYear @include(if: $combineCountries) {
                 total
                 year
@@ -197,10 +218,26 @@ const GIDD_STATISTICS = gql`
                 total
                 year
             }
-            newDisplacements
-            totalDisplacements
+        }
+        giddConflictLatestYearFigures: giddConflictStatistics(
+            countriesIso3: $countriesIso3,
+            endYear: $endYear,
+            startYear: $endYear,
+            releaseEnvironment: $releaseEnvironment,
+        ) {
+            totalDisplacements,
+            newDisplacements,
             totalCountries
-            totalEvents
+        }
+        giddDisasterLatestYearFigures: giddDisasterStatistics(
+            countriesIso3: $countriesIso3,
+            endYear: $endYear,
+            startYear: $endYear,
+            releaseEnvironment: $releaseEnvironment,
+        ) {
+            totalDisplacements,
+            newDisplacements,
+            totalCountries
         }
     }
 `;
@@ -265,19 +302,21 @@ export interface Props {
 function Gidd(props: Props) {
     const { endYear } = props;
 
-    const [timeRangeActual, setDisasterTimeRange] = useState([START_YEAR, endYear]);
+    const [timeRangeActual, setDisasterTimeRange] = useState([endYear, endYear]);
     const [displacementCause, setDisplacementCause] = useState<Cause | undefined>();
     const [combineCauseCharts, setCombineCauseCharts] = useState(false);
     const [displacementCategory, setDisplacementCategory] = useState<Category | undefined>();
     const timeRange = useDebouncedValue(timeRangeActual);
     const [selectedTable, setSelectedTable] = useState<'events' | 'data'>('data');
 
-    const timeRangeArray = useMemo(() => (
-        Array.from(
-            { length: (timeRange[1] - timeRange[0]) + 1 },
-            (_, index) => timeRange[0] + index,
-        )
-    ), [timeRange]);
+    const timeRangeArray = useMemo(() => {
+        const endYearForTimeRange = timeRange[0] === timeRange[1] ? START_YEAR : timeRange[0];
+
+        return Array.from(
+            { length: (timeRange[1] - endYearForTimeRange) + 1 },
+            (_, index) => endYearForTimeRange + index,
+        );
+    }, [timeRange]);
     const [disasterFiltersShown, setDisasterFilterVisibility] = useState(false);
     const handleAdditionalFiltersChange = useCallback((newVal) => {
         if (newVal) {
@@ -322,6 +361,8 @@ function Gidd(props: Props) {
         hazardSubTypes: displacementCause === 'disaster' ? hazardSubTypes : undefined,
         startYear: timeRange[0],
         endYear: timeRange[1],
+        startYearForTimeseries: timeRange[0] === timeRange[1] ? START_YEAR : timeRange[0],
+        endYearForTimeseries: timeRange[1],
         releaseEnvironment: DATA_RELEASE,
     }), [
         displacementCause,
@@ -330,6 +371,13 @@ function Gidd(props: Props) {
         timeRange,
         countries,
     ]);
+
+    const domainForCharts = useMemo(() => {
+        if (timeRange[0] === timeRange[1]) {
+            return [START_YEAR, timeRange[1]];
+        }
+        return timeRange;
+    }, [timeRange]);
 
     const {
         previousData: previousStatisticsData,
@@ -346,6 +394,10 @@ function Gidd(props: Props) {
 
     const conflictStats = removeNull(statisticsResponse?.giddConflictStatistics);
     const disasterStats = removeNull(statisticsResponse?.giddDisasterStatistics);
+    const latestConflictStats = removeNull(statisticsResponse?.giddConflictLatestYearFigures);
+    const latestDisasterStats = removeNull(statisticsResponse?.giddDisasterLatestYearFigures);
+    const conflictChartData = removeNull(statisticsResponse?.giddConflictTimeseries);
+    const disasterChartData = removeNull(statisticsResponse?.giddDisasterTimeseries);
 
     const [
         stockTimeseries,
@@ -353,12 +405,12 @@ function Gidd(props: Props) {
     ] = useMemo(() => {
         if (combineCauseCharts && showCombinedCountries) {
             const disasterDataByYear = listToMap(
-                disasterStats?.totalDisplacementTimeseriesByYear,
+                disasterChartData?.totalDisplacementTimeseriesByYear,
                 (item) => item.year,
                 (item) => item.total,
             );
             const conflictDataByYear = listToMap(
-                conflictStats?.totalDisplacementTimeseriesByYear,
+                conflictChartData?.totalDisplacementTimeseriesByYear,
                 (item) => item.year,
                 (item) => item.total,
             );
@@ -383,11 +435,11 @@ function Gidd(props: Props) {
         }
         if (!combineCauseCharts && showCombinedCountries) {
             const timeseries = [
-                ...(conflictStats?.totalDisplacementTimeseriesByYear?.map((item) => ({
+                ...(conflictChartData?.totalDisplacementTimeseriesByYear?.map((item) => ({
                     year: item.year,
                     conflict: item.total,
                 })) ?? []),
-                ...(disasterStats?.totalDisplacementTimeseriesByYear?.map((item) => ({
+                ...(disasterChartData?.totalDisplacementTimeseriesByYear?.map((item) => ({
                     year: item.year,
                     disaster: item.total,
                 })) ?? []),
@@ -414,7 +466,7 @@ function Gidd(props: Props) {
         }
         if (!combineCauseCharts && !showCombinedCountries) {
             const disasterDataByCountries = Object.values(listToGroupList(
-                disasterStats?.totalDisplacementTimeseriesByCountry ?? [],
+                disasterChartData?.totalDisplacementTimeseriesByCountry ?? [],
                 (item) => item.country.id,
                 (item) => ({
                     iso3: item.country.iso3,
@@ -424,7 +476,7 @@ function Gidd(props: Props) {
                 }),
             )).flat();
             const conflictDataByCountries = Object.values(listToGroupList(
-                conflictStats?.totalDisplacementTimeseriesByCountry ?? [],
+                conflictChartData?.totalDisplacementTimeseriesByCountry ?? [],
                 (item) => item.country.id,
                 (item) => ({
                     iso3: item.country.iso3,
@@ -462,7 +514,7 @@ function Gidd(props: Props) {
                 countries.map((country) => `${year}-${country}`)
             ));
             const disasterDataByCountries = listToMap(
-                disasterStats?.totalDisplacementTimeseriesByCountry ?? [],
+                disasterChartData?.totalDisplacementTimeseriesByCountry ?? [],
                 (item) => `${item.year}-${item.country.iso3}` as string,
                 (item) => ({
                     year: Number(item.year),
@@ -472,7 +524,7 @@ function Gidd(props: Props) {
                 }),
             );
             const conflictDataByCountries = listToMap(
-                conflictStats?.totalDisplacementTimeseriesByCountry ?? [],
+                conflictChartData?.totalDisplacementTimeseriesByCountry ?? [],
                 (item) => `${item.year}-${item.country.iso3}` as string,
                 (item) => ({
                     year: Number(item.year),
@@ -511,8 +563,8 @@ function Gidd(props: Props) {
     }, [
         isConflictDataShown,
         isDisasterDataShown,
-        conflictStats,
-        disasterStats,
+        conflictChartData,
+        disasterChartData,
         countries,
         timeRangeArray,
         combineCauseCharts,
@@ -525,12 +577,12 @@ function Gidd(props: Props) {
     ] = useMemo(() => {
         if (combineCauseCharts && showCombinedCountries) {
             const disasterDataByYear = listToMap(
-                disasterStats?.newDisplacementTimeseriesByYear,
+                disasterChartData?.newDisplacementTimeseriesByYear,
                 (item) => item.year,
                 (item) => item.total,
             );
             const conflictDataByYear = listToMap(
-                conflictStats?.newDisplacementTimeseriesByYear,
+                conflictChartData?.newDisplacementTimeseriesByYear,
                 (item) => item.year,
                 (item) => item.total,
             );
@@ -555,12 +607,12 @@ function Gidd(props: Props) {
         }
         if (!combineCauseCharts && showCombinedCountries) {
             const disasterDataByYear = listToMap(
-                disasterStats?.newDisplacementTimeseriesByYear,
+                disasterChartData?.newDisplacementTimeseriesByYear,
                 (item) => item.year,
                 (item) => item.total,
             );
             const conflictDataByYear = listToMap(
-                conflictStats?.newDisplacementTimeseriesByYear,
+                conflictChartData?.newDisplacementTimeseriesByYear,
                 (item) => item.year,
                 (item) => item.total,
             );
@@ -590,7 +642,7 @@ function Gidd(props: Props) {
         }
         if (!combineCauseCharts && !showCombinedCountries) {
             const disasterDataByCountries = Object.values(listToGroupList(
-                disasterStats?.totalDisplacementTimeseriesByCountry ?? [],
+                disasterChartData?.totalDisplacementTimeseriesByCountry ?? [],
                 (item) => item.country.id,
                 (item) => ({
                     year: Number(item.year),
@@ -598,7 +650,7 @@ function Gidd(props: Props) {
                 }),
             )).flat();
             const conflictDataByCountries = Object.values(listToGroupList(
-                conflictStats?.totalDisplacementTimeseriesByCountry ?? [],
+                conflictChartData?.totalDisplacementTimeseriesByCountry ?? [],
                 (item) => item.country.id,
                 (item) => ({
                     year: Number(item.year),
@@ -650,7 +702,7 @@ function Gidd(props: Props) {
                 countries.map((country) => (`${year}-${country}`))
             ));
             const disasterDataByCountries = listToMap(
-                disasterStats?.totalDisplacementTimeseriesByCountry ?? [],
+                disasterChartData?.totalDisplacementTimeseriesByCountry ?? [],
                 (item) => `${item.year}-${item.country.iso3}` as string,
                 (item) => ({
                     year: Number(item.year),
@@ -660,7 +712,7 @@ function Gidd(props: Props) {
                 }),
             );
             const conflictDataByCountries = listToMap(
-                conflictStats?.totalDisplacementTimeseriesByCountry ?? [],
+                conflictChartData?.totalDisplacementTimeseriesByCountry ?? [],
                 (item) => `${item.year}-${item.country.iso3}` as string,
                 (item) => ({
                     year: Number(item.year),
@@ -711,8 +763,8 @@ function Gidd(props: Props) {
     }, [
         isConflictDataShown,
         isDisasterDataShown,
-        conflictStats,
-        disasterStats,
+        conflictChartData,
+        disasterChartData,
         countries,
         timeRangeArray,
         combineCauseCharts,
@@ -752,8 +804,8 @@ function Gidd(props: Props) {
     }), [maxDisplacementValue]);
 
     const stockTotal = sumAndRemoveZero([
-        conflictStats?.totalDisplacements,
-        disasterStats?.totalDisplacements,
+        latestConflictStats?.totalDisplacements,
+        latestDisasterStats?.totalDisplacements,
     ]);
 
     const totalCountries = Math.max(
@@ -776,7 +828,7 @@ function Gidd(props: Props) {
                     name="combineCauseCharts"
                     value={combineCauseCharts}
                     onChange={setCombineCauseCharts}
-                    label="Combine by Cause"
+                    label="Combine by Conflict and Violence or Disaster"
                 />
             )}
             {countries.length > 1 && countries.length <= 3 && (
@@ -936,7 +988,7 @@ function Gidd(props: Props) {
                                         label="Total"
                                         size="large"
                                         subLabel={`In ${totalCountries} countries and territories`}
-                                        value={stockTotal}
+                                        value={flowTotal}
                                     />
                                 )}
                                 <div className={styles.causesBlock}>
@@ -946,7 +998,7 @@ function Gidd(props: Props) {
                                             size={displacementCause ? 'large' : 'medium'}
                                             variant="conflict"
                                             subLabel={`In ${conflictStats?.totalCountries} countries and territories`}
-                                            value={conflictStats?.totalDisplacements}
+                                            value={conflictStats?.newDisplacements}
                                         />
                                     )}
                                     {isDisasterDataShown && (
@@ -955,7 +1007,7 @@ function Gidd(props: Props) {
                                             size={displacementCause ? 'large' : 'medium'}
                                             variant="disaster"
                                             subLabel={`In ${disasterStats?.totalCountries} countries and territories`}
-                                            value={disasterStats?.totalDisplacements}
+                                            value={disasterStats?.newDisplacements}
                                         />
                                     )}
                                 </div>
@@ -975,7 +1027,8 @@ function Gidd(props: Props) {
                                                     axisLine={false}
                                                     type="number"
                                                     allowDecimals={false}
-                                                    domain={timeRange}
+                                                    padding={{ left: 20, right: 20 }}
+                                                    domain={domainForCharts}
                                                 />
                                                 <YAxis
                                                     axisLine={false}
@@ -1038,7 +1091,7 @@ function Gidd(props: Props) {
                                     label="Total"
                                     size="large"
                                     subLabel={`In ${totalCountries} countries and territories`}
-                                    value={flowTotal}
+                                    value={stockTotal}
                                 />
                             )}
                             <div className={styles.causesBlock}>
@@ -1047,8 +1100,8 @@ function Gidd(props: Props) {
                                         label="Total by Conflict and Violence"
                                         variant="conflict"
                                         size={displacementCause ? 'large' : 'medium'}
-                                        subLabel={`In ${conflictStats?.totalCountries} countries and territories`}
-                                        value={conflictStats?.newDisplacements}
+                                        subLabel={`In ${latestConflictStats?.totalCountries} countries and territories`}
+                                        value={latestConflictStats?.totalDisplacements}
                                     />
                                 )}
                                 {isDisasterDataShown && (
@@ -1056,8 +1109,8 @@ function Gidd(props: Props) {
                                         label="Total by Disasters"
                                         size={displacementCause ? 'large' : 'medium'}
                                         variant="disaster"
-                                        subLabel={`In ${disasterStats?.totalCountries} countries and territories`}
-                                        value={disasterStats?.newDisplacements}
+                                        subLabel={`In ${latestDisasterStats?.totalCountries} countries and territories`}
+                                        value={latestDisasterStats?.totalDisplacements}
                                     />
                                 )}
                             </div>
@@ -1076,8 +1129,9 @@ function Gidd(props: Props) {
                                                 dataKey="year"
                                                 axisLine={false}
                                                 type="number"
+                                                padding={{ left: 20, right: 20 }}
                                                 allowDecimals={false}
-                                                domain={timeRange}
+                                                domain={domainForCharts}
                                             />
                                             <YAxis
                                                 axisLine={false}
