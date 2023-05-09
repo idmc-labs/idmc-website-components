@@ -203,3 +203,13 @@ export function readStorage(key: string) {
     }
     return undefined;
 }
+
+export function getHazardTypeLabel(hazardType: { id: string, label: string }) {
+    if (hazardType.id === '2') {
+        return `Dry ${hazardType.label}`;
+    }
+    if (hazardType.id === '11') {
+        return `Wet ${hazardType.label}`;
+    }
+    return hazardType.label;
+}

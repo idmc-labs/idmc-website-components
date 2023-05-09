@@ -107,7 +107,7 @@ function IduWidget(props: IduWidgetProps) {
             />
             <p>
                 {/* eslint-disable-next-line max-len, react/jsx-one-expression-per-line */}
-                IDMC&apos;s Internal Displacement Updates (IDU) are preliminary estimates of new displacement events reported in the last 180 days. This provisional data is updated daily with new available data. Curated and validated estimates are published in the <a href={giddLink}>Global Internal Displacement Database (GIDD).</a> To find out more about how we monitor and report on our figures, click <a href={monitoringLink}>here.</a>
+                IDMC&apos;s Internal Displacement Updates (IDU) are preliminary estimates of internal displacement events reported in the last 180 days. This provisional data is updated daily with new available data. Curated and validated estimates are published in the <a href={giddLink}>Global Internal Displacement Database (GIDD).</a> To find out more about how we monitor and report on our figures, click <a href={monitoringLink}>here.</a>
             </p>
             <EllipsizedContent>
                 <HTMLOutput

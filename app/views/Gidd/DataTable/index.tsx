@@ -149,7 +149,7 @@ function DataTable(props: Props) {
             ),
             isConflictDataShown ? createNumberColumn<DisplacementData, string>(
                 'conflictNewDisplacement',
-                'Conflict New Displacement',
+                'Conflict Internal Displacement',
                 (item) => roundAndRemoveZero(item.conflictNewDisplacement ?? undefined),
                 {
                     sortable: true,
@@ -167,7 +167,7 @@ function DataTable(props: Props) {
             ) : undefined,
             isDisasterDataShown ? createNumberColumn<DisplacementData, string>(
                 'disasterNewDisplacement',
-                'Disaster New Displacement',
+                'Disaster Internal Displacement',
                 (item) => roundAndRemoveZero(item.disasterNewDisplacement ?? undefined),
                 {
                     sortable: true,

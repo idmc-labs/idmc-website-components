@@ -7,7 +7,6 @@ import {
     listToGroupList,
     isDefined,
     compareNumber,
-    randomString,
 } from '@togglecorp/fujs';
 import {
     Button,
@@ -23,6 +22,8 @@ import {
     sumAndRemoveZero,
     DATA_RELEASE,
     roundAndRemoveZero,
+    getHazardTypeLabel,
+    suffixHelixRestEndpoint,
 } from '#utils/common';
 import {
     gql,
@@ -41,6 +42,7 @@ import {
     Bar,
 } from 'recharts';
 
+import ButtonLikeLink from '#components/ButtonLikeLink';
 import ErrorBoundary from '#components/ErrorBoundary';
 import SliderInput from '#components/SliderInput';
 import Heading from '#components/Heading';
@@ -254,8 +256,8 @@ function nameSelector(d: { idmcShortName: string }) {
     return d.idmcShortName;
 }
 
-function hazardLabelSelector(d: { name: string }) {
-    return d.name;
+function hazardLabelSelector(d: { id: string, name: string }) {
+    return getHazardTypeLabel({ id: d.id, label: d.name });
 }
 
 type Cause = 'conflict' | 'disaster';
@@ -306,33 +308,33 @@ function Gidd(props: Props) {
     const [displacementCause, setDisplacementCause] = useState<Cause | undefined>();
     const [combineCauseCharts, setCombineCauseCharts] = useState(false);
     const [displacementCategory, setDisplacementCategory] = useState<Category | undefined>();
-    const timeRange = useDebouncedValue(timeRangeActual);
     const [selectedTable, setSelectedTable] = useState<'events' | 'data'>('data');
-
-    const timeRangeArray = useMemo(() => {
-        const endYearForTimeRange = timeRange[0] === timeRange[1] ? START_YEAR : timeRange[0];
-
-        return Array.from(
-            { length: (timeRange[1] - endYearForTimeRange) + 1 },
-            (_, index) => endYearForTimeRange + index,
-        );
-    }, [timeRange]);
     const [disasterFiltersShown, setDisasterFilterVisibility] = useState(false);
-    const handleAdditionalFiltersChange = useCallback((newVal) => {
-        if (newVal) {
-            setDisplacementCause('disaster');
-        }
-        setDisasterFilterVisibility(newVal);
-    }, []);
+    const [combineCountriesChart, setCombineCountriesChart] = useState(false);
     const [
         countries,
         setCountries,
-    ] = useInputState<string[]>([]);
-    const [combineCountriesChart, setCombineCountriesChart] = useState(false);
+    ] = useInputState<string[]>(['IND', 'AFG']);
     const [
         hazardSubTypes,
         setHazardSubTypes,
     ] = useInputState<string[]>([]);
+
+    const timeRange = useDebouncedValue(timeRangeActual);
+
+    const domainForCharts = useMemo(() => {
+        if (timeRange[0] === timeRange[1]) {
+            return [START_YEAR, timeRange[0]];
+        }
+        return timeRange;
+    }, [timeRange]);
+
+    const timeRangeArray = useMemo(() => (
+        Array.from(
+            { length: (domainForCharts[1] - domainForCharts[0]) + 1 },
+            (_, index) => domainForCharts[0] + index,
+        )
+    ), [domainForCharts]);
 
     const isDisasterDataShown = displacementCause === 'disaster' || isNotDefined(displacementCause);
     const isConflictDataShown = displacementCause === 'conflict' || isNotDefined(displacementCause);
@@ -371,13 +373,6 @@ function Gidd(props: Props) {
         timeRange,
         countries,
     ]);
-
-    const domainForCharts = useMemo(() => {
-        if (timeRange[0] === timeRange[1]) {
-            return [START_YEAR, timeRange[1]];
-        }
-        return timeRange;
-    }, [timeRange]);
 
     const {
         previousData: previousStatisticsData,
@@ -790,17 +785,24 @@ function Gidd(props: Props) {
 
     const maxDisplacementValue = sortedHazards[0]?.newDisplacements ?? undefined;
 
+    const handleAdditionalFiltersChange = useCallback((newVal) => {
+        if (newVal) {
+            setDisplacementCause('disaster');
+        }
+        setDisasterFilterVisibility(newVal);
+    }, []);
+
     const hazardRendererParams = useCallback((_: string, hazard: HazardData) => ({
         total: maxDisplacementValue,
         value: roundAndRemoveZero(hazard.newDisplacements ?? undefined),
-        hazardType: hazard.label,
+        // hazardType: getHazardTypeLabel(hazard),
         icon: (
             <DisplacementIcon
                 displacementType="Disaster"
-                disasterType={hazard.label}
+                disasterType={getHazardTypeLabel(hazard)}
             />
         ),
-        title: hazard.label,
+        title: getHazardTypeLabel(hazard),
     }), [maxDisplacementValue]);
 
     const stockTotal = sumAndRemoveZero([
@@ -857,13 +859,23 @@ function Gidd(props: Props) {
                             <p className={styles.headingDescription}>{lorem}</p>
                             <div className={styles.downloadSection}>
                                 <p className={styles.downloadDescription}>{lorem2}</p>
-                                <Button
-                                    name={undefined}
-                                    variant="primary"
-                                    disabled
-                                >
-                                    Download Dataset
-                                </Button>
+                                {displacementCause === 'disaster' ? (
+                                    <ButtonLikeLink
+                                        href={suffixHelixRestEndpoint(`/gidd/disasters/disaster-export/?iso3__in=${countries.join(',')}&start_year=${timeRange[0]}&end_year=${timeRange[1]}&hazard_type__in=${hazardSubTypes.join(',')}`)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        Download Dataset
+                                    </ButtonLikeLink>
+                                ) : (
+                                    <ButtonLikeLink
+                                        href={suffixHelixRestEndpoint(`/gidd/displacements/displacement-export/?cause=${displacementCause}&iso3__in=${countries.join(',')}&start_year=${timeRange[0]}&end_year=${timeRange[1]}`)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        Download Dataset
+                                    </ButtonLikeLink>
+                                )}
                             </div>
                         </div>
                         <div className={styles.right}>
@@ -1025,10 +1037,10 @@ function Gidd(props: Props) {
                                                 <XAxis
                                                     dataKey="year"
                                                     axisLine={false}
-                                                    type="number"
                                                     allowDecimals={false}
-                                                    padding={{ left: 20, right: 20 }}
+                                                    type="number"
                                                     domain={domainForCharts}
+                                                    padding={{ left: 20, right: 20 }}
                                                 />
                                                 <YAxis
                                                     axisLine={false}
@@ -1043,7 +1055,7 @@ function Gidd(props: Props) {
                                                         maxBarSize={6}
                                                         dataKey={barConfig.dataKey}
                                                         stackId={barConfig.stackId}
-                                                        key={randomString()}
+                                                        key={barConfig.key}
                                                         fill={barConfig.fill}
                                                         name={barConfig.name}
                                                     />
