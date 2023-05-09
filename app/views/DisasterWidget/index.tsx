@@ -39,6 +39,7 @@ import {
     suffixHelixRestEndpoint,
     DATA_RELEASE,
     getHazardTypeLabel,
+    prepareUrl,
 } from '#utils/common';
 import {
     DisasterDataQuery,
@@ -178,7 +179,15 @@ function DisasterWidget(props: Props) {
             footerActions={(
                 <>
                     <ButtonLikeLink
-                        href={suffixHelixRestEndpoint(`/gidd/disasters/disaster-export/?iso3__in=${iso3}&start_year=${disasterTimeRange[0]}&end_year=${disasterTimeRange[1]}&hazard_type__in=${disasterTypes.join(',')}`)}
+                        href={suffixHelixRestEndpoint(prepareUrl(
+                            '/gidd/disasters/disaster-export/',
+                            {
+                                iso3__in: iso3,
+                                start_year: disasterTimeRange[0],
+                                end_year: disasterTimeRange[1],
+                                hazard_type__in: disasterTypes,
+                            },
+                        ))}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={styles.disasterButton}
