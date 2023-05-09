@@ -20,7 +20,6 @@ import {
     START_YEAR,
     sumAndRemoveZero,
     DATA_RELEASE,
-    roundAndRemoveZero,
     getHazardTypeLabel,
     suffixHelixRestEndpoint,
     prepareUrl,
@@ -846,7 +845,7 @@ function Gidd(props: Props) {
 
     const hazardRendererParams = useCallback((_: string, hazard: HazardData) => ({
         total: maxDisplacementValue,
-        value: roundAndRemoveZero(hazard.newDisplacementsRounded ?? undefined),
+        value: hazard.newDisplacementsRounded,
         // hazardType: getHazardTypeLabel(hazard),
         icon: (
             <DisplacementIcon

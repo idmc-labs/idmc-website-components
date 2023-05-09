@@ -10,7 +10,6 @@ import {
     useSortState,
 } from '@togglecorp/toggle-ui';
 import {
-    roundAndRemoveZero,
     DATA_RELEASE,
 } from '#utils/common';
 import {
@@ -151,7 +150,7 @@ function DataTable(props: Props) {
             isConflictDataShown ? createNumberColumn<DisplacementData, string>(
                 'conflictNewDisplacementRounded',
                 'Conflict Internal Displacement',
-                (item) => roundAndRemoveZero(item.conflictNewDisplacementRounded ?? undefined),
+                (item) => item.conflictNewDisplacementRounded,
                 {
                     sortable: true,
                     variant: 'conflict',
@@ -160,7 +159,7 @@ function DataTable(props: Props) {
             isConflictDataShown ? createNumberColumn<DisplacementData, string>(
                 'conflictTotalDisplacementRounded',
                 'Conflict IDPs',
-                (item) => roundAndRemoveZero(item.conflictTotalDisplacementRounded ?? undefined),
+                (item) => item.conflictTotalDisplacementRounded,
                 {
                     sortable: true,
                     variant: 'conflict',
@@ -169,7 +168,7 @@ function DataTable(props: Props) {
             isDisasterDataShown ? createNumberColumn<DisplacementData, string>(
                 'disasterNewDisplacementRounded',
                 'Disaster Internal Displacement',
-                (item) => roundAndRemoveZero(item.disasterNewDisplacementRounded ?? undefined),
+                (item) => item.disasterNewDisplacementRounded,
                 {
                     sortable: true,
                     variant: 'disaster',
@@ -178,7 +177,7 @@ function DataTable(props: Props) {
             isDisasterDataShown ? createNumberColumn<DisplacementData, string>(
                 'disasterTotalDisplacementRounded',
                 'Disaster IDPs',
-                (item) => roundAndRemoveZero(item.disasterTotalDisplacementRounded ?? undefined),
+                (item) => item.disasterTotalDisplacementRounded,
                 {
                     sortable: true,
                     variant: 'disaster',
