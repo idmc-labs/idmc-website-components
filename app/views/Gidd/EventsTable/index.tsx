@@ -78,7 +78,7 @@ query GiddEvents(
             hazardTypeId
             hazardTypeName
             iso3
-            newDisplacement
+            newDisplacementRounded
             startDate
             year
         }
@@ -204,9 +204,9 @@ function EventsTable(props: Props) {
                     },
                 ),
                 createNumberColumn<EventData, string>(
-                    'newDisplacement',
+                    'newDisplacementRounded',
                     'Disaster Internal Displacements',
-                    (item) => roundAndRemoveZero(item.newDisplacement ?? undefined),
+                    (item) => roundAndRemoveZero(item.newDisplacementRounded ?? undefined),
                     { sortable: true },
                 ),
                 createTextColumn<EventData, string>(
@@ -218,10 +218,12 @@ function EventsTable(props: Props) {
                 createTextColumn<EventData, string>(
                     'hazardTypeName',
                     'Hazard Type',
-                    (item) => getHazardTypeLabel({
-                        id: item.hazardTypeId,
-                        label: item.hazardTypeName,
-                    }),
+                    (item) => ((item.hazardTypeId && item.hazardTypeName)
+                        ? getHazardTypeLabel({
+                            id: item.hazardTypeId,
+                            label: item.hazardTypeName,
+                        })
+                        : item.hazardTypeName),
                     { sortable: true },
                 ),
             ]);

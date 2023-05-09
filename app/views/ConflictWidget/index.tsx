@@ -54,8 +54,8 @@ const giddDisplacementDataLink = suffixDrupalEndpoint('/database/displacement-da
 const STATS = gql`
     query ConflictStats($iso3: String!, $startYear: Float, $endYear: Float, $releaseEnvironment: String!) {
         giddConflictStatistics(countriesIso3: [$iso3], endYear: $endYear, startYear: $startYear, releaseEnvironment: $releaseEnvironment) {
-            newDisplacements
-            totalDisplacements
+            newDisplacementsRounded
+            totalDisplacementsRounded
         }
     }
 `;
@@ -63,15 +63,15 @@ const STATS = gql`
 const CONFLICT_DATA = gql`
     query ConflictData($countryIso3: String!, $startYear: Float, $endYear: Float, $releaseEnvironment: String!) {
         giddConflictStatistics(countriesIso3: [$countryIso3], endYear: $endYear, startYear: $startYear, releaseEnvironment: $releaseEnvironment) {
-            newDisplacements
-            totalDisplacements
+            newDisplacementsRounded
+            totalDisplacementsRounded
             totalDisplacementTimeseriesByYear {
                 year
-                total
+                totalRounded
             }
             newDisplacementTimeseriesByYear {
                 year
-                total
+                totalRounded
             }
         }
     }
@@ -131,8 +131,8 @@ function ConflictWidget(props: Props) {
     );
 
     if ((
-        (statsData?.giddConflictStatistics?.newDisplacements ?? 0)
-        + (statsData?.giddConflictStatistics?.totalDisplacements ?? 0)
+        (statsData?.giddConflictStatistics?.newDisplacementsRounded ?? 0)
+        + (statsData?.giddConflictStatistics?.totalDisplacementsRounded ?? 0)
     ) <= 0) {
         return null;
     }
@@ -200,7 +200,7 @@ function ConflictWidget(props: Props) {
             <div className={styles.infographicList}>
                 <Infographic
                     className={styles.conflictInfographic}
-                    totalValue={conflictData?.giddConflictStatistics.newDisplacements || 0}
+                    totalValue={conflictData?.giddConflictStatistics.newDisplacementsRounded || 0}
                     description={(
                         <Header
                             headingClassName={styles.heading}
@@ -246,7 +246,7 @@ function ConflictWidget(props: Props) {
                                     />
                                     <Legend />
                                     <Bar
-                                        dataKey="total"
+                                        dataKey="totalRounded"
                                         name="Internal Displacements"
                                         fill="var(--color-conflict)"
                                         maxBarSize={6}
@@ -258,7 +258,7 @@ function ConflictWidget(props: Props) {
                 />
                 <Infographic
                     className={styles.conflictInfographic}
-                    totalValue={conflictData?.giddConflictStatistics.totalDisplacements || 0}
+                    totalValue={conflictData?.giddConflictStatistics.totalDisplacementsRounded || 0}
                     description={(
                         <Header
                             headingClassName={styles.heading}
@@ -304,7 +304,7 @@ function ConflictWidget(props: Props) {
                                     />
                                     <Legend />
                                     <Line
-                                        dataKey="total"
+                                        dataKey="totalRounded"
                                         stroke="var(--color-conflict)"
                                         name="Total Number of IDPs"
                                         strokeWidth={2}

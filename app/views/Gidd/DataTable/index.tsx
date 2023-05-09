@@ -54,15 +54,13 @@ const GIDD_DISPLACEMENTS = gql`
             releaseEnvironment: $releaseEnvironment,
         ){
             results {
-                conflictNewDisplacement
-                conflictTotalDisplacement
+                conflictNewDisplacementRounded
+                conflictTotalDisplacementRounded
                 countryName
-                disasterNewDisplacement
-                disasterTotalDisplacement
+                disasterNewDisplacementRounded
+                disasterTotalDisplacementRounded
                 id
                 iso3
-                totalInternalDisplacement
-                totalNewDisplacement
                 year
             }
             totalCount
@@ -151,36 +149,36 @@ function DataTable(props: Props) {
                 },
             ),
             isConflictDataShown ? createNumberColumn<DisplacementData, string>(
-                'conflictNewDisplacement',
+                'conflictNewDisplacementRounded',
                 'Conflict Internal Displacement',
-                (item) => roundAndRemoveZero(item.conflictNewDisplacement ?? undefined),
+                (item) => roundAndRemoveZero(item.conflictNewDisplacementRounded ?? undefined),
                 {
                     sortable: true,
                     variant: 'conflict',
                 },
             ) : undefined,
             isConflictDataShown ? createNumberColumn<DisplacementData, string>(
-                'conflictTotalDisplacement',
+                'conflictTotalDisplacementRounded',
                 'Conflict IDPs',
-                (item) => roundAndRemoveZero(item.conflictTotalDisplacement ?? undefined),
+                (item) => roundAndRemoveZero(item.conflictTotalDisplacementRounded ?? undefined),
                 {
                     sortable: true,
                     variant: 'conflict',
                 },
             ) : undefined,
             isDisasterDataShown ? createNumberColumn<DisplacementData, string>(
-                'disasterNewDisplacement',
+                'disasterNewDisplacementRounded',
                 'Disaster Internal Displacement',
-                (item) => roundAndRemoveZero(item.disasterNewDisplacement ?? undefined),
+                (item) => roundAndRemoveZero(item.disasterNewDisplacementRounded ?? undefined),
                 {
                     sortable: true,
                     variant: 'disaster',
                 },
             ) : undefined,
             isDisasterDataShown ? createNumberColumn<DisplacementData, string>(
-                'disasterTotalDisplacement',
+                'disasterTotalDisplacementRounded',
                 'Disaster IDPs',
-                (item) => roundAndRemoveZero(item.disasterTotalDisplacement ?? undefined),
+                (item) => roundAndRemoveZero(item.disasterTotalDisplacementRounded ?? undefined),
                 {
                     sortable: true,
                     variant: 'disaster',
