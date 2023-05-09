@@ -45,7 +45,7 @@ query GiddEventDetails(
         endDate
         eventName
         glideNumbers
-        hazardSubTypes {
+        hazardTypes {
             id
             name
         }
@@ -142,7 +142,7 @@ function EventModal(props: Props) {
                 />
                 <TextOutput
                     label="Hazard Subtypes"
-                    value={event?.hazardSubTypes?.map((hazard) => hazard?.name).join(' / ')}
+                    value={event?.hazardTypes?.map((hazard) => hazard?.name).join(' / ')}
                     displayType="block"
                 />
                 <TextOutput

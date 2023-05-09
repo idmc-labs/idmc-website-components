@@ -80,8 +80,8 @@ const STATS = gql`
 `;
 
 const DISASTER_DATA = gql`
-    query DisasterData($countryIso3: String!, $startYear: Float, $endYear: Float, $categories: [String!], $releaseEnvironment: String!) {
-        giddDisasterStatistics(countriesIso3: [$countryIso3], endYear: $endYear, startYear: $startYear, hazardSubTypes: $categories, releaseEnvironment: $releaseEnvironment) {
+    query DisasterData($countryIso3: String!, $startYear: Float, $endYear: Float, $categories: [ID!], $releaseEnvironment: String!) {
+        giddDisasterStatistics(countriesIso3: [$countryIso3], endYear: $endYear, startYear: $startYear, hazardTypes: $categories, releaseEnvironment: $releaseEnvironment) {
             newDisplacements
             totalEvents
             newDisplacementTimeseriesByYear {
