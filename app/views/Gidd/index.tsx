@@ -87,6 +87,13 @@ const disasterColorsRange = [
 
 const chartMargins = { top: 16, left: 0, right: 0, bottom: 5 };
 
+function getCountryCountSubLabel(count = 0) {
+    if (count === 1) {
+        return 'In 1 country and territory';
+    }
+    return `In ${count} countries and territories`;
+}
+
 const mainText = 'IDMC Data Portal enables you to explore, filter and sort our data to produce your own graphs and tables. You can also access and export the data used to generate these visualisations.';
 const downloadText = 'You can export your data, either the full dataset or the result of your query in an Excel format which includes the metadata and copyrights.';
 const flowDetails = 'The internal displacements figure refers to the number of forced movements of people within the borders of their country recorded during the year. Figures may include individuals who have been displaced more than once.';
@@ -125,6 +132,18 @@ const GIDD_STATISTICS = gql`
         $releaseEnvironment: String!,
         $combineCountries: Boolean!,
     ){
+        giddCombinedStatistics(
+            countriesIso3: $countriesIso3,
+            endYear: $endYear,
+            startYear: $startYear,
+            releaseEnvironment: $releaseEnvironment,
+            hazardTypes: $hazardTypes,
+        ) {
+            totalInternalDisplacementsRounded
+            internalDisplacementCountries
+            totalDisplacementCountries
+            totalNewDisplacementsRounded
+        }
         giddConflictStatistics(
             countriesIso3: $countriesIso3,
             endYear: $endYear,
@@ -438,6 +457,7 @@ function Gidd(props: Props) {
     const latestDisasterStats = removeNull(statisticsResponse?.giddDisasterLatestYearFigures);
     const conflictChartData = removeNull(statisticsResponse?.giddConflictTimeseries);
     const disasterChartData = removeNull(statisticsResponse?.giddDisasterTimeseries);
+    const combinedStats = removeNull(statisticsResponse?.giddCombinedStatistics);
 
     const [
         stockTimeseries,
@@ -845,7 +865,7 @@ function Gidd(props: Props) {
 
     const hazardRendererParams = useCallback((_: string, hazard: HazardData) => ({
         total: maxDisplacementValue,
-        value: hazard.newDisplacementsRounded,
+        value: hazard.newDisplacementsRounded ?? undefined,
         // hazardType: getHazardTypeLabel(hazard),
         icon: (
             <DisplacementIcon
@@ -856,21 +876,10 @@ function Gidd(props: Props) {
         title: getHazardTypeLabel(hazard),
     }), [maxDisplacementValue]);
 
-    const stockTotal = sumAndRemoveZero([
-        latestConflictStats?.totalDisplacementsRounded,
-        latestDisasterStats?.totalDisplacementsRounded,
-    ]);
-
-    // FIXME: remove this
-    const totalCountries = Math.max(
-        conflictStats?.totalCountries ?? 0,
-        disasterStats?.totalCountries ?? 0,
-    );
-
-    const flowTotal = sumAndRemoveZero([
-        conflictStats?.newDisplacementsRounded,
-        disasterStats?.newDisplacementsRounded,
-    ]);
+    const stockTotal = combinedStats?.totalInternalDisplacementsRounded;
+    const flowTotal = combinedStats?.totalNewDisplacementsRounded;
+    const totalStockCountries = combinedStats?.totalDisplacementCountries;
+    const totalFlowCountries = combinedStats?.internalDisplacementCountries;
 
     const chartTypeSelection = (
         <div className={styles.chartTypeContainer}>
@@ -1075,7 +1084,7 @@ function Gidd(props: Props) {
                                     <NumberBlock
                                         label="Total"
                                         size="large"
-                                        subLabel={totalCountries === 1 ? 'In 1 country and territory' : `In ${totalCountries} countries and territories`}
+                                        subLabel={getCountryCountSubLabel(totalFlowCountries)}
                                         value={flowTotal}
                                     />
                                 )}
@@ -1085,7 +1094,9 @@ function Gidd(props: Props) {
                                             label="Total by conflict and violence"
                                             size={displacementCause ? 'large' : 'medium'}
                                             variant="conflict"
-                                            subLabel={conflictStats?.totalCountries === 1 ? 'In 1 country and territory' : `In ${conflictStats?.totalCountries ?? 0} countries and territories`}
+                                            subLabel={getCountryCountSubLabel(
+                                                conflictStats?.totalCountries,
+                                            )}
                                             value={conflictStats?.newDisplacementsRounded}
                                         />
                                     )}
@@ -1094,7 +1105,9 @@ function Gidd(props: Props) {
                                             label="Total by disasters"
                                             size={displacementCause ? 'large' : 'medium'}
                                             variant="disaster"
-                                            subLabel={disasterStats?.totalCountries === 1 ? 'In 1 country and territory' : `In ${disasterStats?.totalCountries ?? 0} countries and territories`}
+                                            subLabel={getCountryCountSubLabel(
+                                                disasterStats?.totalCountries,
+                                            )}
                                             value={disasterStats?.newDisplacementsRounded}
                                         />
                                     )}
@@ -1177,7 +1190,9 @@ function Gidd(props: Props) {
                                 <NumberBlock
                                     label="Total"
                                     size="large"
-                                    subLabel={`In ${totalCountries} countries and territories`}
+                                    subLabel={getCountryCountSubLabel(
+                                        totalStockCountries,
+                                    )}
                                     value={stockTotal}
                                 />
                             )}
@@ -1187,7 +1202,9 @@ function Gidd(props: Props) {
                                         label="Total by Conflict and Violence"
                                         variant="conflict"
                                         size={displacementCause ? 'large' : 'medium'}
-                                        subLabel={`In ${latestConflictStats?.totalCountries ?? 0} countries and territories`}
+                                        subLabel={getCountryCountSubLabel(
+                                            latestConflictStats?.totalCountries,
+                                        )}
                                         value={latestConflictStats?.totalDisplacementsRounded}
                                     />
                                 )}
@@ -1196,7 +1213,9 @@ function Gidd(props: Props) {
                                         label="Total by Disasters"
                                         size={displacementCause ? 'large' : 'medium'}
                                         variant="disaster"
-                                        subLabel={`In ${latestDisasterStats?.totalCountries ?? 0} countries and territories`}
+                                        subLabel={getCountryCountSubLabel(
+                                            latestDisasterStats?.totalCountries,
+                                        )}
                                         value={latestDisasterStats?.totalDisplacementsRounded}
                                     />
                                 )}
