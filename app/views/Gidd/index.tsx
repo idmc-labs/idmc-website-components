@@ -87,8 +87,8 @@ const disasterColorsRange = [
 
 const chartMargins = { top: 16, left: 0, right: 0, bottom: 5 };
 
-const lorem = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.';
-const lorem2 = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.';
+const mainText = 'IDMC Data Portal enables you to explore, filter and sort our data to produce your own graphs and tables. You can also access and export the data used to generate these visualisations.';
+const downloadText = 'You can export your data, either the full dataset or the result of your query in an Excel format which includes the metadata and copyrights.';
 const flowDetails = 'The internal displacements figure refers to the number of forced movements of people within the borders of their country recorded during the year. Figures may include individuals who have been displaced more than once.';
 const stockDetails = 'The total number of Internally Displaced People (IDPs) is a snapshot of all the people living in internal displacements at the end of the year.';
 
@@ -857,6 +857,7 @@ function Gidd(props: Props) {
         latestDisasterStats?.totalDisplacements,
     ]);
 
+    // FIXME: remove this
     const totalCountries = Math.max(
         conflictStats?.totalCountries ?? 0,
         disasterStats?.totalCountries ?? 0,
@@ -914,9 +915,9 @@ function Gidd(props: Props) {
                     />
                     <div className={styles.filterBodyContainer}>
                         <div className={_cs(styles.filterSection, styles.leftSection)}>
-                            <p className={styles.headingDescription}>{lorem}</p>
+                            <p className={styles.headingDescription}>{mainText}</p>
                             <div className={styles.downloadSection}>
-                                <p className={styles.downloadDescription}>{lorem2}</p>
+                                <p className={styles.downloadDescription}>{downloadText}</p>
                                 {displacementCause === 'disaster' ? (
                                     <ButtonLikeLink
                                         href={suffixHelixRestEndpoint(`/gidd/disasters/disaster-export/?iso3__in=${countries.join(',')}&start_year=${timeRange[0]}&end_year=${timeRange[1]}&hazard_type__in=${hazardSubTypes.join(',')}`)}
@@ -1064,7 +1065,7 @@ function Gidd(props: Props) {
                                             label="Total by conflict and violence"
                                             size={displacementCause ? 'large' : 'medium'}
                                             variant="conflict"
-                                            subLabel={conflictStats?.totalCountries === 1 ? 'In 1 country and territory' : `In ${conflictStats?.totalCountries} countries and territories`}
+                                            subLabel={conflictStats?.totalCountries === 1 ? 'In 1 country and territory' : `In ${conflictStats?.totalCountries ?? 0} countries and territories`}
                                             value={conflictStats?.newDisplacements}
                                         />
                                     )}
@@ -1073,7 +1074,7 @@ function Gidd(props: Props) {
                                             label="Total by disasters"
                                             size={displacementCause ? 'large' : 'medium'}
                                             variant="disaster"
-                                            subLabel={disasterStats?.totalCountries === 1 ? 'In 1 country and territory' : `In ${disasterStats?.totalCountries} countries and territories`}
+                                            subLabel={disasterStats?.totalCountries === 1 ? 'In 1 country and territory' : `In ${disasterStats?.totalCountries ?? 0} countries and territories`}
                                             value={disasterStats?.newDisplacements}
                                         />
                                     )}
@@ -1166,7 +1167,7 @@ function Gidd(props: Props) {
                                         label="Total by Conflict and Violence"
                                         variant="conflict"
                                         size={displacementCause ? 'large' : 'medium'}
-                                        subLabel={`In ${latestConflictStats?.totalCountries} countries and territories`}
+                                        subLabel={`In ${latestConflictStats?.totalCountries ?? 0} countries and territories`}
                                         value={latestConflictStats?.totalDisplacements}
                                     />
                                 )}
@@ -1175,7 +1176,7 @@ function Gidd(props: Props) {
                                         label="Total by Disasters"
                                         size={displacementCause ? 'large' : 'medium'}
                                         variant="disaster"
-                                        subLabel={`In ${latestDisasterStats?.totalCountries} countries and territories`}
+                                        subLabel={`In ${latestDisasterStats?.totalCountries ?? 0} countries and territories`}
                                         value={latestDisasterStats?.totalDisplacements}
                                     />
                                 )}
@@ -1233,9 +1234,13 @@ function Gidd(props: Props) {
                         variant="primary"
                     >
                         <Header
+                            className={styles.header}
                             headingSize="small"
                             heading={(
-                                <TabList position="left">
+                                <TabList
+                                    position="left"
+                                    gap
+                                >
                                     <Tab name="data">
                                         Data Table
                                     </Tab>
@@ -1247,25 +1252,27 @@ function Gidd(props: Props) {
                                 </TabList>
                             )}
                         />
-                        <TabPanel name="data">
-                            <DataTable
-                                isConflictDataShown={isConflictDataShown}
-                                isDisasterDataShown={isDisasterDataShown}
-                                countriesIso3={countries}
-                                startYear={timeRange[0]}
-                                endYear={timeRange[1]}
-                                activePage={dataActivePage}
-                                onActivePageChange={setDataActivePage}
-                            />
-                        </TabPanel>
-                        {displacementCause === 'disaster' && (
-                            <TabPanel name="events">
-                                <EventsTable
-                                    activePage={eventsActivePage}
-                                    onActivePageChange={setEventsActivePage}
+                        <div className={styles.tabPanels}>
+                            <TabPanel name="data">
+                                <DataTable
+                                    isConflictDataShown={isConflictDataShown}
+                                    isDisasterDataShown={isDisasterDataShown}
+                                    countriesIso3={countries}
+                                    startYear={timeRange[0]}
+                                    endYear={timeRange[1]}
+                                    activePage={dataActivePage}
+                                    onActivePageChange={setDataActivePage}
                                 />
                             </TabPanel>
-                        )}
+                            {displacementCause === 'disaster' && (
+                                <TabPanel name="events">
+                                    <EventsTable
+                                        activePage={eventsActivePage}
+                                        onActivePageChange={setEventsActivePage}
+                                    />
+                                </TabPanel>
+                            )}
+                        </div>
                     </Tabs>
                 </div>
             </div>

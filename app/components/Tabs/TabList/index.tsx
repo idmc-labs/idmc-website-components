@@ -10,6 +10,7 @@ export interface Props extends React.HTMLProps<HTMLDivElement> {
     className?: string;
     actions?: React.ReactNode;
     position?: 'left' | 'center' | 'right';
+    gap?: boolean;
 }
 
 export default function TabList(props: Props) {
@@ -24,6 +25,7 @@ export default function TabList(props: Props) {
     const {
         children,
         className,
+        gap,
         actions,
         position = 'center',
         ...otherProps
@@ -75,6 +77,9 @@ export default function TabList(props: Props) {
                     />
                 </div>
             )}
+            {variant === 'primary' && gap && (
+                <div className={styles.gapDummyElement} />
+            )}
             {variant === 'primary' && !actions && (position === 'center' || position === 'right') && (
                 <div className={styles.startDummyContent} />
             )}
@@ -83,6 +88,9 @@ export default function TabList(props: Props) {
                 <div className={styles.endDummyContent}>
                     {actions}
                 </div>
+            )}
+            {variant === 'primary' && gap && (
+                <div className={styles.gapDummyElement} />
             )}
         </div>
     );

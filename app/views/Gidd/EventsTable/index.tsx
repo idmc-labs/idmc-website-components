@@ -40,6 +40,8 @@ import styles from './styles.css';
 type EventData = NonNullable<NonNullable<GiddEventsQuery['giddDisasters']>['results']>[number];
 const eventKeySelector = (item: { id: string }) => item.id;
 
+const description = 'The events table displays a summary of internal displacement data aggregated by events. An event is defined as any natural hazard phenomena that triggered forced movements before, during or after a disaster hit.';
+
 const GIDD_EVENTS = gql`
 query GiddEvents(
     $page: Int,
@@ -200,6 +202,7 @@ function EventsTable(props: Props) {
 
     return (
         <div className={_cs(className, styles.eventsTable)}>
+            {description}
             <TextInput
                 icons={(
                     <IoSearchOutline />
