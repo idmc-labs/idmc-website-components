@@ -107,7 +107,7 @@ const GIDD_FILTER_OPTIONS = gql`
                 name
             }
         }
-        giddHazardSubTypes {
+        giddHazardTypes {
             id
             name
         }
@@ -117,7 +117,7 @@ const GIDD_FILTER_OPTIONS = gql`
 const GIDD_STATISTICS = gql`
     query GiddStatistics(
         $countriesIso3: [String!],
-        $hazardSubTypes: [String!],
+        $hazardTypes: [ID!],
         $endYear: Float,
         $startYear: Float,
         $endYearForTimeseries: Float,
@@ -136,7 +136,7 @@ const GIDD_STATISTICS = gql`
             totalCountries
         }
         giddDisasterStatistics(
-            hazardSubTypes: $hazardSubTypes,
+            hazardTypes: $hazardTypes,
             countriesIso3: $countriesIso3,
             endYear: $endYear,
             startYear: $startYear,
@@ -186,7 +186,7 @@ const GIDD_STATISTICS = gql`
             }
         }
         giddDisasterTimeseries: giddDisasterStatistics(
-            hazardSubTypes: $hazardSubTypes,
+            hazardTypes: $hazardTypes,
             countriesIso3: $countriesIso3,
             endYear: $endYearForTimeseries,
             startYear: $startYearForTimeseries,
@@ -316,22 +316,22 @@ function Gidd(props: Props) {
         setCountries,
     ] = useState<string[]>([]);
     const [
-        hazardSubTypes,
-        setHazardSubTypes,
+        hazardTypes,
+        setHazardTypes,
     ] = useState<string[]>([]);
 
     const handleCauseChange = useCallback((newVal: Cause | undefined) => {
         setDisplacementCause(newVal);
 
         if (newVal === 'conflict' || newVal === undefined) {
-            setHazardSubTypes([]);
+            setHazardTypes([]);
         }
 
         if (newVal) {
             setCombineCauseCharts(false);
         }
     }, [
-        setHazardSubTypes,
+        setHazardTypes,
     ]);
 
     const handleCountriesChange = useCallback((newVal: string[]) => {
@@ -352,7 +352,7 @@ function Gidd(props: Props) {
 
     const handleResetQueryClick = useCallback(() => {
         handleCountriesChange([]);
-        setHazardSubTypes([]);
+        setHazardTypes([]);
         handleCauseChange(undefined);
         setTimeRange([endYear, endYear]);
         setDisplacementCategory(undefined);
@@ -361,7 +361,7 @@ function Gidd(props: Props) {
     }, [
         handleCauseChange,
         handleCountriesChange,
-        setHazardSubTypes,
+        setHazardTypes,
         endYear,
     ]);
 
@@ -403,7 +403,7 @@ function Gidd(props: Props) {
     const statisticsVariables = useMemo(() => ({
         countriesIso3: countries,
         combineCountries: showCombinedCountries,
-        hazardSubTypes: displacementCause === 'disaster' ? hazardSubTypes : undefined,
+        hazardTypes: displacementCause === 'disaster' ? hazardTypes : undefined,
         startYear: timeRange[0],
         endYear: timeRange[1],
         startYearForTimeseries: timeRange[0] === timeRange[1] ? START_YEAR : timeRange[0],
@@ -411,7 +411,7 @@ function Gidd(props: Props) {
         releaseEnvironment: DATA_RELEASE,
     }), [
         displacementCause,
-        hazardSubTypes,
+        hazardTypes,
         showCombinedCountries,
         timeRange,
         countries,
@@ -818,7 +818,7 @@ function Gidd(props: Props) {
     )?.filter(isDefined);
 
     const hazardOptions = removeNull(
-        countryFilterResponse?.giddHazardSubTypes,
+        countryFilterResponse?.giddHazardTypes,
     )?.filter(isDefined);
 
     const sortedHazards = useMemo(
@@ -920,7 +920,7 @@ function Gidd(props: Props) {
                                 <p className={styles.downloadDescription}>{downloadText}</p>
                                 {displacementCause === 'disaster' ? (
                                     <ButtonLikeLink
-                                        href={suffixHelixRestEndpoint(`/gidd/disasters/disaster-export/?iso3__in=${countries.join(',')}&start_year=${timeRange[0]}&end_year=${timeRange[1]}&hazard_type__in=${hazardSubTypes.join(',')}`)}
+                                        href={suffixHelixRestEndpoint(`/gidd/disasters/disaster-export/?iso3__in=${countries.join(',')}&start_year=${timeRange[0]}&end_year=${timeRange[1]}&hazard_type__in=${hazardTypes.join(',')}`)}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                     >
@@ -1022,11 +1022,11 @@ function Gidd(props: Props) {
                                             <MultiSelectInput
                                                 name="disasterHazard"
                                                 className={styles.selectInput}
-                                                value={hazardSubTypes}
+                                                value={hazardTypes}
                                                 options={hazardOptions ?? undefined}
                                                 keySelector={idSelector}
                                                 labelSelector={hazardLabelSelector}
-                                                onChange={setHazardSubTypes}
+                                                onChange={setHazardTypes}
                                                 inputSectionClassName={styles.inputSection}
                                             />
                                         )}
@@ -1269,6 +1269,10 @@ function Gidd(props: Props) {
                                     <EventsTable
                                         activePage={eventsActivePage}
                                         onActivePageChange={setEventsActivePage}
+                                        countriesIso3={countries}
+                                        hazardTypes={hazardTypes}
+                                        startYear={timeRange[0]}
+                                        endYear={timeRange[1]}
                                     />
                                 </TabPanel>
                             )}

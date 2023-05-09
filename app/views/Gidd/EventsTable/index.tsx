@@ -16,6 +16,7 @@ import {
 import { IoSearchOutline } from 'react-icons/io5';
 import {
     roundAndRemoveZero,
+    getHazardTypeLabel,
     DATA_RELEASE,
 } from '#utils/common';
 import {
@@ -48,6 +49,10 @@ query GiddEvents(
     $ordering: String,
     $pageSize: Int,
     $eventName: String,
+    $endYear: Float,
+    $startYear: Float,
+    $hazardTypes: [ID!],
+    $countriesIso3: [String!],
     $releaseEnvironment: String!,
 ){
     giddDisasters(
@@ -55,6 +60,10 @@ query GiddEvents(
         pageSize: $pageSize,
         eventName: $eventName,
         page: $page,
+        countriesIso3: $countriesIso3,
+        endYear: $endYear,
+        startYear: $startYear,
+        hazardTypes: $hazardTypes,
         releaseEnvironment: $releaseEnvironment,
     ){
         results {
@@ -66,6 +75,7 @@ query GiddEvents(
             hazardCategoryName
             hazardSubCategoryName
             hazardSubTypeName
+            hazardTypeId
             hazardTypeName
             iso3
             newDisplacement
@@ -85,6 +95,10 @@ interface Props {
     className?: string;
     activePage: number;
     onActivePageChange: (newVal: number) => void;
+    startYear: number;
+    endYear: number;
+    countriesIso3: string[] | undefined;
+    hazardTypes: string[] | undefined;
 }
 
 function EventsTable(props: Props) {
@@ -92,6 +106,10 @@ function EventsTable(props: Props) {
         className,
         activePage,
         onActivePageChange,
+        startYear,
+        endYear,
+        countriesIso3,
+        hazardTypes,
     } = props;
 
     const eventDataSortState = useSortState({ name: 'year', direction: 'dsc' });
@@ -102,10 +120,18 @@ function EventsTable(props: Props) {
         eventName: eventSearchText,
         ordering: `${eventSorting?.direction === 'asc' ? '' : '-'}${eventSorting?.name}`,
         page: activePage,
+        countriesIso3,
+        startYear,
+        endYear,
+        hazardTypes,
         pageSize: EVENTS_TABLE_PAGE_SIZE,
         releaseEnvironment: DATA_RELEASE,
     }), [
+        countriesIso3,
+        startYear,
+        endYear,
         eventSearchText,
+        hazardTypes,
         eventSorting,
         activePage,
     ]);
@@ -192,7 +218,10 @@ function EventsTable(props: Props) {
                 createTextColumn<EventData, string>(
                     'hazardTypeName',
                     'Hazard Type',
-                    (item) => item.hazardTypeName,
+                    (item) => getHazardTypeLabel({
+                        id: item.hazardTypeId,
+                        label: item.hazardTypeName,
+                    }),
                     { sortable: true },
                 ),
             ]);

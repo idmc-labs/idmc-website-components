@@ -108,6 +108,7 @@
                 border-radius: var(--tui-radius-border-large);
                 background-color: var(--tui-color-background);
                 padding: var(--tui-spacing-medium);
+                gap: var(--tui-spacing-small);
 
                 .download-description {
                     color: #000;
