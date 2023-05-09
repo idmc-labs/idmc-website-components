@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     gql,
     useQuery,
@@ -150,6 +150,15 @@ function DisasterWidget(props: Props) {
             },
         },
     );
+
+    const displacementsByHazardType = useMemo(() => (
+        disasterData?.giddDisasterStatistics.displacementsByHazardType?.map((hazard) => ({
+            ...hazard,
+            label: getHazardTypeLabel(hazard),
+        }))
+    ), [
+        disasterData?.giddDisasterStatistics.displacementsByHazardType,
+    ]);
 
     if ((statsData?.giddDisasterStatistics?.newDisplacements ?? 0) <= 0) {
         return null;
@@ -307,7 +316,7 @@ function DisasterWidget(props: Props) {
                         />
                     )}
                     date={`${disasterTimeRangeActual[0]} - ${disasterTimeRangeActual[1]}`}
-                    chart={disasterData?.giddDisasterStatistics.displacementsByHazardType && (
+                    chart={displacementsByHazardType && (
                         <ErrorBoundary>
                             <ResponsiveContainer>
                                 <PieChart>
@@ -316,12 +325,7 @@ function DisasterWidget(props: Props) {
                                     />
                                     <Legend />
                                     <Pie
-                                        // FIXME: pass label to getHazardTypeLabel first
-                                        data={(
-                                            disasterData
-                                                .giddDisasterStatistics
-                                                .displacementsByHazardType
-                                        )}
+                                        data={displacementsByHazardType}
                                         dataKey="newDisplacements"
                                         nameKey="label"
                                     >

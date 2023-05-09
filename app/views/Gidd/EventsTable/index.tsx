@@ -40,8 +40,6 @@ import styles from './styles.css';
 type EventData = NonNullable<NonNullable<GiddEventsQuery['giddDisasters']>['results']>[number];
 const eventKeySelector = (item: { id: string }) => item.id;
 
-const lorem = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.';
-
 const GIDD_EVENTS = gql`
 query GiddEvents(
     $page: Int,
@@ -83,30 +81,34 @@ const EVENTS_TABLE_PAGE_SIZE = 10;
 
 interface Props {
     className?: string;
+    activePage: number;
+    onActivePageChange: (newVal: number) => void;
 }
 
 function EventsTable(props: Props) {
     const {
         className,
+        activePage,
+        onActivePageChange,
     } = props;
 
     const eventDataSortState = useSortState({ name: 'year', direction: 'dsc' });
     const { sorting: eventSorting } = eventDataSortState;
-    const [eventsActivePage, setEventsActivePage] = useState<number>(1);
     const [eventSearchText, setEventSearchText] = useState<string | undefined>();
-    const finalEventSearchText = useDebouncedValue(eventSearchText);
 
     const giddEventsVariables = useMemo(() => ({
-        eventName: finalEventSearchText,
+        eventName: eventSearchText,
         ordering: `${eventSorting?.direction === 'asc' ? '' : '-'}${eventSorting?.name}`,
-        page: eventsActivePage,
+        page: activePage,
         pageSize: EVENTS_TABLE_PAGE_SIZE,
         releaseEnvironment: DATA_RELEASE,
     }), [
-        finalEventSearchText,
+        eventSearchText,
         eventSorting,
-        eventsActivePage,
+        activePage,
     ]);
+
+    const debouncedVariables = useDebouncedValue(giddEventsVariables);
 
     const {
         previousData: previousEventsResponse,
@@ -117,7 +119,7 @@ function EventsTable(props: Props) {
     >(
         GIDD_EVENTS,
         {
-            variables: giddEventsVariables,
+            variables: debouncedVariables,
             // FIXME: Skip is not working
             // skip: displacementCause !== 'disaster',
             context: {
@@ -198,7 +200,6 @@ function EventsTable(props: Props) {
 
     return (
         <div className={_cs(className, styles.eventsTable)}>
-            {lorem}
             <TextInput
                 icons={(
                     <IoSearchOutline />
@@ -213,10 +214,10 @@ function EventsTable(props: Props) {
             <SortContext.Provider value={eventDataSortState}>
                 <Pager
                     className={styles.pager}
-                    activePage={eventsActivePage}
+                    activePage={activePage}
                     itemsCount={eventsResponse?.giddDisasters?.totalCount ?? 0}
                     maxItemsPerPage={EVENTS_TABLE_PAGE_SIZE}
-                    onActivePageChange={setEventsActivePage}
+                    onActivePageChange={onActivePageChange}
                     itemsPerPageControlHidden
                 />
                 <Table
