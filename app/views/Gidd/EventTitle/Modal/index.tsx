@@ -40,7 +40,7 @@ query GiddEventDetails(
         affectedCountries {
             countryName
             iso3
-            newDisplacement
+            newDisplacementRounded
         }
         endDate
         eventName
@@ -49,7 +49,7 @@ query GiddEventDetails(
             id
             name
         }
-        newDisplacement
+        newDisplacementRounded
         startDate
     }
 }
@@ -99,15 +99,19 @@ function EventModal(props: Props) {
         const tempCountries = [...event?.affectedCountries ?? []];
 
         tempCountries.sort(
-            (foo, bar) => compareNumber(foo?.newDisplacement, bar?.newDisplacement, -1),
+            (foo, bar) => compareNumber(
+                foo?.newDisplacementRounded,
+                bar?.newDisplacementRounded,
+                -1,
+            ),
         );
 
         return removeNull(tempCountries.filter(isDefined));
     }, [event?.affectedCountries]);
 
     const countryRendererParams = useCallback((_: string, country: Country) => ({
-        total: sortedCountries?.[0]?.newDisplacement,
-        value: country?.newDisplacement ?? 0,
+        total: sortedCountries?.[0]?.newDisplacementRounded,
+        value: country?.newDisplacementRounded ?? 0,
         title: country?.countryName,
     }), [sortedCountries]);
 
@@ -127,7 +131,7 @@ function EventModal(props: Props) {
                 <NumberBlock
                     label="Internal Displacements"
                     size="medium"
-                    value={event?.newDisplacement}
+                    value={event?.newDisplacementRounded}
                     abbreviated={false}
                 />
                 <TextOutput

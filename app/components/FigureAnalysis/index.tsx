@@ -40,7 +40,7 @@ query GiddCountryPfa(
             figureCategoryDisplay
             figureCause
             figureCauseDisplay
-            figures
+            figuresRounded
             iso3
             year
         }
@@ -164,7 +164,7 @@ function FigureAnalysis(props: Props) {
                         label="Figure"
                         displayType="block"
                         valueType="number"
-                        value={details.figures}
+                        value={details.figuresRounded}
                     />
                     <MarkdownViewer
                         markdown={details.description ?? 'N/A'}

@@ -70,11 +70,11 @@ const categoricalColorScheme = [
 const STATS = gql`
     query DisasterStats($iso3: String!, $startYear: Float, $endYear: Float, $releaseEnvironment: String!) {
         giddDisasterStatistics(countriesIso3: [$iso3], endYear: $endYear, startYear: $startYear, releaseEnvironment: $releaseEnvironment) {
-            newDisplacements
+            newDisplacementsRounded
             displacementsByHazardType {
                 id
                 label
-                newDisplacements
+                newDisplacementsRounded
             }
         }
     }
@@ -83,16 +83,16 @@ const STATS = gql`
 const DISASTER_DATA = gql`
     query DisasterData($countryIso3: String!, $startYear: Float, $endYear: Float, $categories: [ID!], $releaseEnvironment: String!) {
         giddDisasterStatistics(countriesIso3: [$countryIso3], endYear: $endYear, startYear: $startYear, hazardTypes: $categories, releaseEnvironment: $releaseEnvironment) {
-            newDisplacements
+            newDisplacementsRounded
             totalEvents
             newDisplacementTimeseriesByYear {
-                total
+                totalRounded
                 year
             }
             displacementsByHazardType {
                 id
                 label
-                newDisplacements
+                newDisplacementsRounded
             }
         }
     }
@@ -161,7 +161,7 @@ function DisasterWidget(props: Props) {
         disasterData?.giddDisasterStatistics.displacementsByHazardType,
     ]);
 
-    if ((statsData?.giddDisasterStatistics?.newDisplacements ?? 0) <= 0) {
+    if ((statsData?.giddDisasterStatistics?.newDisplacementsRounded ?? 0) <= 0) {
         return null;
     }
 
@@ -249,7 +249,7 @@ function DisasterWidget(props: Props) {
                 <Infographic
                     className={styles.disasterInfographic}
                     totalValue={disasterData
-                        ?.giddDisasterStatistics.newDisplacements || 0}
+                        ?.giddDisasterStatistics.newDisplacementsRounded || 0}
                     description={(
                         <div>
                             <Header
@@ -295,8 +295,7 @@ function DisasterWidget(props: Props) {
                                     />
                                     <Legend />
                                     <Line
-                                        dataKey="total"
-                                        key="total"
+                                        dataKey="totalRounded"
                                         stroke="var(--color-disaster)"
                                         name="Internal Displacements"
                                         strokeWidth={2}
@@ -335,7 +334,7 @@ function DisasterWidget(props: Props) {
                                     <Legend />
                                     <Pie
                                         data={displacementsByHazardType}
-                                        dataKey="newDisplacements"
+                                        dataKey="newDisplacementsRounded"
                                         nameKey="label"
                                     >
                                         {disasterData
