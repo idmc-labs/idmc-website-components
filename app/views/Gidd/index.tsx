@@ -9,7 +9,6 @@ import {
     compareNumber,
 } from '@togglecorp/fujs';
 import {
-    Button,
     Switch,
     SelectInput,
     MultiSelectInput,
@@ -45,8 +44,8 @@ import {
 import ButtonLikeLink from '#components/ButtonLikeLink';
 import ErrorBoundary from '#components/ErrorBoundary';
 import SliderInput from '#components/SliderInput';
-import Heading from '#components/Heading';
 import Header from '#components/Header';
+import Button from '#components/Button';
 import ProgressLine from '#components/ProgressLine';
 import NumberBlock from '#components/NumberBlock';
 import Tabs from '#components/Tabs';
@@ -314,11 +313,46 @@ function Gidd(props: Props) {
     const [
         countries,
         setCountries,
-    ] = useInputState<string[]>(['IND', 'AFG']);
+    ] = useInputState<string[]>([]);
     const [
         hazardSubTypes,
         setHazardSubTypes,
     ] = useInputState<string[]>([]);
+
+    const handleCauseChange = useCallback((newVal: Cause | undefined) => {
+        setDisplacementCause(newVal);
+
+        if (newVal === 'conflict' || newVal === undefined) {
+            setHazardSubTypes([]);
+        }
+
+        if (newVal) {
+            setCombineCauseCharts(false);
+        }
+    }, [
+        setHazardSubTypes,
+    ]);
+
+    const handleCountriesChange = useCallback((newVal: string[]) => {
+        setCountries(newVal);
+
+        if (newVal.length === 0 || newVal.length > 3) {
+            setCombineCountriesChart(false);
+        }
+    }, [setCountries]);
+
+    const handleResetQueryClick = useCallback(() => {
+        handleCountriesChange([]);
+        setHazardSubTypes([]);
+        handleCauseChange(undefined);
+        setDisasterTimeRange([endYear, endYear]);
+        setDisplacementCategory(undefined);
+    }, [
+        handleCauseChange,
+        handleCountriesChange,
+        setHazardSubTypes,
+        endYear,
+    ]);
 
     const timeRange = useDebouncedValue(timeRangeActual);
 
@@ -787,7 +821,7 @@ function Gidd(props: Props) {
 
     const handleAdditionalFiltersChange = useCallback((newVal) => {
         if (newVal) {
-            setDisplacementCause('disaster');
+            handleCauseChange('disaster');
         }
         setDisasterFilterVisibility(newVal);
     }, []);
@@ -851,9 +885,20 @@ function Gidd(props: Props) {
         <div className={styles.bodyContainer}>
             <div className={styles.gidd}>
                 <div className={styles.filterContainer}>
-                    <Heading darkMode>
-                        IDMC Query Tool
-                    </Heading>
+                    <Header
+                        heading="IDMC Query Tool"
+                        actions={(
+                            <Button
+                                className={styles.resetButton}
+                                name="resetQuery"
+                                onClick={handleResetQueryClick}
+                                variant="transparent"
+                            >
+                                Reset Query
+                            </Button>
+                        )}
+                        darkMode
+                    />
                     <div className={styles.filterBodyContainer}>
                         <div className={_cs(styles.filterSection, styles.leftSection)}>
                             <p className={styles.headingDescription}>{lorem}</p>
@@ -908,7 +953,7 @@ function Gidd(props: Props) {
                                                 options={countriesOptions}
                                                 keySelector={countryKeySelector}
                                                 labelSelector={nameSelector}
-                                                onChange={setCountries}
+                                                onChange={handleCountriesChange}
                                                 inputSectionClassName={styles.inputSection}
                                             />
                                         )}
@@ -926,7 +971,7 @@ function Gidd(props: Props) {
                                                 keySelector={causeKeySelector}
                                                 labelSelector={causeLabelSelector}
                                                 value={displacementCause}
-                                                onChange={setDisplacementCause}
+                                                onChange={handleCauseChange}
                                                 options={displacementCauseOptions}
                                             />
                                         )}
