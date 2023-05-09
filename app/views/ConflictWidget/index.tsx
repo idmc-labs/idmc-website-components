@@ -167,7 +167,7 @@ function ConflictWidget(props: Props) {
             footerActions={(
                 <>
                     <ButtonLikeLink
-                        href={suffixHelixRestEndpoint(`/countries/${iso3}/conflict-export/?start_year=${conflictTimeRange[0]}&end_year=${conflictTimeRange[1]}`)}
+                        href={suffixHelixRestEndpoint(`/gidd/displacements/displacement-export/?cause=conflict&iso3__in=${iso3}&start_year=${conflictTimeRange[0]}&end_year=${conflictTimeRange[1]}`)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={styles.conflictButton}

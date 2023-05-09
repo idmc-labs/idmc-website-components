@@ -38,6 +38,7 @@ import {
     suffixDrupalEndpoint,
     suffixHelixRestEndpoint,
     DATA_RELEASE,
+    getHazardTypeLabel,
 } from '#utils/common';
 import {
     DisasterDataQuery,
@@ -52,7 +53,8 @@ import styles from './styles.css';
 
 const chartMargins = { top: 16, left: 5, right: 5, bottom: 5 };
 
-const disasterCategoryKeySelector = (d: { label: string }) => d.label;
+const disasterTypeKeySelector = (d: { id: string, label: string }) => d.id;
+const disasterTypeLabelSelector = (d: { id: string, label: string }) => getHazardTypeLabel(d);
 
 const giddDisplacementDataLink = suffixDrupalEndpoint('/database/displacement-data');
 const categoricalColorScheme = [
@@ -69,6 +71,7 @@ const STATS = gql`
         giddDisasterStatistics(countriesIso3: [$iso3], endYear: $endYear, startYear: $startYear, releaseEnvironment: $releaseEnvironment) {
             newDisplacements
             displacementsByHazardType {
+                id
                 label
                 newDisplacements
             }
@@ -86,6 +89,7 @@ const DISASTER_DATA = gql`
                 year
             }
             displacementsByHazardType {
+                id
                 label
                 newDisplacements
             }
@@ -101,7 +105,7 @@ export interface Props {
 function DisasterWidget(props: Props) {
     const { iso3, endYear: year } = props;
     // Disaster section
-    const [disasterCategories, setDisasterCategories] = useState<string[]>([]);
+    const [disasterTypes, setDisasterTypes] = useState<string[]>([]);
     const [disasterTimeRangeActual, setDisasterTimeRange] = useState([START_YEAR, year]);
     const disasterTimeRange = useDebouncedValue(disasterTimeRangeActual);
 
@@ -138,7 +142,7 @@ function DisasterWidget(props: Props) {
                 countryIso3: iso3,
                 startYear: disasterTimeRange[0],
                 endYear: disasterTimeRange[1],
-                categories: disasterCategories,
+                categories: disasterTypes,
                 releaseEnvironment: DATA_RELEASE,
             },
             context: {
@@ -165,7 +169,7 @@ function DisasterWidget(props: Props) {
             footerActions={(
                 <>
                     <ButtonLikeLink
-                        href={suffixHelixRestEndpoint(`/countries/${iso3}/disaster-export/?start_year=${disasterTimeRange[0]}&end_year=${disasterTimeRange[1]}&hazard_type=${disasterCategories.join(',')}`)}
+                        href={suffixHelixRestEndpoint(`/gidd/disasters/disaster-export/?iso3__in=${iso3}&start_year=${disasterTimeRange[0]}&end_year=${disasterTimeRange[1]}&hazard_type__in=${disasterTypes.join(',')}`)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={styles.disasterButton}
@@ -201,22 +205,22 @@ function DisasterWidget(props: Props) {
                     />
                     <div />
                     <Header
-                        heading="Disaster Category"
+                        heading="Disaster Type"
                         headingSize="extraSmall"
                         description={(
                             <MultiSelectInput
                                 className={styles.selectInput}
                                 inputSectionClassName={styles.inputSection}
-                                placeholder="Disaster Category"
-                                name="disasterCategory"
-                                value={disasterCategories}
+                                placeholder="Disaster Type"
+                                name="disasterType"
+                                value={disasterTypes}
                                 options={(
                                     statsData?.giddDisasterStatistics.displacementsByHazardType
                                     ?? undefined
                                 )}
-                                keySelector={disasterCategoryKeySelector}
-                                labelSelector={disasterCategoryKeySelector}
-                                onChange={setDisasterCategories}
+                                keySelector={disasterTypeKeySelector}
+                                labelSelector={disasterTypeLabelSelector}
+                                onChange={setDisasterTypes}
                             />
                         )}
                     />
@@ -312,6 +316,7 @@ function DisasterWidget(props: Props) {
                                     />
                                     <Legend />
                                     <Pie
+                                        // FIXME: pass label to getHazardTypeLabel first
                                         data={(
                                             disasterData
                                                 .giddDisasterStatistics
@@ -323,9 +328,9 @@ function DisasterWidget(props: Props) {
                                         {disasterData
                                             ?.giddDisasterStatistics
                                             ?.displacementsByHazardType
-                                            ?.map(({ label }, index) => (
+                                            ?.map((data, index) => (
                                                 <Cell
-                                                    key={label}
+                                                    key={data.id}
                                                     fill={categoricalColorScheme[
                                                         index % categoricalColorScheme.length
                                                     ]}
