@@ -3,8 +3,6 @@
     align-items: center;
     flex-direction: column;
     background-color: var(--tui-color-background);
-    height: 100vh;
-    overflow-y: auto;
 
     .gidd {
         display: flex;
@@ -134,10 +132,6 @@
             padding: var(--tui-spacing-large);
             max-width: calc(50% - var(--tui-spacing-extra-large) / 2);
             gap: var(--tui-spacing-medium);
-
-            .details-text {
-                min-height: 6rem;
-            }
 
             .causes-block {
                 display: flex;

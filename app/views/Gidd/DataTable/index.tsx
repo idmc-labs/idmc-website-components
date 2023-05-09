@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import {
     _cs,
     isDefined,
@@ -22,14 +22,13 @@ import {
     createTextColumn,
     createNumberColumn,
 } from '#components/tableHelpers';
+import useDebouncedValue from '#hooks/useDebouncedValue';
 import {
     GiddDisplacementsQuery,
     GiddDisplacementsQueryVariables,
 } from '#generated/types';
 
 import styles from './styles.css';
-
-const lorem = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.';
 
 type DisplacementData = NonNullable<NonNullable<GiddDisplacementsQuery['giddDisplacements']>['results']>[number];
 const displacementItemKeySelector = (item: { id: string }) => item.id;
@@ -80,6 +79,8 @@ interface Props {
     startYear: number;
     endYear: number;
     countriesIso3: string[] | undefined;
+    activePage: number;
+    onActivePageChange: (newVal: number) => void;
 }
 
 function DataTable(props: Props) {
@@ -90,12 +91,12 @@ function DataTable(props: Props) {
         startYear,
         endYear,
         countriesIso3,
+        activePage,
+        onActivePageChange,
     } = props;
 
     const overallDataSortState = useSortState({ name: 'year', direction: 'dsc' });
     const { sorting } = overallDataSortState;
-
-    const [activePage, setActivePage] = useState<number>(1);
 
     const giddDisplacementsVariables = useMemo(() => ({
         ordering: `${sorting?.direction === 'asc' ? '' : '-'}${sorting?.name}`,
@@ -113,6 +114,8 @@ function DataTable(props: Props) {
         activePage,
     ]);
 
+    const debouncedVariables = useDebouncedValue(giddDisplacementsVariables);
+
     const {
         previousData: previousDisplacementsResponse,
         data: displacementsResponse = previousDisplacementsResponse,
@@ -122,7 +125,7 @@ function DataTable(props: Props) {
     >(
         GIDD_DISPLACEMENTS,
         {
-            variables: giddDisplacementsVariables,
+            variables: debouncedVariables,
             context: {
                 clientName: 'helix',
             },
@@ -192,14 +195,13 @@ function DataTable(props: Props) {
 
     return (
         <div className={_cs(className, styles.dataTable)}>
-            {lorem}
             <SortContext.Provider value={overallDataSortState}>
                 <Pager
                     className={styles.pager}
                     activePage={activePage}
                     itemsCount={displacementsResponse?.giddDisplacements?.totalCount ?? 0}
                     maxItemsPerPage={DISPLACEMENTS_TABLE_PAGE_SIZE}
-                    onActivePageChange={setActivePage}
+                    onActivePageChange={onActivePageChange}
                     itemsPerPageControlHidden
                 />
                 <Table

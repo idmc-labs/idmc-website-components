@@ -52,7 +52,6 @@ import Tabs from '#components/Tabs';
 import Tab from '#components/Tabs/Tab';
 import TabList from '#components/Tabs/TabList';
 import TabPanel from '#components/Tabs/TabPanel';
-import useInputState from '#hooks/useInputState';
 import GridFilterInputContainer from '#components/GridFilterInputContainer';
 import useDebouncedValue from '#hooks/useDebouncedValue';
 import DisplacementIcon from '#components/DisplacementIcon';
@@ -91,7 +90,7 @@ const chartMargins = { top: 16, left: 0, right: 0, bottom: 5 };
 const lorem = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.';
 const lorem2 = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.';
 const flowDetails = 'The internal displacements figure refers to the number of forced movements of people within the borders of their country recorded during the year. Figures may include individuals who have been displaced more than once.';
-const stockDetails = 'The total number of IDPs (internally displaced people) is a snapshot of all the people living in internal displacement at the end of the year.';
+const stockDetails = 'The total number of Internally Displaced People (IDPs) is a snapshot of all the people living in internal displacements at the end of the year.';
 
 type HazardData = NonNullable<NonNullable<GiddStatisticsQuery['giddDisasterStatistics']>['displacementsByHazardType']>[number];
 
@@ -270,7 +269,7 @@ const causeLabelSelector = (option: CauseOption) => option.label;
 const displacementCauseOptions: CauseOption[] = [
     {
         key: 'conflict',
-        label: 'Conflict',
+        label: 'Conflict and violence',
     },
     {
         key: 'disaster',
@@ -288,7 +287,7 @@ const categoryLabelSelector = (option: CategoryOption) => option.label;
 const displacementCategoryOptions: CategoryOption[] = [
     {
         key: 'flow',
-        label: 'Internal Displacement',
+        label: 'Internal Displacements',
     },
     {
         key: 'stock',
@@ -303,21 +302,23 @@ export interface Props {
 function Gidd(props: Props) {
     const { endYear } = props;
 
-    const [timeRangeActual, setDisasterTimeRange] = useState([endYear, endYear]);
+    const [timeRange, setTimeRange] = useState([endYear, endYear]);
     const [displacementCause, setDisplacementCause] = useState<Cause | undefined>();
     const [combineCauseCharts, setCombineCauseCharts] = useState(false);
     const [displacementCategory, setDisplacementCategory] = useState<Category | undefined>();
     const [selectedTable, setSelectedTable] = useState<'events' | 'data'>('data');
     const [disasterFiltersShown, setDisasterFilterVisibility] = useState(false);
     const [combineCountriesChart, setCombineCountriesChart] = useState(false);
+    const [dataActivePage, setDataActivePage] = useState<number>(1);
+    const [eventsActivePage, setEventsActivePage] = useState<number>(1);
     const [
         countries,
         setCountries,
-    ] = useInputState<string[]>([]);
+    ] = useState<string[]>([]);
     const [
         hazardSubTypes,
         setHazardSubTypes,
-    ] = useInputState<string[]>([]);
+    ] = useState<string[]>([]);
 
     const handleCauseChange = useCallback((newVal: Cause | undefined) => {
         setDisplacementCause(newVal);
@@ -339,22 +340,30 @@ function Gidd(props: Props) {
         if (newVal.length === 0 || newVal.length > 3) {
             setCombineCountriesChart(false);
         }
+        setDataActivePage(1);
+        setEventsActivePage(1);
     }, [setCountries]);
+
+    const handleTimeRangeChange = useCallback((newVal: number[]) => {
+        setTimeRange(newVal);
+        setDataActivePage(1);
+        setEventsActivePage(1);
+    }, []);
 
     const handleResetQueryClick = useCallback(() => {
         handleCountriesChange([]);
         setHazardSubTypes([]);
         handleCauseChange(undefined);
-        setDisasterTimeRange([endYear, endYear]);
+        setTimeRange([endYear, endYear]);
         setDisplacementCategory(undefined);
+        setDataActivePage(1);
+        setEventsActivePage(1);
     }, [
         handleCauseChange,
         handleCountriesChange,
         setHazardSubTypes,
         endYear,
     ]);
-
-    const timeRange = useDebouncedValue(timeRangeActual);
 
     const domainForCharts = useMemo(() => {
         if (timeRange[0] === timeRange[1]) {
@@ -408,13 +417,15 @@ function Gidd(props: Props) {
         countries,
     ]);
 
+    const debouncedStatisticsVariables = useDebouncedValue(statisticsVariables);
+
     const {
         previousData: previousStatisticsData,
         data: statisticsResponse = previousStatisticsData,
     } = useQuery<GiddStatisticsQuery, GiddStatisticsQueryVariables>(
         GIDD_STATISTICS,
         {
-            variables: statisticsVariables,
+            variables: debouncedStatisticsVariables,
             context: {
                 clientName: 'helix',
             },
@@ -671,7 +682,7 @@ function Gidd(props: Props) {
         }
         if (!combineCauseCharts && !showCombinedCountries) {
             const disasterDataByCountries = Object.values(listToGroupList(
-                disasterChartData?.totalDisplacementTimeseriesByCountry ?? [],
+                disasterChartData?.newDisplacementTimeseriesByCountry ?? [],
                 (item) => item.country.id,
                 (item) => ({
                     year: Number(item.year),
@@ -679,7 +690,7 @@ function Gidd(props: Props) {
                 }),
             )).flat();
             const conflictDataByCountries = Object.values(listToGroupList(
-                conflictChartData?.totalDisplacementTimeseriesByCountry ?? [],
+                conflictChartData?.newDisplacementTimeseriesByCountry ?? [],
                 (item) => item.country.id,
                 (item) => ({
                     year: Number(item.year),
@@ -731,7 +742,7 @@ function Gidd(props: Props) {
                 countries.map((country) => (`${year}-${country}`))
             ));
             const disasterDataByCountries = listToMap(
-                disasterChartData?.totalDisplacementTimeseriesByCountry ?? [],
+                disasterChartData?.newDisplacementTimeseriesByCountry ?? [],
                 (item) => `${item.year}-${item.country.iso3}` as string,
                 (item) => ({
                     year: Number(item.year),
@@ -741,7 +752,7 @@ function Gidd(props: Props) {
                 }),
             );
             const conflictDataByCountries = listToMap(
-                conflictChartData?.totalDisplacementTimeseriesByCountry ?? [],
+                conflictChartData?.newDisplacementTimeseriesByCountry ?? [],
                 (item) => `${item.year}-${item.country.iso3}` as string,
                 (item) => ({
                     year: Number(item.year),
@@ -824,7 +835,9 @@ function Gidd(props: Props) {
             handleCauseChange('disaster');
         }
         setDisasterFilterVisibility(newVal);
-    }, []);
+    }, [
+        handleCauseChange,
+    ]);
 
     const hazardRendererParams = useCallback((_: string, hazard: HazardData) => ({
         total: maxDisplacementValue,
@@ -864,7 +877,7 @@ function Gidd(props: Props) {
                     name="combineCauseCharts"
                     value={combineCauseCharts}
                     onChange={setCombineCauseCharts}
-                    label="Combine by Conflict and Violence or Disaster"
+                    label="Combine conflict and violence and disasters"
                 />
             )}
             {countries.length > 1 && countries.length <= 3 && (
@@ -875,7 +888,7 @@ function Gidd(props: Props) {
                     name="combineCountriesChart"
                     value={combineCountriesChart}
                     onChange={setCombineCountriesChart}
-                    label="Combine by Countries"
+                    label="Combine locations"
                 />
             )}
         </div>
@@ -886,7 +899,7 @@ function Gidd(props: Props) {
             <div className={styles.gidd}>
                 <div className={styles.filterContainer}>
                     <Header
-                        heading="IDMC Query Tool"
+                        heading="IDMC Data Portal"
                         actions={(
                             <Button
                                 className={styles.resetButton}
@@ -927,8 +940,8 @@ function Gidd(props: Props) {
                             <div className={styles.top}>
                                 <div className={_cs(styles.filterSection)}>
                                     <GridFilterInputContainer
-                                        label="Internal Displacement or Total Number of IDPs"
-                                        helpText="Select internal displacement or total number of IDPs"
+                                        label="Internal Displacements or Total Number of IDPs"
+                                        helpText="Select internal displacements or total number of IDPs"
                                         input={(
                                             <SelectInput
                                                 name="category"
@@ -943,8 +956,8 @@ function Gidd(props: Props) {
                                         )}
                                     />
                                     <GridFilterInputContainer
-                                        label="Regions, Countries, and/or Territories"
-                                        labelDescription="*In compared view, up to 3 countries, regions, or territories can be selected"
+                                        label="Countries, and/or Territories"
+                                        labelDescription="*In compared view, up to 3 countries or territories can be selected"
                                         input={(
                                             <MultiSelectInput
                                                 name="country"
@@ -962,7 +975,6 @@ function Gidd(props: Props) {
                                 <div className={_cs(styles.filterSection)}>
                                     <GridFilterInputContainer
                                         label="Conflict and Violence or Disaster"
-                                        helpText="Select Conflict and Violence or Disaster"
                                         input={(
                                             <SelectInput
                                                 name="cause"
@@ -977,8 +989,7 @@ function Gidd(props: Props) {
                                         )}
                                     />
                                     <GridFilterInputContainer
-                                        label={`Timescale ${`${timeRangeActual[0]} - ${timeRangeActual[1]}`}`}
-                                        helpText="Select Timescale"
+                                        label={`Timescale ${`${timeRange[0]} - ${timeRange[1]}`}`}
                                         input={(
                                             <SliderInput
                                                 className={_cs(styles.sliderInput, styles.input)}
@@ -987,8 +998,8 @@ function Gidd(props: Props) {
                                                 max={endYear}
                                                 step={1}
                                                 minDistance={0}
-                                                value={timeRangeActual}
-                                                onChange={setDisasterTimeRange}
+                                                value={timeRange}
+                                                onChange={handleTimeRangeChange}
                                             />
                                         )}
                                     />
@@ -1035,35 +1046,34 @@ function Gidd(props: Props) {
                         >
                             <div className={styles.topStats}>
                                 <Header
-                                    heading="Internal Displacement Data"
+                                    heading="Internal Displacements"
                                     headingSize="medium"
-                                    headingDescription={flowDetails}
-                                    headingDescriptionClassName={styles.detailsText}
+                                    headingTooltip={flowDetails}
                                 />
                                 {!displacementCause && (
                                     <NumberBlock
                                         label="Total"
                                         size="large"
-                                        subLabel={`In ${totalCountries} countries and territories`}
+                                        subLabel={totalCountries === 1 ? 'In 1 country and territory' : `In ${totalCountries} countries and territories`}
                                         value={flowTotal}
                                     />
                                 )}
                                 <div className={styles.causesBlock}>
                                     {isConflictDataShown && (
                                         <NumberBlock
-                                            label="Total by Conflict and Violence"
+                                            label="Total by conflict and violence"
                                             size={displacementCause ? 'large' : 'medium'}
                                             variant="conflict"
-                                            subLabel={`In ${conflictStats?.totalCountries} countries and territories`}
+                                            subLabel={conflictStats?.totalCountries === 1 ? 'In 1 country and territory' : `In ${conflictStats?.totalCountries} countries and territories`}
                                             value={conflictStats?.newDisplacements}
                                         />
                                     )}
                                     {isDisasterDataShown && (
                                         <NumberBlock
-                                            label="Total by Disasters"
+                                            label="Total by disasters"
                                             size={displacementCause ? 'large' : 'medium'}
                                             variant="disaster"
-                                            subLabel={`In ${disasterStats?.totalCountries} countries and territories`}
+                                            subLabel={disasterStats?.totalCountries === 1 ? 'In 1 country and territory' : `In ${disasterStats?.totalCountries} countries and territories`}
                                             value={disasterStats?.newDisplacements}
                                         />
                                     )}
@@ -1138,10 +1148,9 @@ function Gidd(props: Props) {
                             )}
                         >
                             <Header
-                                heading="Total Number of IDPs Data"
+                                heading="Internally displaced people (IDPs)"
+                                headingTooltip={stockDetails}
                                 headingSize="medium"
-                                headingDescription={stockDetails}
-                                headingDescriptionClassName={styles.detailsText}
                             />
                             {!displacementCause && (
                                 <NumberBlock
@@ -1209,30 +1218,6 @@ function Gidd(props: Props) {
                                                     dot
                                                 />
                                             ))}
-                                            {/*
-                                            {isDisasterDataShown && (
-                                                <Line
-                                                    dataKey="disaster"
-                                                    key="disaster"
-                                                    stroke="var(--color-disaster)"
-                                                    name="Disaster Internal Displacements"
-                                                    strokeWidth={2}
-                                                    connectNulls
-                                                    dot
-                                                />
-                                            )}
-                                            {isConflictDataShown && (
-                                                <Line
-                                                    dataKey="conflict"
-                                                    key="conflict"
-                                                    stroke="var(--color-conflict)"
-                                                    name="Conflict Internal Displacements"
-                                                    strokeWidth={2}
-                                                    connectNulls
-                                                    dot
-                                                />
-                                            )}
-                                            */}
                                         </LineChart>
                                     </ResponsiveContainer>
                                 </ErrorBoundary>
@@ -1269,11 +1254,16 @@ function Gidd(props: Props) {
                                 countriesIso3={countries}
                                 startYear={timeRange[0]}
                                 endYear={timeRange[1]}
+                                activePage={dataActivePage}
+                                onActivePageChange={setDataActivePage}
                             />
                         </TabPanel>
                         {displacementCause === 'disaster' && (
                             <TabPanel name="events">
-                                <EventsTable />
+                                <EventsTable
+                                    activePage={eventsActivePage}
+                                    onActivePageChange={setEventsActivePage}
+                                />
                             </TabPanel>
                         )}
                     </Tabs>

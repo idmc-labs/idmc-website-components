@@ -7,6 +7,15 @@
     font-family: var(--tui-font-family-heading);
     font-weight: var(--tui-font-weight-heading);
 
+    .heading-tooltip-container {
+        display: flex;
+
+        .info-icon {
+            margin: 0 var(--tui-spacing-extra-extra-small);
+            font-size: var(--tui-font-size-medium);
+        }
+    }
+
     &.dark-mode {
         color: var(--color-text-on-dark);
     }
