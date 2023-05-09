@@ -21,6 +21,16 @@
         padding: var(--tui-spacing-medium);
         color: var(--color-text-on-dark);
 
+        .reset-button {
+            padding: var(--tui-spacing-small);
+            color: var(--tui-color-text-on-dark);
+
+            &:hover {
+                opacity: 0.9;
+                color: var(--tui-color-text-on-dark);
+            }
+        }
+
         .filter-body-container {
             display: flex;
             flex-wrap: wrap;
@@ -47,6 +57,10 @@
                 &.left-section {
                     justify-content: flex-start;
                 }
+
+                @media screen and (max-width: 720px) {
+                    flex-basis: 100%;
+                }
             }
 
             .right {
@@ -60,6 +74,10 @@
                     display: flex;
                     flex-wrap: wrap;
                     gap: var(--tui-spacing-large);
+                }
+
+                @media screen and (max-width: 720px) {
+                    flex-basis: 100%;
                 }
 
                 .switch {
