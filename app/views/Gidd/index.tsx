@@ -23,6 +23,7 @@ import {
     roundAndRemoveZero,
     getHazardTypeLabel,
     suffixHelixRestEndpoint,
+    prepareUrl,
 } from '#utils/common';
 import {
     gql,
@@ -920,7 +921,15 @@ function Gidd(props: Props) {
                                 <p className={styles.downloadDescription}>{downloadText}</p>
                                 {displacementCause === 'disaster' ? (
                                     <ButtonLikeLink
-                                        href={suffixHelixRestEndpoint(`/gidd/disasters/disaster-export/?iso3__in=${countries.join(',')}&start_year=${timeRange[0]}&end_year=${timeRange[1]}&hazard_type__in=${hazardTypes.join(',')}`)}
+                                        href={suffixHelixRestEndpoint(prepareUrl(
+                                            '/gidd/disasters/disaster-export/',
+                                            {
+                                                iso3__in: countries,
+                                                start_year: timeRange[0],
+                                                end_year: timeRange[1],
+                                                hazard_type__in: hazardTypes,
+                                            },
+                                        ))}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                     >
@@ -928,7 +937,15 @@ function Gidd(props: Props) {
                                     </ButtonLikeLink>
                                 ) : (
                                     <ButtonLikeLink
-                                        href={suffixHelixRestEndpoint(`/gidd/displacements/displacement-export/?cause=${displacementCause}&iso3__in=${countries.join(',')}&start_year=${timeRange[0]}&end_year=${timeRange[1]}`)}
+                                        href={suffixHelixRestEndpoint(prepareUrl(
+                                            '/gidd/displacements/displacement-export/',
+                                            {
+                                                cause: displacementCause,
+                                                iso3__in: countries,
+                                                start_year: timeRange[0],
+                                                end_year: timeRange[1],
+                                            },
+                                        ))}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                     >

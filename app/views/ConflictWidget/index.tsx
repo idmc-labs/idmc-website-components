@@ -34,6 +34,7 @@ import {
     suffixDrupalEndpoint,
     suffixHelixRestEndpoint,
     DATA_RELEASE,
+    prepareUrl,
 } from '#utils/common';
 import {
     ConflictDataQuery,
@@ -167,7 +168,14 @@ function ConflictWidget(props: Props) {
             footerActions={(
                 <>
                     <ButtonLikeLink
-                        href={suffixHelixRestEndpoint(`/gidd/displacements/displacement-export/?cause=conflict&iso3__in=${iso3}&start_year=${conflictTimeRange[0]}&end_year=${conflictTimeRange[1]}`)}
+                        href={suffixHelixRestEndpoint(prepareUrl(
+                            '/gidd/displacements/displacement-export/',
+                            {
+                                iso3__in: iso3,
+                                start_year: conflictTimeRange[0],
+                                end_year: conflictTimeRange[1],
+                            },
+                        ))}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={styles.conflictButton}
