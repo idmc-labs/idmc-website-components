@@ -15,7 +15,6 @@ import {
 } from '@togglecorp/toggle-ui';
 import { IoSearchOutline } from 'react-icons/io5';
 import {
-    roundAndRemoveZero,
     getHazardTypeLabel,
     DATA_RELEASE,
 } from '#utils/common';
@@ -206,7 +205,7 @@ function EventsTable(props: Props) {
                 createNumberColumn<EventData, string>(
                     'newDisplacementRounded',
                     'Disaster Internal Displacements',
-                    (item) => roundAndRemoveZero(item.newDisplacementRounded ?? undefined),
+                    (item) => item.newDisplacementRounded,
                     { sortable: true },
                 ),
                 createTextColumn<EventData, string>(
