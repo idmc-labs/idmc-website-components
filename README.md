@@ -46,3 +46,13 @@ docker-compose up
 ```
 
 You will need to update the `.env` file for your react application.
+
+## Prod
+### AWS
+```bash
+# PREVIEW
+aws cloudformation deploy --capabilities CAPABILITY_NAMED_IAM --template-file aws/cloudformation.yaml --stack-name preview-idmc-website-components --tags app=idmc-website env=preview --parameter-overrides Env=preview HostedZoneId=<HostedZoneId>
+
+# RELEASE
+aws cloudformation deploy --capabilities CAPABILITY_NAMED_IAM --template-file aws/cloudformation.yaml --stack-name release-idmc-website-components --tags app=idmc-website env=release --parameter-overrides Env=release HostedZoneId=<HostedZoneId>
+```
