@@ -1177,7 +1177,7 @@ function Gidd(props: Props) {
                             <div className={styles.causesBlock}>
                                 {isConflictDataShown && (
                                     <NumberBlock
-                                        label="Total by Conflict and Violence"
+                                        label="Total by conflict and violence"
                                         variant="conflict"
                                         size={displacementCause ? 'large' : 'medium'}
                                         subLabel={getCountryCountSubLabel(
@@ -1188,7 +1188,7 @@ function Gidd(props: Props) {
                                 )}
                                 {isDisasterDataShown && (
                                     <NumberBlock
-                                        label="Total by Disasters"
+                                        label="Total by disasters"
                                         size={displacementCause ? 'large' : 'medium'}
                                         variant="disaster"
                                         subLabel={getCountryCountSubLabel(
