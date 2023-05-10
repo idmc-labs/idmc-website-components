@@ -94,6 +94,7 @@ function IduWidget(props: IduWidgetProps) {
 
     return (
         <section
+            id="internal-displacement"
             className={styles.internalDisplacementUpdates}
         >
             <Header
