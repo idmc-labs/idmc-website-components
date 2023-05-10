@@ -292,7 +292,7 @@ const displacementCategoryOptions: CategoryOption[] = [
     },
     {
         key: 'stock',
-        label: 'Total Number of IDPs',
+        label: 'Internally displaced people (IDPs)',
     },
 ];
 
@@ -946,8 +946,8 @@ function Gidd(props: Props) {
                             <div className={styles.top}>
                                 <div className={_cs(styles.filterSection)}>
                                     <GridFilterInputContainer
-                                        label="Internal Displacements or Total Number of IDPs"
-                                        helpText="Select internal displacements or total number of IDPs"
+                                        label="Internal Displacements or Internally displaced people (IDPs)"
+                                        helpText="Select internal displacements or Internally displaced people (IDPs)"
                                         input={(
                                             <SelectInput
                                                 name="category"

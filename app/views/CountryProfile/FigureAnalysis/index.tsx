@@ -73,7 +73,7 @@ function ItemTable(props: ItemTableProps) {
             </tr>
             <tr>
                 <td>
-                    <div className={styles.header}>{`Total Number of IDPs as of 31 December ${selectedYear}`}</div>
+                    <div className={styles.header}>{`Internally displaced people (IDPs) as of 31 December ${selectedYear}`}</div>
                     <div className={styles.description}>
                         {pendingInfo}
                     </div>
