@@ -140,16 +140,8 @@ const GIDD_STATISTICS = gql`
             hazardTypes: $hazardTypes,
         ) {
             internalDisplacementsRounded
-            internalDisplacementCountries
-        }
-        giddCombinedLatestYearFigures: giddCombinedStatistics(
-            countriesIso3: $countriesIso3,
-            endYear: $endYear,
-            startYear: $endYear,
-            releaseEnvironment: $releaseEnvironment,
-            hazardTypes: $hazardTypes,
-        ) {
             totalDisplacementsRounded
+            internalDisplacementCountries
             totalDisplacementCountries
         }
         giddConflictStatistics(
@@ -158,6 +150,8 @@ const GIDD_STATISTICS = gql`
             startYear: $startYear,
             releaseEnvironment: $releaseEnvironment,
         ) {
+            totalDisplacementsRounded
+            totalDisplacementCountries
             newDisplacementsRounded
             internalDisplacementCountries
         }
@@ -169,6 +163,8 @@ const GIDD_STATISTICS = gql`
             releaseEnvironment: $releaseEnvironment,
         ){
             newDisplacementsRounded
+            totalDisplacementsRounded
+            totalDisplacementCountries
             internalDisplacementCountries
             displacementsByHazardType {
                 id
@@ -243,24 +239,6 @@ const GIDD_STATISTICS = gql`
                 totalRounded
                 year
             }
-        }
-        giddConflictLatestYearFigures: giddConflictStatistics(
-            countriesIso3: $countriesIso3,
-            endYear: $endYear,
-            startYear: $endYear,
-            releaseEnvironment: $releaseEnvironment,
-        ) {
-            totalDisplacementsRounded
-            totalDisplacementCountries
-        }
-        giddDisasterLatestYearFigures: giddDisasterStatistics(
-            countriesIso3: $countriesIso3,
-            endYear: $endYear,
-            startYear: $endYear,
-            releaseEnvironment: $releaseEnvironment,
-        ) {
-            totalDisplacementsRounded
-            totalDisplacementCountries
         }
     }
 `;
@@ -458,9 +436,6 @@ function Gidd(props: Props) {
     const conflictStats = removeNull(statisticsResponse?.giddConflictStatistics);
     const disasterStats = removeNull(statisticsResponse?.giddDisasterStatistics);
     const combinedStats = removeNull(statisticsResponse?.giddCombinedStatistics);
-    const latestConflictStats = removeNull(statisticsResponse?.giddConflictLatestYearFigures);
-    const latestDisasterStats = removeNull(statisticsResponse?.giddDisasterLatestYearFigures);
-    const latestCombinedStats = removeNull(statisticsResponse?.giddCombinedLatestYearFigures);
 
     const conflictChartData = removeNull(statisticsResponse?.giddConflictTimeseries);
     const disasterChartData = removeNull(statisticsResponse?.giddDisasterTimeseries);
@@ -882,11 +857,6 @@ function Gidd(props: Props) {
         title: getHazardTypeLabel(hazard),
     }), [maxDisplacementValue]);
 
-    const stockTotal = latestCombinedStats?.totalDisplacementsRounded;
-    const flowTotal = combinedStats?.internalDisplacementsRounded;
-    const totalStockCountries = latestConflictStats?.totalDisplacementCountries;
-    const totalFlowCountries = combinedStats?.internalDisplacementCountries;
-
     const chartTypeSelection = (
         <div className={styles.chartTypeContainer}>
             {isNotDefined(displacementCause) && (
@@ -1090,8 +1060,10 @@ function Gidd(props: Props) {
                                     <NumberBlock
                                         label="Total"
                                         size="large"
-                                        subLabel={getCountryCountSubLabel(totalFlowCountries)}
-                                        value={flowTotal}
+                                        subLabel={getCountryCountSubLabel(
+                                            combinedStats?.internalDisplacementCountries,
+                                        )}
+                                        value={combinedStats?.internalDisplacementsRounded}
                                     />
                                 )}
                                 <div className={styles.causesBlock}>
@@ -1197,9 +1169,9 @@ function Gidd(props: Props) {
                                     label="Total"
                                     size="large"
                                     subLabel={getCountryCountSubLabel(
-                                        totalStockCountries,
+                                        combinedStats?.totalDisplacementCountries,
                                     )}
-                                    value={stockTotal}
+                                    value={combinedStats?.totalDisplacementsRounded}
                                 />
                             )}
                             <div className={styles.causesBlock}>
@@ -1209,9 +1181,9 @@ function Gidd(props: Props) {
                                         variant="conflict"
                                         size={displacementCause ? 'large' : 'medium'}
                                         subLabel={getCountryCountSubLabel(
-                                            latestConflictStats?.totalDisplacementCountries,
+                                            conflictStats?.totalDisplacementCountries,
                                         )}
-                                        value={latestConflictStats?.totalDisplacementsRounded}
+                                        value={conflictStats?.totalDisplacementsRounded}
                                     />
                                 )}
                                 {isDisasterDataShown && (
@@ -1220,9 +1192,9 @@ function Gidd(props: Props) {
                                         size={displacementCause ? 'large' : 'medium'}
                                         variant="disaster"
                                         subLabel={getCountryCountSubLabel(
-                                            latestDisasterStats?.totalDisplacementCountries,
+                                            disasterStats?.totalDisplacementCountries,
                                         )}
-                                        value={latestDisasterStats?.totalDisplacementsRounded}
+                                        value={disasterStats?.totalDisplacementsRounded}
                                     />
                                 )}
                             </div>
