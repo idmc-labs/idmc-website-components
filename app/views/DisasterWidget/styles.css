@@ -1,0 +1,64 @@
+.disaster-header {
+    background-color: var(--color-disaster) !important;
+
+    .disaster-heading {
+        color: var(--color-text-on-dark);
+    }
+}
+
+.disaster-button {
+    background-color: var(--color-disaster);
+    height: 2.5rem;
+}
+
+
+.infographic-list {
+    display: flex;
+    flex-wrap: wrap;
+
+    >* {
+        flex-basis: 0;
+        flex-grow: 1;
+        padding: var(--tui-spacing-medium);
+        min-width: 15rem;
+    }
+
+    .disaster-infographic {
+        color: var(--color-disaster);
+
+        .heading {
+            color: var(--color-disaster);
+        }
+    }
+}
+
+.select-input {
+    .input-section {
+        border-radius: 0.25rem;
+        background-color: var(--tui-filter-background-color);
+        height: 2.5rem;
+
+        >* {
+            padding-right: 0;
+            width: 4.5rem;
+        }
+
+        :hover {
+            background-color: unset;
+        }
+    }
+}
+
+@media (max-width: 1000px) {
+    .time-range-container {
+        padding-right: var(--tui-spacing-medium);
+    }
+
+    .select-input {
+        .input-section {
+            margin-right: var(--tui-spacing-medium);
+            border-radius: 0.25rem;
+            height: 3rem;
+        }
+    }
+}

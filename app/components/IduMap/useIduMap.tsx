@@ -27,7 +27,11 @@ import Header from '#components/Header';
 import SliderInput from '#components/SliderInput';
 import Container from '#components/Container';
 
-import { monthList } from '#utils/common';
+import {
+    monthList,
+    suffixDrupalEndpoint,
+    HELIX_CLIENT_ID,
+} from '#utils/common';
 import LegendElement from '#components/LegendElement';
 
 import RawIduMap from './RawIduMap';
@@ -35,20 +39,15 @@ import useInputState from '../../hooks/useInputState';
 
 import styles from './styles.css';
 
-// FIXME: move this somewhere else
-const DRUPAL_ENDPOINT = process.env.REACT_APP_DRUPAL_ENDPOINT as string || '';
-function suffixDrupalEndpoing(path: string) {
-    return `${DRUPAL_ENDPOINT}${path}`;
-}
-const giddLink = suffixDrupalEndpoing('/database/displacement-data');
+const giddLink = suffixDrupalEndpoint('/database/displacement-data');
 
 const IDU_DATA = gql`
-    query IduData {
-        idu @rest(
+    query IduData($clientId: String!) {
+        idu(clientId: $clientId) @rest(
             type: "[IduData]",
             method: "GET",
             endpoint: "helix",
-            path: "/external-api/idus?client_id=IDMCWSHSOLO009"
+            path: "/idus?client_id={args.clientId}"
         ) {
             id
             country
@@ -128,11 +127,16 @@ function useIduQuery(
     const {
         previousData: previousIduData,
         data: iduData = previousIduData,
-        // FIXME: handle loading and error
+        // TODO: handle loading and error
         // loading: iduDataLoading,
         // error: iduDataError,
     } = useQuery<IduDataQuery, IduDataQueryVariables>(
         IDU_DATA,
+        {
+            variables: {
+                clientId: HELIX_CLIENT_ID,
+            },
+        },
     );
 
     const idus = React.useMemo(() => (
@@ -205,6 +209,7 @@ function useIduQuery(
                 <>
                     <div className={styles.timeRangeContainer}>
                         <SliderInput
+                            label="Timescale"
                             hideValues
                             className={styles.timeRangeInput}
                             min={0}

@@ -7,10 +7,11 @@ import useTranslation from '#hooks/useTranslation';
 import {
     goodPracticesDashboard,
 } from '#base/configs/lang';
+import {
+    TINY_MCE_KEY,
+} from '#base/configs/tinyMceEditor';
 
 import styles from './styles.css';
-
-const TINY_MCE_KEY = process.env.REACT_APP_TINY_MCE_KEY as string;
 
 interface Props<N extends string> {
     name: N;

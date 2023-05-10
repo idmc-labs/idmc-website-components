@@ -21,7 +21,6 @@ import Numeral from '#components/Numeral';
 import {
     CountryProfileQuery,
 } from '#generated/types';
-import { END_YEAR } from '#utils/common';
 
 import styles from './styles.css';
 
@@ -74,7 +73,7 @@ function ItemTable(props: ItemTableProps) {
             </tr>
             <tr>
                 <td>
-                    <div className={styles.header}>{`Total Number of IDPs as of 31 December ${selectedYear}`}</div>
+                    <div className={styles.header}>{`Internally displaced people (IDPs) as of 31 December ${selectedYear}`}</div>
                     <div className={styles.description}>
                         {pendingInfo}
                     </div>
@@ -96,12 +95,14 @@ function ItemTable(props: ItemTableProps) {
 interface Props {
     className?: string;
     data: FigureAnalysisItem[] | undefined | null;
+    endYear: number;
 }
 
 function FigureAnalysis(props: Props) {
     const {
         className,
         data,
+        endYear,
     } = props;
 
     const [
@@ -113,7 +114,7 @@ function FigureAnalysis(props: Props) {
     const [
         figureAnalysisActiveYear,
         setFigureAnalysisActiveYear,
-    ] = useState<string>(String(END_YEAR));
+    ] = useState<string>(String(endYear));
 
     const figureAnalysisByYear = useMemo(() => {
         if (!data) {

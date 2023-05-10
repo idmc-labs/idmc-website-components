@@ -1,0 +1,10 @@
+.button {
+    border-radius: 0;
+    padding: 0;
+    text-align: left;
+    color: var(--tui-color-brand);
+
+    &:hover {
+        text-decoration: underline;
+    }
+}

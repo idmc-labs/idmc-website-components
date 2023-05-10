@@ -1,7 +1,10 @@
 import React, { useCallback, useMemo } from 'react';
 // import { Router } from 'react-router-dom';
 import { init, ErrorBoundary } from '@sentry/react';
-import { ApolloClient, ApolloProvider } from '@apollo/client';
+import {
+    ApolloClient,
+    ApolloProvider,
+} from '@apollo/client';
 import ReactGA from 'react-ga';
 import { listToMap, unique } from '@togglecorp/fujs';
 
@@ -9,17 +12,6 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import '@togglecorp/toggle-ui/build/index.css';
 
 import { setMapboxToken } from '@togglecorp/re-map';
-
-import {
-    getCountryProfileLink,
-    getGoodPracticesLink,
-    getGoodPracticeLink,
-    getIduLink,
-} from '#utils/common';
-import CountryProfile from '#views/CountryProfile';
-import GoodPractice from '#views/GoodPractice';
-import GoodPractices from '#views/GoodPractices';
-import IduMap from '#views/IduMap';
 
 import AlertContainer from '#components/AlertContainer';
 import AlertContext, { AlertOptions } from '#components/AlertContext';
@@ -30,9 +22,10 @@ import browserHistory from '#base/configs/history';
 import sentryConfig from '#base/configs/sentry';
 import apolloConfig from '#base/configs/apollo';
 import { trackingId, gaConfig } from '#base/configs/googleAnalytics';
-import { mapboxToken } from '#base/configs/env';
+import { mapboxToken } from '#base/configs/mapbox';
 import useLocalStorage from '#hooks/useLocalStorage';
 
+import Page from './Page';
 import styles from './styles.css';
 
 setMapboxToken(mapboxToken);
@@ -82,6 +75,7 @@ const currentPage = (window as Win).page || query.page;
 
 const currentCountry = (window as Win).iso3
     || query.iso3;
+
 const currentCountryName = (window as Win).countryName
     || query.countryName;
 
@@ -164,92 +158,6 @@ function Base() {
         [alerts, addAlert, updateAlertContent, removeAlert],
     );
 
-    const page = useMemo(
-        () => {
-            if (currentPage === 'country-profile' && currentCountry) {
-                if (!currentCountry) {
-                    return (
-                        <div>
-                            Query parameter iso3 is missing.
-                        </div>
-                    );
-                }
-                return (
-                    <CountryProfile
-                        className={styles.view}
-                        iso3={currentCountry}
-                        countryName={currentCountryName}
-                    />
-                );
-            }
-            if (currentPage === 'good-practices') {
-                return (
-                    <GoodPractices
-                        className={styles.view}
-                    />
-                );
-            }
-            if (currentPage === 'good-practice' && currentId) {
-                if (!currentId) {
-                    return (
-                        <div>
-                            Query parameter id is missing.
-                        </div>
-                    );
-                }
-                return (
-                    <GoodPractice
-                        className={styles.view}
-                        id={currentId}
-                    />
-                );
-            }
-            if (currentPage === 'idu-map') {
-                return (
-                    <IduMap />
-                );
-            }
-            if (standaloneMode) {
-                return (
-                    <>
-                        <a href={getCountryProfileLink('NPL', 'Nepal')}>
-                            Country Profile (NPL)
-                        </a>
-                        <a href={getCountryProfileLink('IND', 'India')}>
-                            Country Profile (IND)
-                        </a>
-                        <a href={getCountryProfileLink('MMR', 'Myanmar')}>
-                            Country Profile (MMR)
-                        </a>
-                        <a href={getCountryProfileLink('JPN', 'Japan')}>
-                            Country Profile (JPN)
-                        </a>
-                        <a href={getGoodPracticesLink()}>
-                            Good Practices
-                        </a>
-                        <a href={getGoodPracticeLink('1')}>
-                            Good Practice (1)
-                        </a>
-                        <a href={getGoodPracticeLink('2')}>
-                            Good Practice (2)
-                        </a>
-                        <a href={getGoodPracticeLink('3')}>
-                            Good Practice (3)
-                        </a>
-                        <a href={getGoodPracticeLink('4')}>
-                            Good Practice (4)
-                        </a>
-                        <a href={getIduLink()}>
-                            Idu Map
-                        </a>
-                    </>
-                );
-            }
-            return null;
-        },
-        [],
-    );
-
     return (
         <div className={styles.base}>
             <ErrorBoundary
@@ -265,7 +173,14 @@ function Base() {
                     <LanguageContext.Provider value={languageContext}>
                         <AlertContext.Provider value={alertContext}>
                             <AlertContainer className={styles.alertContainer} />
-                            {page}
+                            <Page
+                                iso3={currentCountry}
+                                className={styles.view}
+                                page={currentPage}
+                                standaloneMode={standaloneMode}
+                                countryName={currentCountryName}
+                                id={currentId}
+                            />
                         </AlertContext.Provider>
                     </LanguageContext.Provider>
                 </ApolloProvider>

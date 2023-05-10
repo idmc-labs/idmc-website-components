@@ -1,4 +1,5 @@
 import React from 'react';
+import { IoInformationCircleOutline } from 'react-icons/io5';
 import { _cs } from '@togglecorp/fujs';
 
 import styles from './styles.css';
@@ -11,6 +12,7 @@ interface Props {
     size?: HeadingSizeType;
     hideBorder?: boolean;
     darkMode?: boolean;
+    tooltip?: string;
 }
 
 function Heading(props: Props) {
@@ -18,15 +20,28 @@ function Heading(props: Props) {
         className: classNameFromProps,
         children: childrenFromProps,
         size = 'medium',
+        tooltip,
         hideBorder = false,
         darkMode,
     } = props;
 
     const children: React.ReactNode = React.useMemo(() => {
+        let tempChildren = childrenFromProps;
+        if (tooltip) {
+            tempChildren = (
+                <div className={styles.headingTooltipContainer}>
+                    {tempChildren}
+                    <IoInformationCircleOutline
+                        className={styles.infoIcon}
+                        title={tooltip}
+                    />
+                </div>
+            );
+        }
         if (size === 'extraLarge' || size === 'large') {
-            return (
+            tempChildren = (
                 <>
-                    {childrenFromProps}
+                    {tempChildren}
                     {!hideBorder && (
                         <div className={styles.border} />
                     )}
@@ -34,10 +49,11 @@ function Heading(props: Props) {
             );
         }
 
-        return childrenFromProps;
+        return tempChildren;
     }, [
         size,
         childrenFromProps,
+        tooltip,
         hideBorder,
     ]);
 

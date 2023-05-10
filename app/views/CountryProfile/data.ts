@@ -46,9 +46,9 @@ export const countryMetadata: CountryMetadata = {
         <p>An "internal displacement" refers to each new forced movement of person within the borders of their country recorded during the year.</p>
     `,
     conflictIDPTooltip: `
-        <p><b>Total number of IDPs</b></p>
+        <p><b>Internally displaced people (IDPs)</b></p>
         <p><i>("stocks")</i></p>
-        <p>The "total number of IDPs" is a snapshot of all the people living in internal displacement at the end of the year.</p>
+        <p>The "internally displaced people" is a snapshot of all the people living in internal displacement at the end of the year.</p>
     `,
     disasterInternalDisplacementTooltip: `
         <p><b>Internal displacements</b></p>

@@ -13,7 +13,8 @@ import OtherIcon from '../../resources/icons/Icon_Other.svg';
 
 const disasterMap: { [key: string]: string } = {
     Earthquake: EarthquakeIcon,
-    'Mass Movement': MassMovementIcon,
+    'Wet Mass Movement': MassMovementIcon,
+    'Dry Mass Movement': MassMovementIcon,
     'Volcanic activity': VolcanicActivityIcon,
     Desertification: OtherIcon,
     Drought: DroughtIcon,

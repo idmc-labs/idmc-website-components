@@ -2,84 +2,42 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import {
-    MultiSelectInput,
-    Pager,
-} from '@togglecorp/toggle-ui';
-import {
-    LngLatBounds,
-} from 'mapbox-gl';
+import { Pager } from '@togglecorp/toggle-ui';
 import {
     gql,
     useQuery,
 } from '@apollo/client';
-import {
-    IoArrowDown,
-    IoArrowUp,
-    IoDownloadOutline,
-    IoExitOutline,
-} from 'react-icons/io5';
 import {
     _cs,
     isNotDefined,
 } from '@togglecorp/fujs';
 
 import {
-    ResponsiveContainer,
-    BarChart,
-    CartesianGrid,
-    XAxis,
-    YAxis,
-    Tooltip,
-    Legend,
-    Bar,
-    LineChart,
-    Line,
-    PieChart,
-    Pie,
-    Cell,
-} from 'recharts';
-
-import {
     CountryProfileQuery,
     CountryProfileQueryVariables,
     RelatedMaterialsQuery,
     RelatedMaterialsQueryVariables,
-    DisasterDataQuery,
-    DisasterDataQueryVariables,
-    CategoryStatisticsType,
-    ConflictDataQuery,
-    ConflictDataQueryVariables,
 } from '#generated/types';
 
-import ErrorBoundary from '#components/ErrorBoundary';
-import RoundedBar from '#components/RoundedBar';
 import Tabs from '#components/Tabs';
 import Tab from '#components/Tabs/Tab';
 import TabList from '#components/Tabs/TabList';
 import TabPanel from '#components/Tabs/TabPanel';
-import Button from '#components/Button';
-import ButtonLikeLink from '#components/ButtonLikeLink';
 import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
 import TextOutput from '#components/TextOutput';
-import Infographic from '#components/Infographic';
 import RelatedMaterialItem from '#components/RelatedMaterialItem';
-import SliderInput from '#components/SliderInput';
-import Container from '#components/Container';
 import TooltipIcon from '#components/TooltipIcon';
-import DisplacementIcon from '#components/DisplacementIcon';
+import FigureAnalysis from '#components/FigureAnalysis';
 
 import {
-    formatNumber,
-    START_YEAR,
-    END_YEAR,
+    replaceWithDrupalEndpoint,
 } from '#utils/common';
-import useIduMap from '#components/IduMap/useIduMap';
 
-import useDebouncedValue from '../../hooks/useDebouncedValue';
-// import FigureAnalysis from './FigureAnalysis';
+import IduWidget from '../IduWidget';
+import ConflictWidget from '../ConflictWidget';
+import DisasterWidget from '../DisasterWidget';
 
 import { countryMetadata } from './data';
 
@@ -106,52 +64,11 @@ function getContentTypeLabel(val: string | undefined) {
     return contentTypeLabelMapping[val] || 'Unknown';
 }
 
-const DRUPAL_ENDPOINT = process.env.REACT_APP_DRUPAL_ENDPOINT as string || '';
-const REST_ENDPOINT = process.env.REACT_APP_REST_ENDPOINT as string;
-
-function suffixDrupalEndpoint(path: string) {
-    return `${DRUPAL_ENDPOINT}${path}`;
-}
-
-function replaceWithDrupalEndpoint(image: null): null;
-function replaceWithDrupalEndpoint(image: undefined): undefined;
-function replaceWithDrupalEndpoint(image: string): string;
-function replaceWithDrupalEndpoint(image: string | null | undefined): string | null | undefined;
-function replaceWithDrupalEndpoint(image: string | null | undefined) {
-    if (!image || !DRUPAL_ENDPOINT) {
-        return image;
-    }
-    const path = new URL(image).pathname;
-    return suffixDrupalEndpoint(path);
-}
-
-function suffixGiddRestEndpoint(path: string) {
-    return `${REST_ENDPOINT}${path}`;
-}
-
-const disasterCategoryKeySelector = (d: CategoryStatisticsType) => d.label;
-
-const giddDisplacementDataLink = suffixDrupalEndpoint('/database/displacement-data');
-const giddLink = suffixDrupalEndpoint('/database');
-const monitoringLink = suffixDrupalEndpoint('/monitoring-tools');
-
-const categoricalColorScheme = [
-    'rgb(6, 23, 158)',
-    'rgb(8, 56, 201)',
-    'rgb(8, 116, 226)',
-    'rgb(1, 142, 202)',
-    'rgb(45, 183, 226)',
-    'rgb(94, 217, 238)',
-];
-
-const chartMargins = { top: 16, left: 5, right: 5, bottom: 5 };
-
 const COUNTRY_PROFILE = gql`
     query CountryProfile($iso3: String!) {
-        country(iso3: $iso3) {
+        countryProfile(iso3: $iso3) {
             id
             name
-            boundingBox
             description
             backgroundImage {
                 name
@@ -163,17 +80,6 @@ const COUNTRY_PROFILE = gql`
                 year
                 updatedAt
             }
-            figureAnalysis {
-                id
-                idpCaveatsAndChallenges
-                idpFigures
-                idpMethodologyAndSources
-                ndCaveatsAndChallenges
-                ndFigures
-                ndMethodologyAndSources
-                year
-                crisisType
-            }
             contactPersonDescription
             contactPersonImage {
                 url
@@ -181,53 +87,6 @@ const COUNTRY_PROFILE = gql`
             }
             essentialLinks
             displacementDataDescription
-            internalDisplacementDescription
-        }
-        conflictStatistics(filters: { countriesIso3: [$iso3] }) {
-            newDisplacements
-            totalIdps
-        }
-        disasterStatistics(filters: { countriesIso3: [$iso3] }) {
-            newDisplacements
-
-            categories {
-                label
-                total
-            }
-        }
-    }
-`;
-
-const CONFLICT_DATA = gql`
-    query ConflictData($countryIso3: String!, $startYear: Int, $endYear: Int) {
-        conflictStatistics(filters: { countriesIso3: [$countryIso3], endYear: $endYear, startYear: $startYear }) {
-            newDisplacements
-            totalIdps
-            idpsTimeseries {
-                year
-                total
-            }
-            newDisplacementTimeseries {
-                year
-                total
-            }
-        }
-    }
-`;
-
-const DISASTER_DATA = gql`
-    query DisasterData($countryIso3: String!, $startYear: Int, $endYear: Int, $categories: [String!]) {
-        disasterStatistics(filters: { countriesIso3: [$countryIso3], endYear: $endYear, startYear: $startYear, categories: $categories}) {
-            newDisplacements
-            totalEvents
-            categories {
-                label
-                total
-            }
-            timeseries {
-                total
-                year
-            }
         }
     }
 `;
@@ -266,10 +125,11 @@ const RELATED_MATERIALS = gql`
     }
 `;
 
-interface Props {
+export interface Props {
     className?: string;
     iso3: string;
     countryName?: string;
+    endYear: number;
 }
 
 function CountryProfile(props: Props) {
@@ -277,39 +137,17 @@ function CountryProfile(props: Props) {
         className,
         iso3: currentCountry,
         countryName,
+        endYear: year,
     } = props;
 
-    /*
-    const [countryFilter, setCountryFilter] = useState<string | undefined>(currentCountry);
-    const [
-        countryOptions,
-        setCountryOptions,
-    ] = useState<SearchCountryType[] | undefined | null>([{
-        name: countryName ?? '',
-        iso3: currentCountry,
-    }]);
-    */
-
     // Overview section
-    const [overviewActiveYear, setOverviewActiveYear] = useState<string>(String(END_YEAR));
-    // Conflict section
-    const [conflictTimeRangeActual, setConflictTimeRange] = useState([START_YEAR, END_YEAR]);
-    const conflictTimeRange = useDebouncedValue(conflictTimeRangeActual);
-
-    // Disaster section
-    const [disasterCategories, setDisasterCategories] = useState<string[]>([]);
-    const [disasterTimeRangeActual, setDisasterTimeRange] = useState([START_YEAR, END_YEAR]);
-    const disasterTimeRange = useDebouncedValue(disasterTimeRangeActual);
-
-    // IDU list section
-    const [iduActivePage, setIduActivePage] = useState(1);
-    const iduPageSize = 2;
+    const [overviewActiveYear, setOverviewActiveYear] = useState<string>(String(year));
 
     // IDU map section
     const {
         previousData,
         data: countryProfileData = previousData,
-        // FIXME: handle loading and error
+        // TODO: handle loading and error
         // loading: countryProfileLoading,
         // error: countryProfileError,
     } = useQuery<CountryProfileQuery, CountryProfileQueryVariables>(
@@ -319,50 +157,15 @@ function CountryProfile(props: Props) {
                 iso3: currentCountry,
             },
             onCompleted: (response) => {
-                if (!response.country) {
+                if (!response.countryProfile) {
                     return;
                 }
                 const {
                     overviews,
-                } = response.country;
+                } = response.countryProfile;
                 if (overviews && overviews.length > 0) {
                     setOverviewActiveYear(overviews[0].year.toString());
                 }
-            },
-        },
-    );
-
-    const {
-        previousData: previousDisasterData,
-        data: disasterData = previousDisasterData,
-        // FIXME: handle loading and error
-        // loading: disasterDataLoading,
-        // error: disasterDataError,
-    } = useQuery<DisasterDataQuery, DisasterDataQueryVariables>(
-        DISASTER_DATA,
-        {
-            variables: {
-                countryIso3: currentCountry,
-                startYear: disasterTimeRange[0],
-                endYear: disasterTimeRange[1],
-                categories: disasterCategories,
-            },
-        },
-    );
-
-    const {
-        previousData: previousConflictData,
-        data: conflictData = previousConflictData,
-        // FIXME: handle loading and error
-        // loading: conflictDataLoading,
-        // error: conflictDataError,
-    } = useQuery<ConflictDataQuery, ConflictDataQueryVariables>(
-        CONFLICT_DATA,
-        {
-            variables: {
-                countryIso3: currentCountry,
-                startYear: conflictTimeRange[0],
-                endYear: conflictTimeRange[1],
             },
         },
     );
@@ -384,7 +187,7 @@ function CountryProfile(props: Props) {
     const {
         previousData: relatedMaterialsPreviousData,
         data: relatedMaterialsResponse = relatedMaterialsPreviousData,
-        // FIXME: handle loading and error
+        // TODO: handle loading and error
         // error,
     } = useQuery<RelatedMaterialsQuery, RelatedMaterialsQueryVariables>(
         RELATED_MATERIALS,
@@ -402,7 +205,7 @@ function CountryProfile(props: Props) {
     );
 
     const relatedMaterials = relatedMaterialsResponse?.relatedMaterials?.rows;
-    const countryInfo = countryProfileData?.country;
+    const countryInfo = countryProfileData?.countryProfile;
 
     const countryOverviewSortedByYear = useMemo(() => {
         if (countryInfo?.overviews) {
@@ -411,27 +214,6 @@ function CountryProfile(props: Props) {
 
         return undefined;
     }, [countryInfo]);
-
-    const {
-        idus,
-        widget: iduWidget,
-    } = useIduMap(
-        countryInfo?.boundingBox as LngLatBounds | undefined,
-        currentCountry,
-    );
-
-    /*
-    const handleSelectCountry = React.useCallback((selectedIso3: string | undefined) => {
-        setCountryFilter(selectedIso3);
-        const country = countryOptions?.find((v) => v.iso3 === selectedIso3);
-        if (country) {
-            const url = new URL(window.location.href);
-            url.searchParams.set('iso3', country.iso3);
-            url.searchParams.set('countryName', country.name);
-            window.location.href = url.href;
-        }
-    }, [countryOptions]);
-    */
 
     const profileSection = (
         <section className={styles.profile}>
@@ -526,357 +308,15 @@ function CountryProfile(props: Props) {
         </section>
     );
 
-    const disasterSection = (
-        (countryProfileData?.disasterStatistics?.newDisplacements ?? 0) > 0
-    ) && (
-        <Container
-            heading={countryMetadata.disasterHeader}
-            headingSize="small"
-            headerClassName={styles.disasterHeader}
-            headingClassName={styles.disasterHeading}
-            headingInfo={(
-                <TooltipIcon>
-                    {countryMetadata.disasterTooltip}
-                </TooltipIcon>
-            )}
-            footerActions={(
-                <>
-                    <ButtonLikeLink
-                        href={suffixGiddRestEndpoint(`/countries/${currentCountry}/disaster-export/?start_year=${disasterTimeRange[0]}&end_year=${disasterTimeRange[1]}&hazard_type=${disasterCategories.join(',')}`)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={styles.disasterButton}
-                        icons={(
-                            <IoDownloadOutline />
-                        )}
-                    >
-                        Download Disaster Data
-                    </ButtonLikeLink>
-                    <ButtonLikeLink
-                        href={giddDisplacementDataLink}
-                        className={styles.disasterButton}
-                        icons={(
-                            <IoExitOutline />
-                        )}
-                    >
-                        Go to our Data Centre (GIDD)
-                    </ButtonLikeLink>
-                </>
-            )}
-            filters={(
-                <>
-                    <SliderInput
-                        className={styles.timeRangeContainer}
-                        hideValues
-                        min={START_YEAR}
-                        max={END_YEAR}
-                        labelDescription={`${disasterTimeRangeActual[0]} - ${disasterTimeRangeActual[1]}`}
-                        step={1}
-                        minDistance={0}
-                        value={disasterTimeRangeActual}
-                        onChange={setDisasterTimeRange}
-                    />
-                    <div />
-                    <Header
-                        heading="Disaster Category"
-                        headingSize="extraSmall"
-                        description={(
-                            <MultiSelectInput
-                                className={styles.selectInput}
-                                inputSectionClassName={styles.inputSection}
-                                placeholder="Disaster Category"
-                                name="disasterCategory"
-                                value={disasterCategories}
-                                options={countryProfileData?.disasterStatistics.categories}
-                                keySelector={disasterCategoryKeySelector}
-                                labelSelector={disasterCategoryKeySelector}
-                                onChange={setDisasterCategories}
-                            />
-                        )}
-                    />
-                </>
-            )}
-        >
-            <div className={styles.infographicList}>
-                <Infographic
-                    className={styles.disasterInfographic}
-                    totalValue={disasterData
-                        ?.disasterStatistics.newDisplacements || 0}
-                    description={(
-                        <div>
-                            <Header
-                                headingClassName={styles.heading}
-                                heading="Internal Displacements"
-                                headingSize="extraSmall"
-                                headingInfo={(
-                                    <TooltipIcon>
-                                        {countryMetadata?.disasterInternalDisplacementTooltip}
-                                    </TooltipIcon>
-                                )}
-                            />
-                        </div>
-                    )}
-                    date={`${disasterTimeRangeActual[0]} - ${disasterTimeRangeActual[1]}`}
-                    chart={disasterData?.disasterStatistics.timeseries && (
-                        <ErrorBoundary>
-                            <ResponsiveContainer>
-                                <LineChart
-                                    data={disasterData.disasterStatistics.timeseries}
-                                    margin={chartMargins}
-                                >
-                                    <CartesianGrid
-                                        vertical={false}
-                                        strokeDasharray="3 3"
-                                    />
-                                    <XAxis
-                                        dataKey="year"
-                                        axisLine={false}
-                                        type="number"
-                                        allowDecimals={false}
-                                        domain={disasterTimeRange}
-                                    />
-                                    <YAxis
-                                        axisLine={false}
-                                        tickFormatter={formatNumber}
-                                    />
-                                    <Tooltip
-                                        formatter={formatNumber}
-                                    />
-                                    <Legend />
-                                    <Line
-                                        dataKey="total"
-                                        key="total"
-                                        stroke="var(--color-disaster)"
-                                        name="Internal Displacements"
-                                        strokeWidth={2}
-                                        connectNulls
-                                        dot
-                                    />
-                                </LineChart>
-                            </ResponsiveContainer>
-                        </ErrorBoundary>
-                    )}
-                />
-                <Infographic
-                    className={styles.disasterInfographic}
-                    totalValue={disasterData
-                        ?.disasterStatistics.totalEvents || 0}
-                    description={(
-                        <Header
-                            headingClassName={styles.heading}
-                            heading="Disaster Events Reported"
-                            headingSize="extraSmall"
-                            headingInfo={(
-                                <TooltipIcon>
-                                    {countryMetadata?.disasterEventTooltip}
-                                </TooltipIcon>
-                            )}
-                        />
-                    )}
-                    date={`${disasterTimeRangeActual[0]} - ${disasterTimeRangeActual[1]}`}
-                    chart={disasterData?.disasterStatistics.categories && (
-                        <ErrorBoundary>
-                            <ResponsiveContainer>
-                                <PieChart>
-                                    <Tooltip
-                                        formatter={formatNumber}
-                                    />
-                                    <Legend />
-                                    <Pie
-                                        data={disasterData.disasterStatistics.categories}
-                                        dataKey="total"
-                                        nameKey="label"
-                                    >
-                                        {disasterData
-                                            ?.disasterStatistics
-                                            ?.categories
-                                            ?.map(({ label }, index) => (
-                                                <Cell
-                                                    key={label}
-                                                    fill={categoricalColorScheme[
-                                                        index % categoricalColorScheme.length
-                                                    ]}
-                                                />
-                                            ))}
-                                    </Pie>
-                                </PieChart>
-                            </ResponsiveContainer>
-                        </ErrorBoundary>
-                    )}
-                />
-            </div>
-        </Container>
-    );
+    const disasterSection = DisasterWidget({
+        iso3: currentCountry,
+        endYear: year,
+    });
 
-    const conflictSection = ((
-        (countryProfileData?.conflictStatistics?.newDisplacements ?? 0)
-        + (countryProfileData?.conflictStatistics?.totalIdps ?? 0)
-    ) > 0) && (
-        <Container
-            heading={countryMetadata.conflictAndViolenceHeader}
-            headingSize="small"
-            headerClassName={styles.conflictHeader}
-            headingClassName={styles.conflictHeading}
-            headingInfo={(
-                <TooltipIcon>
-                    {countryMetadata.conflictAndViolenceTooltip}
-                </TooltipIcon>
-            )}
-            filters={(
-                <>
-                    <SliderInput
-                        className={styles.timeRangeContainer}
-                        hideValues
-                        min={START_YEAR}
-                        labelDescription={`${conflictTimeRangeActual[0]} - ${conflictTimeRangeActual[1]}`}
-                        max={END_YEAR}
-                        step={1}
-                        minDistance={0}
-                        value={conflictTimeRangeActual}
-                        onChange={setConflictTimeRange}
-                    />
-                    <div />
-                    <div />
-                </>
-            )}
-            footerActions={(
-                <>
-                    <ButtonLikeLink
-                        href={suffixGiddRestEndpoint(`/countries/${currentCountry}/conflict-export/?start_year=${conflictTimeRange[0]}&end_year=${conflictTimeRange[1]}`)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={styles.conflictButton}
-                        icons={(
-                            <IoDownloadOutline />
-                        )}
-                    >
-                        Download Conflict Data
-                    </ButtonLikeLink>
-                    <ButtonLikeLink
-                        href={giddDisplacementDataLink}
-                        className={styles.conflictButton}
-                        icons={(
-                            <IoExitOutline />
-                        )}
-                    >
-                        Go to our Data Centre (GIDD)
-                    </ButtonLikeLink>
-                </>
-            )}
-        >
-            <div className={styles.infographicList}>
-                <Infographic
-                    className={styles.conflictInfographic}
-                    totalValue={conflictData?.conflictStatistics.newDisplacements || 0}
-                    description={(
-                        <Header
-                            headingClassName={styles.heading}
-                            heading="Internal Displacements"
-                            headingSize="extraSmall"
-                            headingInfo={(
-                                <TooltipIcon>
-                                    {countryMetadata?.conflictInternalDisplacementTooltip }
-                                </TooltipIcon>
-                            )}
-                        />
-                    )}
-                    date={`${conflictTimeRangeActual[0]} - ${conflictTimeRangeActual[1]}`}
-                    chart={conflictData?.conflictStatistics.newDisplacementTimeseries && (
-                        <ErrorBoundary>
-                            <ResponsiveContainer>
-                                <LineChart
-                                    data={conflictData.conflictStatistics.newDisplacementTimeseries}
-                                    margin={chartMargins}
-                                >
-                                    <CartesianGrid
-                                        vertical={false}
-                                        strokeDasharray="3 3"
-                                    />
-                                    <XAxis
-                                        dataKey="year"
-                                        axisLine={false}
-                                        type="number"
-                                        allowDecimals={false}
-                                        domain={conflictTimeRange}
-                                    />
-                                    <YAxis
-                                        axisLine={false}
-                                        tickFormatter={formatNumber}
-                                    />
-                                    <Tooltip
-                                        formatter={formatNumber}
-                                    />
-                                    <Legend />
-                                    <Line
-                                        dataKey="total"
-                                        stroke="var(--color-conflict)"
-                                        name="Internal Displacements"
-                                        strokeWidth={2}
-                                        connectNulls
-                                        dot
-                                    />
-                                </LineChart>
-                            </ResponsiveContainer>
-                        </ErrorBoundary>
-                    )}
-                />
-                <Infographic
-                    className={styles.conflictInfographic}
-                    totalValue={conflictData?.conflictStatistics.totalIdps || 0}
-                    description={(
-                        <Header
-                            headingClassName={styles.heading}
-                            heading="Total Number of IDPs"
-                            headingSize="extraSmall"
-                            headingInfo={(
-                                <TooltipIcon>
-                                    {countryMetadata?.conflictIDPTooltip }
-                                </TooltipIcon>
-                            )}
-                        />
-                    )}
-                    date={`As of end of ${conflictTimeRangeActual[1]}`}
-                    chart={conflictData?.conflictStatistics.idpsTimeseries && (
-                        <ErrorBoundary>
-                            <ResponsiveContainer>
-                                <BarChart
-                                    data={conflictData.conflictStatistics.idpsTimeseries}
-                                    margin={chartMargins}
-                                >
-                                    <CartesianGrid
-                                        vertical={false}
-                                        strokeDasharray="3 3"
-                                    />
-                                    <XAxis
-                                        dataKey="year"
-                                        axisLine={false}
-                                        type="number"
-                                        allowDecimals={false}
-                                        domain={conflictTimeRange}
-                                    />
-                                    <YAxis
-                                        axisLine={false}
-                                        tickFormatter={formatNumber}
-                                    />
-                                    <Tooltip
-                                        formatter={formatNumber}
-                                    />
-                                    <Legend />
-                                    <Bar
-                                        dataKey="total"
-                                        name="Total Number of IDPs"
-                                        fill="var(--color-conflict)"
-                                        shape={<RoundedBar />}
-                                        maxBarSize={6}
-                                    />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </ErrorBoundary>
-                    )}
-                />
-            </div>
-        </Container>
-    );
+    const conflictSection = ConflictWidget({
+        iso3: currentCountry,
+        endYear: year,
+    });
 
     const displacementDataSection = (
         conflictSection
@@ -901,105 +341,26 @@ function CountryProfile(props: Props) {
                     value={countryInfo?.displacementDataDescription}
                 />
             </EllipsizedContent>
-            {/*
-            <FigureAnalysis
-                data={countryInfo?.figureAnalysis}
-            />
-              */}
             <div className={styles.infographics}>
                 {conflictSection}
+                <FigureAnalysis
+                    iso3={currentCountry}
+                    endYear={year}
+                    cause="CONFLICT"
+                />
                 {disasterSection}
+                <FigureAnalysis
+                    iso3={currentCountry}
+                    endYear={year}
+                    cause="DISASTER"
+                />
             </div>
         </section>
     );
 
-    const internalDisplacementUpdatesSection = (
-        (idus && idus.length > 0)
-        || countryInfo?.internalDisplacementDescription
-    ) && (
-        <section
-            id="internal-displacement"
-            className={styles.internalDisplacementUpdates}
-        >
-            <Header
-                headingSize="large"
-                heading={countryMetadata.internalDisplacementUpdatesHeader}
-                headingInfo={(
-                    <TooltipIcon>
-                        {countryMetadata.internalDisplacementUpdatesTooltip}
-                    </TooltipIcon>
-                )}
-            />
-            <p>
-                {/* eslint-disable-next-line max-len, react/jsx-one-expression-per-line */}
-                IDMC&apos;s Internal Displacement Updates (IDU) are preliminary estimates of new displacement events reported in the last 180 days. This provisional data is updated daily with new available data. Curated and validated estimates are published in the <a href={giddLink}>Global Internal Displacement Database (GIDD).</a> To find out more about how we monitor and report on our figures, click <a href={monitoringLink}>here.</a>
-            </p>
-            <EllipsizedContent>
-                <HTMLOutput
-                    value={countryInfo?.internalDisplacementDescription}
-                />
-            </EllipsizedContent>
-            {idus && idus.length > 0 && (
-                <>
-                    <div className={styles.iduContainer}>
-                        {idus.slice(0, iduActivePage * iduPageSize)?.map((idu) => (
-                            <div
-                                key={idu.id}
-                                className={styles.idu}
-                            >
-                                <div className={styles.displacementIcon}>
-                                    <DisplacementIcon
-                                        className={styles.icon}
-                                        displacementType={idu.displacement_type}
-                                        disasterType={idu.type}
-                                    />
-                                    <div>
-                                        {idu.displacement_type === 'Disaster'
-                                            ? `${idu.displacement_type} - ${idu.type}`
-                                            : idu.displacement_type}
-                                    </div>
-                                </div>
-                                <HTMLOutput
-                                    value={idu.standard_popup_text}
-                                />
-                            </div>
-                        ))}
-                        <div className={styles.iduPager}>
-                            {idus.length > (iduActivePage * iduPageSize) && (
-                                <Button
-                                    name={undefined}
-                                    onClick={() => {
-                                        setIduActivePage((val) => val + 1);
-                                    }}
-                                    actions={<IoArrowDown />}
-                                    variant="transparent"
-                                >
-                                    Show Older Displacements
-                                </Button>
-                            )}
-                            {iduActivePage > 1 && (
-                                <Button
-                                    name={undefined}
-                                    onClick={() => {
-                                        setIduActivePage(1);
-                                    }}
-                                    actions={<IoArrowUp />}
-                                    variant="transparent"
-                                >
-                                    Show Less
-                                </Button>
-                            )}
-                        </div>
-                    </div>
-                    <div>
-                        Hover over and click on the coloured bubbles to see near real-time
-                        snapshots of situations of internal displacement.
-                    </div>
-                    {iduWidget}
-                </>
-            )}
-        </section>
-    );
+    const internalDisplacementUpdatesSection = IduWidget({
+        iso3: currentCountry,
+    });
 
     const relatedMaterialsSection = (
         relatedMaterials && relatedMaterials.length > 0
@@ -1026,8 +387,8 @@ function CountryProfile(props: Props) {
                         url={gp.metatag.value.canonical_url}
                         heading={gp.metatag.value.title}
                         description={gp.metatag.value.description}
-                        // FIXME: pass date
-                        // FIXME: pass doc type
+                        // TODO: pass date
+                        // TODO: pass doc type
                         type={getContentTypeLabel(gp?.type?.[0]?.target_id)}
                         date={gp?.field_published?.[0]?.value}
                     />

@@ -7,30 +7,38 @@ import {
     from,
     concat,
 } from '@apollo/client';
+import {
+    HELIX_REST_ENDPOINT,
+    DRUPAL_ENDPOINT,
+    readStorage,
+} from '#utils/common';
 import { ApolloLink } from 'apollo-link';
 import { RestLink } from 'apollo-link-rest';
 import { createUploadLink } from 'apollo-upload-client';
 
 // FIXME: move this to utils
 const langStorageKey = 'idmc-website-language';
-function readStorage(key: string) {
-    const langValueFromStorage = localStorage.getItem(key);
-    if (langValueFromStorage) {
-        return JSON.parse(langValueFromStorage);
-    }
-    return undefined;
-}
 
-const GRAPHQL_ENDPOINT = process.env.REACT_APP_GRAPHQL_ENDPOINT as string;
-const HELIX_ENDPOINT = process.env.REACT_APP_HELIX_ENDPOINT as string;
-const DRUPAL_ENDPOINT = (process.env.REACT_APP_DRUPAL_ENDPOINT || '') as string;
+const GIDD_GRAPHQL_ENDPOINT = process.env.REACT_APP_GIDD_GRAPHQL_ENDPOINT as string;
+const HELIX_GRAPHQL_ENDPOINT = process.env.REACT_APP_HELIX_GRAPHQL_ENDPOINT as string;
 
-const link = new HttpLink({
-    uri: GRAPHQL_ENDPOINT,
+const giddGqlLink = new HttpLink({
+    uri: GIDD_GRAPHQL_ENDPOINT,
     credentials: 'include',
 });
 
-const languageAwareLink = concat(
+const helixGqlLink = new HttpLink({
+    uri: HELIX_GRAPHQL_ENDPOINT,
+    credentials: 'include',
+});
+
+const link = ApolloLink.split(
+    (operation) => operation.getContext().clientName === 'helix',
+    helixGqlLink as unknown as ApolloLink,
+    giddGqlLink as unknown as ApolloLink,
+) as unknown as ApolloLinkFromClient;
+
+const languageAwareGqlLink = concat(
     new ApolloLinkFromClient((operation, forward) => {
         // add the Accept-Language to the headers
         operation.setContext(({ headers = {} }) => {
@@ -49,14 +57,14 @@ const languageAwareLink = concat(
 
 const restLink = new RestLink({
     endpoints: {
-        helix: HELIX_ENDPOINT,
+        helix: HELIX_REST_ENDPOINT,
         drupal: DRUPAL_ENDPOINT,
     },
     credentials: 'omit',
 });
 
-const uploadLink = createUploadLink({
-    uri: GRAPHQL_ENDPOINT,
+const uploadGqlLink = createUploadLink({
+    uri: GIDD_GRAPHQL_ENDPOINT,
     credentials: 'include',
 });
 
@@ -64,10 +72,10 @@ const apolloOptions: ApolloClientOptions<NormalizedCacheObject> = {
     link: from([
         ApolloLink.split(
             (operation) => operation.getContext().hasUpload,
-            uploadLink as unknown as ApolloLink,
+            uploadGqlLink as unknown as ApolloLink,
             ApolloLink.from([
                 restLink as unknown as ApolloLink,
-                languageAwareLink as unknown as ApolloLink,
+                languageAwareGqlLink as unknown as ApolloLink,
             ]),
         ) as unknown as ApolloLinkFromClient,
     ]),

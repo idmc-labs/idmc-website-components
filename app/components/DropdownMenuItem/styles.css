@@ -12,9 +12,3 @@
         background-color: var(--tui-color-background-hover);
     }
 }
-
-.separator {
-    margin: var(--tui-spacing-extra-small) 0;
-    border: var(--tui-width-separator-thin) solid var(--tui-color-separator);
-    border-bottom: none;
-}

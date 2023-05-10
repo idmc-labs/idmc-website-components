@@ -9,7 +9,8 @@ import {
     useQuery,
 } from '@apollo/client';
 import {
-    FaqsQueryVariables, FaqsQuery,
+    FaqsQueryVariables,
+    FaqsQuery,
     GoodPracticesQuery,
     GoodPracticesQueryVariables,
     GoodPracticeListingStaticPageQuery,
@@ -91,7 +92,7 @@ const GOOD_PRACTICE_PAGE_SIZE = 6;
 
 const FAQS = gql`
     query Faqs {
-            faqs {
+        faqs {
             answer
             id
             question
@@ -168,8 +169,9 @@ query GoodPracticeListingStaticPage {
 
 const GOOD_PRACTICE_MAP = gql`
 query GoodPracticeMap {
-    countries {
+    countryProfiles {
         id
+        iso3
         name
         centerPoint
         goodPracticesCount
@@ -355,7 +357,8 @@ function GoodPractices(props: Props) {
     ] = useInputState<GoodPracticeCountryType[]>([]);
 
     const {
-        data: goodPracticeFilterResponse,
+        previousData: previousGoodPracticeFilterData,
+        data: goodPracticeFilterResponse = previousGoodPracticeFilterData,
     } = useQuery<
         GoodPracticeFilterChoicesQuery,
         GoodPracticeFilterChoicesQueryVariables
@@ -477,13 +480,16 @@ function GoodPractices(props: Props) {
         500,
     ) ?? goodPracticeVariables;
 
-    const { data: faqsResponse } = useQuery<FaqsQuery, FaqsQueryVariables>(
+    const {
+        previousData: previousFaqsData,
+        data: faqsResponse = previousFaqsData,
+    } = useQuery<FaqsQuery, FaqsQueryVariables>(
         FAQS,
     );
 
     const {
-        previousData,
-        data: goodPracticeResponse = previousData,
+        previousData: previousGoodPracticeData,
+        data: goodPracticeResponse = previousGoodPracticeData,
         error: goodPracticeError,
         loading: goodPracticeLoading,
     } = useQuery<GoodPracticesQuery, GoodPracticesQueryVariables>(
@@ -510,7 +516,10 @@ function GoodPractices(props: Props) {
         return modifiedList;
     }, [goodPracticeResponse]);
 
-    const { data: staticPageResponse } = useQuery<
+    const {
+        previousData: previousStaticPageData,
+        data: staticPageResponse = previousStaticPageData,
+    } = useQuery<
         GoodPracticeListingStaticPageQuery,
         GoodPracticeListingStaticPageQueryVariables
     >(STATIC_PAGES);
@@ -528,7 +537,10 @@ function GoodPractices(props: Props) {
         ];
     }, [staticPageResponse]);
 
-    const { data: mapResponse } = useQuery<
+    const {
+        previousData: previousMapData,
+        data: mapResponse = previousMapData,
+    } = useQuery<
         GoodPracticeMapQuery,
         GoodPracticeMapQueryVariables
     >(GOOD_PRACTICE_MAP);
@@ -710,7 +722,7 @@ function GoodPractices(props: Props) {
         </div>
     );
 
-    const countries = mapResponse?.countries;
+    const countries = mapResponse?.countryProfiles;
     const goodPracticeGeojson : GoodPracticeGeoJSON = useMemo(
         () => ({
             type: 'FeatureCollection',

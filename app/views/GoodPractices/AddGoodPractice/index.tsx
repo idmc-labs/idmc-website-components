@@ -98,7 +98,7 @@ const PUBLIC_CREATE_GOOD_PRACTICE = gql`
 
 const OPTIONS_FOR_GOOD_PRACTICES = gql`
     query OptionsForGoodPractices ($search: String) {
-        countries (filters: {search: $search}) {
+        countryProfiles(filters: {search: $search}) {
             id
             name
         }
@@ -160,7 +160,7 @@ const schema: FormSchema = {
 
 const defaultValues: PartialFormType = {};
 
-type CountryType = NonNullable<OptionsForGoodPracticesQuery['countries']>[number];
+type CountryType = NonNullable<OptionsForGoodPracticesQuery['countryProfiles']>[number];
 const countryKeySelector = (c: CountryType) => c.id;
 const countryLabelSelector = (c: CountryType) => c.name;
 
@@ -205,13 +205,14 @@ function AddGoodPractice(props: Props) {
     const error = getErrorObject(riskyError);
 
     const {
-        data: optionsResponse,
+        previousData,
+        data: optionsResponse = previousData,
         loading: optionsLoading,
     } = useQuery<OptionsForGoodPracticesQuery, OptionsForGoodPracticesQueryVariables>(
         OPTIONS_FOR_GOOD_PRACTICES,
     );
 
-    const countries = optionsResponse?.countries.slice().sort((a, b) => {
+    const countries = optionsResponse?.countryProfiles.slice().sort((a, b) => {
         const nameOne = a.name.toLowerCase();
         const nameTwo = b.name.toLowerCase();
         if (nameOne < nameTwo) {

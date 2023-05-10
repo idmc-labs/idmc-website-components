@@ -1,0 +1,40 @@
+.conflict-header {
+    background-color: var(--color-conflict) !important;
+
+    .conflict-heading {
+        color: var(--color-text-on-dark);
+    }
+}
+
+.conflict-button {
+    background-color: var(--color-conflict);
+    height: 2.5rem;
+}
+
+
+.infographic-list {
+    display: flex;
+    flex-wrap: wrap;
+
+    >* {
+        flex-basis: 0;
+        flex-grow: 1;
+        padding: var(--tui-spacing-medium);
+        min-width: 15rem;
+    }
+
+    .conflict-infographic {
+        color: var(--color-conflict);
+
+        .heading {
+            color: var(--color-conflict);
+        }
+    }
+}
+
+
+@media (max-width: 1000px) {
+    .time-range-container {
+        padding-right: var(--tui-spacing-medium);
+    }
+}

@@ -105,32 +105,6 @@
                 padding: var(--tui-spacing-super-large) 0;
                 gap: var(--tui-spacing-extra-large);
 
-                .conflict-header {
-                    background-color: var(--color-conflict);
-
-                    .conflict-heading {
-                        color: var(--color-text-on-dark);
-                    }
-                }
-
-                .conflict-button {
-                    background-color: var(--color-conflict);
-                    height: 2.5rem;
-                }
-
-                .disaster-header {
-                    background-color: var(--color-disaster);
-
-                    .disaster-heading {
-                        color: var(--color-text-on-dark);
-                    }
-                }
-
-                .disaster-button {
-                    background-color: var(--color-disaster);
-                    height: 2.5rem;
-                }
-
                 .infographics {
                     display: flex;
                     flex-direction: column;
@@ -145,81 +119,7 @@
                             font-size: var(--tui-font-size-small);
                         }
                     }
-
-                    .infographic-list {
-                        display: flex;
-                        flex-wrap: wrap;
-
-                        >* {
-                            flex-basis: 0;
-                            flex-grow: 1;
-                            padding: var(--tui-spacing-medium);
-                            min-width: 15rem;
-                        }
-
-                        .conflict-infographic {
-                            color: var(--color-conflict);
-
-                            .heading {
-                                color: var(--color-conflict);
-                            }
-                        }
-
-                        .disaster-infographic {
-                            color: var(--color-disaster);
-
-                            .heading {
-                                color: var(--color-disaster);
-                            }
-                        }
-                    }
                 }
-            }
-
-            .idu-container {
-                display: flex;
-                flex-wrap: wrap;
-                gap: var(--tui-spacing-large);
-                padding: var(--tui-spacing-large) 0;
-
-                .idu {
-                    display: flex;
-                    align-items: flex-start;
-                    flex-direction: column;
-                    flex-grow: 1;
-                    border: var(--tui-width-separator-thin) solid var(--tui-color-separator);
-                    padding: var(--tui-spacing-medium);
-                    max-width: calc(50% - var(--tui-spacing-medium));
-                    gap: var(--tui-spacing-medium);
-
-                    @media screen and (max-width: 900px) {
-                        max-width: unset;
-                    }
-
-                    .displacementIcon {
-                        display: flex;
-                        align-items: baseline;
-                        gap: var(--tui-spacing-medium);
-
-                        .icon {
-                            flex-shrink: 0;
-                            height: 2rem;
-                        }
-                    }
-                }
-
-                .idu-pager {
-                    display: flex;
-                    flex-basis: 100%;
-                    flex-wrap: wrap;
-                    gap: var(--tui-spacing-large);
-                }
-            }
-
-            .internal-displacement-updates {
-                display: flex;
-                flex-direction: column;
-                gap: var(--tui-spacing-large);
             }
 
             .related-material {
@@ -289,33 +189,6 @@
                         }
                     }
                 }
-            }
-        }
-    }
-
-    .select-input {
-        .input-section {
-            border-radius: 0.25rem;
-            background-color: var(--tui-filter-background-color);
-            height: 2.5rem;
-
-            >*{
-                padding-right: 0;
-                width: 4.5rem;
-            }:hover{
-                background-color: unset;
-            }
-        }
-    }
-    @media (max-width: 1000px) {
-        .time-range-container {
-            padding-right: var(--tui-spacing-medium);
-        }
-        .select-input {
-            .input-section {
-                margin-right: var(--tui-spacing-medium);
-                border-radius: 0.25rem;
-                height: 3rem;
             }
         }
     }

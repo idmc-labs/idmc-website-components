@@ -74,7 +74,7 @@ function Slider<T extends number | number[]>(props: Props<T>) {
         value,
         onChange,
         step,
-        label = 'Timescale',
+        label,
         labelDescription,
         minDistance,
         hideValues,

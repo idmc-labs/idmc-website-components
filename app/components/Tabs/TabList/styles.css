@@ -20,6 +20,13 @@
         }
     }
 
+    .gap-dummy-element {
+        align-self: flex-end;
+        flex-shrink: 0;
+        border-bottom: var(--tui-width-separator-thin) solid var(--tui-color-separator);
+        width: var(--tui-spacing-large);
+    }
+
     .start-dummy-content,
     .end-dummy-content {
         align-self: flex-end;

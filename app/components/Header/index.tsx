@@ -16,10 +16,11 @@ export interface Props {
     actions?: React.ReactNode;
     description?: React.ReactNode;
     headingDescription?: React.ReactNode;
-    headingSize?: HeadingSizeType,
-    inlineHeadingDescription?: boolean,
+    headingSize?: HeadingSizeType;
+    inlineHeadingDescription?: boolean;
     headingTitle?: React.ReactNode;
     hideHeadingBorder?: boolean;
+    headingTooltip?: string;
 }
 
 function Header(props: Props) {
@@ -34,6 +35,7 @@ function Header(props: Props) {
         headingDescription,
         headingSize,
         headingInfo,
+        headingTooltip,
         inlineHeadingDescription,
         hideHeadingBorder,
         headingTitle,
@@ -71,6 +73,7 @@ function Header(props: Props) {
                             className={_cs(styles.heading, headingClassName)}
                             hideBorder={hideHeadingBorder}
                             darkMode={darkMode}
+                            tooltip={headingTooltip}
                         >
                             {heading}
                             {headingInfo && (

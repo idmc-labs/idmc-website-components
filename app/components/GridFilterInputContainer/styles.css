@@ -1,0 +1,42 @@
+.grid-filter-input-container {
+    display: flex;
+    flex-direction: column;
+    color: var(--color-text-on-dark);
+    gap: var(--tui-spacing-extra-small);
+
+    .header {
+        font-size: var(--tui-font-size-small);
+
+        .label {
+            .info-icon {
+                margin: 0 var(--tui-spacing-extra-extra-small);
+            }
+        }
+
+        .label-description {
+            font-style: italic;
+        }
+    }
+
+    .inputs-container {
+        display: flex;
+
+        .input {
+            flex-grow: 1;
+        }
+
+        .secondary-input {
+            --tui-spacing-super-small: 1px;
+            --tui-spacing-extra-small: 3px;
+            --tui-spacing-small: 6px;
+            --tui-spacing-small-medium: 8px;
+            --tui-spacing-medium: 10px;
+            --tui-spacing-large-medium: 13px;
+            --tui-spacing-large: 16px;
+            --tui-spacing-extra-large: 24px;
+
+            flex-shrink: 0;
+            width: 8rem;
+        }
+    }
+}
