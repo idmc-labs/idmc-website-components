@@ -262,7 +262,7 @@ function ConflictWidget(props: Props) {
                     description={(
                         <Header
                             headingClassName={styles.heading}
-                            heading="Total Number of IDPs"
+                            heading="Internally displaced people (IDPs)"
                             headingSize="extraSmall"
                             headingInfo={(
                                 <TooltipIcon>
@@ -306,7 +306,7 @@ function ConflictWidget(props: Props) {
                                     <Line
                                         dataKey="totalRounded"
                                         stroke="var(--color-conflict)"
-                                        name="Total Number of IDPs"
+                                        name="Internally displaced people (IDPs)"
                                         strokeWidth={2}
                                         connectNulls
                                         dot
