@@ -17,8 +17,8 @@ import {
     YAxis,
     Tooltip,
     Legend,
-    LineChart,
-    Line,
+    BarChart,
+    Bar,
     PieChart,
     Pie,
     Cell,
@@ -268,7 +268,7 @@ function DisasterWidget(props: Props) {
                     chart={disasterData?.giddDisasterStatistics.newDisplacementTimeseriesByYear && (
                         <ErrorBoundary>
                             <ResponsiveContainer>
-                                <LineChart
+                                <BarChart
                                     data={(
                                         disasterData
                                             .giddDisasterStatistics.newDisplacementTimeseriesByYear
@@ -294,15 +294,13 @@ function DisasterWidget(props: Props) {
                                         formatter={formatNumber}
                                     />
                                     <Legend />
-                                    <Line
+                                    <Bar
                                         dataKey="totalRounded"
-                                        stroke="var(--color-disaster)"
+                                        fill="var(--color-disaster)"
                                         name="Internal Displacements"
-                                        strokeWidth={2}
-                                        connectNulls
-                                        dot
+                                        maxBarSize={6}
                                     />
-                                </LineChart>
+                                </BarChart>
                             </ResponsiveContainer>
                         </ErrorBoundary>
                     )}
