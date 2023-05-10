@@ -6,25 +6,35 @@ Parameters:
     Type: String
     Description: 'The environment name your service, job, or workflow is being deployed to.'
     AllowedValues:
-      - prod
+      - preview
+      - release
   HostedZoneId:
     Description: 'The Route 53 hosted zone ID to create the domain in.'
     Type: AWS::Route53::HostedZone::Id
 
 Mappings:
   EnvMaps:
-    prod:
-      Domain: idmc-website-components.idmcdb.org
-      BucketName: idmc-website-components
-      PolicyName: idmc-website-components-s3-bucket-update-policy
-      UpdateIamUserName: idmc-website-components-s3-bucket-update-user
+    preview:
+      Domain: preview-website-components.idmcdb.org
+      BucketName: idmc-website-components-preview
+      PolicyName: idmc-website-components-preview-s3-bucket-update-policy
+      UpdateIamUserName: idmc-website-components-preview-s3-bucket-update-user
+    release:
+      Domain: release-website-components.idmcdb.org
+      BucketName: idmc-website-components-release
+      PolicyName: idmc-website-components-release-s3-bucket-update-policy
+      UpdateIamUserName: idmc-website-components-release-s3-bucket-update-user
 
 Resources:
   WebsiteBucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !FindInMap [EnvMaps, !Ref Env, BucketName]
-      AccessControl: PublicRead
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
       WebsiteConfiguration:
         IndexDocument: index.html
         ErrorDocument: index.html
