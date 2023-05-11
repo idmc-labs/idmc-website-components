@@ -274,7 +274,7 @@ const displacementCauseOptions: CauseOption[] = [
     },
     {
         key: 'disaster',
-        label: 'Disaster',
+        label: 'Disasters',
     },
 ];
 
@@ -967,7 +967,7 @@ function Gidd(props: Props) {
                                     />
                                     <GridFilterInputContainer
                                         className={styles.filterInput}
-                                        label="Conflict and Violence or Disaster"
+                                        label="Conflict and Violence or Disasters"
                                         input={(
                                             <SelectInput
                                                 name="cause"
