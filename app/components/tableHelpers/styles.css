@@ -14,13 +14,8 @@
 
     &.number-header {
         * {
+            justify-content: flex-end;
             text-align: right!important;
-        }
-
-        .title {
-            > div {
-                flex-grow: 1;
-            }
         }
     }
 }

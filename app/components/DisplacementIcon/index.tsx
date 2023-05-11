@@ -10,6 +10,7 @@ import WaveIcon from '../../resources/icons/Icon_Wave.svg';
 import StormIcon from '../../resources/icons/Icon_Disaster-Storm.svg';
 import VolcanicActivityIcon from '../../resources/icons/Icon_Disaster-Volcanic_Activity.svg';
 import WildfireIcon from '../../resources/icons/Icon_Disaster-Wildfire.svg';
+import ErosionIcon from '../../resources/icons/Icon_Erosion.svg';
 import OtherIcon from '../../resources/icons/Icon_Other.svg';
 
 const disasterMap: { [key: string]: string } = {
@@ -19,7 +20,7 @@ const disasterMap: { [key: string]: string } = {
     'Volcanic activity': VolcanicActivityIcon,
     Desertification: OtherIcon,
     Drought: DroughtIcon,
-    Erosion: OtherIcon,
+    Erosion: ErosionIcon,
     Salinisation: OtherIcon,
     'Sea level Rise': OtherIcon,
     Wildfire: WildfireIcon,
