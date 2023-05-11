@@ -6,6 +6,7 @@ import EarthquakeIcon from '../../resources/icons/Icon_Disaster-Earthquake.svg';
 import ExtremeTemperatureIcon from '../../resources/icons/Icon_Disaster-Extreme_Temperature.svg';
 import FloodIcon from '../../resources/icons/Icon_Disaster-Flood.svg';
 import MassMovementIcon from '../../resources/icons/Icon_Disaster-Mass_Movement.svg';
+import WaveIcon from '../../resources/icons/Icon_Wave.svg';
 import StormIcon from '../../resources/icons/Icon_Disaster-Storm.svg';
 import VolcanicActivityIcon from '../../resources/icons/Icon_Disaster-Volcanic_Activity.svg';
 import WildfireIcon from '../../resources/icons/Icon_Disaster-Wildfire.svg';
@@ -25,7 +26,7 @@ const disasterMap: { [key: string]: string } = {
     Flood: FloodIcon,
     // NOTE: we have two different mass movement
     // 'Mass Movement': MassMovementIcon,
-    'Wave action': OtherIcon,
+    'Wave action': WaveIcon,
     'Extreme Temperature': ExtremeTemperatureIcon,
     Storm: StormIcon,
     Unknown: OtherIcon,
