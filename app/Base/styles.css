@@ -65,7 +65,7 @@
     --color-disaster: var(--color-blue);
     --color-other: var(--color-green);
 
-    --width-page-max: 69rem;
+    --width-page-max: 72rem;
     --width-readable-content-max: 46rem;
 
     --tui-duration-transition-short: 100ms;

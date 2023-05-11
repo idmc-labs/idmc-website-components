@@ -7,9 +7,7 @@
     .gidd {
         display: flex;
         flex-direction: column;
-        padding: var(--tui-spacing-extra-large);
         width: 100%;
-        max-width: var(--width-page-max);
         gap: var(--tui-spacing-extra-large);
     }
 
@@ -34,7 +32,7 @@
             flex-wrap: wrap;
             gap: var(--tui-spacing-large);
 
-            .filter-section {
+            .left-section {
                 display: flex;
                 flex-basis: calc(100% / 3 - 2 * var(--tui-spacing-large) / 3);
                 flex-direction: column;
@@ -42,15 +40,6 @@
                 flex-wrap: wrap;
                 justify-content: space-between;
                 gap: var(--tui-spacing-large);
-
-                .input {
-                    background-color: var(--tui-color-background);
-                }
-
-                .slider-input {
-                    border-radius: 0.25rem;
-                    padding: var(--tui-spacing-extra-extra-small);
-                }
 
                 &.left-section {
                     justify-content: flex-start;
@@ -70,8 +59,33 @@
 
                 .top {
                     display: flex;
+                    flex-direction: column;
                     flex-wrap: wrap;
                     gap: var(--tui-spacing-large);
+
+                    .filter-section {
+                        display: flex;
+                        align-items: flex-end;
+                        flex-wrap: wrap;
+                        gap: var(--tui-spacing-large);
+
+                        .filter-input {
+                            flex-basis: calc(100% / 2 - var(--tui-spacing-large));
+
+                            @media screen and (max-width: 720px) {
+                                flex-basis: 100%;
+                            }
+                        }
+
+                        .input {
+                            background-color: var(--tui-color-background);
+                        }
+
+                        .slider-input {
+                            border-radius: 0.25rem;
+                            padding: var(--tui-spacing-extra-extra-small);
+                        }
+                    }
                 }
 
                 @media screen and (max-width: 720px) {
@@ -121,7 +135,6 @@
     .stats-container {
         display: flex;
         width: 100%;
-        max-width: var(--width-page-max);
         gap: var(--tui-spacing-extra-large);
 
         .stat-box {

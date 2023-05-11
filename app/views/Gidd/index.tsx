@@ -327,6 +327,9 @@ function Gidd(props: Props) {
         if (newVal === 'conflict' || newVal === undefined) {
             setHazardTypes([]);
         }
+        if (newVal === 'disaster') {
+            setSelectedTable('events');
+        }
 
         if (newVal) {
             setCombineCauseCharts(false);
@@ -903,7 +906,7 @@ function Gidd(props: Props) {
                         darkMode
                     />
                     <div className={styles.filterBodyContainer}>
-                        <div className={_cs(styles.filterSection, styles.leftSection)}>
+                        <div className={styles.leftSection}>
                             <p className={styles.headingDescription}>{mainText}</p>
                             <div className={styles.downloadSection}>
                                 <p className={styles.downloadDescription}>{downloadText}</p>
@@ -946,6 +949,7 @@ function Gidd(props: Props) {
                             <div className={styles.top}>
                                 <div className={_cs(styles.filterSection)}>
                                     <GridFilterInputContainer
+                                        className={styles.filterInput}
                                         label="Internal Displacements or Internally displaced people (IDPs)"
                                         helpText="Select internal displacements or Internally displaced people (IDPs)"
                                         input={(
@@ -962,6 +966,25 @@ function Gidd(props: Props) {
                                         )}
                                     />
                                     <GridFilterInputContainer
+                                        className={styles.filterInput}
+                                        label="Conflict and Violence or Disaster"
+                                        input={(
+                                            <SelectInput
+                                                name="cause"
+                                                className={styles.selectInput}
+                                                inputSectionClassName={styles.inputSection}
+                                                keySelector={causeKeySelector}
+                                                labelSelector={causeLabelSelector}
+                                                value={displacementCause}
+                                                onChange={handleCauseChange}
+                                                options={displacementCauseOptions}
+                                            />
+                                        )}
+                                    />
+                                </div>
+                                <div className={_cs(styles.filterSection)}>
+                                    <GridFilterInputContainer
+                                        className={styles.filterInput}
                                         label="Countries, and/or Territories"
                                         labelDescription="*In compared view, up to 3 countries or territories can be selected"
                                         input={(
@@ -977,24 +1000,8 @@ function Gidd(props: Props) {
                                             />
                                         )}
                                     />
-                                </div>
-                                <div className={_cs(styles.filterSection)}>
                                     <GridFilterInputContainer
-                                        label="Conflict and Violence or Disaster"
-                                        input={(
-                                            <SelectInput
-                                                name="cause"
-                                                className={styles.selectInput}
-                                                inputSectionClassName={styles.inputSection}
-                                                keySelector={causeKeySelector}
-                                                labelSelector={causeLabelSelector}
-                                                value={displacementCause}
-                                                onChange={handleCauseChange}
-                                                options={displacementCauseOptions}
-                                            />
-                                        )}
-                                    />
-                                    <GridFilterInputContainer
+                                        className={styles.filterInput}
                                         label={`Timescale ${`${timeRange[0]} - ${timeRange[1]}`}`}
                                         input={(
                                             <SliderInput
