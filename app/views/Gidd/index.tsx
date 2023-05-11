@@ -951,7 +951,6 @@ function Gidd(props: Props) {
                                     <GridFilterInputContainer
                                         className={styles.filterInput}
                                         label="Internal Displacements or Internally displaced people (IDPs)"
-                                        helpText="Select internal displacements or Internally displaced people (IDPs)"
                                         input={(
                                             <SelectInput
                                                 name="category"
