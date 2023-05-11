@@ -104,7 +104,7 @@ function Home() {
                         {countries?.map((country) => (
                             <a
                                 key={country.iso3}
-                                href={getIduWidgetLink('NPL')}
+                                href={getIduWidgetLink(country.iso3)}
                             >
                                 {country.name}
                             </a>
