@@ -1282,6 +1282,7 @@ function Gidd(props: Props) {
                                     isConflictDataShown={isConflictDataShown}
                                     isDisasterDataShown={isDisasterDataShown}
                                     countriesIso3={countries}
+                                    cause={displacementCause}
                                     startYear={timeRange[0]}
                                     endYear={timeRange[1]}
                                     activePage={dataActivePage}

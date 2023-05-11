@@ -42,6 +42,7 @@ const GIDD_DISPLACEMENTS = gql`
         $startYear: Float,
         $countriesIso3: [String!],
         $releaseEnvironment: String!,
+        $cause: String,
     ){
         giddDisplacements(
             ordering: $ordering,
@@ -51,6 +52,7 @@ const GIDD_DISPLACEMENTS = gql`
             startYear: $startYear,
             page: $page,
             releaseEnvironment: $releaseEnvironment,
+            cause: $cause,
         ){
             results {
                 conflictNewDisplacementRounded
@@ -69,10 +71,13 @@ const GIDD_DISPLACEMENTS = gql`
     }
 `;
 
+type Cause = 'conflict' | 'disaster';
+
 interface Props {
     className?: string;
     isConflictDataShown?: boolean;
     isDisasterDataShown?: boolean;
+    cause: Cause | undefined;
     startYear: number;
     endYear: number;
     countriesIso3: string[] | undefined;
@@ -90,6 +95,7 @@ function DataTable(props: Props) {
         countriesIso3,
         activePage,
         onActivePageChange,
+        cause,
     } = props;
 
     const overallDataSortState = useSortState({ name: 'year', direction: 'dsc' });
@@ -103,12 +109,14 @@ function DataTable(props: Props) {
         endYear,
         pageSize: DISPLACEMENTS_TABLE_PAGE_SIZE,
         releaseEnvironment: DATA_RELEASE,
+        cause,
     }), [
         countriesIso3,
         startYear,
         endYear,
         sorting,
         activePage,
+        cause,
     ]);
 
     const debouncedVariables = useDebouncedValue(giddDisplacementsVariables);
