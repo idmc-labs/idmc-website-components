@@ -94,6 +94,13 @@ function getCountryCountSubLabel(count = 0) {
     return `In ${count} countries and territories`;
 }
 
+function getCountryStockCountSubLabel(count = 0, year: number) {
+    if (count === 1) {
+        return `In 1 country and territory as of ${year}`;
+    }
+    return `In ${count} countries and territories as of ${year}`;
+}
+
 const mainText = 'IDMC Data Portal enables you to explore, filter and sort our data to produce your own graphs and tables. You can also access and export the data used to generate these visualisations.';
 const downloadText = 'You can export your data, either the full dataset or the result of your query in an Excel format which includes the metadata and copyrights.';
 const flowDetails = 'The internal displacements figure refers to the number of forced movements of people within the borders of their country recorded during the year. Figures may include individuals who have been displaced more than once.';
@@ -1174,8 +1181,9 @@ function Gidd(props: Props) {
                                 <NumberBlock
                                     label="Total"
                                     size="large"
-                                    subLabel={getCountryCountSubLabel(
+                                    subLabel={getCountryStockCountSubLabel(
                                         combinedStats?.totalDisplacementCountries,
+                                        timeRange[1],
                                     )}
                                     value={combinedStats?.totalDisplacementsRounded}
                                 />
@@ -1186,8 +1194,9 @@ function Gidd(props: Props) {
                                         label="Total by conflict and violence"
                                         variant="conflict"
                                         size={displacementCause ? 'large' : 'medium'}
-                                        subLabel={getCountryCountSubLabel(
+                                        subLabel={getCountryStockCountSubLabel(
                                             conflictStats?.totalDisplacementCountries,
+                                            timeRange[1],
                                         )}
                                         value={conflictStats?.totalDisplacementsRounded}
                                     />
@@ -1197,8 +1206,9 @@ function Gidd(props: Props) {
                                         label="Total by disasters"
                                         size={displacementCause ? 'large' : 'medium'}
                                         variant="disaster"
-                                        subLabel={getCountryCountSubLabel(
+                                        subLabel={getCountryStockCountSubLabel(
                                             disasterStats?.totalDisplacementCountries,
+                                            timeRange[1],
                                         )}
                                         value={disasterStats?.totalDisplacementsRounded}
                                     />

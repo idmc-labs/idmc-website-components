@@ -9,6 +9,7 @@ import {
 } from '@apollo/client';
 import {
     _cs,
+    compareNumber,
     isNotDefined,
 } from '@togglecorp/fujs';
 
@@ -33,6 +34,7 @@ import FigureAnalysis from '#components/FigureAnalysis';
 
 import {
     replaceWithDrupalEndpoint,
+    getMaximum,
 } from '#utils/common';
 
 import IduWidget from '../IduWidget';
@@ -164,7 +166,13 @@ function CountryProfile(props: Props) {
                     overviews,
                 } = response.countryProfile;
                 if (overviews && overviews.length > 0) {
-                    setOverviewActiveYear(overviews[0].year.toString());
+                    const latestYear = getMaximum(
+                        overviews,
+                        (overview1, overview2) => compareNumber(overview1.year, overview2.year),
+                    );
+                    if (latestYear) {
+                        setOverviewActiveYear(latestYear.year.toString());
+                    }
                 }
             },
         },

@@ -227,3 +227,21 @@ export function prepareUrl(url: string, params: UrlParams): string {
     }
     return url;
 }
+
+export function getMaximum<T>(
+    list: T[] | undefined,
+    comparator: (item1: T, item2: T) => number,
+): T | undefined {
+    if (!list || list.length < 1) {
+        return undefined;
+    }
+    return list.reduce((acc: T, item: T) => {
+        if (!item) {
+            return acc;
+        }
+        if (comparator(item, acc) > 0) {
+            return item;
+        }
+        return acc;
+    }, list[0]);
+}
