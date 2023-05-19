@@ -209,7 +209,7 @@ function DisasterWidget(props: Props) {
                 <>
                     <ButtonLikeLink
                         href={suffixHelixRestEndpoint(prepareUrl(
-                            '/gidd/disasters/disaster-export/',
+                            'gidd/disasters/disaster-export/',
                             {
                                 iso3__in: iso3,
                                 start_year: disasterTimeRange[0],

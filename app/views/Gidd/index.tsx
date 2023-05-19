@@ -939,7 +939,7 @@ function Gidd(props: Props) {
                                 {displacementCause === 'disaster' ? (
                                     <ButtonLikeLink
                                         href={suffixHelixRestEndpoint(prepareUrl(
-                                            '/gidd/disasters/disaster-export/',
+                                            'gidd/disasters/disaster-export/',
                                             {
                                                 iso3__in: countries,
                                                 start_year: timeRange[0],
@@ -955,7 +955,7 @@ function Gidd(props: Props) {
                                 ) : (
                                     <ButtonLikeLink
                                         href={suffixHelixRestEndpoint(prepareUrl(
-                                            '/gidd/displacements/displacement-export/',
+                                            'gidd/displacements/displacement-export/',
                                             {
                                                 cause: displacementCause,
                                                 iso3__in: countries,
