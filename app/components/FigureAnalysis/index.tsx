@@ -14,6 +14,7 @@ import TextOutput from '#components/TextOutput';
 import MarkdownViewer from '#components/MarkdownViewer';
 import {
     DATA_RELEASE,
+    HELIX_CLIENT_ID,
 } from '#utils/common';
 import Container from '#components/Container';
 import CollapsibleContent from '#components/CollapsibleContent';
@@ -27,11 +28,13 @@ query GiddCountryPfa(
     $iso3: String!,
     $year: Int!,
     $releaseEnvironment: String!,
+    $clientId: String!,
 ){
     giddPublicFigureAnalysisList(
         iso3: $iso3,
         year: $year,
         releaseEnvironment: $releaseEnvironment,
+        clientId: $clientId,
     ) {
         results {
             id
@@ -80,6 +83,7 @@ function FigureAnalysis(props: Props) {
         iso3,
         year: Number(selectedYear),
         releaseEnvironment: DATA_RELEASE,
+        clientId: HELIX_CLIENT_ID,
     }), [
         selectedYear,
         iso3,

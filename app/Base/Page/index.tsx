@@ -15,6 +15,7 @@ import DisasterWidget, { Props as DisasterWidgetProps } from '#views/DisasterWid
 import IduWidget from '#views/IduWidget';
 import {
     DATA_RELEASE,
+    HELIX_CLIENT_ID,
 } from '#utils/common';
 import {
     GiddYearQuery,
@@ -24,9 +25,11 @@ import {
 const GIDD_YEAR = gql`
     query GiddYear(
         $releaseEnvironment: String!,
+        $clientId: String!,
     ){
         giddYear(
             releaseEnvironment: $releaseEnvironment,
+            clientId: $clientId,
         ) {
             year
         }
@@ -36,6 +39,7 @@ const GIDD_YEAR = gql`
 function useYear() {
     const variables = useMemo(() => ({
         releaseEnvironment: DATA_RELEASE,
+        clientId: HELIX_CLIENT_ID,
     }), []);
 
     const {

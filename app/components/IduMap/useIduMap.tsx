@@ -47,7 +47,7 @@ const IDU_DATA = gql`
             type: "[IduData]",
             method: "GET",
             endpoint: "helix",
-            path: "/idus?client_id={args.clientId}"
+            path: "idus/last-180-days/?client_id={args.clientId}"
         ) {
             id
             country
