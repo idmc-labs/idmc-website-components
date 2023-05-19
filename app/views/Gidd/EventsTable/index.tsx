@@ -17,6 +17,7 @@ import { IoSearchOutline } from 'react-icons/io5';
 import {
     getHazardTypeLabel,
     DATA_RELEASE,
+    HELIX_CLIENT_ID,
 } from '#utils/common';
 import {
     gql,
@@ -53,6 +54,7 @@ query GiddEvents(
     $hazardTypes: [ID!],
     $countriesIso3: [String!],
     $releaseEnvironment: String!,
+    $clientId: String!,
 ){
     giddDisasters(
         ordering: $ordering,
@@ -64,6 +66,7 @@ query GiddEvents(
         startYear: $startYear,
         hazardTypes: $hazardTypes,
         releaseEnvironment: $releaseEnvironment,
+        clientId: $clientId,
     ){
         results {
             id
@@ -125,6 +128,7 @@ function EventsTable(props: Props) {
         hazardTypes,
         pageSize: EVENTS_TABLE_PAGE_SIZE,
         releaseEnvironment: DATA_RELEASE,
+        clientId: HELIX_CLIENT_ID,
     }), [
         countriesIso3,
         startYear,

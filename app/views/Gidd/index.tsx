@@ -20,6 +20,7 @@ import {
     START_YEAR,
     sumAndRemoveZero,
     DATA_RELEASE,
+    HELIX_CLIENT_ID,
     getHazardTypeLabel,
     suffixHelixRestEndpoint,
     prepareUrl,
@@ -111,8 +112,12 @@ type HazardData = NonNullable<NonNullable<GiddStatisticsQuery['giddDisasterStati
 const hazardKeySelector = (item: HazardData) => item.id;
 
 const GIDD_FILTER_OPTIONS = gql`
-    query GiddFilterOptions {
-        giddPublicCountries {
+    query GiddFilterOptions(
+        $clientId: String!,
+    ) {
+        giddPublicCountries(
+            clientId: $clientId,
+        ) {
             id
             idmcShortName
             iso3
@@ -121,7 +126,9 @@ const GIDD_FILTER_OPTIONS = gql`
                 name
             }
         }
-        giddHazardTypes {
+        giddHazardTypes(
+            clientId: $clientId,
+        ) {
             id
             name
         }
@@ -138,6 +145,7 @@ const GIDD_STATISTICS = gql`
         $startYearForTimeseries: Float,
         $releaseEnvironment: String!,
         $combineCountries: Boolean!,
+        $clientId: String!,
     ){
         giddCombinedStatistics(
             countriesIso3: $countriesIso3,
@@ -145,6 +153,7 @@ const GIDD_STATISTICS = gql`
             startYear: $startYear,
             releaseEnvironment: $releaseEnvironment,
             hazardTypes: $hazardTypes,
+            clientId: $clientId,
         ) {
             internalDisplacementsRounded
             totalDisplacementsRounded
@@ -156,6 +165,7 @@ const GIDD_STATISTICS = gql`
             endYear: $endYear,
             startYear: $startYear,
             releaseEnvironment: $releaseEnvironment,
+            clientId: $clientId,
         ) {
             totalDisplacementsRounded
             totalDisplacementCountries
@@ -168,6 +178,7 @@ const GIDD_STATISTICS = gql`
             endYear: $endYear,
             startYear: $startYear,
             releaseEnvironment: $releaseEnvironment,
+            clientId: $clientId,
         ){
             newDisplacementsRounded
             totalDisplacementsRounded
@@ -185,6 +196,7 @@ const GIDD_STATISTICS = gql`
             endYear: $endYearForTimeseries,
             startYear: $startYearForTimeseries,
             releaseEnvironment: $releaseEnvironment,
+            clientId: $clientId,
         ) {
             totalDisplacementTimeseriesByYear @include(if: $combineCountries) {
                 totalRounded
@@ -219,6 +231,7 @@ const GIDD_STATISTICS = gql`
             endYear: $endYearForTimeseries,
             startYear: $startYearForTimeseries,
             releaseEnvironment: $releaseEnvironment,
+            clientId: $clientId,
         ) {
             totalDisplacementTimeseriesByYear @include(if: $combineCountries) {
                 totalRounded
@@ -337,10 +350,11 @@ function Gidd(props: Props) {
         if (newVal === 'disaster') {
             setSelectedTable('events');
         }
-
         if (newVal) {
             setCombineCauseCharts(false);
         }
+        setDataActivePage(1);
+        setEventsActivePage(1);
     }, [
         setHazardTypes,
     ]);
@@ -357,6 +371,7 @@ function Gidd(props: Props) {
 
     const handleTimeRangeChange = useCallback((newVal: number[]) => {
         setTimeRange(newVal);
+
         setDataActivePage(1);
         setEventsActivePage(1);
     }, []);
@@ -402,6 +417,9 @@ function Gidd(props: Props) {
     >(
         GIDD_FILTER_OPTIONS,
         {
+            variables: {
+                clientId: HELIX_CLIENT_ID,
+            },
             context: {
                 clientName: 'helix',
             },
@@ -420,6 +438,7 @@ function Gidd(props: Props) {
         startYearForTimeseries: timeRange[0] === timeRange[1] ? START_YEAR : timeRange[0],
         endYearForTimeseries: timeRange[1],
         releaseEnvironment: DATA_RELEASE,
+        clientId: HELIX_CLIENT_ID,
     }), [
         displacementCause,
         hazardTypes,

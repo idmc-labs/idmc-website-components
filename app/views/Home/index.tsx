@@ -18,6 +18,8 @@ import {
     getConflictWidgetLink,
     getDisasterWidgetLink,
     getIduWidgetLink,
+
+    HELIX_REST_ENDPOINT,
 } from '#utils/common';
 
 import styles from './styles.css';
@@ -133,6 +135,14 @@ function Home() {
                     </h2>
                     <a href={getGiddLink()}>
                         Global
+                    </a>
+                </div>
+                <div className={styles.section}>
+                    <h2>
+                        Rest Endpoints
+                    </h2>
+                    <a href={HELIX_REST_ENDPOINT}>
+                        Swagger UI
                     </a>
                 </div>
             </div>

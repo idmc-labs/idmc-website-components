@@ -34,6 +34,7 @@ import {
     suffixDrupalEndpoint,
     suffixHelixRestEndpoint,
     DATA_RELEASE,
+    HELIX_CLIENT_ID,
     prepareUrl,
 } from '#utils/common';
 import {
@@ -52,8 +53,20 @@ const chartMargins = { top: 16, left: 5, right: 5, bottom: 5 };
 const giddDisplacementDataLink = suffixDrupalEndpoint('/database/displacement-data');
 
 const STATS = gql`
-    query ConflictStats($iso3: String!, $startYear: Float, $endYear: Float, $releaseEnvironment: String!) {
-        giddConflictStatistics(countriesIso3: [$iso3], endYear: $endYear, startYear: $startYear, releaseEnvironment: $releaseEnvironment) {
+    query ConflictStats(
+        $iso3: String!,
+        $startYear: Float,
+        $endYear: Float,
+        $releaseEnvironment: String!,
+        $clientId: String!,
+    ) {
+        giddConflictStatistics(
+            countriesIso3: [$iso3],
+            endYear: $endYear,
+            startYear: $startYear,
+            releaseEnvironment: $releaseEnvironment,
+            clientId: $clientId,
+        ) {
             newDisplacementsRounded
             totalDisplacementsRounded
         }
@@ -61,8 +74,20 @@ const STATS = gql`
 `;
 
 const CONFLICT_DATA = gql`
-    query ConflictData($countryIso3: String!, $startYear: Float, $endYear: Float, $releaseEnvironment: String!) {
-        giddConflictStatistics(countriesIso3: [$countryIso3], endYear: $endYear, startYear: $startYear, releaseEnvironment: $releaseEnvironment) {
+    query ConflictData(
+        $countryIso3: String!,
+        $startYear: Float,
+        $endYear: Float,
+        $releaseEnvironment: String!,
+        $clientId: String!,
+    ) {
+        giddConflictStatistics(
+            countriesIso3: [$countryIso3],
+            endYear: $endYear,
+            startYear: $startYear,
+            releaseEnvironment: $releaseEnvironment,
+            clientId: $clientId,
+        ) {
             newDisplacementsRounded
             totalDisplacementsRounded
             totalDisplacementTimeseriesByYear {
@@ -102,6 +127,7 @@ function ConflictWidget(props: Props) {
                 startYear: START_YEAR,
                 endYear: year,
                 releaseEnvironment: DATA_RELEASE,
+                clientId: HELIX_CLIENT_ID,
             },
             context: {
                 clientName: 'helix',
@@ -123,6 +149,7 @@ function ConflictWidget(props: Props) {
                 startYear: conflictTimeRange[0],
                 endYear: conflictTimeRange[1],
                 releaseEnvironment: DATA_RELEASE,
+                clientId: HELIX_CLIENT_ID,
             },
             context: {
                 clientName: 'helix',

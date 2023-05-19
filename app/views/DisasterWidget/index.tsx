@@ -38,6 +38,7 @@ import {
     suffixDrupalEndpoint,
     suffixHelixRestEndpoint,
     DATA_RELEASE,
+    HELIX_CLIENT_ID,
     getHazardTypeLabel,
     prepareUrl,
 } from '#utils/common';
@@ -68,8 +69,20 @@ const categoricalColorScheme = [
 ];
 
 const STATS = gql`
-    query DisasterStats($iso3: String!, $startYear: Float, $endYear: Float, $releaseEnvironment: String!) {
-        giddDisasterStatistics(countriesIso3: [$iso3], endYear: $endYear, startYear: $startYear, releaseEnvironment: $releaseEnvironment) {
+    query DisasterStats(
+        $iso3: String!,
+        $startYear: Float,
+        $endYear: Float,
+        $releaseEnvironment: String!,
+        $clientId: String!,
+    ) {
+        giddDisasterStatistics(
+            countriesIso3: [$iso3],
+            endYear: $endYear,
+            startYear: $startYear,
+            releaseEnvironment: $releaseEnvironment,
+            clientId: $clientId,
+        ) {
             newDisplacementsRounded
             displacementsByHazardType {
                 id
@@ -81,8 +94,22 @@ const STATS = gql`
 `;
 
 const DISASTER_DATA = gql`
-    query DisasterData($countryIso3: String!, $startYear: Float, $endYear: Float, $categories: [ID!], $releaseEnvironment: String!) {
-        giddDisasterStatistics(countriesIso3: [$countryIso3], endYear: $endYear, startYear: $startYear, hazardTypes: $categories, releaseEnvironment: $releaseEnvironment) {
+    query DisasterData(
+        $countryIso3: String!,
+        $startYear: Float,
+        $endYear: Float,
+        $categories: [ID!],
+        $releaseEnvironment: String!,
+        $clientId: String!,
+    ) {
+        giddDisasterStatistics(
+            countriesIso3: [$countryIso3],
+            endYear: $endYear,
+            startYear: $startYear,
+            hazardTypes: $categories,
+            releaseEnvironment: $releaseEnvironment,
+            clientId: $clientId,
+        ) {
             newDisplacementsRounded
             totalEvents
             newDisplacementTimeseriesByYear {
@@ -124,6 +151,7 @@ function DisasterWidget(props: Props) {
                 startYear: START_YEAR,
                 endYear: year,
                 releaseEnvironment: DATA_RELEASE,
+                clientId: HELIX_CLIENT_ID,
             },
             context: {
                 clientName: 'helix',
@@ -145,6 +173,7 @@ function DisasterWidget(props: Props) {
                 endYear: disasterTimeRange[1],
                 categories: disasterTypes,
                 releaseEnvironment: DATA_RELEASE,
+                clientId: HELIX_CLIENT_ID,
             },
             context: {
                 clientName: 'helix',

@@ -20,6 +20,7 @@ import NumberBlock from '#components/NumberBlock';
 import Message from '#components/Message';
 import {
     DATA_RELEASE,
+    HELIX_CLIENT_ID,
 } from '#utils/common';
 import {
     GiddEventDetailsQuery,
@@ -32,10 +33,12 @@ const GIDD_EVENT_DETAILS = gql`
 query GiddEventDetails(
     $eventId: ID!,
     $releaseEnvironment: String,
+    $clientId: String!,
 ){
     giddEvent(
         eventId: $eventId,
         releaseEnvironment: $releaseEnvironment,
+        clientId: $clientId,
     ) {
         affectedCountries {
             countryName
@@ -77,6 +80,7 @@ function EventModal(props: Props) {
     const eventVariables = useMemo(() => ({
         eventId,
         releaseEnvironment: DATA_RELEASE,
+        clientId: HELIX_CLIENT_ID,
     }), [eventId]);
 
     const {

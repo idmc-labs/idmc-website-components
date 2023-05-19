@@ -11,6 +11,7 @@ import {
 } from '@togglecorp/toggle-ui';
 import {
     DATA_RELEASE,
+    HELIX_CLIENT_ID,
 } from '#utils/common';
 import {
     gql,
@@ -43,6 +44,7 @@ const GIDD_DISPLACEMENTS = gql`
         $countriesIso3: [String!],
         $releaseEnvironment: String!,
         $cause: String,
+        $clientId: String!,
     ){
         giddDisplacements(
             ordering: $ordering,
@@ -53,6 +55,7 @@ const GIDD_DISPLACEMENTS = gql`
             page: $page,
             releaseEnvironment: $releaseEnvironment,
             cause: $cause,
+            clientId: $clientId,
         ){
             results {
                 conflictNewDisplacementRounded
@@ -110,6 +113,7 @@ function DataTable(props: Props) {
         pageSize: DISPLACEMENTS_TABLE_PAGE_SIZE,
         releaseEnvironment: DATA_RELEASE,
         cause,
+        clientId: HELIX_CLIENT_ID,
     }), [
         countriesIso3,
         startYear,
