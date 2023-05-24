@@ -38,7 +38,7 @@ function TinyMceEditorInput<N extends string>(props: Props<N>) {
 
     const strings = useTranslation(goodPracticesDashboard);
 
-    const sizeLimit = textLimit ?? 2000;
+    const sizeLimit = textLimit ?? 10000;
     const [length, setLength] = useState(0);
     const lengthExceeded = length >= sizeLimit;
 
