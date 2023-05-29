@@ -89,7 +89,7 @@ jobs:
             REACT_APP_TINY_MCE_KEY: o65ezg70uejj1ibo2janhtw6n1eiii7fm2w2yanfnvqe6ipa
             REACT_APP_SENTRY_DSN: https://5e568ceb82d94590879272b6644f86ea@o479248.ingest.sentry.io/6409048
             # Release config (ONLY DIFFERENT)
-            REACT_APP_DRUPAL_ENDPOINT: https://internal-displacement.org
+            REACT_APP_DRUPAL_ENDPOINT: https://www.internal-displacement.org
             REACT_APP_ENVIRONMENT: release
             REACT_APP_DATA_RELEASE: RELEASE
         run: |
