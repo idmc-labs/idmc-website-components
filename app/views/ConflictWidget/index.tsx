@@ -196,7 +196,7 @@ function ConflictWidget(props: Props) {
                 <>
                     <ButtonLikeLink
                         href={suffixHelixRestEndpoint(prepareUrl(
-                            '/gidd/displacements/displacement-export/',
+                            'gidd/displacements/displacement-export/',
                             {
                                 iso3__in: iso3,
                                 start_year: conflictTimeRange[0],
