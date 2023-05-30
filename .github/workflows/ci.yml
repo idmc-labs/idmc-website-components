@@ -61,7 +61,7 @@ jobs:
             DOCKER_IMAGE: ${{ steps.prep.outputs.tagged_image }}
             REACT_APP_GIDD_GRAPHQL_ENDPOINT: https://website-api.idmcdb.org/graphql/
             REACT_APP_HELIX_GRAPHQL_ENDPOINT: https://helix-tools-api.idmcdb.org/graphql
-            REACT_APP_HELIX_REST_ENDPOINT: https://helix-tools-api.idmcdb.org/external-api
+            REACT_APP_HELIX_REST_ENDPOINT: https://helix-tools-api.idmcdb.org/external-api/
             REACT_APP_HELIX_CLIENT_ID: IDMCWSHSOLO009
             REACT_APP_MAPBOX_ACCESS_TOKEN: pk.eyJ1IjoidG9nZ2xlY29ycCIsImEiOiJjazk5ZXMza2YxZmQ1M2dvNWxneTEycnQwIn0.K3u-ns63rFzM7CzrnOBm2w
             REACT_APP_MAPBOX_STYLE: mapbox://styles/togglecorp/cl50rwy0a002d14mo6w9zprio
@@ -81,7 +81,7 @@ jobs:
             DOCKER_IMAGE: ${{ steps.prep.outputs.tagged_image }}
             REACT_APP_GIDD_GRAPHQL_ENDPOINT: https://website-api.idmcdb.org/graphql/
             REACT_APP_HELIX_GRAPHQL_ENDPOINT: https://helix-tools-api.idmcdb.org/graphql
-            REACT_APP_HELIX_REST_ENDPOINT: https://helix-tools-api.idmcdb.org/external-api
+            REACT_APP_HELIX_REST_ENDPOINT: https://helix-tools-api.idmcdb.org/external-api/
             REACT_APP_HELIX_CLIENT_ID: IDMCWSHSOLO009
             REACT_APP_MAPBOX_ACCESS_TOKEN: pk.eyJ1IjoidG9nZ2xlY29ycCIsImEiOiJjazk5ZXMza2YxZmQ1M2dvNWxneTEycnQwIn0.K3u-ns63rFzM7CzrnOBm2w
             REACT_APP_MAPBOX_STYLE: mapbox://styles/togglecorp/cl50rwy0a002d14mo6w9zprio
