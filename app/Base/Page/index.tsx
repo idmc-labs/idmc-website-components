@@ -27,7 +27,7 @@ const GIDD_YEAR = gql`
         $releaseEnvironment: String!,
         $clientId: String!,
     ){
-        giddYear(
+        giddPublicYear(
             releaseEnvironment: $releaseEnvironment,
             clientId: $clientId,
         ) {
@@ -56,7 +56,7 @@ function useYear() {
         },
     );
 
-    const giddYear = data?.giddYear?.year;
+    const giddYear = data?.giddPublicYear?.year;
 
     return { loading, year: giddYear };
 }

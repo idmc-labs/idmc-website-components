@@ -107,7 +107,7 @@ const downloadText = 'You can export your data, either the full dataset or the r
 const flowDetails = 'The internal displacements figure refers to the number of forced movements of people within the borders of their country recorded during the year. Figures may include individuals who have been displaced more than once.';
 const stockDetails = 'The total number of Internally Displaced People (IDPs) is a snapshot of all the people living in internal displacements at the end of the year.';
 
-type HazardData = NonNullable<NonNullable<GiddStatisticsQuery['giddDisasterStatistics']>['displacementsByHazardType']>[number];
+type HazardData = NonNullable<NonNullable<GiddStatisticsQuery['giddPublicDisasterStatistics']>['displacementsByHazardType']>[number];
 
 const hazardKeySelector = (item: HazardData) => item.id;
 
@@ -126,7 +126,7 @@ const GIDD_FILTER_OPTIONS = gql`
                 name
             }
         }
-        giddHazardTypes(
+        giddPublicHazardTypes(
             clientId: $clientId,
         ) {
             id
@@ -147,7 +147,7 @@ const GIDD_STATISTICS = gql`
         $combineCountries: Boolean!,
         $clientId: String!,
     ){
-        giddCombinedStatistics(
+        giddPublicCombinedStatistics(
             countriesIso3: $countriesIso3,
             endYear: $endYear,
             startYear: $startYear,
@@ -160,7 +160,7 @@ const GIDD_STATISTICS = gql`
             internalDisplacementCountries
             totalDisplacementCountries
         }
-        giddConflictStatistics(
+        giddPublicConflictStatistics(
             countriesIso3: $countriesIso3,
             endYear: $endYear,
             startYear: $startYear,
@@ -172,7 +172,7 @@ const GIDD_STATISTICS = gql`
             newDisplacementsRounded
             internalDisplacementCountries
         }
-        giddDisasterStatistics(
+        giddPublicDisasterStatistics(
             hazardTypes: $hazardTypes,
             countriesIso3: $countriesIso3,
             endYear: $endYear,
@@ -191,7 +191,7 @@ const GIDD_STATISTICS = gql`
             }
             totalEvents
         }
-        giddConflictTimeseries: giddConflictStatistics(
+        giddConflictTimeseries: giddPublicConflictStatistics(
             countriesIso3: $countriesIso3,
             endYear: $endYearForTimeseries,
             startYear: $startYearForTimeseries,
@@ -225,7 +225,7 @@ const GIDD_STATISTICS = gql`
                 year
             }
         }
-        giddDisasterTimeseries: giddDisasterStatistics(
+        giddDisasterTimeseries: giddPublicDisasterStatistics(
             hazardTypes: $hazardTypes,
             countriesIso3: $countriesIso3,
             endYear: $endYearForTimeseries,
@@ -462,9 +462,9 @@ function Gidd(props: Props) {
         },
     );
 
-    const conflictStats = removeNull(statisticsResponse?.giddConflictStatistics);
-    const disasterStats = removeNull(statisticsResponse?.giddDisasterStatistics);
-    const combinedStats = removeNull(statisticsResponse?.giddCombinedStatistics);
+    const conflictStats = removeNull(statisticsResponse?.giddPublicConflictStatistics);
+    const disasterStats = removeNull(statisticsResponse?.giddPublicDisasterStatistics);
+    const combinedStats = removeNull(statisticsResponse?.giddPublicCombinedStatistics);
 
     const conflictChartData = removeNull(statisticsResponse?.giddConflictTimeseries);
     const disasterChartData = removeNull(statisticsResponse?.giddDisasterTimeseries);
@@ -848,7 +848,7 @@ function Gidd(props: Props) {
     )?.filter(isDefined);
 
     const hazardOptions = removeNull(
-        countryFilterResponse?.giddHazardTypes,
+        countryFilterResponse?.giddPublicHazardTypes,
     )?.filter(isDefined);
 
     const sortedHazards = useMemo(
