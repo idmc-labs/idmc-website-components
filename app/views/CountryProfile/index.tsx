@@ -48,6 +48,7 @@ import styles from './styles.css';
 const contentTypeLabelMapping: {
     [key: string]: string,
 } = {
+    shorthand: 'Shorthand',
     media_centre: 'Media Centre',
     events: 'Events',
     expert_opinion: 'Expert Opinion',
