@@ -285,7 +285,7 @@ function useIduQuery(
                         <IoExitOutline />
                     )}
                 >
-                    Go to our Data Centre (GIDD)
+                    Go to IDMC&apos;s database
                 </ButtonLikeLink>
             )}
         >
