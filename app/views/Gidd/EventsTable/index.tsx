@@ -38,7 +38,7 @@ import EventTitle, { Props as EventTitleProps } from '../EventTitle';
 
 import styles from './styles.css';
 
-type EventData = NonNullable<NonNullable<GiddEventsQuery['giddDisasters']>['results']>[number];
+type EventData = NonNullable<NonNullable<GiddEventsQuery['giddPublicDisasters']>['results']>[number];
 const eventKeySelector = (item: { id: string }) => item.id;
 
 const description = 'The events table displays a summary of internal displacement data aggregated by events. An event is defined as any natural hazard phenomena that triggered forced movements before, during or after a disaster hit.';
@@ -56,7 +56,7 @@ query GiddEvents(
     $releaseEnvironment: String!,
     $clientId: String!,
 ){
-    giddDisasters(
+    giddPublicDisasters(
         ordering: $ordering,
         pageSize: $pageSize,
         eventName: $eventName,
@@ -252,14 +252,14 @@ function EventsTable(props: Props) {
                 <Pager
                     className={styles.pager}
                     activePage={activePage}
-                    itemsCount={eventsResponse?.giddDisasters?.totalCount ?? 0}
+                    itemsCount={eventsResponse?.giddPublicDisasters?.totalCount ?? 0}
                     maxItemsPerPage={EVENTS_TABLE_PAGE_SIZE}
                     onActivePageChange={onActivePageChange}
                     itemsPerPageControlHidden
                 />
                 <Table
                     containerClassName={styles.table}
-                    data={eventsResponse?.giddDisasters?.results}
+                    data={eventsResponse?.giddPublicDisasters?.results}
                     keySelector={eventKeySelector}
                     columns={eventColumns}
                 />

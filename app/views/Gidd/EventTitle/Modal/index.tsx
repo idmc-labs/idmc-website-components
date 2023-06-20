@@ -35,7 +35,7 @@ query GiddEventDetails(
     $releaseEnvironment: String,
     $clientId: String!,
 ){
-    giddEvent(
+    giddPublicEvent(
         eventId: $eventId,
         releaseEnvironment: $releaseEnvironment,
         clientId: $clientId,
@@ -58,7 +58,7 @@ query GiddEventDetails(
 }
 `;
 
-type Country = NonNullable<NonNullable<GiddEventDetailsQuery['giddEvent']>['affectedCountries']>[number];
+type Country = NonNullable<NonNullable<GiddEventDetailsQuery['giddPublicEvent']>['affectedCountries']>[number];
 
 const countryKeySelector = (item: Country) => item?.iso3 ?? '';
 
@@ -97,7 +97,7 @@ function EventModal(props: Props) {
         },
     );
 
-    const event = data?.giddEvent;
+    const event = data?.giddPublicEvent;
 
     const sortedCountries = useMemo(() => {
         const tempCountries = [...event?.affectedCountries ?? []];

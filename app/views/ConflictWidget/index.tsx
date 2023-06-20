@@ -60,7 +60,7 @@ const STATS = gql`
         $releaseEnvironment: String!,
         $clientId: String!,
     ) {
-        giddConflictStatistics(
+        giddPublicConflictStatistics(
             countriesIso3: [$iso3],
             endYear: $endYear,
             startYear: $startYear,
@@ -81,7 +81,7 @@ const CONFLICT_DATA = gql`
         $releaseEnvironment: String!,
         $clientId: String!,
     ) {
-        giddConflictStatistics(
+        giddPublicConflictStatistics(
             countriesIso3: [$countryIso3],
             endYear: $endYear,
             startYear: $startYear,
@@ -158,8 +158,8 @@ function ConflictWidget(props: Props) {
     );
 
     if ((
-        (statsData?.giddConflictStatistics?.newDisplacementsRounded ?? 0)
-        + (statsData?.giddConflictStatistics?.totalDisplacementsRounded ?? 0)
+        (statsData?.giddPublicConflictStatistics?.newDisplacementsRounded ?? 0)
+        + (statsData?.giddPublicConflictStatistics?.totalDisplacementsRounded ?? 0)
     ) <= 0) {
         return null;
     }
@@ -227,7 +227,9 @@ function ConflictWidget(props: Props) {
             <div className={styles.infographicList}>
                 <Infographic
                     className={styles.conflictInfographic}
-                    totalValue={conflictData?.giddConflictStatistics.newDisplacementsRounded || 0}
+                    totalValue={
+                        conflictData?.giddPublicConflictStatistics.newDisplacementsRounded || 0
+                    }
                     description={(
                         <Header
                             headingClassName={styles.heading}
@@ -241,51 +243,56 @@ function ConflictWidget(props: Props) {
                         />
                     )}
                     date={`${conflictTimeRangeActual[0]} - ${conflictTimeRangeActual[1]}`}
-                    chart={conflictData?.giddConflictStatistics.newDisplacementTimeseriesByYear && (
-                        <ErrorBoundary>
-                            <ResponsiveContainer>
-                                <BarChart
-                                    data={(
-                                        conflictData
-                                            ?.giddConflictStatistics
-                                            .newDisplacementTimeseriesByYear
-                                    )}
-                                    margin={chartMargins}
-                                >
-                                    <CartesianGrid
-                                        vertical={false}
-                                        strokeDasharray="3 3"
-                                    />
-                                    <XAxis
-                                        dataKey="year"
-                                        axisLine={false}
-                                        type="number"
-                                        allowDecimals={false}
-                                        padding={{ left: 20, right: 20 }}
-                                        domain={conflictTimeRange}
-                                    />
-                                    <YAxis
-                                        axisLine={false}
-                                        tickFormatter={formatNumber}
-                                    />
-                                    <Tooltip
-                                        formatter={formatNumber}
-                                    />
-                                    <Legend />
-                                    <Bar
-                                        dataKey="totalRounded"
-                                        name="Internal Displacements"
-                                        fill="var(--color-conflict)"
-                                        maxBarSize={6}
-                                    />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </ErrorBoundary>
-                    )}
+                    chart={
+                        conflictData
+                            ?.giddPublicConflictStatistics.newDisplacementTimeseriesByYear && (
+                            <ErrorBoundary>
+                                <ResponsiveContainer>
+                                    <BarChart
+                                        data={(
+                                            conflictData
+                                                ?.giddPublicConflictStatistics
+                                                .newDisplacementTimeseriesByYear
+                                        )}
+                                        margin={chartMargins}
+                                    >
+                                        <CartesianGrid
+                                            vertical={false}
+                                            strokeDasharray="3 3"
+                                        />
+                                        <XAxis
+                                            dataKey="year"
+                                            axisLine={false}
+                                            type="number"
+                                            allowDecimals={false}
+                                            padding={{ left: 20, right: 20 }}
+                                            domain={conflictTimeRange}
+                                        />
+                                        <YAxis
+                                            axisLine={false}
+                                            tickFormatter={formatNumber}
+                                        />
+                                        <Tooltip
+                                            formatter={formatNumber}
+                                        />
+                                        <Legend />
+                                        <Bar
+                                            dataKey="totalRounded"
+                                            name="Internal Displacements"
+                                            fill="var(--color-conflict)"
+                                            maxBarSize={6}
+                                        />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </ErrorBoundary>
+                        )
+                    }
                 />
                 <Infographic
                     className={styles.conflictInfographic}
-                    totalValue={conflictData?.giddConflictStatistics.totalDisplacementsRounded || 0}
+                    totalValue={
+                        conflictData?.giddPublicConflictStatistics.totalDisplacementsRounded || 0
+                    }
                     description={(
                         <Header
                             headingClassName={styles.heading}
@@ -299,49 +306,53 @@ function ConflictWidget(props: Props) {
                         />
                     )}
                     date={`As of end of ${conflictTimeRangeActual[1]}`}
-                    chart={conflictData
-                        ?.giddConflictStatistics.totalDisplacementTimeseriesByYear && (
-                        <ErrorBoundary>
-                            <ResponsiveContainer>
-                                <LineChart
-                                    data={(conflictData
-                                        .giddConflictStatistics
-                                        .totalDisplacementTimeseriesByYear
-                                    )}
-                                    margin={chartMargins}
-                                >
-                                    <CartesianGrid
-                                        vertical={false}
-                                        strokeDasharray="3 3"
-                                    />
-                                    <XAxis
-                                        dataKey="year"
-                                        axisLine={false}
-                                        type="number"
-                                        allowDecimals={false}
-                                        padding={{ left: 20, right: 20 }}
-                                        domain={conflictTimeRange}
-                                    />
-                                    <YAxis
-                                        axisLine={false}
-                                        tickFormatter={formatNumber}
-                                    />
-                                    <Tooltip
-                                        formatter={formatNumber}
-                                    />
-                                    <Legend />
-                                    <Line
-                                        dataKey="totalRounded"
-                                        stroke="var(--color-conflict)"
-                                        name="Internally displaced people (IDPs)"
-                                        strokeWidth={2}
-                                        connectNulls
-                                        dot
-                                    />
-                                </LineChart>
-                            </ResponsiveContainer>
-                        </ErrorBoundary>
-                    )}
+                    chart={
+                        conflictData
+                            ?.giddPublicConflictStatistics
+                            .totalDisplacementTimeseriesByYear
+                        && (
+                            <ErrorBoundary>
+                                <ResponsiveContainer>
+                                    <LineChart
+                                        data={(conflictData
+                                            .giddPublicConflictStatistics
+                                            .totalDisplacementTimeseriesByYear
+                                        )}
+                                        margin={chartMargins}
+                                    >
+                                        <CartesianGrid
+                                            vertical={false}
+                                            strokeDasharray="3 3"
+                                        />
+                                        <XAxis
+                                            dataKey="year"
+                                            axisLine={false}
+                                            type="number"
+                                            allowDecimals={false}
+                                            padding={{ left: 20, right: 20 }}
+                                            domain={conflictTimeRange}
+                                        />
+                                        <YAxis
+                                            axisLine={false}
+                                            tickFormatter={formatNumber}
+                                        />
+                                        <Tooltip
+                                            formatter={formatNumber}
+                                        />
+                                        <Legend />
+                                        <Line
+                                            dataKey="totalRounded"
+                                            stroke="var(--color-conflict)"
+                                            name="Internally displaced people (IDPs)"
+                                            strokeWidth={2}
+                                            connectNulls
+                                            dot
+                                        />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </ErrorBoundary>
+                        )
+                    }
                 />
             </div>
         </Container>

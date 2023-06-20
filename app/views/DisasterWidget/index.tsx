@@ -76,7 +76,7 @@ const STATS = gql`
         $releaseEnvironment: String!,
         $clientId: String!,
     ) {
-        giddDisasterStatistics(
+        giddPublicDisasterStatistics(
             countriesIso3: [$iso3],
             endYear: $endYear,
             startYear: $startYear,
@@ -102,7 +102,7 @@ const DISASTER_DATA = gql`
         $releaseEnvironment: String!,
         $clientId: String!,
     ) {
-        giddDisasterStatistics(
+        giddPublicDisasterStatistics(
             countriesIso3: [$countryIso3],
             endYear: $endYear,
             startYear: $startYear,
@@ -182,15 +182,15 @@ function DisasterWidget(props: Props) {
     );
 
     const displacementsByHazardType = useMemo(() => (
-        disasterData?.giddDisasterStatistics.displacementsByHazardType?.map((hazard) => ({
+        disasterData?.giddPublicDisasterStatistics.displacementsByHazardType?.map((hazard) => ({
             ...hazard,
             label: getHazardTypeLabel(hazard),
         }))
     ), [
-        disasterData?.giddDisasterStatistics.displacementsByHazardType,
+        disasterData?.giddPublicDisasterStatistics.displacementsByHazardType,
     ]);
 
-    if ((statsData?.giddDisasterStatistics?.newDisplacementsRounded ?? 0) <= 0) {
+    if ((statsData?.giddPublicDisasterStatistics?.newDisplacementsRounded ?? 0) <= 0) {
         return null;
     }
 
@@ -262,7 +262,8 @@ function DisasterWidget(props: Props) {
                                 name="disasterType"
                                 value={disasterTypes}
                                 options={(
-                                    statsData?.giddDisasterStatistics.displacementsByHazardType
+                                    statsData
+                                        ?.giddPublicDisasterStatistics.displacementsByHazardType
                                     ?? undefined
                                 )}
                                 keySelector={disasterTypeKeySelector}
@@ -277,8 +278,9 @@ function DisasterWidget(props: Props) {
             <div className={styles.infographicList}>
                 <Infographic
                     className={styles.disasterInfographic}
-                    totalValue={disasterData
-                        ?.giddDisasterStatistics.newDisplacementsRounded || 0}
+                    totalValue={
+                        disasterData?.giddPublicDisasterStatistics.newDisplacementsRounded || 0
+                    }
                     description={(
                         <div>
                             <Header
@@ -294,50 +296,53 @@ function DisasterWidget(props: Props) {
                         </div>
                     )}
                     date={`${disasterTimeRangeActual[0]} - ${disasterTimeRangeActual[1]}`}
-                    chart={disasterData?.giddDisasterStatistics.newDisplacementTimeseriesByYear && (
-                        <ErrorBoundary>
-                            <ResponsiveContainer>
-                                <BarChart
-                                    data={(
-                                        disasterData
-                                            .giddDisasterStatistics.newDisplacementTimeseriesByYear
-                                    )}
-                                    margin={chartMargins}
-                                >
-                                    <CartesianGrid
-                                        vertical={false}
-                                        strokeDasharray="3 3"
-                                    />
-                                    <XAxis
-                                        dataKey="year"
-                                        axisLine={false}
-                                        type="number"
-                                        allowDecimals={false}
-                                        domain={disasterTimeRange}
-                                    />
-                                    <YAxis
-                                        axisLine={false}
-                                        tickFormatter={formatNumber}
-                                    />
-                                    <Tooltip
-                                        formatter={formatNumber}
-                                    />
-                                    <Legend />
-                                    <Bar
-                                        dataKey="totalRounded"
-                                        fill="var(--color-disaster)"
-                                        name="Internal Displacements"
-                                        maxBarSize={6}
-                                    />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </ErrorBoundary>
-                    )}
+                    chart={disasterData
+                        ?.giddPublicDisasterStatistics.newDisplacementTimeseriesByYear
+                        && (
+                            <ErrorBoundary>
+                                <ResponsiveContainer>
+                                    <BarChart
+                                        data={(
+                                            disasterData
+                                                .giddPublicDisasterStatistics
+                                                .newDisplacementTimeseriesByYear
+                                        )}
+                                        margin={chartMargins}
+                                    >
+                                        <CartesianGrid
+                                            vertical={false}
+                                            strokeDasharray="3 3"
+                                        />
+                                        <XAxis
+                                            dataKey="year"
+                                            axisLine={false}
+                                            type="number"
+                                            allowDecimals={false}
+                                            domain={disasterTimeRange}
+                                        />
+                                        <YAxis
+                                            axisLine={false}
+                                            tickFormatter={formatNumber}
+                                        />
+                                        <Tooltip
+                                            formatter={formatNumber}
+                                        />
+                                        <Legend />
+                                        <Bar
+                                            dataKey="totalRounded"
+                                            fill="var(--color-disaster)"
+                                            name="Internal Displacements"
+                                            maxBarSize={6}
+                                        />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </ErrorBoundary>
+                        )}
                 />
                 <Infographic
                     className={styles.disasterInfographic}
                     totalValue={disasterData
-                        ?.giddDisasterStatistics.totalEvents || 0}
+                        ?.giddPublicDisasterStatistics.totalEvents || 0}
                     description={(
                         <Header
                             headingClassName={styles.heading}
@@ -365,7 +370,7 @@ function DisasterWidget(props: Props) {
                                         nameKey="label"
                                     >
                                         {disasterData
-                                            ?.giddDisasterStatistics
+                                            ?.giddPublicDisasterStatistics
                                             ?.displacementsByHazardType
                                             ?.map((data, index) => (
                                                 <Cell

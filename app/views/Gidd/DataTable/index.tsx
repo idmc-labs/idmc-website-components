@@ -30,7 +30,7 @@ import {
 
 import styles from './styles.css';
 
-type DisplacementData = NonNullable<NonNullable<GiddDisplacementsQuery['giddDisplacements']>['results']>[number];
+type DisplacementData = NonNullable<NonNullable<GiddDisplacementsQuery['giddPublicDisplacements']>['results']>[number];
 const displacementItemKeySelector = (item: { id: string }) => item.id;
 const DISPLACEMENTS_TABLE_PAGE_SIZE = 10;
 
@@ -46,7 +46,7 @@ const GIDD_DISPLACEMENTS = gql`
         $cause: String,
         $clientId: String!,
     ){
-        giddDisplacements(
+        giddPublicDisplacements(
             ordering: $ordering,
             pageSize: $pageSize,
             countriesIso3: $countriesIso3,
@@ -208,7 +208,7 @@ function DataTable(props: Props) {
                 <Pager
                     className={styles.pager}
                     activePage={activePage}
-                    itemsCount={displacementsResponse?.giddDisplacements?.totalCount ?? 0}
+                    itemsCount={displacementsResponse?.giddPublicDisplacements?.totalCount ?? 0}
                     maxItemsPerPage={DISPLACEMENTS_TABLE_PAGE_SIZE}
                     onActivePageChange={onActivePageChange}
                     itemsPerPageControlHidden
@@ -216,7 +216,7 @@ function DataTable(props: Props) {
                 <Table
                     containerClassName={styles.table}
                     keySelector={displacementItemKeySelector}
-                    data={displacementsResponse?.giddDisplacements?.results}
+                    data={displacementsResponse?.giddPublicDisplacements?.results}
                     columns={columns}
                 />
             </SortContext.Provider>
