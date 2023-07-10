@@ -275,7 +275,18 @@ function Page(props: Props) {
         );
     }
 
-    return standaloneMode ? <Home /> : null;
+    if (standaloneMode) {
+        if (!clientId) {
+            return (
+                <div>
+                    Client ID is missing.
+                </div>
+            );
+        }
+        return <Home clientId={clientId} />
+    }
+
+    return null;
 }
 
 export default Page;

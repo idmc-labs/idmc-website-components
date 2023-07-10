@@ -84,10 +84,10 @@ export function formatNumber(value: number) {
     return `${number}${normalizeSuffix}`;
 }
 
-export function getCountryProfileLink(iso3: string, countryName?: string) {
+export function getCountryProfileLink(iso3: string, countryName: string | undefined, clientId: string) {
     // NOTE: we need to also add countryName on standaloneMode url
     let link = standaloneMode
-        ? `/?page=country-profile&iso3=${iso3}`
+        ? `/?page=country-profile&iso3=${iso3}&clientId=${clientId}`
         : `/country-profiles/${iso3}`;
     if (countryName) {
         link = standaloneMode
@@ -109,37 +109,37 @@ export function getGoodPracticeLink(id: string) {
         : `/good-practice?id=${id}`;
 }
 
-export function getIduLink() {
+export function getIduLink(clientId: string) {
     return standaloneMode
-        ? '/?page=idu-map'
+        ? `/?page=idu-map&clientId=${clientId}`
         : '/';
 }
 
-export function getConflictWidgetLink(iso3: string) {
+export function getConflictWidgetLink(iso3: string, clientId: string) {
     const link = standaloneMode
-        ? `/?page=conflict-widget&iso3=${iso3}`
+        ? `/?page=conflict-widget&iso3=${iso3}&clientId=${clientId}`
         : '/';
     return link;
 }
 
-export function getDisasterWidgetLink(iso3: string) {
+export function getDisasterWidgetLink(iso3: string, clientId: string) {
     const link = standaloneMode
-        ? `/?page=disaster-widget&iso3=${iso3}`
+        ? `/?page=disaster-widget&iso3=${iso3}&clientId=${clientId}`
         : '/';
     return link;
 }
 
-export function getIduWidgetLink(iso3: string) {
+export function getIduWidgetLink(iso3: string, clientId: string) {
     // NOTE: we need to also add countryName on standaloneMode url
     const iduLink = standaloneMode
-        ? `/?page=idu-widget&iso3=${iso3}`
+        ? `/?page=idu-widget&iso3=${iso3}&clientId=${clientId}`
         : '/';
     return iduLink;
 }
 
-export function getGiddLink() {
+export function getGiddLink(clientId: string) {
     return standaloneMode
-        ? '/?page=gidd'
+        ? `/?page=gidd&clientId=${clientId}`
         : '/';
 }
 

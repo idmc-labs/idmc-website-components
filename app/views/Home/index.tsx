@@ -34,7 +34,13 @@ query AllCountries {
 }
 `;
 
-function Home() {
+interface Props {
+    clientId: string;
+}
+
+function Home(props: Props) {
+    const { clientId } = props;
+
     const { data: mapResponse } = useQuery<
         AllCountriesQuery,
         AllCountriesQueryVariables
@@ -61,7 +67,7 @@ function Home() {
                         {countries?.map((country) => (
                             <a
                                 key={country.iso3}
-                                href={getCountryProfileLink(country.iso3, country.name)}
+                                href={getCountryProfileLink(country.iso3, country.name, clientId)}
                             >
                                 {country.name}
                             </a>
@@ -76,7 +82,7 @@ function Home() {
                         {countries?.map((country) => (
                             <a
                                 key={country.iso3}
-                                href={getConflictWidgetLink(country.iso3)}
+                                href={getConflictWidgetLink(country.iso3, clientId)}
                             >
                                 {country.name}
                             </a>
@@ -91,7 +97,7 @@ function Home() {
                         {countries?.map((country) => (
                             <a
                                 key={country.iso3}
-                                href={getDisasterWidgetLink(country.iso3)}
+                                href={getDisasterWidgetLink(country.iso3, clientId)}
                             >
                                 {country.name}
                             </a>
@@ -106,7 +112,7 @@ function Home() {
                         {countries?.map((country) => (
                             <a
                                 key={country.iso3}
-                                href={getIduWidgetLink(country.iso3)}
+                                href={getIduWidgetLink(country.iso3, clientId)}
                             >
                                 {country.name}
                             </a>
@@ -125,7 +131,7 @@ function Home() {
                     <h2>
                         IDU Map
                     </h2>
-                    <a href={getIduLink()}>
+                    <a href={getIduLink(clientId)}>
                         Global
                     </a>
                 </div>
@@ -133,7 +139,7 @@ function Home() {
                     <h2>
                         GIDD
                     </h2>
-                    <a href={getGiddLink()}>
+                    <a href={getGiddLink(clientId)}>
                         Global
                     </a>
                 </div>
