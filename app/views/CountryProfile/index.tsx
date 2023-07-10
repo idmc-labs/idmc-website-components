@@ -133,6 +133,7 @@ export interface Props {
     iso3: string;
     countryName?: string;
     endYear: number;
+    clientId: string;
 }
 
 function CountryProfile(props: Props) {
@@ -141,6 +142,7 @@ function CountryProfile(props: Props) {
         iso3: currentCountry,
         countryName,
         endYear: year,
+        clientId,
     } = props;
 
     // Overview section
@@ -320,11 +322,13 @@ function CountryProfile(props: Props) {
     const disasterSection = DisasterWidget({
         iso3: currentCountry,
         endYear: year,
+        clientId,
     });
 
     const conflictSection = ConflictWidget({
         iso3: currentCountry,
         endYear: year,
+        clientId,
     });
 
     const displacementDataSection = (
@@ -356,12 +360,14 @@ function CountryProfile(props: Props) {
                     iso3={currentCountry}
                     endYear={year}
                     cause="CONFLICT"
+                    clientId={clientId}
                 />
                 {disasterSection}
                 <FigureAnalysis
                     iso3={currentCountry}
                     endYear={year}
                     cause="DISASTER"
+                    clientId={clientId}
                 />
             </div>
         </section>
@@ -369,6 +375,7 @@ function CountryProfile(props: Props) {
 
     const internalDisplacementUpdatesSection = IduWidget({
         iso3: currentCountry,
+        clientId,
     });
 
     const relatedMaterialsSection = (

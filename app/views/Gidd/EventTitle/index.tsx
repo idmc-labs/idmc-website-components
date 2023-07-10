@@ -15,6 +15,7 @@ export type Props = {
     title?: string;
     label: React.ReactNode;
     eventId: string | undefined;
+    clientId: string;
 }
 
 function EventTitle(props: Props) {
@@ -23,6 +24,7 @@ function EventTitle(props: Props) {
         label,
         title,
         eventId,
+        clientId,
     } = props;
 
     const [
@@ -47,6 +49,7 @@ function EventTitle(props: Props) {
                     </RawButton>
                     {isModalVisible && (
                         <Modal
+                            clientId={clientId}
                             eventId={eventId}
                             title={title}
                             onCloseButtonClick={hideModal}

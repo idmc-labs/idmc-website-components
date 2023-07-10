@@ -17,7 +17,6 @@ import { IoSearchOutline } from 'react-icons/io5';
 import {
     getHazardTypeLabel,
     DATA_RELEASE,
-    HELIX_CLIENT_ID,
 } from '#utils/common';
 import {
     gql,
@@ -101,6 +100,7 @@ interface Props {
     endYear: number;
     countriesIso3: string[] | undefined;
     hazardTypes: string[] | undefined;
+    clientId: string;
 }
 
 function EventsTable(props: Props) {
@@ -112,6 +112,7 @@ function EventsTable(props: Props) {
         endYear,
         countriesIso3,
         hazardTypes,
+        clientId,
     } = props;
 
     const eventDataSortState = useSortState({ name: 'year', direction: 'dsc' });
@@ -128,7 +129,7 @@ function EventsTable(props: Props) {
         hazardTypes,
         pageSize: EVENTS_TABLE_PAGE_SIZE,
         releaseEnvironment: DATA_RELEASE,
-        clientId: HELIX_CLIENT_ID,
+        clientId,
     }), [
         countriesIso3,
         startYear,
@@ -175,6 +176,7 @@ function EventsTable(props: Props) {
                     title: data.eventName,
                     label: data.eventName,
                     eventId: data.eventId ?? undefined,
+                    clientId,
                 }),
                 columnWidth: 320,
             };

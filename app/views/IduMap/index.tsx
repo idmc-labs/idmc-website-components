@@ -3,8 +3,13 @@ import useIduMap from '#components/IduMap/useIduMap';
 
 import styles from './styles.css';
 
-function IduMap() {
-    const { widget } = useIduMap();
+interface Props {
+    clientId: string;
+}
+
+function IduMap(props: Props) {
+    const { clientId } = props;
+    const { widget } = useIduMap(clientId);
 
     return (
         <div

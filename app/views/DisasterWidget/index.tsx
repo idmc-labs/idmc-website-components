@@ -38,7 +38,6 @@ import {
     suffixDrupalEndpoint,
     suffixHelixRestEndpoint,
     DATA_RELEASE,
-    HELIX_CLIENT_ID,
     getHazardTypeLabel,
     prepareUrl,
 } from '#utils/common';
@@ -128,10 +127,11 @@ const DISASTER_DATA = gql`
 export interface Props {
     iso3: string;
     endYear: number;
+    clientId: string,
 }
 
 function DisasterWidget(props: Props) {
-    const { iso3, endYear: year } = props;
+    const { iso3, endYear: year, clientId } = props;
     // Disaster section
     const [disasterTypes, setDisasterTypes] = useState<string[]>([]);
     const [disasterTimeRangeActual, setDisasterTimeRange] = useState([START_YEAR, year]);
@@ -151,7 +151,7 @@ function DisasterWidget(props: Props) {
                 startYear: START_YEAR,
                 endYear: year,
                 releaseEnvironment: DATA_RELEASE,
-                clientId: HELIX_CLIENT_ID,
+                clientId,
             },
             context: {
                 clientName: 'helix',
@@ -173,7 +173,7 @@ function DisasterWidget(props: Props) {
                 endYear: disasterTimeRange[1],
                 categories: disasterTypes,
                 releaseEnvironment: DATA_RELEASE,
-                clientId: HELIX_CLIENT_ID,
+                clientId,
             },
             context: {
                 clientName: 'helix',
@@ -216,7 +216,7 @@ function DisasterWidget(props: Props) {
                                 end_year: disasterTimeRange[1],
                                 hazard_type__in: disasterTypes,
                             },
-                        ))}
+                        ), clientId)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={styles.disasterButton}

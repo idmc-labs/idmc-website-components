@@ -11,7 +11,6 @@ import {
 } from '@togglecorp/toggle-ui';
 import {
     DATA_RELEASE,
-    HELIX_CLIENT_ID,
 } from '#utils/common';
 import {
     gql,
@@ -86,6 +85,7 @@ interface Props {
     countriesIso3: string[] | undefined;
     activePage: number;
     onActivePageChange: (newVal: number) => void;
+    clientId: string;
 }
 
 function DataTable(props: Props) {
@@ -99,6 +99,7 @@ function DataTable(props: Props) {
         activePage,
         onActivePageChange,
         cause,
+        clientId,
     } = props;
 
     const overallDataSortState = useSortState({ name: 'year', direction: 'dsc' });
@@ -113,7 +114,7 @@ function DataTable(props: Props) {
         pageSize: DISPLACEMENTS_TABLE_PAGE_SIZE,
         releaseEnvironment: DATA_RELEASE,
         cause,
-        clientId: HELIX_CLIENT_ID,
+        clientId,
     }), [
         countriesIso3,
         startYear,

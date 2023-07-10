@@ -24,6 +24,7 @@ import apolloConfig from '#base/configs/apollo';
 import { trackingId, gaConfig } from '#base/configs/googleAnalytics';
 import { mapboxToken } from '#base/configs/mapbox';
 import useLocalStorage from '#hooks/useLocalStorage';
+import { HELIX_CLIENT_ID } from '#utils/common';
 
 import Page from './Page';
 import styles from './styles.css';
@@ -58,6 +59,7 @@ interface Win {
     standaloneMode?: boolean;
 
     page?: string;
+    clientId?: string;
 
     // For country profile
     iso3?: string;
@@ -73,13 +75,13 @@ const query: Win = parseQueryString(window.location.search);
 
 const currentPage = (window as Win).page || query.page;
 
-const currentCountry = (window as Win).iso3
-    || query.iso3;
+const currentCountry = (window as Win).iso3 || query.iso3;
 
-const currentCountryName = (window as Win).countryName
-    || query.countryName;
+const currentCountryName = (window as Win).countryName || query.countryName;
 
 const currentId = (window as Win).id || query.id;
+
+const currentClientId = (window as Win).clientId || query.clientId || HELIX_CLIENT_ID;
 
 function Base() {
     const [lang, setLang] = useLocalStorage<Lang>('idmc-website-language', 'en', false);
@@ -174,6 +176,7 @@ function Base() {
                         <AlertContext.Provider value={alertContext}>
                             <AlertContainer className={styles.alertContainer} />
                             <Page
+                                clientId={currentClientId}
                                 iso3={currentCountry}
                                 className={styles.view}
                                 page={currentPage}

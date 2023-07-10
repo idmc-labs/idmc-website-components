@@ -14,7 +14,6 @@ import TextOutput from '#components/TextOutput';
 import MarkdownViewer from '#components/MarkdownViewer';
 import {
     DATA_RELEASE,
-    HELIX_CLIENT_ID,
 } from '#utils/common';
 import Container from '#components/Container';
 import CollapsibleContent from '#components/CollapsibleContent';
@@ -56,6 +55,7 @@ interface Props {
     cause: 'CONFLICT' | 'DISASTER';
     iso3: string;
     endYear: number;
+    clientId: string;
 }
 
 function FigureAnalysis(props: Props) {
@@ -64,6 +64,7 @@ function FigureAnalysis(props: Props) {
         cause,
         iso3,
         endYear: year,
+        clientId,
     } = props;
 
     const [selectedYear] = useState(String(year));
@@ -83,10 +84,11 @@ function FigureAnalysis(props: Props) {
         iso3,
         year: Number(selectedYear),
         releaseEnvironment: DATA_RELEASE,
-        clientId: HELIX_CLIENT_ID,
+        clientId,
     }), [
         selectedYear,
         iso3,
+        clientId,
     ]);
 
     const {

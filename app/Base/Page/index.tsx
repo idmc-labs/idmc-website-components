@@ -15,7 +15,6 @@ import DisasterWidget, { Props as DisasterWidgetProps } from '#views/DisasterWid
 import IduWidget from '#views/IduWidget';
 import {
     DATA_RELEASE,
-    HELIX_CLIENT_ID,
 } from '#utils/common';
 import {
     GiddYearQuery,
@@ -36,10 +35,10 @@ const GIDD_YEAR = gql`
     }
 `;
 
-function useYear() {
+function useYear(clientId: string) {
     const variables = useMemo(() => ({
         releaseEnvironment: DATA_RELEASE,
-        clientId: HELIX_CLIENT_ID,
+        clientId,
     }), []);
 
     const {
@@ -61,8 +60,8 @@ function useYear() {
     return { loading, year: giddYear };
 }
 
-function CountryProfileWithYear(props: Omit<CountryProfileProps, 'endYear'>) {
-    const { loading, year } = useYear();
+function CountryProfileWithYear(props: Omit<CountryProfileProps, 'endYear'> & { clientId: string }) {
+    const { loading, year } = useYear(props.clientId);
     if (loading || !year) {
         return null;
     }
@@ -75,7 +74,7 @@ function CountryProfileWithYear(props: Omit<CountryProfileProps, 'endYear'>) {
 }
 
 function GiddWithYear(props: Omit<GiddProps, 'endYear'>) {
-    const { loading, year } = useYear();
+    const { loading, year } = useYear(props.clientId);
     if (loading || !year) {
         return null;
     }
@@ -88,7 +87,7 @@ function GiddWithYear(props: Omit<GiddProps, 'endYear'>) {
 }
 
 function ConflictWidgetWithYear(props: Omit<ConflictWidgetProps, 'endYear'>) {
-    const { loading, year } = useYear();
+    const { loading, year } = useYear(props.clientId);
     if (loading || !year) {
         return null;
     }
@@ -101,7 +100,7 @@ function ConflictWidgetWithYear(props: Omit<ConflictWidgetProps, 'endYear'>) {
 }
 
 function DisasterWidgetWithYear(props: Omit<DisasterWidgetProps, 'endYear'>) {
-    const { loading, year } = useYear();
+    const { loading, year } = useYear(props.clientId);
     if (loading || !year) {
         return null;
     }
@@ -120,6 +119,7 @@ interface Props {
     countryName?: string;
     standaloneMode: boolean;
     id?: string;
+    clientId?: string;
 }
 
 function Page(props: Props) {
@@ -130,34 +130,14 @@ function Page(props: Props) {
         countryName: currentCountryName,
         page,
         iso3: currentCountry,
+        clientId,
     } = props;
 
-    if (page === 'country-profile') {
-        if (!currentCountry) {
-            return (
-                <div>
-                    Query parameter iso3 is missing.
-                </div>
-            );
-        }
-        return (
-            <CountryProfileWithYear
-                className={className}
-                iso3={currentCountry}
-                countryName={currentCountryName}
-            />
-        );
-    }
     if (page === 'good-practices') {
         return (
             <GoodPractices
                 className={className}
             />
-        );
-    }
-    if (page === 'gidd') {
-        return (
-            <GiddWithYear />
         );
     }
     if (page === 'good-practice') {
@@ -175,12 +155,67 @@ function Page(props: Props) {
             />
         );
     }
-    if (page === 'idu-map') {
+    if (page === 'country-profile') {
+        if (!currentCountry) {
+            return (
+                <div>
+                    Query parameter iso3 is missing.
+                </div>
+            );
+        }
+        if (!clientId) {
+            return (
+                <div>
+                    Client ID is missing.
+                </div>
+            );
+        }
+
         return (
-            <IduMap />
+            <CountryProfileWithYear
+                className={className}
+                iso3={currentCountry}
+                countryName={currentCountryName}
+                clientId={clientId}
+            />
+        );
+    }
+    if (page === 'gidd') {
+        if (!clientId) {
+            return (
+                <div>
+                    Client ID is missing.
+                </div>
+            );
+        }
+        return (
+            <GiddWithYear
+                clientId={clientId}
+            />
+        );
+    }
+    if (page === 'idu-map') {
+        if (!clientId) {
+            return (
+                <div>
+                    Client ID is missing.
+                </div>
+            );
+        }
+        return (
+            <IduMap
+                clientId={clientId}
+            />
         );
     }
     if (page === 'conflict-widget') {
+        if (!clientId) {
+            return (
+                <div>
+                    Client ID is missing.
+                </div>
+            );
+        }
         if (!currentCountry) {
             return (
                 <div>
@@ -191,10 +226,18 @@ function Page(props: Props) {
         return (
             <ConflictWidgetWithYear
                 iso3={currentCountry}
+                clientId={clientId}
             />
         );
     }
     if (page === 'disaster-widget') {
+        if (!clientId) {
+            return (
+                <div>
+                    Client ID is missing.
+                </div>
+            );
+        }
         if (!currentCountry) {
             return (
                 <div>
@@ -205,10 +248,18 @@ function Page(props: Props) {
         return (
             <DisasterWidgetWithYear
                 iso3={currentCountry}
+                clientId={clientId}
             />
         );
     }
     if (page === 'idu-widget') {
+        if (!clientId) {
+            return (
+                <div>
+                    Client ID is missing.
+                </div>
+            );
+        }
         if (!currentCountry) {
             return (
                 <div>
@@ -219,6 +270,7 @@ function Page(props: Props) {
         return (
             <IduWidget
                 iso3={currentCountry}
+                clientId={clientId}
             />
         );
     }

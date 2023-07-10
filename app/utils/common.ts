@@ -15,7 +15,7 @@ import {
 
 export const DRUPAL_ENDPOINT = process.env.REACT_APP_DRUPAL_ENDPOINT as string || '';
 export const HELIX_REST_ENDPOINT = process.env.REACT_APP_HELIX_REST_ENDPOINT as string;
-export const HELIX_CLIENT_ID = process.env.REACT_APP_HELIX_CLIENT_ID as string || '';
+export const HELIX_CLIENT_ID =  process.env.REACT_APP_HELIX_CLIENT_ID as string || '';
 export const DATA_RELEASE = process.env.REACT_APP_DATA_RELEASE as string || '';
 
 export const standaloneMode = (window as { standaloneMode?: boolean }).standaloneMode ?? false;
@@ -171,11 +171,11 @@ export function replaceWithDrupalEndpoint(image: string | null | undefined) {
     return suffixDrupalEndpoint(path);
 }
 
-export function suffixHelixRestEndpoint(path: string) {
+export function suffixHelixRestEndpoint(path: string, clientId: string) {
     if (path.includes('?')) {
-        return `${HELIX_REST_ENDPOINT}${path}&client_id=${HELIX_CLIENT_ID}&release_environment=${DATA_RELEASE}`;
+        return `${HELIX_REST_ENDPOINT}${path}&client_id=${clientId}&release_environment=${DATA_RELEASE}`;
     }
-    return `${HELIX_REST_ENDPOINT}${path}?cliend_id=${HELIX_CLIENT_ID}&release_environment=${DATA_RELEASE}`;
+    return `${HELIX_REST_ENDPOINT}${path}?cliend_id=${clientId}&release_environment=${DATA_RELEASE}`;
 }
 
 export function readStorage(key: string) {

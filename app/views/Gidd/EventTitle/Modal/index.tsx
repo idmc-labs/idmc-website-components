@@ -20,7 +20,6 @@ import NumberBlock from '#components/NumberBlock';
 import Message from '#components/Message';
 import {
     DATA_RELEASE,
-    HELIX_CLIENT_ID,
 } from '#utils/common';
 import {
     GiddEventDetailsQuery,
@@ -67,6 +66,7 @@ export type Props = {
     title?: string;
     onCloseButtonClick: () => void;
     eventId: string;
+    clientId: string;
 }
 
 function EventModal(props: Props) {
@@ -75,12 +75,13 @@ function EventModal(props: Props) {
         title,
         eventId,
         onCloseButtonClick,
+        clientId,
     } = props;
 
     const eventVariables = useMemo(() => ({
         eventId,
         releaseEnvironment: DATA_RELEASE,
-        clientId: HELIX_CLIENT_ID,
+        clientId,
     }), [eventId]);
 
     const {
