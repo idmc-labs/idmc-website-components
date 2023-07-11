@@ -85,7 +85,7 @@ interface Props {
     countriesIso3: string[] | undefined;
     activePage: number;
     onActivePageChange: (newVal: number) => void;
-    clientId: string;
+    clientCode: string;
 }
 
 function DataTable(props: Props) {
@@ -99,7 +99,7 @@ function DataTable(props: Props) {
         activePage,
         onActivePageChange,
         cause,
-        clientId,
+        clientCode,
     } = props;
 
     const overallDataSortState = useSortState({ name: 'year', direction: 'dsc' });
@@ -114,7 +114,7 @@ function DataTable(props: Props) {
         pageSize: DISPLACEMENTS_TABLE_PAGE_SIZE,
         releaseEnvironment: DATA_RELEASE,
         cause,
-        clientId,
+        clientId: clientCode,
     }), [
         countriesIso3,
         startYear,
@@ -122,6 +122,7 @@ function DataTable(props: Props) {
         sorting,
         activePage,
         cause,
+        clientCode,
     ]);
 
     const debouncedVariables = useDebouncedValue(giddDisplacementsVariables);

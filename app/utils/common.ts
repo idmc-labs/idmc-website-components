@@ -15,7 +15,7 @@ import {
 
 export const DRUPAL_ENDPOINT = process.env.REACT_APP_DRUPAL_ENDPOINT as string || '';
 export const HELIX_REST_ENDPOINT = process.env.REACT_APP_HELIX_REST_ENDPOINT as string;
-export const HELIX_CLIENT_ID = process.env.REACT_APP_HELIX_CLIENT_ID as string || '';
+export const HELIX_CLIENT_CODE = process.env.REACT_APP_HELIX_CLIENT_ID as string || '';
 export const DATA_RELEASE = process.env.REACT_APP_DATA_RELEASE as string || '';
 
 export const standaloneMode = (window as { standaloneMode?: boolean }).standaloneMode ?? false;
@@ -87,11 +87,11 @@ export function formatNumber(value: number) {
 export function getCountryProfileLink(
     iso3: string,
     countryName: string | undefined,
-    clientId: string,
+    clientCode: string,
 ) {
     // NOTE: we need to also add countryName on standaloneMode url
     let link = standaloneMode
-        ? `/?page=country-profile&iso3=${iso3}&clientId=${clientId}`
+        ? `/?page=country-profile&iso3=${iso3}&clientCode=${clientCode}`
         : `/country-profiles/${iso3}`;
     if (countryName) {
         link = standaloneMode
@@ -113,37 +113,37 @@ export function getGoodPracticeLink(id: string) {
         : `/good-practice?id=${id}`;
 }
 
-export function getIduLink(clientId: string) {
+export function getIduLink(clientCode: string) {
     return standaloneMode
-        ? `/?page=idu-map&clientId=${clientId}`
+        ? `/?page=idu-map&clientCode=${clientCode}`
         : '/';
 }
 
-export function getConflictWidgetLink(iso3: string, clientId: string) {
+export function getConflictWidgetLink(iso3: string, clientCode: string) {
     const link = standaloneMode
-        ? `/?page=conflict-widget&iso3=${iso3}&clientId=${clientId}`
+        ? `/?page=conflict-widget&iso3=${iso3}&clientCode=${clientCode}`
         : '/';
     return link;
 }
 
-export function getDisasterWidgetLink(iso3: string, clientId: string) {
+export function getDisasterWidgetLink(iso3: string, clientCode: string) {
     const link = standaloneMode
-        ? `/?page=disaster-widget&iso3=${iso3}&clientId=${clientId}`
+        ? `/?page=disaster-widget&iso3=${iso3}&clientCode=${clientCode}`
         : '/';
     return link;
 }
 
-export function getIduWidgetLink(iso3: string, clientId: string) {
+export function getIduWidgetLink(iso3: string, clientCode: string) {
     // NOTE: we need to also add countryName on standaloneMode url
     const iduLink = standaloneMode
-        ? `/?page=idu-widget&iso3=${iso3}&clientId=${clientId}`
+        ? `/?page=idu-widget&iso3=${iso3}&clientCode=${clientCode}`
         : '/';
     return iduLink;
 }
 
-export function getGiddLink(clientId: string) {
+export function getGiddLink(clientCode: string) {
     return standaloneMode
-        ? `/?page=gidd&clientId=${clientId}`
+        ? `/?page=gidd&clientCode=${clientCode}`
         : '/';
 }
 
@@ -175,11 +175,11 @@ export function replaceWithDrupalEndpoint(image: string | null | undefined) {
     return suffixDrupalEndpoint(path);
 }
 
-export function suffixHelixRestEndpoint(path: string, clientId: string) {
+export function suffixHelixRestEndpoint(path: string, clientCode: string) {
     if (path.includes('?')) {
-        return `${HELIX_REST_ENDPOINT}${path}&client_id=${clientId}&release_environment=${DATA_RELEASE}`;
+        return `${HELIX_REST_ENDPOINT}${path}&client_id=${clientCode}&release_environment=${DATA_RELEASE}`;
     }
-    return `${HELIX_REST_ENDPOINT}${path}?cliend_id=${clientId}&release_environment=${DATA_RELEASE}`;
+    return `${HELIX_REST_ENDPOINT}${path}?cliend_id=${clientCode}&release_environment=${DATA_RELEASE}`;
 }
 
 export function readStorage(key: string) {

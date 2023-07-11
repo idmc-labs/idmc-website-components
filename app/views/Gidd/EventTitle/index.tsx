@@ -49,7 +49,7 @@ function EventTitle(props: Props) {
                     </RawButton>
                     {isModalVisible && (
                         <Modal
-                            clientId={clientId}
+                            clientCode={clientId}
                             eventId={eventId}
                             title={title}
                             onCloseButtonClick={hideModal}

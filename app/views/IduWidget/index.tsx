@@ -43,13 +43,13 @@ const COUNTRY_PROFILE = gql`
 
 interface IduWidgetProps {
     iso3: string;
-    clientId: string;
+    clientCode: string;
 }
 
 function IduWidget(props: IduWidgetProps) {
     const {
         iso3,
-        clientId,
+        clientCode,
     } = props;
 
     // IDU list section
@@ -78,7 +78,7 @@ function IduWidget(props: IduWidgetProps) {
         idus,
         widget: iduWidget,
     } = useIduMap(
-        clientId,
+        clientCode,
         countryInfo?.boundingBox as LngLatBounds | undefined,
         iso3,
     );

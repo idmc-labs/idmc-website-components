@@ -317,13 +317,13 @@ const displacementCategoryOptions: CategoryOption[] = [
 
 export interface Props {
     endYear: number;
-    clientId: string;
+    clientCode: string;
 }
 
 function Gidd(props: Props) {
     const {
         endYear,
-        clientId,
+        clientCode,
     } = props;
 
     const [timeRange, setTimeRange] = useState([endYear, endYear]);
@@ -421,7 +421,7 @@ function Gidd(props: Props) {
         GIDD_FILTER_OPTIONS,
         {
             variables: {
-                clientId,
+                clientId: clientCode,
             },
             context: {
                 clientName: 'helix',
@@ -441,13 +441,14 @@ function Gidd(props: Props) {
         startYearForTimeseries: timeRange[0] === timeRange[1] ? START_YEAR : timeRange[0],
         endYearForTimeseries: timeRange[1],
         releaseEnvironment: DATA_RELEASE,
-        clientId,
+        clientId: clientCode,
     }), [
         displacementCause,
         hazardTypes,
         showCombinedCountries,
         timeRange,
         countries,
+        clientCode,
     ]);
 
     const debouncedStatisticsVariables = useDebouncedValue(statisticsVariables);
@@ -949,7 +950,7 @@ function Gidd(props: Props) {
                                                 end_year: timeRange[1],
                                                 hazard_type__in: hazardTypes,
                                             },
-                                        ), clientId)}
+                                        ), clientCode)}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                     >
@@ -965,7 +966,7 @@ function Gidd(props: Props) {
                                                 start_year: timeRange[0],
                                                 end_year: timeRange[1],
                                             },
-                                        ), clientId)}
+                                        ), clientCode)}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                     >
@@ -1318,7 +1319,7 @@ function Gidd(props: Props) {
                                     endYear={timeRange[1]}
                                     activePage={dataActivePage}
                                     onActivePageChange={setDataActivePage}
-                                    clientId={clientId}
+                                    clientCode={clientCode}
                                 />
                             </TabPanel>
                             {displacementCause === 'disaster' && (
@@ -1330,7 +1331,7 @@ function Gidd(props: Props) {
                                         hazardTypes={hazardTypes}
                                         startYear={timeRange[0]}
                                         endYear={timeRange[1]}
-                                        clientId={clientId}
+                                        clientCode={clientCode}
                                     />
                                 </TabPanel>
                             )}

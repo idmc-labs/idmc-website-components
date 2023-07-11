@@ -66,7 +66,7 @@ export type Props = {
     title?: string;
     onCloseButtonClick: () => void;
     eventId: string;
-    clientId: string;
+    clientCode: string;
 }
 
 function EventModal(props: Props) {
@@ -75,14 +75,14 @@ function EventModal(props: Props) {
         title,
         eventId,
         onCloseButtonClick,
-        clientId,
+        clientCode,
     } = props;
 
-    const eventVariables = useMemo(() => ({
+    const eventVariables = useMemo((): GiddEventDetailsQueryVariables => ({
         eventId,
         releaseEnvironment: DATA_RELEASE,
-        clientId,
-    }), [eventId]);
+        clientId: clientCode,
+    }), [eventId, clientCode]);
 
     const {
         previousData,

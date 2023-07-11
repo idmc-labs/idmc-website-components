@@ -4,12 +4,12 @@ import useIduMap from '#components/IduMap/useIduMap';
 import styles from './styles.css';
 
 interface Props {
-    clientId: string;
+    clientCode: string;
 }
 
 function IduMap(props: Props) {
-    const { clientId } = props;
-    const { widget } = useIduMap(clientId);
+    const { clientCode } = props;
+    const { widget } = useIduMap(clientCode);
 
     return (
         <div

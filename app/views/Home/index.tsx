@@ -36,15 +36,15 @@ query AllCountries {
 `;
 
 interface Props {
-    defaultClientId: string;
+    defaultClientCode: string;
 }
 
 function Home(props: Props) {
     const {
-        defaultClientId,
+        defaultClientCode,
     } = props;
 
-    const [clientIdFromUser, setClientIdFromUser] = useState<string | undefined>();
+    const [clientCodeFromUser, setClientCodeFromUser] = useState<string | undefined>();
 
     const { data: mapResponse } = useQuery<
         AllCountriesQuery,
@@ -56,7 +56,7 @@ function Home(props: Props) {
         ? [...countriesFromResponse].sort((a, b) => compareString(a.name, b.name))
         : undefined;
 
-    const clientId = clientIdFromUser || defaultClientId;
+    const clientCode = clientCodeFromUser || defaultClientCode;
 
     return (
         <div
@@ -67,11 +67,11 @@ function Home(props: Props) {
             </h1>
             <div className={styles.filters}>
                 <TextInput
-                    name="clientId"
-                    label="Client Id"
-                    value={clientIdFromUser}
-                    placeholder={defaultClientId}
-                    onChange={setClientIdFromUser}
+                    name="clientCode"
+                    label="Client Code"
+                    value={clientCodeFromUser}
+                    placeholder={defaultClientCode}
+                    onChange={setClientCodeFromUser}
                 />
             </div>
             <div className={styles.sections}>
@@ -83,7 +83,7 @@ function Home(props: Props) {
                         {countries?.map((country) => (
                             <a
                                 key={country.iso3}
-                                href={getCountryProfileLink(country.iso3, country.name, clientId)}
+                                href={getCountryProfileLink(country.iso3, country.name, clientCode)}
                             >
                                 {country.name}
                             </a>
@@ -98,7 +98,7 @@ function Home(props: Props) {
                         {countries?.map((country) => (
                             <a
                                 key={country.iso3}
-                                href={getConflictWidgetLink(country.iso3, clientId)}
+                                href={getConflictWidgetLink(country.iso3, clientCode)}
                             >
                                 {country.name}
                             </a>
@@ -113,7 +113,7 @@ function Home(props: Props) {
                         {countries?.map((country) => (
                             <a
                                 key={country.iso3}
-                                href={getDisasterWidgetLink(country.iso3, clientId)}
+                                href={getDisasterWidgetLink(country.iso3, clientCode)}
                             >
                                 {country.name}
                             </a>
@@ -128,7 +128,7 @@ function Home(props: Props) {
                         {countries?.map((country) => (
                             <a
                                 key={country.iso3}
-                                href={getIduWidgetLink(country.iso3, clientId)}
+                                href={getIduWidgetLink(country.iso3, clientCode)}
                             >
                                 {country.name}
                             </a>
@@ -147,7 +147,7 @@ function Home(props: Props) {
                     <h2>
                         IDU Map
                     </h2>
-                    <a href={getIduLink(clientId)}>
+                    <a href={getIduLink(clientCode)}>
                         Global
                     </a>
                 </div>
@@ -155,7 +155,7 @@ function Home(props: Props) {
                     <h2>
                         GIDD
                     </h2>
-                    <a href={getGiddLink(clientId)}>
+                    <a href={getGiddLink(clientCode)}>
                         Global
                     </a>
                 </div>

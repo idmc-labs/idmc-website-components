@@ -24,7 +24,7 @@ import apolloConfig from '#base/configs/apollo';
 import { trackingId, gaConfig } from '#base/configs/googleAnalytics';
 import { mapboxToken } from '#base/configs/mapbox';
 import useLocalStorage from '#hooks/useLocalStorage';
-import { HELIX_CLIENT_ID } from '#utils/common';
+import { HELIX_CLIENT_CODE } from '#utils/common';
 
 import Page from './Page';
 import styles from './styles.css';
@@ -57,9 +57,11 @@ export function parseQueryString(value: string) {
 
 interface Win {
     standaloneMode?: boolean;
+}
 
+interface Query {
     page?: string;
-    clientId?: string;
+    clientCode?: string;
 
     // For country profile
     iso3?: string;
@@ -71,14 +73,14 @@ interface Win {
 
 const standaloneMode = (window as Win).standaloneMode ?? false;
 
-const query: Win = parseQueryString(window.location.search);
+const query: Query = parseQueryString(window.location.search);
 
 const currentPage = query.page;
 const currentCountry = query.iso3;
 const currentCountryName = query.countryName;
 const currentId = query.id;
-const currentClientId = standaloneMode
-    ? query.clientId
+const currentClientCode = standaloneMode
+    ? query.clientCode
     : undefined;
 
 function Base() {
@@ -174,8 +176,8 @@ function Base() {
                         <AlertContext.Provider value={alertContext}>
                             <AlertContainer className={styles.alertContainer} />
                             <Page
-                                clientId={currentClientId}
-                                defaultClientId={HELIX_CLIENT_ID}
+                                clientCode={currentClientCode}
+                                defaultClientCode={HELIX_CLIENT_CODE}
                                 iso3={currentCountry}
                                 className={styles.view}
                                 page={currentPage}

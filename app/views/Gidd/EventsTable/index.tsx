@@ -100,7 +100,7 @@ interface Props {
     endYear: number;
     countriesIso3: string[] | undefined;
     hazardTypes: string[] | undefined;
-    clientId: string;
+    clientCode: string;
 }
 
 function EventsTable(props: Props) {
@@ -112,7 +112,7 @@ function EventsTable(props: Props) {
         endYear,
         countriesIso3,
         hazardTypes,
-        clientId,
+        clientCode,
     } = props;
 
     const eventDataSortState = useSortState({ name: 'year', direction: 'dsc' });
@@ -129,7 +129,7 @@ function EventsTable(props: Props) {
         hazardTypes,
         pageSize: EVENTS_TABLE_PAGE_SIZE,
         releaseEnvironment: DATA_RELEASE,
-        clientId,
+        clientId: clientCode,
     }), [
         countriesIso3,
         startYear,
@@ -138,6 +138,7 @@ function EventsTable(props: Props) {
         hazardTypes,
         eventSorting,
         activePage,
+        clientCode,
     ]);
 
     const debouncedVariables = useDebouncedValue(giddEventsVariables);
@@ -176,7 +177,7 @@ function EventsTable(props: Props) {
                     title: data.eventName,
                     label: data.eventName,
                     eventId: data.eventId ?? undefined,
-                    clientId,
+                    clientId: clientCode,
                 }),
                 columnWidth: 320,
             };
@@ -233,7 +234,7 @@ function EventsTable(props: Props) {
                 ),
             ]);
         },
-        [],
+        [clientCode],
     );
 
     return (

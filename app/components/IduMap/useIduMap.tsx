@@ -82,7 +82,7 @@ const TODAY = new Date();
 const MONTHS = 6;
 
 function useIduQuery(
-    clientId: string,
+    clientCode: string,
     boundingBox?: LngLatBounds | undefined,
     iso3?: string,
 ) {
@@ -134,7 +134,7 @@ function useIduQuery(
         IDU_DATA,
         {
             variables: {
-                clientId,
+                clientId: clientCode,
             },
         },
     );

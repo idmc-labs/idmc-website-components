@@ -55,7 +55,7 @@ interface Props {
     cause: 'CONFLICT' | 'DISASTER';
     iso3: string;
     endYear: number;
-    clientId: string;
+    clientCode: string;
 }
 
 function FigureAnalysis(props: Props) {
@@ -64,7 +64,7 @@ function FigureAnalysis(props: Props) {
         cause,
         iso3,
         endYear: year,
-        clientId,
+        clientCode,
     } = props;
 
     const [selectedYear] = useState(String(year));
@@ -80,15 +80,15 @@ function FigureAnalysis(props: Props) {
     );
     */
 
-    const pfaVariables = useMemo(() => ({
+    const pfaVariables = useMemo((): GiddCountryPfaQueryVariables => ({
         iso3,
         year: Number(selectedYear),
         releaseEnvironment: DATA_RELEASE,
-        clientId,
+        clientId: clientCode,
     }), [
         selectedYear,
         iso3,
-        clientId,
+        clientCode,
     ]);
 
     const {
