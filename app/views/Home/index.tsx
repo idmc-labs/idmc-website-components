@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     gql,
     useQuery,
 } from '@apollo/client';
+import { compareString } from '@togglecorp/fujs';
+import { TextInput } from '@togglecorp/toggle-ui';
 
 import {
     AllCountriesQuery,
     AllCountriesQueryVariables,
 } from '#generated/types';
-import { compareString } from '@togglecorp/fujs';
 import {
     getCountryProfileLink,
     getGoodPracticesLink,
@@ -35,11 +36,15 @@ query AllCountries {
 `;
 
 interface Props {
-    clientId: string;
+    defaultClientId: string;
 }
 
 function Home(props: Props) {
-    const { clientId } = props;
+    const {
+        defaultClientId,
+    } = props;
+
+    const [clientIdFromUser, setClientIdFromUser] = useState<string | undefined>();
 
     const { data: mapResponse } = useQuery<
         AllCountriesQuery,
@@ -51,6 +56,8 @@ function Home(props: Props) {
         ? [...countriesFromResponse].sort((a, b) => compareString(a.name, b.name))
         : undefined;
 
+    const clientId = clientIdFromUser || defaultClientId;
+
     return (
         <div
             className={styles.page}
@@ -58,6 +65,15 @@ function Home(props: Props) {
             <h1>
                 IDMC Website Components
             </h1>
+            <div className={styles.filters}>
+                <TextInput
+                    name="clientId"
+                    label="Client Id"
+                    value={clientIdFromUser}
+                    placeholder={defaultClientId}
+                    onChange={setClientIdFromUser}
+                />
+            </div>
             <div className={styles.sections}>
                 <div className={styles.section}>
                     <h2>

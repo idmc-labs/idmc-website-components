@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     gql,
     useQuery,
@@ -120,6 +120,7 @@ interface Props {
     standaloneMode: boolean;
     id?: string;
     clientId?: string;
+    defaultClientId: string;
 }
 
 function Page(props: Props) {
@@ -130,8 +131,11 @@ function Page(props: Props) {
         countryName: currentCountryName,
         page,
         iso3: currentCountry,
-        clientId,
+        clientId: clientIdFromQuery,
+        defaultClientId,
     } = props;
+
+    const clientId = clientIdFromQuery || defaultClientId;
 
     if (page === 'good-practices') {
         return (
@@ -276,14 +280,11 @@ function Page(props: Props) {
     }
 
     if (standaloneMode) {
-        if (!clientId) {
-            return (
-                <div>
-                    Client ID is missing.
-                </div>
-            );
-        }
-        return <Home clientId={clientId} />
+        return (
+            <Home
+                defaultClientId={defaultClientId}
+            />
+        );
     }
 
     return null;

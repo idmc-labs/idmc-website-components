@@ -73,15 +73,13 @@ const standaloneMode = (window as Win).standaloneMode ?? false;
 
 const query: Win = parseQueryString(window.location.search);
 
-const currentPage = (window as Win).page || query.page;
-
-const currentCountry = (window as Win).iso3 || query.iso3;
-
-const currentCountryName = (window as Win).countryName || query.countryName;
-
-const currentId = (window as Win).id || query.id;
-
-const currentClientId = (window as Win).clientId || query.clientId || HELIX_CLIENT_ID;
+const currentPage = query.page;
+const currentCountry = query.iso3;
+const currentCountryName = query.countryName;
+const currentId = query.id;
+const currentClientId = standaloneMode
+    ? query.clientId
+    : undefined;
 
 function Base() {
     const [lang, setLang] = useLocalStorage<Lang>('idmc-website-language', 'en', false);
@@ -177,6 +175,7 @@ function Base() {
                             <AlertContainer className={styles.alertContainer} />
                             <Page
                                 clientId={currentClientId}
+                                defaultClientId={HELIX_CLIENT_ID}
                                 iso3={currentCountry}
                                 className={styles.view}
                                 page={currentPage}

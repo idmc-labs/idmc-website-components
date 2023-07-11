@@ -15,7 +15,7 @@ import {
 
 export const DRUPAL_ENDPOINT = process.env.REACT_APP_DRUPAL_ENDPOINT as string || '';
 export const HELIX_REST_ENDPOINT = process.env.REACT_APP_HELIX_REST_ENDPOINT as string;
-export const HELIX_CLIENT_ID =  process.env.REACT_APP_HELIX_CLIENT_ID as string || '';
+export const HELIX_CLIENT_ID = process.env.REACT_APP_HELIX_CLIENT_ID as string || '';
 export const DATA_RELEASE = process.env.REACT_APP_DATA_RELEASE as string || '';
 
 export const standaloneMode = (window as { standaloneMode?: boolean }).standaloneMode ?? false;
@@ -84,7 +84,11 @@ export function formatNumber(value: number) {
     return `${number}${normalizeSuffix}`;
 }
 
-export function getCountryProfileLink(iso3: string, countryName: string | undefined, clientId: string) {
+export function getCountryProfileLink(
+    iso3: string,
+    countryName: string | undefined,
+    clientId: string,
+) {
     // NOTE: we need to also add countryName on standaloneMode url
     let link = standaloneMode
         ? `/?page=country-profile&iso3=${iso3}&clientId=${clientId}`
