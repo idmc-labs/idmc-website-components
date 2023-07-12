@@ -4,6 +4,12 @@
     gap: var(--tui-spacing-large);
     padding: var(--tui-spacing-large);
 
+    .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--tui-spacing-medium);
+    }
+
     .sections {
         display: flex;
         flex-wrap: wrap;

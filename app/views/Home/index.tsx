@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     gql,
     useQuery,
 } from '@apollo/client';
+import { compareString } from '@togglecorp/fujs';
+import { TextInput } from '@togglecorp/toggle-ui';
 
 import {
     AllCountriesQuery,
     AllCountriesQueryVariables,
 } from '#generated/types';
-import { compareString } from '@togglecorp/fujs';
 import {
     getCountryProfileLink,
     getGoodPracticesLink,
@@ -34,7 +35,17 @@ query AllCountries {
 }
 `;
 
-function Home() {
+interface Props {
+    defaultClientCode: string;
+}
+
+function Home(props: Props) {
+    const {
+        defaultClientCode,
+    } = props;
+
+    const [clientCodeFromUser, setClientCodeFromUser] = useState<string | undefined>();
+
     const { data: mapResponse } = useQuery<
         AllCountriesQuery,
         AllCountriesQueryVariables
@@ -45,6 +56,8 @@ function Home() {
         ? [...countriesFromResponse].sort((a, b) => compareString(a.name, b.name))
         : undefined;
 
+    const clientCode = clientCodeFromUser || defaultClientCode;
+
     return (
         <div
             className={styles.page}
@@ -52,6 +65,15 @@ function Home() {
             <h1>
                 IDMC Website Components
             </h1>
+            <div className={styles.filters}>
+                <TextInput
+                    name="clientCode"
+                    label="Client Code"
+                    value={clientCodeFromUser}
+                    placeholder={defaultClientCode}
+                    onChange={setClientCodeFromUser}
+                />
+            </div>
             <div className={styles.sections}>
                 <div className={styles.section}>
                     <h2>
@@ -61,7 +83,7 @@ function Home() {
                         {countries?.map((country) => (
                             <a
                                 key={country.iso3}
-                                href={getCountryProfileLink(country.iso3, country.name)}
+                                href={getCountryProfileLink(country.iso3, country.name, clientCode)}
                             >
                                 {country.name}
                             </a>
@@ -76,7 +98,7 @@ function Home() {
                         {countries?.map((country) => (
                             <a
                                 key={country.iso3}
-                                href={getConflictWidgetLink(country.iso3)}
+                                href={getConflictWidgetLink(country.iso3, clientCode)}
                             >
                                 {country.name}
                             </a>
@@ -91,7 +113,7 @@ function Home() {
                         {countries?.map((country) => (
                             <a
                                 key={country.iso3}
-                                href={getDisasterWidgetLink(country.iso3)}
+                                href={getDisasterWidgetLink(country.iso3, clientCode)}
                             >
                                 {country.name}
                             </a>
@@ -106,7 +128,7 @@ function Home() {
                         {countries?.map((country) => (
                             <a
                                 key={country.iso3}
-                                href={getIduWidgetLink(country.iso3)}
+                                href={getIduWidgetLink(country.iso3, clientCode)}
                             >
                                 {country.name}
                             </a>
@@ -125,7 +147,7 @@ function Home() {
                     <h2>
                         IDU Map
                     </h2>
-                    <a href={getIduLink()}>
+                    <a href={getIduLink(clientCode)}>
                         Global
                     </a>
                 </div>
@@ -133,7 +155,7 @@ function Home() {
                     <h2>
                         GIDD
                     </h2>
-                    <a href={getGiddLink()}>
+                    <a href={getGiddLink(clientCode)}>
                         Global
                     </a>
                 </div>

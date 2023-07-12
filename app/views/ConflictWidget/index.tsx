@@ -34,7 +34,6 @@ import {
     suffixDrupalEndpoint,
     suffixHelixRestEndpoint,
     DATA_RELEASE,
-    HELIX_CLIENT_ID,
     prepareUrl,
 } from '#utils/common';
 import {
@@ -105,10 +104,11 @@ const CONFLICT_DATA = gql`
 export interface Props {
     iso3: string;
     endYear: number;
+    clientCode: string;
 }
 
 function ConflictWidget(props: Props) {
-    const { iso3, endYear: year } = props;
+    const { iso3, endYear: year, clientCode } = props;
 
     const [conflictTimeRangeActual, setConflictTimeRange] = useState([START_YEAR, year]);
     const conflictTimeRange = useDebouncedValue(conflictTimeRangeActual);
@@ -127,7 +127,7 @@ function ConflictWidget(props: Props) {
                 startYear: START_YEAR,
                 endYear: year,
                 releaseEnvironment: DATA_RELEASE,
-                clientId: HELIX_CLIENT_ID,
+                clientId: clientCode,
             },
             context: {
                 clientName: 'helix',
@@ -149,7 +149,7 @@ function ConflictWidget(props: Props) {
                 startYear: conflictTimeRange[0],
                 endYear: conflictTimeRange[1],
                 releaseEnvironment: DATA_RELEASE,
-                clientId: HELIX_CLIENT_ID,
+                clientId: clientCode,
             },
             context: {
                 clientName: 'helix',
@@ -202,7 +202,7 @@ function ConflictWidget(props: Props) {
                                 start_year: conflictTimeRange[0],
                                 end_year: conflictTimeRange[1],
                             },
-                        ))}
+                        ), clientCode)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={styles.conflictButton}

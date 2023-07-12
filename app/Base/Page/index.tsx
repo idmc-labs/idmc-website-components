@@ -15,7 +15,6 @@ import DisasterWidget, { Props as DisasterWidgetProps } from '#views/DisasterWid
 import IduWidget from '#views/IduWidget';
 import {
     DATA_RELEASE,
-    HELIX_CLIENT_ID,
 } from '#utils/common';
 import {
     GiddYearQuery,
@@ -36,11 +35,11 @@ const GIDD_YEAR = gql`
     }
 `;
 
-function useYear() {
-    const variables = useMemo(() => ({
+function useYear(clientCode: string) {
+    const variables = useMemo((): GiddYearQueryVariables => ({
         releaseEnvironment: DATA_RELEASE,
-        clientId: HELIX_CLIENT_ID,
-    }), []);
+        clientId: clientCode,
+    }), [clientCode]);
 
     const {
         previousData,
@@ -61,8 +60,8 @@ function useYear() {
     return { loading, year: giddYear };
 }
 
-function CountryProfileWithYear(props: Omit<CountryProfileProps, 'endYear'>) {
-    const { loading, year } = useYear();
+function CountryProfileWithYear(props: Omit<CountryProfileProps, 'endYear'> & { clientCode: string }) {
+    const { loading, year } = useYear(props.clientCode);
     if (loading || !year) {
         return null;
     }
@@ -75,7 +74,7 @@ function CountryProfileWithYear(props: Omit<CountryProfileProps, 'endYear'>) {
 }
 
 function GiddWithYear(props: Omit<GiddProps, 'endYear'>) {
-    const { loading, year } = useYear();
+    const { loading, year } = useYear(props.clientCode);
     if (loading || !year) {
         return null;
     }
@@ -88,7 +87,7 @@ function GiddWithYear(props: Omit<GiddProps, 'endYear'>) {
 }
 
 function ConflictWidgetWithYear(props: Omit<ConflictWidgetProps, 'endYear'>) {
-    const { loading, year } = useYear();
+    const { loading, year } = useYear(props.clientCode);
     if (loading || !year) {
         return null;
     }
@@ -101,7 +100,7 @@ function ConflictWidgetWithYear(props: Omit<ConflictWidgetProps, 'endYear'>) {
 }
 
 function DisasterWidgetWithYear(props: Omit<DisasterWidgetProps, 'endYear'>) {
-    const { loading, year } = useYear();
+    const { loading, year } = useYear(props.clientCode);
     if (loading || !year) {
         return null;
     }
@@ -120,6 +119,8 @@ interface Props {
     countryName?: string;
     standaloneMode: boolean;
     id?: string;
+    clientCode?: string;
+    defaultClientCode: string;
 }
 
 function Page(props: Props) {
@@ -130,34 +131,17 @@ function Page(props: Props) {
         countryName: currentCountryName,
         page,
         iso3: currentCountry,
+        clientCode: clientCodeFromQuery,
+        defaultClientCode,
     } = props;
 
-    if (page === 'country-profile') {
-        if (!currentCountry) {
-            return (
-                <div>
-                    Query parameter iso3 is missing.
-                </div>
-            );
-        }
-        return (
-            <CountryProfileWithYear
-                className={className}
-                iso3={currentCountry}
-                countryName={currentCountryName}
-            />
-        );
-    }
+    const clientCode = clientCodeFromQuery || defaultClientCode;
+
     if (page === 'good-practices') {
         return (
             <GoodPractices
                 className={className}
             />
-        );
-    }
-    if (page === 'gidd') {
-        return (
-            <GiddWithYear />
         );
     }
     if (page === 'good-practice') {
@@ -175,12 +159,67 @@ function Page(props: Props) {
             />
         );
     }
-    if (page === 'idu-map') {
+    if (page === 'country-profile') {
+        if (!currentCountry) {
+            return (
+                <div>
+                    Query parameter iso3 is missing.
+                </div>
+            );
+        }
+        if (!clientCode) {
+            return (
+                <div>
+                    Client code is missing.
+                </div>
+            );
+        }
+
         return (
-            <IduMap />
+            <CountryProfileWithYear
+                className={className}
+                iso3={currentCountry}
+                countryName={currentCountryName}
+                clientCode={clientCode}
+            />
+        );
+    }
+    if (page === 'gidd') {
+        if (!clientCode) {
+            return (
+                <div>
+                    Client code is missing.
+                </div>
+            );
+        }
+        return (
+            <GiddWithYear
+                clientCode={clientCode}
+            />
+        );
+    }
+    if (page === 'idu-map') {
+        if (!clientCode) {
+            return (
+                <div>
+                    Client code is missing.
+                </div>
+            );
+        }
+        return (
+            <IduMap
+                clientCode={clientCode}
+            />
         );
     }
     if (page === 'conflict-widget') {
+        if (!clientCode) {
+            return (
+                <div>
+                    Client code is missing.
+                </div>
+            );
+        }
         if (!currentCountry) {
             return (
                 <div>
@@ -191,10 +230,18 @@ function Page(props: Props) {
         return (
             <ConflictWidgetWithYear
                 iso3={currentCountry}
+                clientCode={clientCode}
             />
         );
     }
     if (page === 'disaster-widget') {
+        if (!clientCode) {
+            return (
+                <div>
+                    Client code is missing.
+                </div>
+            );
+        }
         if (!currentCountry) {
             return (
                 <div>
@@ -205,10 +252,18 @@ function Page(props: Props) {
         return (
             <DisasterWidgetWithYear
                 iso3={currentCountry}
+                clientCode={clientCode}
             />
         );
     }
     if (page === 'idu-widget') {
+        if (!clientCode) {
+            return (
+                <div>
+                    Client code is missing.
+                </div>
+            );
+        }
         if (!currentCountry) {
             return (
                 <div>
@@ -219,11 +274,20 @@ function Page(props: Props) {
         return (
             <IduWidget
                 iso3={currentCountry}
+                clientCode={clientCode}
             />
         );
     }
 
-    return standaloneMode ? <Home /> : null;
+    if (standaloneMode) {
+        return (
+            <Home
+                defaultClientCode={defaultClientCode}
+            />
+        );
+    }
+
+    return null;
 }
 
 export default Page;
