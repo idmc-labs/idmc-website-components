@@ -21,6 +21,8 @@ import {
     GiddYearQueryVariables,
 } from '#generated/types';
 
+import styles from './styles.css';
+
 const GIDD_YEAR = gql`
     query GiddYear(
         $releaseEnvironment: String!,
@@ -131,11 +133,11 @@ function Page(props: Props) {
         countryName: currentCountryName,
         page,
         iso3: currentCountry,
-        clientCode: clientCodeFromQuery,
+        clientCode,
         defaultClientCode,
     } = props;
 
-    const clientCode = clientCodeFromQuery || defaultClientCode;
+    // const clientCode = clientCodeFromQuery || defaultClientCode;
 
     if (page === 'good-practices') {
         return (
@@ -147,7 +149,7 @@ function Page(props: Props) {
     if (page === 'good-practice') {
         if (!currentId) {
             return (
-                <div>
+                <div className={styles.message}>
                     Query parameter id is missing.
                 </div>
             );
@@ -162,14 +164,14 @@ function Page(props: Props) {
     if (page === 'country-profile') {
         if (!currentCountry) {
             return (
-                <div>
+                <div className={styles.message}>
                     Query parameter iso3 is missing.
                 </div>
             );
         }
         if (!clientCode) {
             return (
-                <div>
+                <div className={styles.message}>
                     Client code is missing.
                 </div>
             );
@@ -187,7 +189,7 @@ function Page(props: Props) {
     if (page === 'gidd') {
         if (!clientCode) {
             return (
-                <div>
+                <div className={styles.message}>
                     Client code is missing.
                 </div>
             );
@@ -201,7 +203,7 @@ function Page(props: Props) {
     if (page === 'idu-map') {
         if (!clientCode) {
             return (
-                <div>
+                <div className={styles.message}>
                     Client code is missing.
                 </div>
             );
@@ -215,14 +217,16 @@ function Page(props: Props) {
     if (page === 'conflict-widget') {
         if (!clientCode) {
             return (
-                <div>
-                    Client code is missing.
+                <div className={styles.message}>
+                    <div>
+                        Client code is missing.
+                    </div>
                 </div>
             );
         }
         if (!currentCountry) {
             return (
-                <div>
+                <div className={styles.message}>
                     Query parameter iso3 is missing.
                 </div>
             );
