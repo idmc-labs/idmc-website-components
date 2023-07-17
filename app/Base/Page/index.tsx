@@ -122,7 +122,6 @@ interface Props {
     standaloneMode: boolean;
     id?: string;
     clientCode?: string;
-    defaultClientCode: string;
 }
 
 function Page(props: Props) {
@@ -134,10 +133,7 @@ function Page(props: Props) {
         page,
         iso3: currentCountry,
         clientCode,
-        defaultClientCode,
     } = props;
-
-    // const clientCode = clientCodeFromQuery || defaultClientCode;
 
     if (page === 'good-practices') {
         return (
@@ -305,9 +301,7 @@ function Page(props: Props) {
 
     if (standaloneMode) {
         return (
-            <Home
-                defaultClientCode={defaultClientCode}
-            />
+            <Home />
         );
     }
 

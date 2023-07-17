@@ -16,11 +16,7 @@
         "watch": "webpack --watch",
         "start": "webpack serve --mode=development",
         "initialize": "mkdir -p generated && yes n | cp -i type.template.tsx generated/types.tsx 2>/dev/null",
-        "check-unused": "unimported",
-        "prelint": "yarn initialize",
-        "pretypecheck": "yarn initialize",
-        "prebuild": "yarn initialize",
-        "prestart": "yarn initialize"
+        "check-unused": "unimported"
     },
     "repository": {
         "type": "git",
