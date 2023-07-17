@@ -150,7 +150,9 @@ function Page(props: Props) {
         if (!currentId) {
             return (
                 <div className={styles.message}>
-                    Query parameter id is missing.
+                    <div>
+                        Query parameter id is missing.
+                    </div>
                 </div>
             );
         }
@@ -165,14 +167,18 @@ function Page(props: Props) {
         if (!currentCountry) {
             return (
                 <div className={styles.message}>
-                    Query parameter iso3 is missing.
+                    <div>
+                        Query parameter iso3 is missing.
+                    </div>
                 </div>
             );
         }
         if (!clientCode) {
             return (
                 <div className={styles.message}>
-                    Client code is missing.
+                    <div>
+                        Client code is missing.
+                    </div>
                 </div>
             );
         }
@@ -190,7 +196,9 @@ function Page(props: Props) {
         if (!clientCode) {
             return (
                 <div className={styles.message}>
-                    Client code is missing.
+                    <div>
+                        Client code is missing.
+                    </div>
                 </div>
             );
         }
@@ -204,7 +212,9 @@ function Page(props: Props) {
         if (!clientCode) {
             return (
                 <div className={styles.message}>
-                    Client code is missing.
+                    <div>
+                        Client code is missing.
+                    </div>
                 </div>
             );
         }
@@ -227,7 +237,9 @@ function Page(props: Props) {
         if (!currentCountry) {
             return (
                 <div className={styles.message}>
-                    Query parameter iso3 is missing.
+                    <div>
+                        Query parameter iso3 is missing.
+                    </div>
                 </div>
             );
         }
@@ -241,15 +253,19 @@ function Page(props: Props) {
     if (page === 'disaster-widget') {
         if (!clientCode) {
             return (
-                <div>
-                    Client code is missing.
+                <div className={styles.message}>
+                    <div>
+                        Client code is missing.
+                    </div>
                 </div>
             );
         }
         if (!currentCountry) {
             return (
-                <div>
-                    Query parameter iso3 is missing.
+                <div className={styles.message}>
+                    <div>
+                        Query parameter iso3 is missing.
+                    </div>
                 </div>
             );
         }
@@ -263,15 +279,19 @@ function Page(props: Props) {
     if (page === 'idu-widget') {
         if (!clientCode) {
             return (
-                <div>
-                    Client code is missing.
+                <div className={styles.message}>
+                    <div>
+                        Client code is missing.
+                    </div>
                 </div>
             );
         }
         if (!currentCountry) {
             return (
-                <div>
-                    Query parameter iso3 is missing.
+                <div className={styles.message}>
+                    <div>
+                        Query parameter iso3 is missing.
+                    </div>
                 </div>
             );
         }
