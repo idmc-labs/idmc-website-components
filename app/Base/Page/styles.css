@@ -1,0 +1,8 @@
+.message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 20rem;
+    text-align: center;
+    font-size: var(--tui-font-size-mega-large);
+}
