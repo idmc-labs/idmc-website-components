@@ -35,15 +35,7 @@ query AllCountries {
 }
 `;
 
-interface Props {
-    defaultClientCode: string;
-}
-
-function Home(props: Props) {
-    const {
-        defaultClientCode,
-    } = props;
-
+function Home() {
     const [clientCodeFromUser, setClientCodeFromUser] = useState<string | undefined>();
 
     const { data: mapResponse } = useQuery<
@@ -56,7 +48,7 @@ function Home(props: Props) {
         ? [...countriesFromResponse].sort((a, b) => compareString(a.name, b.name))
         : undefined;
 
-    const clientCode = clientCodeFromUser || defaultClientCode;
+    const clientCode = clientCodeFromUser;
 
     return (
         <div
@@ -68,9 +60,9 @@ function Home(props: Props) {
             <div className={styles.filters}>
                 <TextInput
                     name="clientCode"
-                    label="Client Code"
+                    label="Client Code *"
                     value={clientCodeFromUser}
-                    placeholder={defaultClientCode}
+                    placeholder="xxxxxxxxxxxx"
                     onChange={setClientCodeFromUser}
                 />
             </div>
@@ -83,7 +75,11 @@ function Home(props: Props) {
                         {countries?.map((country) => (
                             <a
                                 key={country.iso3}
-                                href={getCountryProfileLink(country.iso3, country.name, clientCode)}
+                                // className={!clientCode ? styles.disabledLink : undefined}
+                                aria-disabled={!clientCode}
+                                href={clientCode
+                                    ? getCountryProfileLink(country.iso3, country.name, clientCode)
+                                    : undefined}
                             >
                                 {country.name}
                             </a>
@@ -98,7 +94,11 @@ function Home(props: Props) {
                         {countries?.map((country) => (
                             <a
                                 key={country.iso3}
-                                href={getConflictWidgetLink(country.iso3, clientCode)}
+                                // className={!clientCode ? styles.disabledLink : undefined}
+                                aria-disabled={!clientCode}
+                                href={clientCode
+                                    ? getConflictWidgetLink(country.iso3, clientCode)
+                                    : undefined}
                             >
                                 {country.name}
                             </a>
@@ -113,7 +113,11 @@ function Home(props: Props) {
                         {countries?.map((country) => (
                             <a
                                 key={country.iso3}
-                                href={getDisasterWidgetLink(country.iso3, clientCode)}
+                                // className={!clientCode ? styles.disabledLink : undefined}
+                                aria-disabled={!clientCode}
+                                href={clientCode
+                                    ? getDisasterWidgetLink(country.iso3, clientCode)
+                                    : undefined}
                             >
                                 {country.name}
                             </a>
@@ -128,7 +132,11 @@ function Home(props: Props) {
                         {countries?.map((country) => (
                             <a
                                 key={country.iso3}
-                                href={getIduWidgetLink(country.iso3, clientCode)}
+                                // className={!clientCode ? styles.disabledLink : undefined}
+                                aria-disabled={!clientCode}
+                                href={clientCode
+                                    ? getIduWidgetLink(country.iso3, clientCode)
+                                    : undefined}
                             >
                                 {country.name}
                             </a>
@@ -147,7 +155,13 @@ function Home(props: Props) {
                     <h2>
                         IDU Map
                     </h2>
-                    <a href={getIduLink(clientCode)}>
+                    <a
+                        // className={!clientCode ? styles.disabledLink : undefined}
+                        aria-disabled={!clientCode}
+                        href={clientCode
+                            ? getIduLink(clientCode)
+                            : undefined}
+                    >
                         Global
                     </a>
                 </div>
@@ -155,7 +169,11 @@ function Home(props: Props) {
                     <h2>
                         GIDD
                     </h2>
-                    <a href={getGiddLink(clientCode)}>
+                    <a
+                        // className={!clientCode ? styles.disabledLink : undefined}
+                        aria-disabled={!clientCode}
+                        href={clientCode ? getGiddLink(clientCode) : undefined}
+                    >
                         Global
                     </a>
                 </div>

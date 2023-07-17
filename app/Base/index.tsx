@@ -24,7 +24,6 @@ import apolloConfig from '#base/configs/apollo';
 import { trackingId, gaConfig } from '#base/configs/googleAnalytics';
 import { mapboxToken } from '#base/configs/mapbox';
 import useLocalStorage from '#hooks/useLocalStorage';
-import { HELIX_CLIENT_CODE } from '#utils/common';
 
 import Page from './Page';
 import styles from './styles.css';
@@ -177,7 +176,6 @@ function Base() {
                             <AlertContainer className={styles.alertContainer} />
                             <Page
                                 clientCode={currentClientCode}
-                                defaultClientCode={HELIX_CLIENT_CODE}
                                 iso3={currentCountry}
                                 className={styles.view}
                                 page={currentPage}
