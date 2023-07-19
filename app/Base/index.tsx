@@ -92,8 +92,8 @@ const currentId = standaloneMode
     ? query.id
     : (window as Win).id;
 const currentClientCode = standaloneMode
-    ? HELIX_CLIENT_CODE
-    : query.clientCode;
+    ? query.clientCode
+    : HELIX_CLIENT_CODE;
 
 function Base() {
     const [lang, setLang] = useLocalStorage<Lang>('idmc-website-language', 'en', false);
