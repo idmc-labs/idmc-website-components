@@ -80,20 +80,20 @@ const standaloneMode = (window as Win).standaloneMode ?? false;
 const query: Query = parseQueryString(window.location.search);
 
 const currentPage = standaloneMode
-    ? (window as Win).page
-    : query.page;
+    ? query.page
+    : (window as Win).page;
 const currentCountry = standaloneMode
-    ? (window as Win).iso3
-    : query.iso3;
+    ? query.iso3
+    : (window as Win).iso3;
 const currentCountryName = standaloneMode
-    ? (window as Win).countryName
-    : query.countryName;
+    ? query.countryName
+    : (window as Win).countryName;
 const currentId = standaloneMode
-    ? (window as Win).id
-    : query.id;
+    ? query.id
+    : (window as Win).id;
 const currentClientCode = standaloneMode
-    ? query.clientCode
-    : HELIX_CLIENT_CODE;
+    ? HELIX_CLIENT_CODE
+    : query.clientCode;
 
 function Base() {
     const [lang, setLang] = useLocalStorage<Lang>('idmc-website-language', 'en', false);
