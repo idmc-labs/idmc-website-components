@@ -305,7 +305,13 @@ function Page(props: Props) {
         );
     }
 
-    return null;
+    return (
+        <div className={styles.message}>
+            <div>
+                Some error occurred!
+            </div>
+        </div>
+    );
 }
 
 export default Page;
