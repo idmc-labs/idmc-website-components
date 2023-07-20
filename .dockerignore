@@ -136,7 +136,12 @@ typings
 
 # dotenv environment variables file
 .env
-.env*
+.env.dev
+.env.staging
+.env.prod
+
+.env.aws.preview
+.env.aws.release
 
 # Sensitive Deploy Files
 deploy/eb/
