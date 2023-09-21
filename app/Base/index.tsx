@@ -88,9 +88,8 @@ const currentCountry = standaloneMode
 const currentCountryName = standaloneMode
     ? query.countryName
     : (window as Win).countryName;
-const currentId = standaloneMode
-    ? query.id
-    : (window as Win).id;
+// NOTE: We are directly using id from query for the good practices
+const currentId = query.id;
 const currentClientCode = standaloneMode
     ? query.clientCode
     : HELIX_CLIENT_CODE;
