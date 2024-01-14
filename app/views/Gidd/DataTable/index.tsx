@@ -48,12 +48,14 @@ const GIDD_DISPLACEMENTS = gql`
         giddPublicDisplacements(
             ordering: $ordering,
             pageSize: $pageSize,
-            countriesIso3: $countriesIso3,
-            endYear: $endYear,
-            startYear: $startYear,
             page: $page,
-            releaseEnvironment: $releaseEnvironment,
-            cause: $cause,
+            filters: {
+                countriesIso3: $countriesIso3,
+                endYear: $endYear,
+                startYear: $startYear,
+                releaseEnvironment: $releaseEnvironment,
+                cause: $cause,
+            },
             clientId: $clientId,
         ){
             results {

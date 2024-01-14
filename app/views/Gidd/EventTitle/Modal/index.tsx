@@ -46,6 +46,7 @@ query GiddEventDetails(
         }
         endDate
         eventName
+        eventCodes
         glideNumbers
         hazardTypes {
             id
@@ -164,10 +165,14 @@ function EventModal(props: Props) {
                     value={event?.endDate}
                     displayType="block"
                 />
-                {(event?.glideNumbers?.length ?? 0) > 0 && (
+                {(
+                    (event?.eventCodes?.length ?? 0) > 0
+                    || (event?.glideNumbers?.length ?? 0) > 0
+                ) && (
                     <TextOutput
-                        label="Glide No"
-                        value={event?.glideNumbers.join(', ')}
+                        label="Event Codes"
+                        // NOTE: We are deprecating glideNumber and replacing with eventCodes
+                        value={event?.eventCodes.join(', ') || event?.glideNumbers.join(', ')}
                         displayType="block"
                     />
                 )}
