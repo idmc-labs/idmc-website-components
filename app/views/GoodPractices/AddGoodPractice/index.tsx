@@ -192,7 +192,6 @@ function AddGoodPractice(props: Props) {
         error: riskyError,
         setFieldValue,
         validate,
-        // setValue,
         setError,
     } = useForm(
         schema,
@@ -516,6 +515,7 @@ function AddGoodPractice(props: Props) {
                     value={value?.whatMakesThisPromisingPractice}
                     error={error?.whatMakesThisPromisingPractice}
                     onChange={setFieldValue}
+                    textLimit={2000}
                 />
                 <TinyMceEditorInput
                     className={styles.input}
@@ -529,6 +529,7 @@ function AddGoodPractice(props: Props) {
                     value={value?.descriptionOfKeyLessonsLearned}
                     error={error?.descriptionOfKeyLessonsLearned}
                     onChange={setFieldValue}
+                    textLimit={2000}
                 />
                 {!value?.isFrench && (
                     <TinyMceEditorInput
