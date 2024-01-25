@@ -222,12 +222,12 @@ export const goodPracticesDashboard = {
         fr: 'liens médias et ressources',
     },
     descriptionLabel: {
-        en: 'Description of the project (max 10,000 characters)',
-        fr: 'Description du projet (max 10 000 caractères)',
+        en: 'Description of the project',
+        fr: 'Description du projet',
     },
     descriptionsFrLabel: {
-        en: 'Description du projet (max 10 000 caractères)',
-        fr: 'Description du projet (max 10 000 caractères)',
+        en: 'Description du projet',
+        fr: 'Description du projet',
     },
     titleLabel: {
         en: 'Name of project',
