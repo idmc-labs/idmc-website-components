@@ -32,26 +32,25 @@ function TinyMceEditorInput<N extends string>(props: Props<N>) {
         value,
         name,
         onChange,
-        textLimit,
+        textLimit = 0,
         labelContainerClassName,
     } = props;
 
     const strings = useTranslation(goodPracticesDashboard);
 
-    const sizeLimit = textLimit ?? 10000;
     const [length, setLength] = useState(0);
-    const lengthExceeded = length >= sizeLimit;
+    const lengthExceeded = length >= textLimit;
 
     const handleChange = useCallback((newText: string | undefined, editor) => {
         const textLength = editor.getContent({ format: 'text' }).length;
-        if (textLength <= sizeLimit) {
+        if (textLength <= textLimit) {
             onChange(newText, name);
             setLength(textLength);
         }
     }, [
         onChange,
         name,
-        sizeLimit,
+        textLimit,
     ]);
 
     return (
@@ -80,9 +79,9 @@ function TinyMceEditorInput<N extends string>(props: Props<N>) {
                                 </span>
                             )}
                             <span>
-                                {sizeLimit - length}
+                                {textLimit - length}
                                 /
-                                {sizeLimit}
+                                {textLimit}
                             </span>
                         </div>
                     )}
