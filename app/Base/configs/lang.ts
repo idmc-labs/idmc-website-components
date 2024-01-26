@@ -97,6 +97,10 @@ export const goodPracticesDashboard = {
         en: 'Stage',
         fr: 'Organiser',
     },
+    successFactorLabel: {
+        en: 'Success Factors',
+        fr: 'Facteurs de réussite',
+    },
     clearButtonLabel: {
         en: 'Clear All Filters',
         fr: 'Effacer tous les filtres',
