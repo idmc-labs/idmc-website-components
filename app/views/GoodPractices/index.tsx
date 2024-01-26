@@ -107,6 +107,7 @@ query GoodPractices(
     $driversOfDisplacements : [ID!],
     $focusArea:[ID!] ,
     $stages: [StageTypeEnum!]!,
+    $successFactor:[ID!] ,
     $regions: [GoodPracticeRegion!],
     $countries: [ID!],
     $startYear: Int!,
@@ -123,6 +124,7 @@ query GoodPractices(
             driversOfDisplacements: $driversOfDisplacements,
             focusArea: $focusArea,
             stages: $stages,
+            successFactor: $successFactor,
             regions: $regions,
             countries: $countries,
             startYear: $startYear,
@@ -202,6 +204,10 @@ query GoodPracticeFilterChoices {
         }
         stage {
             label
+            name
+        }
+        successFactor {
+            id
             name
         }
         type {
@@ -298,6 +304,7 @@ type GoodPracticeDriveType = NonNullable<GoodPracticeFilter['driversOfDisplaceme
 type GoodPracticeStageType = NonNullable<GoodPracticeFilter['stage']>[number]['name'];
 type GoodPracticeRegionType = NonNullable<GoodPracticeFilter['regions']>[number]['name'];
 type GoodPracticeCountryType = NonNullable<GoodPracticeFilter['countries']>[number]['name'];
+type goodPracticeSuccessFactorType = NonNullable<GoodPracticeFilter['successFactor']>[number]['name'];
 
 interface Props {
     className?: string;
@@ -346,7 +353,11 @@ function GoodPractices(props: Props) {
     const [goodPracticeType, setGoodPracticeType] = useInputState<GoodPracticeTypeType[]>([]);
     const [goodPracticeArea, setGoodPracticeArea] = useInputState<GoodPracticeAreaType[]>([]);
     const [goodPracticeDrive, setGoodPracticeDrive] = useInputState<GoodPracticeDriveType[]>([]);
-    const [goodpracticeStage, setGoodPracticeStage] = useInputState<GoodPracticeStageType[]>([]);
+    const [goodPracticeStage, setGoodPracticeStage] = useInputState<GoodPracticeStageType[]>([]);
+    const [goodPracticeSuccessFactor, setGoodPracticeSuccessFactor] = useInputState<
+        goodPracticeSuccessFactorType[]
+    >([]);
+
     const [
         goodPracticeRegion,
         setGoodPracticeRegion,
@@ -396,6 +407,7 @@ function GoodPractices(props: Props) {
         setGoodPracticeStage([]);
         setGoodPracticeRegion([]);
         setGoodPracticeCountry([]);
+        setGoodPracticeSuccessFactor([]);
     }, [
         setYearRange,
         setGoodPracticeType,
@@ -404,6 +416,7 @@ function GoodPractices(props: Props) {
         setGoodPracticeStage,
         setGoodPracticeRegion,
         setGoodPracticeCountry,
+        setGoodPracticeSuccessFactor,
         goodPracticeFilterResponse,
     ]);
 
@@ -418,6 +431,7 @@ function GoodPractices(props: Props) {
         stageFilterOptions,
         regionFilterOptions,
         countryFilterOptions,
+        successFactorFilterOptions,
     ] = React.useMemo(() => [
         filterChoices?.type
             ?.map((v) => ({ key: v.name, label: v.label })),
@@ -428,6 +442,7 @@ function GoodPractices(props: Props) {
         filterChoices?.regions
             ?.map((v) => ({ key: v.name, label: v.label })),
         filterChoices?.countries,
+        filterChoices?.successFactor,
     ], [filterChoices]);
 
     const [activePage, setActivePage] = useState<number>(1);
@@ -441,7 +456,8 @@ function GoodPractices(props: Props) {
             || goodPracticeCountry.length > 0
             || goodPracticeType.length > 0
             || goodPracticeArea.length > 0
-            || goodpracticeStage.length > 0
+            || goodPracticeStage.length > 0
+            || goodPracticeSuccessFactor.length > 0
             || goodPracticeRegion.length > 0
             || goodPracticeDrive.length > 0
             || yearRange[0] !== minYear
@@ -451,7 +467,8 @@ function GoodPractices(props: Props) {
             countries: goodPracticeCountry,
             types: goodPracticeType,
             focusArea: goodPracticeArea,
-            stages: goodpracticeStage,
+            stages: goodPracticeStage,
+            successFactor: goodPracticeSuccessFactor,
             regions: goodPracticeRegion,
             driversOfDisplacements: goodPracticeDrive,
             startYear: yearRange[0],
@@ -465,10 +482,11 @@ function GoodPractices(props: Props) {
         searchText,
         goodPracticeCountry,
         goodPracticeType,
-        goodpracticeStage,
+        goodPracticeStage,
         goodPracticeRegion,
         goodPracticeDrive,
         goodPracticeArea,
+        goodPracticeSuccessFactor,
         yearRange,
         minYear,
         maxYear,
@@ -680,11 +698,25 @@ function GoodPractices(props: Props) {
                     placeholder={strings.stageLabel}
                     label={strings.stageLabel}
                     name="stage"
-                    value={goodpracticeStage}
+                    value={goodPracticeStage}
                     options={stageFilterOptions}
                     keySelector={keySelector}
                     labelSelector={labelSelector}
                     onChange={setGoodPracticeStage}
+                    inputSectionClassName={styles.inputSection}
+                />
+            )}
+            {successFactorFilterOptions && successFactorFilterOptions.length > 0 && (
+                <MultiSelectInput
+                    labelContainerClassName={styles.label}
+                    placeholder={strings.successFactorLabel}
+                    label={strings.successFactorLabel}
+                    name="successFactor"
+                    value={goodPracticeSuccessFactor}
+                    options={successFactorFilterOptions}
+                    keySelector={idSelector}
+                    labelSelector={nameSelector}
+                    onChange={setGoodPracticeSuccessFactor}
                     inputSectionClassName={styles.inputSection}
                 />
             )}
@@ -1015,14 +1047,24 @@ function GoodPractices(props: Props) {
                                         onChange={setGoodPracticeArea}
                                     />
                                 )}
-                                {goodpracticeStage.length > 0 && (
+                                {goodPracticeStage.length > 0 && (
                                     <DismissableListOutput
                                         label={strings.stageLabel}
-                                        value={goodpracticeStage}
+                                        value={goodPracticeStage}
                                         keySelector={keySelector}
                                         labelSelector={labelSelector}
                                         options={stageFilterOptions}
                                         onChange={setGoodPracticeStage}
+                                    />
+                                )}
+                                {goodPracticeSuccessFactor.length > 0 && (
+                                    <DismissableListOutput
+                                        label={strings.successFactorLabel}
+                                        value={goodPracticeSuccessFactor}
+                                        keySelector={idSelector}
+                                        labelSelector={nameSelector}
+                                        options={successFactorFilterOptions}
+                                        onChange={setGoodPracticeSuccessFactor}
                                     />
                                 )}
                                 <div className={styles.clearAllContainer}>
