@@ -30,9 +30,11 @@ query GiddCountryPfa(
     $clientId: String!,
 ){
     giddPublicFigureAnalysisList(
-        iso3: $iso3,
-        year: $year,
-        releaseEnvironment: $releaseEnvironment,
+        filters: {
+            iso3: $iso3,
+            year: $year,
+            releaseEnvironment: $releaseEnvironment,
+        },
         clientId: $clientId,
     ) {
         results {

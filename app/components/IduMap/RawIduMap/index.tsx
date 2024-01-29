@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useReducer } from 'react';
 import Map, {
     MapContainer,
     MapBounds,
@@ -13,7 +13,7 @@ import {
     LngLatLike,
     LngLatBounds,
 } from 'mapbox-gl';
-import { isDefined, isNotDefined } from '@togglecorp/fujs';
+import { isDefined, isNotDefined, compareDate, _cs } from '@togglecorp/fujs';
 
 import { mapboxStyle } from '#base/configs/mapbox';
 import HTMLOutput from '#components/HTMLOutput';
@@ -23,9 +23,30 @@ import {
 
 import styles from './styles.css';
 
+interface DeselectAction {
+    type: 'deselect';
+}
+
+interface SelectAction {
+    type: 'select';
+    lngLat: LngLatLike;
+    properties: PopupProperties;
+}
+
+type MapActions = DeselectAction | SelectAction;
+
+interface MapState {
+    lngLat: LngLatLike | undefined;
+    properties: PopupProperties[];
+}
+
+type Reducer = (prevState: MapState, action: MapActions) => MapState;
+
 interface PopupProperties {
+    id: number,
     type: 'Disaster' | 'Conflict' | 'Other',
     value: number,
+    date: string | null | undefined,
     description: string,
 }
 
@@ -60,7 +81,8 @@ const popupOptions: PopupOptions = {
     closeOnClick: true,
     closeButton: false,
     offset: 12,
-    maxWidth: '480px',
+    className: styles.mapPopup,
+    maxWidth: 'unset',
 };
 
 const sourceOption: mapboxgl.GeoJSONSourceRaw = {
@@ -80,25 +102,52 @@ function RawIduMap(props: Props) {
         boundingBox,
     } = props;
 
-    const [mapHoverLngLat, setMapHoverLngLat] = useState<LngLatLike>();
-    const [
-        mapHoverFeatureProperties,
-        setMapHoverFeatureProperties,
-    ] = useState<PopupProperties | undefined>(undefined);
-
+    const [state, dispatch] = useReducer<Reducer>(
+        (prevState, action) => {
+            if (action.type === 'deselect') {
+                return {
+                    lngLat: undefined,
+                    properties: [],
+                };
+            }
+            if (action.type === 'select') {
+                if (action.lngLat === prevState.lngLat) {
+                    return {
+                        ...prevState,
+                        properties: [
+                            ...prevState.properties,
+                            action.properties,
+                        ],
+                    };
+                }
+                return {
+                    lngLat: action.lngLat,
+                    properties: [action.properties],
+                };
+            }
+            return prevState;
+        },
+        { lngLat: undefined, properties: [] },
+    );
     const handleMapPointClick = useCallback((feature: MapboxGeoJSONFeature, lngLat: LngLat) => {
         if (feature.properties) {
-            setMapHoverLngLat(lngLat);
-            setMapHoverFeatureProperties(feature.properties as PopupProperties);
+            dispatch({
+                type: 'select',
+                lngLat,
+                properties: feature.properties as PopupProperties,
+            });
         } else {
-            setMapHoverFeatureProperties(undefined);
+            dispatch({
+                type: 'deselect',
+            });
         }
-        return true;
+        return false;
     }, []);
 
     const handleMapPopupClose = useCallback(() => {
-        setMapHoverLngLat(undefined);
-        setMapHoverFeatureProperties(undefined);
+        dispatch({
+            type: 'deselect',
+        });
     }, []);
 
     const iduGeojson: IduGeoJSON = useMemo(
@@ -121,8 +170,10 @@ function RawIduMap(props: Props) {
                         id: idu.id,
                         type: 'Feature' as const,
                         properties: {
+                            id: idu.id,
                             type: idu.displacement_type,
                             value: idu.figure,
+                            date: idu.displacement_date,
                             description: idu.standard_popup_text,
                         },
                         geometry: {
@@ -133,7 +184,10 @@ function RawIduMap(props: Props) {
                             ],
                         },
                     };
-                }).filter(isDefined) ?? [],
+                })
+                .filter(isDefined)
+                // NOTE: show newer on top
+                .sort((a, b) => compareDate(a.properties.date, b.properties.date)) ?? [],
         }),
         [idus],
     );
@@ -169,15 +223,32 @@ function RawIduMap(props: Props) {
                     }}
                     onClick={handleMapPointClick}
                 />
-                {mapHoverLngLat && mapHoverFeatureProperties && (
+                {state.lngLat && (
                     <MapTooltip
-                        coordinates={mapHoverLngLat}
+                        coordinates={state.lngLat}
                         tooltipOptions={popupOptions}
                         onHide={handleMapPopupClose}
                     >
-                        <HTMLOutput
-                            value={mapHoverFeatureProperties.description}
-                        />
+                        <>
+                            {state.properties.map((item) => (
+                                <div
+                                    className={styles.item}
+                                    key={item.id}
+                                >
+                                    <div
+                                        className={_cs(
+                                            styles.icon,
+                                            item.type === 'Disaster' && styles.disaster,
+                                            item.type === 'Conflict' && styles.conflict,
+                                        )}
+                                    />
+                                    <HTMLOutput
+                                        className={styles.description}
+                                        value={item.description}
+                                    />
+                                </div>
+                            ))}
+                        </>
                     </MapTooltip>
                 )}
             </MapSource>

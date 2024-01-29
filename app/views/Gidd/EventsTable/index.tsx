@@ -58,13 +58,15 @@ query GiddEvents(
     giddPublicDisasters(
         ordering: $ordering,
         pageSize: $pageSize,
-        eventName: $eventName,
         page: $page,
-        countriesIso3: $countriesIso3,
-        endYear: $endYear,
-        startYear: $startYear,
-        hazardTypes: $hazardTypes,
-        releaseEnvironment: $releaseEnvironment,
+        filters: {
+            eventName: $eventName,
+            countriesIso3: $countriesIso3,
+            endYear: $endYear,
+            startYear: $startYear,
+            hazardTypes: $hazardTypes,
+            releaseEnvironment: $releaseEnvironment,
+        },
         clientId: $clientId,
     ){
         results {
@@ -80,6 +82,8 @@ query GiddEvents(
             hazardTypeName
             iso3
             newDisplacementRounded
+            glideNumbers
+            eventCodes
             startDate
             year
         }
@@ -200,6 +204,13 @@ function EventsTable(props: Props) {
                     },
                 ),
                 eventTitle,
+                createTextColumn<EventData, string>(
+                    'eventCodes',
+                    'Event Codes',
+                    // NOTE: We are deprecating glideNumber and replacing with eventCode
+                    (item) => item.eventCodes?.join('; ') || item.glideNumbers?.join('; '),
+                    { sortable: true },
+                ),
                 createDateColumn<EventData, string>(
                     'startDate',
                     'Date of event (start)',
