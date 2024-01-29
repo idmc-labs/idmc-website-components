@@ -4,14 +4,6 @@
         font-size: var(--tui-font-size-medium)!important;
     }
 
-    &.conflict {
-        color: var(--color-conflict);
-    }
-
-    &.disaster {
-        color: var(--color-disaster);
-    }
-
     &.number-header {
         * {
             justify-content: flex-end;

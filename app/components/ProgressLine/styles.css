@@ -12,10 +12,6 @@
         .title {
             flex-grow :1;
         }
-
-        .numeral {
-            flex-shrink: 0;
-        }
     }
 
     .bottom {

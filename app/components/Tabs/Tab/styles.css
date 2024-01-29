@@ -38,7 +38,6 @@
     }
 
     &.secondary {
-        /* border-radius: calc(1em + #{var(--tui-spacing-medium)}); */
         border-radius: 0.25rem;
 
         background-color: var(--tui-color-background);

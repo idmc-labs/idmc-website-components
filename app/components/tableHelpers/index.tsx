@@ -47,7 +47,6 @@ export function createExternalLinkColumn<D, K>(
             filterType: options?.filterType,
             orderable: options?.orderable,
             hideable: options?.hideable,
-            titleClassName: styles.title,
         },
         cellRenderer: ExternalLink,
         cellRendererParams: (_: K, datum: D): ExternalLinkProps => {
@@ -93,7 +92,6 @@ export function createTextColumn<D, K>(
             filterType: options?.filterType,
             orderable: options?.orderable,
             hideable: options?.hideable,
-            titleClassName: styles.title,
         },
         cellRenderer: Text,
         columnWidth: options?.columnWidth,
@@ -137,7 +135,6 @@ export function createNumberColumn<D, K>(
             filterType: options?.filterType,
             orderable: options?.orderable,
             hideable: options?.hideable,
-            titleClassName: styles.title,
         },
         cellRenderer: Numeral,
         columnWidth: options?.columnWidth,
