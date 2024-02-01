@@ -71,7 +71,7 @@ function TinyMceEditorInput<N extends string>(props: Props<N>) {
                         init={{ menubar: 'edit insert format' }}
                         toolbar="undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | outdent indent | link"
                     />
-                    {value && (
+                    {(value && textLimit > 0) && (
                         <div className={styles.textLengthSection}>
                             {lengthExceeded && (
                                 <span className={styles.textLimit}>
