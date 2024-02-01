@@ -1,0 +1,75 @@
+name: React Build
+description: 'Reusable workflow for building idmc website components'
+
+inputs:
+  # Required
+  REACT_APP_ENVIRONMENT:
+    description: ''
+    required: true
+  BUILD_OUTPUT_DIR:
+    description: ''
+    required: true
+  UPLOAD_ARTIFACT_NAME:
+    description: ''
+    required: true
+  # Optional
+  # -- Helix
+  REACT_APP_HELIX_GRAPHQL_ENDPOINT:
+    description: ''
+    required: false
+    default: https://helix-tools-api.idmcdb.org/graphql
+  REACT_APP_HELIX_REST_ENDPOINT:
+    description: ''
+    required: false
+    default: https://helix-tools-api.idmcdb.org/external-api/
+  # -- IDMC Website
+  REACT_APP_GIDD_GRAPHQL_ENDPOINT:
+    description: ''
+    required: false
+    default: https://website-api.idmcdb.org/graphql/
+  REACT_APP_DRUPAL_ENDPOINT:
+    description: ''
+    required: false
+    default: https://www.internal-displacement.org
+  # -- Misc
+  REACT_APP_DATA_RELEASE:
+    description: ''
+    required: false
+    default: RELEASE
+
+runs:
+  using: "composite"
+  steps:
+    - name: 🤞 Run Build 🧪
+      env:
+          # Unsed variables
+          GIDD_GRAPHQL_CODEGEN_ENDPOINT: ''
+          HELIX_GRAPHQL_CODEGEN_ENDPOINT: ''
+          REACT_APP_GA_TRACKING_ID: ''
+          # Common
+          # TODO: is this required here?
+          REACT_APP_HELIX_CLIENT_ID: IDMCWSHSOLO009
+          REACT_APP_MAPBOX_ACCESS_TOKEN: pk.eyJ1IjoidG9nZ2xlY29ycCIsImEiOiJjazk5ZXMza2YxZmQ1M2dvNWxneTEycnQwIn0.K3u-ns63rFzM7CzrnOBm2w
+          REACT_APP_MAPBOX_STYLE: mapbox://styles/togglecorp/cl50rwy0a002d14mo6w9zprio
+          REACT_APP_HCAPTCHA_SITEKEY: c81616ab-e71b-466a-a03a-650b2472fb34
+          REACT_APP_TINY_MCE_KEY: o65ezg70uejj1ibo2janhtw6n1eiii7fm2w2yanfnvqe6ipa
+          REACT_APP_SENTRY_DSN: https://5e568ceb82d94590879272b6644f86ea@o479248.ingest.sentry.io/6409048
+          # Default values
+          # -- Helix
+          REACT_APP_HELIX_GRAPHQL_ENDPOINT: ${{ inputs.REACT_APP_HELIX_GRAPHQL_ENDPOINT }}
+          REACT_APP_HELIX_REST_ENDPOINT: ${{ inputs.REACT_APP_HELIX_REST_ENDPOINT }}
+          # -- IDMC Website
+          REACT_APP_GIDD_GRAPHQL_ENDPOINT: ${{ inputs.REACT_APP_GIDD_GRAPHQL_ENDPOINT }}
+          REACT_APP_DRUPAL_ENDPOINT: ${{ inputs.REACT_APP_DRUPAL_ENDPOINT }}
+          # -- Misc
+          REACT_APP_DATA_RELEASE: ${{ inputs.REACT_APP_DATA_RELEASE }}
+          REACT_APP_ENVIRONMENT: ${{ inputs.REACT_APP_ENVIRONMENT }}
+          BUILD_OUTPUT_DIR: ${{ inputs.BUILD_OUTPUT_DIR }}
+      shell: bash
+      run: env > .env && yarn build && mv build/ $BUILD_OUTPUT_DIR
+
+    - name: Save build files as artifact (PREVIEW -> Helix-STAGING)
+      uses: actions/upload-artifact@v1
+      with:
+        name: ${{ inputs.UPLOAD_ARTIFACT_NAME }}
+        path: ${{ inputs.BUILD_OUTPUT_DIR }}

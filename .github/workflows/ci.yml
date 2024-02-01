@@ -7,8 +7,8 @@ on:
       - release
 
 jobs:
-  build_test:
-    name: 🚴 Build + Lint + Test 🚴  # Match the name below (8398a7/action-slack).
+  lint_test:
+    name: 🚴 Lint + Test 🚴
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -27,208 +27,77 @@ jobs:
       # - name: 🤞 Run Test 🧪
       #   run: yarn test
 
-      - name: 🤞 Run Build 🧪 (PREVIEW-> Helix-STAGING)
-        env:
-            # Unsed variables
-            GIDD_GRAPHQL_CODEGEN_ENDPOINT: ''
-            HELIX_GRAPHQL_CODEGEN_ENDPOINT: ''
-            REACT_APP_GA_TRACKING_ID: ''
-            # Common
-            REACT_APP_GIDD_GRAPHQL_ENDPOINT: https://website-api.idmcdb.org/graphql/
-            REACT_APP_HELIX_CLIENT_ID: IDMCWSHSOLO009
-            REACT_APP_MAPBOX_ACCESS_TOKEN: pk.eyJ1IjoidG9nZ2xlY29ycCIsImEiOiJjazk5ZXMza2YxZmQ1M2dvNWxneTEycnQwIn0.K3u-ns63rFzM7CzrnOBm2w
-            REACT_APP_MAPBOX_STYLE: mapbox://styles/togglecorp/cl50rwy0a002d14mo6w9zprio
-            REACT_APP_HCAPTCHA_SITEKEY: c81616ab-e71b-466a-a03a-650b2472fb34
-            REACT_APP_TINY_MCE_KEY: o65ezg70uejj1ibo2janhtw6n1eiii7fm2w2yanfnvqe6ipa
-            REACT_APP_SENTRY_DSN: https://5e568ceb82d94590879272b6644f86ea@o479248.ingest.sentry.io/6409048
-            # Helix staging
-            REACT_APP_HELIX_GRAPHQL_ENDPOINT: https://helix-tools-api-staging.idmcdb.org/graphql
-            REACT_APP_HELIX_REST_ENDPOINT: https://helix-tools-api-staging.idmcdb.org/external-api/
-            # Release config (ONLY DIFFERENT)
-            REACT_APP_DRUPAL_ENDPOINT: https://staging.internal-displacement.org
-            REACT_APP_ENVIRONMENT: preview
-            REACT_APP_DATA_RELEASE: PRE_RELEASE
-        run: env > .env && yarn build && mv build/ build-preview-helix-staging/
+  run_build:
+    name: 🚴 Build 🚴
+    needs: lint_test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '17.x'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile --prefer-offline
+
+      - name: 🤞 Run Build 🧪 (PREVIEW -> Helix-STAGING)
+        uses: ./.github/actions/run_build
+        with:
+          REACT_APP_ENVIRONMENT: preview
+          BUILD_OUTPUT_DIR: build-preview-helix-staging/
+          UPLOAD_ARTIFACT_NAME: helix-staging-preview-idmc-website-components
+          # Overwrite
+          REACT_APP_DATA_RELEASE: PRE_RELEASE
+          REACT_APP_DRUPAL_ENDPOINT: https://staging.internal-displacement.org
+          REACT_APP_HELIX_GRAPHQL_ENDPOINT: https://helix-tools-api-staging.idmcdb.org/graphql
+          REACT_APP_HELIX_REST_ENDPOINT: https://helix-tools-api-staging.idmcdb.org/external-api/
 
       - name: 🤞 Run Build 🧪 (PREVIEW -> Helix-PROD)
-        env:
-            # Unsed variables
-            GIDD_GRAPHQL_CODEGEN_ENDPOINT: ''
-            HELIX_GRAPHQL_CODEGEN_ENDPOINT: ''
-            REACT_APP_GA_TRACKING_ID: ''
-            # Common
-            REACT_APP_GIDD_GRAPHQL_ENDPOINT: https://website-api.idmcdb.org/graphql/
-            REACT_APP_HELIX_CLIENT_ID: IDMCWSHSOLO009
-            REACT_APP_MAPBOX_ACCESS_TOKEN: pk.eyJ1IjoidG9nZ2xlY29ycCIsImEiOiJjazk5ZXMza2YxZmQ1M2dvNWxneTEycnQwIn0.K3u-ns63rFzM7CzrnOBm2w
-            REACT_APP_MAPBOX_STYLE: mapbox://styles/togglecorp/cl50rwy0a002d14mo6w9zprio
-            REACT_APP_HCAPTCHA_SITEKEY: c81616ab-e71b-466a-a03a-650b2472fb34
-            REACT_APP_TINY_MCE_KEY: o65ezg70uejj1ibo2janhtw6n1eiii7fm2w2yanfnvqe6ipa
-            REACT_APP_SENTRY_DSN: https://5e568ceb82d94590879272b6644f86ea@o479248.ingest.sentry.io/6409048
-            # Helix production
-            REACT_APP_HELIX_GRAPHQL_ENDPOINT: https://helix-tools-api.idmcdb.org/graphql
-            REACT_APP_HELIX_REST_ENDPOINT: https://helix-tools-api.idmcdb.org/external-api/
-            # Release config (ONLY DIFFERENT)
-            REACT_APP_DRUPAL_ENDPOINT: https://staging.internal-displacement.org
-            REACT_APP_ENVIRONMENT: preview
-            REACT_APP_DATA_RELEASE: PRE_RELEASE
-        run: env > .env && yarn build && mv build/ build-preview/
-        if: github.event_name == 'push'
-
-      - name: 🤞 Run Build 🧪 (RELEASE -> Helix-PROD)
-        env:
-            # Unsed variables
-            GIDD_GRAPHQL_CODEGEN_ENDPOINT: ''
-            HELIX_GRAPHQL_CODEGEN_ENDPOINT: ''
-            REACT_APP_GA_TRACKING_ID: ''
-            # Common
-            REACT_APP_GIDD_GRAPHQL_ENDPOINT: https://website-api.idmcdb.org/graphql/
-            REACT_APP_HELIX_CLIENT_ID: IDMCWSHSOLO009
-            REACT_APP_MAPBOX_ACCESS_TOKEN: pk.eyJ1IjoidG9nZ2xlY29ycCIsImEiOiJjazk5ZXMza2YxZmQ1M2dvNWxneTEycnQwIn0.K3u-ns63rFzM7CzrnOBm2w
-            REACT_APP_MAPBOX_STYLE: mapbox://styles/togglecorp/cl50rwy0a002d14mo6w9zprio
-            REACT_APP_HCAPTCHA_SITEKEY: c81616ab-e71b-466a-a03a-650b2472fb34
-            REACT_APP_TINY_MCE_KEY: o65ezg70uejj1ibo2janhtw6n1eiii7fm2w2yanfnvqe6ipa
-            REACT_APP_SENTRY_DSN: https://5e568ceb82d94590879272b6644f86ea@o479248.ingest.sentry.io/6409048
-            # Helix production
-            REACT_APP_HELIX_GRAPHQL_ENDPOINT: https://helix-tools-api.idmcdb.org/graphql
-            REACT_APP_HELIX_REST_ENDPOINT: https://helix-tools-api.idmcdb.org/external-api/
-            # Release config (ONLY DIFFERENT)
-            REACT_APP_DRUPAL_ENDPOINT: https://www.internal-displacement.org
-            REACT_APP_ENVIRONMENT: release
-            REACT_APP_DATA_RELEASE: RELEASE
-        run: env > .env && yarn build && mv build/ build-release/
-        if: github.event_name == 'push'
-
-      - name: Save build files as artifact (PREVIEW -> Helix-STAGING)
-        uses: actions/upload-artifact@v1
+        uses: ./.github/actions/run_build
         with:
-          name: helix-staging-preview-idmc-website-components
-          path: build-preview-helix-staging
-        if: github.event_name == 'push'
+          REACT_APP_ENVIRONMENT: preview
+          BUILD_OUTPUT_DIR: build-preview/
+          UPLOAD_ARTIFACT_NAME: preview-idmc-website-components
+          # Overwrite
+          REACT_APP_DATA_RELEASE: PRE_RELEASE
+          REACT_APP_DRUPAL_ENDPOINT: https://staging.internal-displacement.org
 
-      - name: Save build files as artifact (PREVIEW -> Helix-PROD)
-        uses: actions/upload-artifact@v1
+      - name: 🤞 Run Build 🧪 (RELEASE/PROD)
+        uses: ./.github/actions/run_build
         with:
-          name: preview-idmc-website-components
-          path: build-preview
-        if: github.event_name == 'push'
-
-      - name: Save build files as artifact (RELEASE -> Helix-PROD)
-        uses: actions/upload-artifact@v1
-        with:
-          name: release-idmc-website-components
-          path: build-release
-        if: github.event_name == 'push'
+          REACT_APP_ENVIRONMENT: release
+          BUILD_OUTPUT_DIR: build-release/
+          UPLOAD_ARTIFACT_NAME: release-idmc-website-components
 
   helix_staging_preview_deploy:
-    name: Deploy (PREVIEW -> Helix-STAGING)
-    needs: build_test
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push'
-
-    environment:
-      name: preview
-      url: https://preview-website-components.idmcdb.org
-
-    steps:
-      - uses: actions/download-artifact@v1
-        with:
-          name: helix-staging-preview-idmc-website-components
-          path: build
-
-      # Copy build to S3
-      - name: S3 Sync
-        uses: jakejarvis/s3-sync-action@master
-        with:
-          args: --follow-symlinks --delete
-        env:
-          AWS_S3_BUCKET: ${{ secrets.PREVIEW_AWS_S3_BUCKET }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.PREVIEW_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.PREVIEW_AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION:  ${{ secrets.PREVIEW_AWS_REGION }}
-          SOURCE_DIR: './build'
-
-      # Invalidate Cloudfront (this action)
-      - name: Cloudfront Invalidate
-        uses: chetan/invalidate-cloudfront-action@master
-        env:
-          DISTRIBUTION: ${{ secrets.PREVIEW_AWS_CLOUDFRONT_DISTRIBUTION }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.PREVIEW_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.PREVIEW_AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION:  ${{ secrets.PREVIEW_AWS_REGION }}
-          PATHS: '/*'
+    name: PREVIEW / HELIX-STAGING
+    needs: run_build
+    uses: ./.github/workflows/aws_deploy.yml
+    secrets: inherit
+    with:
+      GH_ENVIRONMENT_NAME: preview
+      GH_ENVIRONMENT_URL: https://preview-website-components.idmcdb.org
+      ARTIFACT_NAME: helix-staging-preview-idmc-website-components
 
   preview_deploy:
-    name: Deploy (PREVIEW -> Helix-PROD)
+    name: PREVIEW
     needs: helix_staging_preview_deploy
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push'
-
-    environment:
-      name: preview
-      url: https://preview-website-components.idmcdb.org
-
-    steps:
-      - uses: actions/download-artifact@v1
-        with:
-          name: preview-idmc-website-components
-          path: build
-
-      # Copy build to S3
-      - name: S3 Sync
-        uses: jakejarvis/s3-sync-action@master
-        with:
-          args: --follow-symlinks --delete
-        env:
-          AWS_S3_BUCKET: ${{ secrets.PREVIEW_AWS_S3_BUCKET }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.PREVIEW_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.PREVIEW_AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION:  ${{ secrets.PREVIEW_AWS_REGION }}
-          SOURCE_DIR: './build'
-
-      # Invalidate Cloudfront (this action)
-      - name: Cloudfront Invalidate
-        uses: chetan/invalidate-cloudfront-action@master
-        env:
-          DISTRIBUTION: ${{ secrets.PREVIEW_AWS_CLOUDFRONT_DISTRIBUTION }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.PREVIEW_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.PREVIEW_AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION:  ${{ secrets.PREVIEW_AWS_REGION }}
-          PATHS: '/*'
+    uses: ./.github/workflows/aws_deploy.yml
+    secrets: inherit
+    with:
+      GH_ENVIRONMENT_NAME: preview
+      GH_ENVIRONMENT_URL: https://preview-website-components.idmcdb.org
+      ARTIFACT_NAME: preview-idmc-website-components
 
   release_deploy:
-    name: Deploy (RELEASE -> Helix-PROD)
+    name: RELEASE
     needs: helix_staging_preview_deploy
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push'
-
-    environment:
-      name: release
-      url: https://release-website-components.idmcdb.org
-
-    steps:
-      - uses: actions/download-artifact@v1
-        with:
-          name: release-idmc-website-components
-          path: build
-
-      # Copy build to S3
-      - name: S3 Sync
-        uses: jakejarvis/s3-sync-action@master
-        with:
-          args: --follow-symlinks --delete
-        env:
-          AWS_S3_BUCKET: ${{ secrets.RELEASE_AWS_S3_BUCKET }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.RELEASE_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.RELEASE_AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION:  ${{ secrets.RELEASE_AWS_REGION }}
-          SOURCE_DIR: './build'
-
-      # Invalidate Cloudfront (this action)
-      - name: Cloudfront Invalidate
-        uses: chetan/invalidate-cloudfront-action@master
-        env:
-          DISTRIBUTION: ${{ secrets.RELEASE_AWS_CLOUDFRONT_DISTRIBUTION }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.RELEASE_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.RELEASE_AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION:  ${{ secrets.RELEASE_AWS_REGION }}
-          PATHS: '/*'
+    uses: ./.github/workflows/aws_deploy.yml
+    secrets: inherit
+    with:
+      GH_ENVIRONMENT_NAME: release
+      GH_ENVIRONMENT_URL: https://release-website-components.idmcdb.org
+      ARTIFACT_NAME: release-idmc-website-components
