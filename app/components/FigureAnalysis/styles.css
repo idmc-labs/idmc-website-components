@@ -20,10 +20,6 @@
         border: var(--tui-width-separator-thin) solid var(--tui-color-separator);
         border-top: 0;
 
-        .separator {
-            border-bottom: var(--tui-width-separator-thin) solid var(--tui-color-separator);
-        }
-
         .details {
             .collapsible-children {
                 padding-bottom: var(--tui-spacing-medium);

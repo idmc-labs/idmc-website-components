@@ -1,15 +1,11 @@
 import React, { useState, useCallback } from 'react';
-import { _cs } from '@togglecorp/fujs';
+import { isDefined, isNotDefined, _cs } from '@togglecorp/fujs';
 import { InputContainer } from '@togglecorp/toggle-ui';
 import { Editor } from '@tinymce/tinymce-react';
 
 import useTranslation from '#hooks/useTranslation';
-import {
-    goodPracticesDashboard,
-} from '#base/configs/lang';
-import {
-    TINY_MCE_KEY,
-} from '#base/configs/tinyMceEditor';
+import { goodPracticesDashboard } from '#base/configs/lang';
+import { TINY_MCE_KEY } from '#base/configs/tinyMceEditor';
 
 import styles from './styles.css';
 
@@ -37,21 +33,18 @@ function TinyMceEditorInput<N extends string>(props: Props<N>) {
     } = props;
 
     const strings = useTranslation(goodPracticesDashboard);
-
-    const sizeLimit = textLimit ?? 10000;
     const [length, setLength] = useState(0);
-    const lengthExceeded = length >= sizeLimit;
 
     const handleChange = useCallback((newText: string | undefined, editor) => {
         const textLength = editor.getContent({ format: 'text' }).length;
-        if (textLength <= sizeLimit) {
+        if (isNotDefined(textLimit) || textLength <= textLimit) {
             onChange(newText, name);
             setLength(textLength);
         }
     }, [
         onChange,
         name,
-        sizeLimit,
+        textLimit,
     ]);
 
     return (
@@ -72,17 +65,18 @@ function TinyMceEditorInput<N extends string>(props: Props<N>) {
                         init={{ menubar: 'edit insert format' }}
                         toolbar="undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | outdent indent | link"
                     />
-                    {value && (
+                    {isDefined(value) && isDefined(textLimit) && (
                         <div className={styles.textLengthSection}>
-                            {lengthExceeded && (
+                            { /* Note: only run when existed form exceed the text limit */ }
+                            {length > textLimit && (
                                 <span className={styles.textLimit}>
                                     {strings.textLimitExceeded}
                                 </span>
                             )}
                             <span>
-                                {sizeLimit - length}
+                                {textLimit - length}
                                 /
-                                {sizeLimit}
+                                {textLimit}
                             </span>
                         </div>
                     )}

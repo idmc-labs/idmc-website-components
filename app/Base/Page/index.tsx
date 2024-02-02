@@ -63,6 +63,7 @@ function useYear(clientCode: string) {
 }
 
 function CountryProfileWithYear(props: Omit<CountryProfileProps, 'endYear'> & { clientCode: string }) {
+    // eslint-disable-next-line react/destructuring-assignment
     const { loading, year } = useYear(props.clientCode);
     if (loading || !year) {
         return null;
@@ -76,6 +77,7 @@ function CountryProfileWithYear(props: Omit<CountryProfileProps, 'endYear'> & { 
 }
 
 function GiddWithYear(props: Omit<GiddProps, 'endYear'>) {
+    // eslint-disable-next-line react/destructuring-assignment
     const { loading, year } = useYear(props.clientCode);
     if (loading || !year) {
         return null;
@@ -89,6 +91,7 @@ function GiddWithYear(props: Omit<GiddProps, 'endYear'>) {
 }
 
 function ConflictWidgetWithYear(props: Omit<ConflictWidgetProps, 'endYear'>) {
+    // eslint-disable-next-line react/destructuring-assignment
     const { loading, year } = useYear(props.clientCode);
     if (loading || !year) {
         return null;
@@ -102,6 +105,7 @@ function ConflictWidgetWithYear(props: Omit<ConflictWidgetProps, 'endYear'>) {
 }
 
 function DisasterWidgetWithYear(props: Omit<DisasterWidgetProps, 'endYear'>) {
+    // eslint-disable-next-line react/destructuring-assignment
     const { loading, year } = useYear(props.clientCode);
     if (loading || !year) {
         return null;
