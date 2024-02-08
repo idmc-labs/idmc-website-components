@@ -14,4 +14,51 @@
         color: var(--tui-color-text-label);
         font-size: var(--tui-font-size-small);
     }
+
+    /* NOTE: conflict is being used dynamically */
+    &.conflict {
+        .label,
+        .value {
+            color: var(--color-conflict);
+        }
+    }
+
+    /* NOTE: disaster is being used dynamically */
+    &.disaster {
+        .label,
+        .value {
+            color: var(--color-disaster);
+        }
+    }
+
+    /* NOTE: medium is being used dynamically */
+    &.medium {
+        .value {
+            font-size: var(--tui-font-size-super-large);
+        }
+    }
+
+    /* NOTE: large is being used dynamically */
+    &.large {
+        .value {
+            font-size: var(--tui-font-size-massive-large);
+        }
+    }
+
+    /* NOTE: small is being used dynamically */
+    &.small {
+        .value {
+            font-size: var(--tui-font-size-large);
+        }
+    }
+
+    /* NOTE: xsmall is being used dynamically */
+    &.xsmall {
+        .value {
+            font-size: var(--tui-font-size-medium);
+        }
+        .label {
+            font-size: var(--tui-font-size-small);
+        }
+    }
 }

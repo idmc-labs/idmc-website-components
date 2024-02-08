@@ -33,6 +33,10 @@ inputs:
   REACT_APP_DRUPAL_ENDPOINT:
     description: ''
     required: false
+    default: https://www.internal-displacement.org
+  REACT_APP_DRUPAL_REST_ENDPOINT:
+    description: ''
+    required: false
     default: https://api.internal-displacement.org
 
 runs:
@@ -59,6 +63,7 @@ runs:
           # -- IDMC Website
           REACT_APP_GIDD_GRAPHQL_ENDPOINT: ${{ inputs.REACT_APP_GIDD_GRAPHQL_ENDPOINT }}
           REACT_APP_DRUPAL_ENDPOINT: ${{ inputs.REACT_APP_DRUPAL_ENDPOINT }}
+          REACT_APP_DRUPAL_REST_ENDPOINT: ${{ inputs.REACT_APP_DRUPAL_REST_ENDPOINT }}
           # -- Misc
           REACT_APP_DATA_RELEASE: ${{ inputs.REACT_APP_DATA_RELEASE }}
           REACT_APP_ENVIRONMENT: ${{ inputs.REACT_APP_ENVIRONMENT }}
