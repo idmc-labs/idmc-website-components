@@ -49,9 +49,8 @@ jobs:
           REACT_APP_ENVIRONMENT: preview
           BUILD_OUTPUT_DIR: build-preview-helix-staging/
           UPLOAD_ARTIFACT_NAME: helix-staging-preview-idmc-website-components
-          # Overwrite
           REACT_APP_DATA_RELEASE: PRE_RELEASE
-          REACT_APP_DRUPAL_ENDPOINT: https://staging.internal-displacement.org
+          # Overwrite
           REACT_APP_HELIX_GRAPHQL_ENDPOINT: https://helix-tools-api-staging.idmcdb.org/graphql
           REACT_APP_HELIX_REST_ENDPOINT: https://helix-tools-api-staging.idmcdb.org/external-api/
 
@@ -61,9 +60,7 @@ jobs:
           REACT_APP_ENVIRONMENT: preview
           BUILD_OUTPUT_DIR: build-preview/
           UPLOAD_ARTIFACT_NAME: preview-idmc-website-components
-          # Overwrite
           REACT_APP_DATA_RELEASE: PRE_RELEASE
-          REACT_APP_DRUPAL_ENDPOINT: https://staging.internal-displacement.org
 
       - name: 🤞 Run Build 🧪 (RELEASE/PROD)
         uses: ./.github/actions/run_build
@@ -71,6 +68,7 @@ jobs:
           REACT_APP_ENVIRONMENT: release
           BUILD_OUTPUT_DIR: build-release/
           UPLOAD_ARTIFACT_NAME: release-idmc-website-components
+          REACT_APP_DATA_RELEASE: RELEASE
 
   helix_staging_preview_deploy:
     name: PREVIEW / HELIX-STAGING

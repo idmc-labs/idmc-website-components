@@ -12,6 +12,9 @@ inputs:
   UPLOAD_ARTIFACT_NAME:
     description: ''
     required: true
+  REACT_APP_DATA_RELEASE:
+    description: ''
+    required: true
   # Optional
   # -- Helix
   REACT_APP_HELIX_GRAPHQL_ENDPOINT:
@@ -30,12 +33,7 @@ inputs:
   REACT_APP_DRUPAL_ENDPOINT:
     description: ''
     required: false
-    default: https://www.internal-displacement.org
-  # -- Misc
-  REACT_APP_DATA_RELEASE:
-    description: ''
-    required: false
-    default: RELEASE
+    default: https://api.internal-displacement.org
 
 runs:
   using: "composite"
