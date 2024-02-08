@@ -13,6 +13,7 @@ import {
     getAutoPrecision,
 } from '#components/Numeral';
 
+export const DRUPAL_REST_ENDPOINT = process.env.REACT_APP_DRUPAL_REST_ENDPOINT as string || '';
 export const DRUPAL_ENDPOINT = process.env.REACT_APP_DRUPAL_ENDPOINT as string || '';
 export const HELIX_REST_ENDPOINT = process.env.REACT_APP_HELIX_REST_ENDPOINT as string;
 export const HELIX_CLIENT_CODE = process.env.REACT_APP_HELIX_CLIENT_ID as string || '';
@@ -159,20 +160,6 @@ export function sumAndRemoveZero(args: (number | undefined)[]) {
 
 export function suffixDrupalEndpoint(path: string) {
     return `${DRUPAL_ENDPOINT}${path}`;
-}
-
-export function replaceWithDrupalEndpoint(image: null): null;
-export function replaceWithDrupalEndpoint(image: undefined): undefined;
-export function replaceWithDrupalEndpoint(image: string): string;
-export function replaceWithDrupalEndpoint(
-    image: string | null | undefined
-): string | null | undefined;
-export function replaceWithDrupalEndpoint(image: string | null | undefined) {
-    if (!image || !DRUPAL_ENDPOINT) {
-        return image;
-    }
-    const path = new URL(image).pathname;
-    return suffixDrupalEndpoint(path);
 }
 
 export function suffixHelixRestEndpoint(path: string, clientCode: string) {

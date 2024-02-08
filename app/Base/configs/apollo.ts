@@ -9,7 +9,7 @@ import {
 } from '@apollo/client';
 import {
     HELIX_REST_ENDPOINT,
-    DRUPAL_ENDPOINT,
+    DRUPAL_REST_ENDPOINT,
     readStorage,
 } from '#utils/common';
 import { ApolloLink } from 'apollo-link';
@@ -58,7 +58,7 @@ const languageAwareGqlLink = concat(
 const restLink = new RestLink({
     endpoints: {
         helix: HELIX_REST_ENDPOINT,
-        drupal: DRUPAL_ENDPOINT,
+        drupal: DRUPAL_REST_ENDPOINT,
     },
     credentials: 'omit',
 });

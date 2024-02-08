@@ -4,6 +4,16 @@
         font-size: var(--tui-font-size-medium)!important;
     }
 
+    /* NOTE: conflict is being used dynamically */
+    &.conflict {
+        color: var(--color-conflict);
+    }
+
+    /* NOTE: disaster is being used dynamically */
+    &.disaster {
+        color: var(--color-disaster);
+    }
+
     &.number-header {
         * {
             justify-content: flex-end;

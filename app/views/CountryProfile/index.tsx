@@ -33,7 +33,6 @@ import TooltipIcon from '#components/TooltipIcon';
 import FigureAnalysis from '#components/FigureAnalysis';
 
 import {
-    replaceWithDrupalEndpoint,
     getMaximum,
 } from '#utils/common';
 
@@ -399,7 +398,7 @@ function CountryProfile(props: Props) {
                     <RelatedMaterialItem
                         key={gp.metatag.value.canonical_url}
                         className={styles.material}
-                        coverImageUrl={replaceWithDrupalEndpoint(gp.metatag.value.og_image_0)}
+                        coverImageUrl={gp.metatag.value.og_image_0}
                         url={gp.metatag.value.canonical_url}
                         heading={gp.metatag.value.title}
                         description={gp.metatag.value.description}
