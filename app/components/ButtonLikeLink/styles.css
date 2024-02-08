@@ -1,0 +1,14 @@
+.button-like-link {
+    /* FIXME: we are overriding the base link style */
+    &[aria-disabled=true] {
+        color: var(--tui-color-text-on-dark);
+    }
+
+    &:not([aria-disabled=true]) {
+        color: var(--tui-color-text-on-dark);
+
+        &:hover {
+            color: var(--tui-color-text-on-dark);
+        }
+    }
+}

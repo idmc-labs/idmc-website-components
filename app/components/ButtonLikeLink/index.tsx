@@ -3,6 +3,8 @@ import { _cs } from '@togglecorp/fujs';
 
 import { useButtonFeatures } from '../Button';
 
+import styles from './styles.css';
+
 interface Props extends React.HTMLProps<HTMLAnchorElement> {
     variant?: 'primary' | 'secondary';
     actions?: React.ReactNode;
@@ -31,7 +33,7 @@ function ButtonLikeLink(props: Props) {
 
     return (
         <a
-            className={_cs(className, buttonClassName)}
+            className={_cs(className, buttonClassName, styles.buttonLikeLink)}
             {...otherProps}
         >
             {childrenFromButtonFeatures}
