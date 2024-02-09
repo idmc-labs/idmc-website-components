@@ -281,6 +281,7 @@ function useIduQuery(
                 <ButtonLikeLink
                     href={giddLink}
                     className={styles.disasterButton}
+                    target="_parent"
                     icons={(
                         <IoExitOutline />
                     )}
