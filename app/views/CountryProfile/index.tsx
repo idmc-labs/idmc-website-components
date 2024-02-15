@@ -47,11 +47,14 @@ import styles from './styles.css';
 const contentTypeLabelMapping: {
     [key: string]: string,
 } = {
-    shorthand: 'Shorthand',
-    media_centre: 'Media Centre',
-    events: 'Events',
-    expert_opinion: 'Expert Opinion',
-    publications: 'Publications',
+    events: 'Event',
+    expert_opinion: 'Expert analysis',
+    iframe: 'Feature',
+    good_practice: 'Good practice',
+    media_centre: 'Expert analysis',
+    publications: 'Publication',
+    shorthand: 'Feature',
+    partner_spotlight: 'Project spotlight',
 };
 
 // Related material section
