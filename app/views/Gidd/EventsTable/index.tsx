@@ -209,7 +209,10 @@ function EventsTable(props: Props) {
                     'Event Codes',
                     // NOTE: We are deprecating glideNumber and replacing with eventCode
                     (item) => item.eventCodes?.join('; ') || item.glideNumbers?.join('; '),
-                    { sortable: true },
+                    {
+                        sortable: true,
+                        cellRendererClassName: styles.code,
+                    },
                 ),
                 createDateColumn<EventData, string>(
                     'startDate',
