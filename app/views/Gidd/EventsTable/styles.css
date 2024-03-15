@@ -58,5 +58,11 @@
         .date {
             width: 120px;
         }
+
+        .code {
+            width: 330px;
+            white-space: unset;
+            word-wrap: break-word;
+        }
     }
 }

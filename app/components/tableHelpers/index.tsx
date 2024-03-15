@@ -77,6 +77,7 @@ export function createTextColumn<D, K>(
         hideable?: boolean;
         columnClassName?: string;
         columnWidth?: number;
+        cellRendererClassName?: string;
     },
 ) {
     const item: TableColumn<D, K, TextProps, TableHeaderCellProps> & {
@@ -101,6 +102,7 @@ export function createTextColumn<D, K>(
         }),
         valueSelector: accessor,
         valueComparator: (foo: D, bar: D) => compareString(accessor(foo), accessor(bar)),
+        cellRendererClassName: options?.cellRendererClassName,
     };
     return item;
 }
