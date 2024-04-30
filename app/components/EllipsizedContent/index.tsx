@@ -1,12 +1,11 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { _cs } from '@togglecorp/fujs';
 import {
     IoArrowDown,
     IoArrowUp,
 } from 'react-icons/io5';
 import ellipsize from 'html-ellipsis';
-
-import Button from '#components/Button';
+import { Button } from '@togglecorp/toggle-ui';
 
 import styles from './styles.css';
 
@@ -72,6 +71,8 @@ function EllipsizedContent(props: Props) {
         }
     }, [children, maxCharacters, isEllipsized]);
 
+    const handleShowEllipsized = useCallback(() => setIsEllipsized(!isEllipsized), [isEllipsized]);
+
     return (
         <div
             className={_cs(
@@ -97,11 +98,10 @@ function EllipsizedContent(props: Props) {
             {!expandDisabled && shouldEllipsize && (
                 <Button
                     className={styles.ellipsizeToggleButton}
-                    name={!isEllipsized}
-                    onClick={setIsEllipsized}
+                    name="ellipsis"
+                    onClick={handleShowEllipsized}
                     actions={isEllipsized ? <IoArrowDown /> : <IoArrowUp />}
-                    variant="action"
-                    darkMode={darkMode}
+                    transparent
                 >
                     {isEllipsized ? 'Read More' : 'See Less'}
                 </Button>

@@ -8,8 +8,8 @@ import {
     RawInput,
     RawInputProps,
     Button,
+    useButtonFeatures,
 } from '@togglecorp/toggle-ui';
-import { useButtonFeatures } from '../Button';
 import useDropHandler from '../../hooks/useDropHandler';
 import { genericMemo } from '../../utils';
 
@@ -204,7 +204,6 @@ function FileInput<T extends NameType>(props: Props<T>) {
     const {
         children: buttonLabelChildren,
     } = useButtonFeatures({
-        variant: 'secondary',
         children: (
             <>
                 {children}

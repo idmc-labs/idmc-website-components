@@ -2,8 +2,7 @@ import React from 'react';
 import { _cs } from '@togglecorp/fujs';
 import { IoRefreshOutline } from 'react-icons/io5';
 
-import { PendingMessage } from '@togglecorp/toggle-ui';
-import Button from '#components/Button';
+import { Button, PendingMessage } from '@togglecorp/toggle-ui';
 import { commonLabels } from '#base/configs/lang';
 import useTranslation from '#hooks/useTranslation';
 
@@ -124,6 +123,7 @@ function Message(props: Props) {
                     {onReload && compact && (
                         <Button
                             name={undefined}
+                            variant="primary"
                             onClick={onReload}
                         >
                             <IoRefreshOutline />
@@ -132,6 +132,7 @@ function Message(props: Props) {
                     {onReload && !compact && (
                         <Button
                             name={undefined}
+                            variant="primary"
                             onClick={onReload}
                             icons={(
                                 <IoRefreshOutline />

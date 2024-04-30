@@ -4,8 +4,8 @@ import {
     useQuery,
 } from '@apollo/client';
 import {
-    IoDownloadOutline,
     IoExitOutline,
+    IoInformationCircleOutline,
 } from 'react-icons/io5';
 import {
     MultiSelectInput, PopupButton,
@@ -52,6 +52,7 @@ import { countryMetadata } from '../CountryProfile/data';
 import useDebouncedValue from '../../hooks/useDebouncedValue';
 import styles from './styles.css';
 
+const DISASTER = 'disaster';
 const chartMargins = { top: 16, left: 5, right: 5, bottom: 5 };
 
 const disasterTypeKeySelector = (d: { id: string, label: string }) => d.id;
@@ -218,7 +219,7 @@ function DisasterWidget(props: Props) {
                     </ButtonLikeLink>
                     <PopupButton
                         className={styles.exportButton}
-                        label="Download"
+                        label="Download data"
                         name="download"
                         variant="primary"
                         persistent={false}
@@ -229,40 +230,67 @@ function DisasterWidget(props: Props) {
                             rel="noopener noreferrer"
                             transparent
                             compact
-                            icons={(
-                                <IoDownloadOutline />
+                            actions={(
+                                <IoInformationCircleOutline
+                                    title="Annual updates of internal displacement data related to disasters"
+                                />
                             )}
-                            href={suffixHelixRestEndpoint(prepareUrl(
-                                'gidd/displacements/displacement-export/',
-                                {
-                                    iso3__in: iso3,
-                                    start_year: disasterTimeRange[0],
-                                    end_year: disasterTimeRange[1],
-                                    hazard_type__in: disasterTypes,
-                                },
-                            ), clientCode)}
-                        >
-                            Full dataset
-                        </ButtonLikeLink>
-                        <ButtonLikeLink
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            transparent
-                            compact
                             href={suffixHelixRestEndpoint(prepareUrl(
                                 'gidd/disasters/disaster-export/',
                                 {
                                     iso3__in: iso3,
                                     start_year: disasterTimeRange[0],
                                     end_year: disasterTimeRange[1],
+                                    release_environment: DATA_RELEASE,
                                     hazard_type__in: disasterTypes,
                                 },
                             ), clientCode)}
-                            icons={(
-                                <IoDownloadOutline />
-                            )}
                         >
-                            Download Disaster Data
+                            Disaster events aggregated data (.xlsx)
+                        </ButtonLikeLink>
+                        <ButtonLikeLink
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            transparent
+                            compact
+                            actions={(
+                                <IoInformationCircleOutline
+                                    title={`${year} Disaster disaggregated caseloads`}
+                                />
+                            )}
+                            href={suffixHelixRestEndpoint(prepareUrl(
+                                'gidd/disaggregations/disaggregated-export/',
+                                {
+                                    iso3__in: iso3,
+                                    release_environment: DATA_RELEASE,
+                                    hazard_type__in: disasterTypes,
+                                    cause: DISASTER,
+                                },
+                            ), clientCode)}
+                        >
+                            {`Disaster events disaggregated data ${year} (.xlsx)`}
+                        </ButtonLikeLink>
+                        <ButtonLikeLink
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            transparent
+                            compact
+                            actions={(
+                                <IoInformationCircleOutline
+                                    title={`${year} Disaster disaggregated caseloads formatted for GIS applications`}
+                                />
+                            )}
+                            href={suffixHelixRestEndpoint(prepareUrl(
+                                'gidd/disaggregations/disaggregated-geojson/',
+                                {
+                                    iso3__in: iso3,
+                                    release_environment: DATA_RELEASE,
+                                    hazard_type__in: disasterTypes,
+                                    cause: DISASTER,
+                                },
+                            ), clientCode)}
+                        >
+                            {`Disaster events disaggregated data ${year} (.geojson)`}
                         </ButtonLikeLink>
                     </PopupButton>
                 </>

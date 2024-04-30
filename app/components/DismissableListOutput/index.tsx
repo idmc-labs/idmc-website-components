@@ -1,8 +1,7 @@
 import React from 'react';
 import { IoClose } from 'react-icons/io5';
 import { listToMap } from '@togglecorp/fujs';
-
-import Button from '#components/Button';
+import { Button, Chip } from '@togglecorp/toggle-ui';
 
 import styles from './styles.css';
 
@@ -35,9 +34,9 @@ function DisableListOutput<
         listToMap(options, keySelector, labelSelector)
     ), [options, keySelector, labelSelector]);
 
-    const handleRemoveButtonClick = React.useCallback((v: V) => {
+    const handleRemoveButtonClick = React.useCallback((val) => {
         if (value) {
-            const index = value.findIndex((i) => i === v);
+            const index = value.findIndex((i) => i === val);
 
             if (index !== -1) {
                 const newValue = [...value];
@@ -59,21 +58,27 @@ function DisableListOutput<
             )}
             <div className={styles.valueList}>
                 {value?.map((v) => (
-                    <div
-                        className={styles.tag}
+                    <Chip
                         key={v}
+                        actionClassName={styles.chipAction}
+                        childrenClassName={styles.chipContent}
+                        action={(
+                            <Button
+                                className={styles.chipRemoveButton}
+                                title="Remove"
+                                name={v ?? undefined}
+                                onClick={handleRemoveButtonClick}
+                                transparent
+                                icons={(
+                                    <IoClose />
+                                )}
+                                iconsClassName={styles.chipActionIcons}
+
+                            />
+                        )}
                     >
-                        <div>
-                            {optionsMap?.[v as string]}
-                        </div>
-                        <Button
-                            name={v}
-                            variant="action"
-                            onClick={handleRemoveButtonClick}
-                        >
-                            <IoClose />
-                        </Button>
-                    </div>
+                        {optionsMap?.[v as string]}
+                    </Chip>
                 ))}
             </div>
         </div>

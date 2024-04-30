@@ -26,6 +26,7 @@ import {
     Modal,
     RadioInput,
     Pager,
+    Button,
 } from '@togglecorp/toggle-ui';
 import Map, {
     MapContainer,
@@ -58,7 +59,6 @@ import Tabs from '#components/Tabs';
 import Tab from '#components/Tabs/Tab';
 import TabList from '#components/Tabs/TabList';
 import TabPanel from '#components/Tabs/TabPanel';
-import Button from '#components/Button';
 import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
 import ListView from '#components/ListView';
@@ -844,7 +844,6 @@ function GoodPractices(props: Props) {
                         <Button
                             onClick={handleJumpToGoodPractices}
                             name={undefined}
-                            variant="secondary"
                         >
                             {strings.findGoodPracticesButtonLabel}
                         </Button>
@@ -1070,8 +1069,8 @@ function GoodPractices(props: Props) {
                                 <div className={styles.clearAllContainer}>
                                     <Button
                                         name={undefined}
+                                        transparent
                                         onClick={handleClearFilterClick}
-                                        variant="action"
                                         actions={<IoClose />}
                                         className={styles.clearFilterButton}
                                     >

@@ -94,10 +94,11 @@
                 }
 
                 .switch {
-                    color: #fff;
+                    color: var(--tui-color-foreground);
 
                     .switch-label {
                         padding: 0;
+                        color: var(--tui-color-foreground);
                         font-size: var(--tui-font-size-small);
                     }
                 }
@@ -129,17 +130,6 @@
                     color: #000;
                     font-size: var(--tui-font-size-extra-small);
 
-                }
-
-                .download-button {
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: var(--tui-spacing-small);
-
-                    >* {
-                        flex: 1;
-                        min-width: fit-content;
-                    }
                 }
             }
         }

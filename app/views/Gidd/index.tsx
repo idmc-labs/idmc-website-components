@@ -13,6 +13,8 @@ import {
     SelectInput,
     MultiSelectInput,
     List,
+    Button,
+    PopupButton,
 } from '@togglecorp/toggle-ui';
 import { removeNull } from '@togglecorp/toggle-form';
 import {
@@ -40,13 +42,12 @@ import {
     BarChart,
     Bar,
 } from 'recharts';
-import { IoDownloadOutline } from 'react-icons/io5';
+import { IoInformationCircleOutline } from 'react-icons/io5';
 
 import ButtonLikeLink from '#components/ButtonLikeLink';
 import ErrorBoundary from '#components/ErrorBoundary';
 import SliderInput from '#components/SliderInput';
 import Header from '#components/Header';
-import Button from '#components/Button';
 import ProgressLine from '#components/ProgressLine';
 import NumberBlock from '#components/NumberBlock';
 import Tabs from '#components/Tabs';
@@ -102,8 +103,9 @@ function getCountryStockCountSubLabel(count = 0, year: number) {
     return `In ${count} countries and territories as of ${year}`;
 }
 
-const mainText = 'IDMC Data Portal enables you to explore, filter and sort our data to produce your own graphs and tables. You can also access and export the data used to generate these visualisations.';
-const downloadText = 'You can export your data, either the full dataset or the result of your query in an Excel format which includes the metadata and copyrights.';
+const mainText = 'Explore the Global Internal Displacement Database (GIDD), a global repository of internal displacement data since 2008.';
+const downloadText = 'Downloadable data files include metadata, copyright details, and methodological notes. Request access to APIs ';
+const apiAccessLink = 'https://forms.office.com/pages/responsepage.aspx?id=tNGGP2ssGkuyrm9elQvKHiYUF2VI1JhElGk_g_sjLJ5URFlRMFRBWjYxQUtWVExSOUtaTjE1VlZMWS4u&origin=lprLink';
 const flowDetails = 'The internal displacements figure refers to the number of forced movements of people within the borders of their country recorded during the year. Figures may include individuals who have been displaced more than once.';
 const stockDetails = 'The total number of Internally Displaced People (IDPs) is a snapshot of all the people living in internal displacements at the end of the year.';
 
@@ -940,61 +942,223 @@ function Gidd(props: Props) {
                         <div className={styles.leftSection}>
                             <p className={styles.headingDescription}>{mainText}</p>
                             <div className={styles.downloadSection}>
-                                <p className={styles.downloadDescription}>{downloadText}</p>
-                                <div className={styles.downloadButton}>
-                                    {displacementCause === 'disaster' ? (
-                                        <ButtonLikeLink
-                                            variant="primary"
-                                            compact
-                                            icons={<IoDownloadOutline />}
-                                            href={suffixHelixRestEndpoint(prepareUrl(
-                                                'gidd/disasters/disaster-export/',
-                                                {
-                                                    iso3__in: countries,
-                                                    start_year: timeRange[0],
-                                                    end_year: timeRange[1],
-                                                    hazard_type__in: hazardTypes,
-                                                },
-                                            ), clientCode)}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
-                                            Download Dataset
-                                        </ButtonLikeLink>
-                                    ) : (
-                                        <ButtonLikeLink
-                                            variant="primary"
-                                            compact
-                                            icons={<IoDownloadOutline />}
-                                            href={suffixHelixRestEndpoint(prepareUrl(
-                                                'gidd/displacements/displacement-export/',
-                                                {
-                                                    cause: displacementCause,
-                                                    iso3__in: countries,
-                                                    start_year: timeRange[0],
-                                                    end_year: timeRange[1],
-                                                },
-                                            ), clientCode)}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
-                                            Full Dataset
-                                        </ButtonLikeLink>
-                                    )}
-                                    <ButtonLikeLink
-                                        variant="primary"
-                                        compact
-                                        icons={<IoDownloadOutline />}
-                                        href={suffixHelixRestEndpoint(
-                                            'gidd/displacements/disaggregated-export/',
-                                            clientCode,
-                                        )}
+                                <p className={styles.downloadDescription}>
+                                    {downloadText}
+                                    <a
+                                        href={apiAccessLink}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                     >
-                                        Download Disaggregated Data
-                                    </ButtonLikeLink>
-                                </div>
+                                        here
+                                    </a>
+                                </p>
+                                <PopupButton
+                                    label="Download dataset"
+                                    name="download"
+                                    variant="primary"
+                                    persistent={false}
+                                    compact
+                                >
+                                    {displacementCause !== 'disaster' && displacementCause !== 'conflict' && (
+                                        <>
+                                            <ButtonLikeLink
+                                                transparent
+                                                compact
+                                                actions={(
+                                                    <IoInformationCircleOutline
+                                                        title="Annual updates of internal displacement data by country"
+                                                    />
+                                                )}
+                                                href={suffixHelixRestEndpoint(
+                                                    'gidd/displacements/displacement-export/',
+                                                    clientCode,
+                                                )}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                Annual displacement data (.xlsx)
+                                            </ButtonLikeLink>
+                                            <ButtonLikeLink
+                                                transparent
+                                                compact
+                                                actions={(
+                                                    <IoInformationCircleOutline
+                                                        title={`${endYear} Disaggregated caseloads`}
+                                                    />
+                                                )}
+                                                href={suffixHelixRestEndpoint(
+                                                    'gidd/disaggregations/disaggregated-export/',
+                                                    clientCode,
+                                                )}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                {`Disaggregated data ${endYear} (.xlsx)`}
+                                            </ButtonLikeLink>
+                                            <ButtonLikeLink
+                                                transparent
+                                                compact
+                                                actions={(
+                                                    <IoInformationCircleOutline
+                                                        title={`${endYear} Disaggregated caseloads formatted for GIS applications`}
+                                                    />
+                                                )}
+                                                href={suffixHelixRestEndpoint(
+                                                    'gidd/disaggregations/disaggregated-geojson/',
+                                                    clientCode,
+                                                )}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                {`Disaggregated data ${endYear} (.geojson)`}
+                                            </ButtonLikeLink>
+                                        </>
+                                    )}
+                                    {displacementCause === 'conflict' && (
+                                        <>
+                                            <ButtonLikeLink
+                                                transparent
+                                                compact
+                                                actions={(
+                                                    <IoInformationCircleOutline
+                                                        title="Annual updates of internal displacement data related to conflict"
+                                                    />
+                                                )}
+                                                href={suffixHelixRestEndpoint(prepareUrl(
+                                                    'gidd/displacements/displacement-export/',
+                                                    {
+                                                        iso3__in: countries,
+                                                        start_year: timeRange[0],
+                                                        end_year: timeRange[1],
+                                                        release_environment: DATA_RELEASE,
+                                                        cause: displacementCause,
+                                                    },
+                                                ), clientCode)}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                Conflict annual aggregated data (.xlsx)
+                                            </ButtonLikeLink>
+                                            <ButtonLikeLink
+                                                transparent
+                                                compact
+                                                actions={(
+                                                    <IoInformationCircleOutline
+                                                        title={`${endYear} Conflict disaggregated caseloads`}
+                                                    />
+                                                )}
+                                                href={suffixHelixRestEndpoint(prepareUrl(
+                                                    'gidd/disaggregations/disaggregated-export/',
+                                                    {
+                                                        iso3__in: countries,
+                                                        release_environment: DATA_RELEASE,
+                                                        hazard_type__in: hazardTypes,
+                                                        cause: displacementCause,
+                                                    },
+                                                ), clientCode)}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                {`Conflict disaggregated data ${endYear} (.xlsx)`}
+                                            </ButtonLikeLink>
+                                            <ButtonLikeLink
+                                                transparent
+                                                compact
+                                                actions={(
+                                                    <IoInformationCircleOutline
+                                                        title={`${endYear} Conflict disaggregated caseloads formatted for GIS applications`}
+                                                    />
+                                                )}
+                                                href={suffixHelixRestEndpoint(prepareUrl(
+                                                    'gidd/disaggregations/disaggregated-geojson/',
+                                                    {
+                                                        iso3__in: countries,
+                                                        release_environment: DATA_RELEASE,
+                                                        hazard_type__in: hazardTypes,
+                                                        cause: displacementCause,
+                                                    },
+                                                ), clientCode)}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                {`Conflict disaggregated data ${endYear} (.geojson)`}
+
+                                            </ButtonLikeLink>
+                                        </>
+                                    )}
+
+                                    {displacementCause === 'disaster' && (
+                                        <>
+                                            <ButtonLikeLink
+                                                transparent
+                                                compact
+                                                actions={(
+                                                    <IoInformationCircleOutline
+                                                        title="Annual updates of internal displacement data related to disasters"
+                                                    />
+                                                )}
+                                                href={suffixHelixRestEndpoint(prepareUrl(
+                                                    'gidd/disasters/disaster-export/',
+                                                    {
+                                                        iso3__in: countries,
+                                                        start_year: timeRange[0],
+                                                        end_year: timeRange[1],
+                                                        release_environment: DATA_RELEASE,
+                                                        hazard_type__in: hazardTypes,
+                                                    },
+                                                ), clientCode)}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                Disaster events aggregated data (.xlsx)
+                                            </ButtonLikeLink>
+                                            <ButtonLikeLink
+                                                transparent
+                                                compact
+                                                actions={(
+                                                    <IoInformationCircleOutline
+                                                        title={`${endYear} Disaster disaggregated caseloads`}
+                                                    />
+                                                )}
+                                                href={suffixHelixRestEndpoint(prepareUrl(
+                                                    'gidd/disaggregations/disaggregated-export/',
+                                                    {
+                                                        cause: displacementCause,
+                                                        iso3__in: countries,
+                                                        release_environment: DATA_RELEASE,
+                                                        hazard_type__in: hazardTypes,
+                                                    },
+                                                ), clientCode)}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                {`Disaster events disaggregated data ${endYear} (.xlsx)`}
+                                            </ButtonLikeLink>
+                                            <ButtonLikeLink
+                                                transparent
+                                                compact
+                                                actions={(
+                                                    <IoInformationCircleOutline
+                                                        title={`${endYear} Disaster disaggregated caseloads formatted for GIS applications`}
+                                                    />
+                                                )}
+                                                href={suffixHelixRestEndpoint(prepareUrl(
+                                                    'gidd/disaggregations/disaggregated-geojson/',
+                                                    {
+                                                        cause: displacementCause,
+                                                        iso3__in: countries,
+                                                        release_environment: DATA_RELEASE,
+                                                        hazard_type__in: hazardTypes,
+                                                    },
+                                                ), clientCode)}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                {`Disaster events disaggregated data ${endYear} (.geojson)`}
+                                            </ButtonLikeLink>
+                                        </>
+                                    )}
+                                </PopupButton>
                             </div>
                         </div>
                         <div className={styles.right}>

@@ -11,11 +11,11 @@ import {
     useQuery,
     useMutation,
 } from '@apollo/client';
+import { Button } from '@togglecorp/toggle-ui';
 
 import { IoChevronForward } from 'react-icons/io5';
 
 import Header from '#components/Header';
-import Button from '#components/Button';
 import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
 import TextOutput from '#components/TextOutput';

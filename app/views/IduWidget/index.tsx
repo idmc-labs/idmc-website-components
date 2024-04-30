@@ -10,8 +10,8 @@ import {
     IoArrowDown,
     IoArrowUp,
 } from 'react-icons/io5';
+import { Button } from '@togglecorp/toggle-ui';
 
-import Button from '#components/Button';
 import useIduMap from '#components/IduMap/useIduMap';
 import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';

@@ -4,8 +4,8 @@ import {
     useQuery,
 } from '@apollo/client';
 import {
-    IoDownloadOutline,
     IoExitOutline,
+    IoInformationCircleOutline,
 } from 'react-icons/io5';
 import {
     ResponsiveContainer,
@@ -48,6 +48,7 @@ import { countryMetadata } from '../CountryProfile/data';
 import useDebouncedValue from '../../hooks/useDebouncedValue';
 import styles from './styles.css';
 
+const CONFLICT = 'conflict';
 const chartMargins = { top: 16, left: 5, right: 5, bottom: 5 };
 
 const giddDisplacementDataLink = suffixDrupalEndpoint('/database/displacement-data');
@@ -206,7 +207,7 @@ function ConflictWidget(props: Props) {
                     </ButtonLikeLink>
                     <PopupButton
                         className={styles.exportButton}
-                        label="Download"
+                        label="Download dataset"
                         name="download"
                         variant="primary"
                         persistent={false}
@@ -216,8 +217,10 @@ function ConflictWidget(props: Props) {
                             target="_blank"
                             transparent
                             rel="noopener noreferrer"
-                            icons={(
-                                <IoDownloadOutline />
+                            actions={(
+                                <IoInformationCircleOutline
+                                    title="Annual updates of internal displacement data related to conflict"
+                                />
                             )}
                             href={suffixHelixRestEndpoint(prepareUrl(
                                 'gidd/displacements/displacement-export/',
@@ -225,28 +228,52 @@ function ConflictWidget(props: Props) {
                                     iso3__in: iso3,
                                     start_year: conflictTimeRange[0],
                                     end_year: conflictTimeRange[1],
+                                    release_environment: DATA_RELEASE,
+                                    cause: CONFLICT,
                                 },
                             ), clientCode)}
                         >
-                            Full dataset
+                            Conflict annual aggregated data (.xlsx)
                         </ButtonLikeLink>
                         <ButtonLikeLink
                             target="_blank"
                             rel="noopener noreferrer"
                             transparent
-                            icons={(
-                                <IoDownloadOutline />
+                            actions={(
+                                <IoInformationCircleOutline
+                                    title={`${year} Conflict disaggregated caseloads`}
+                                />
                             )}
                             href={suffixHelixRestEndpoint(prepareUrl(
-                                'gidd/displacements/displacement-export/',
+                                'gidd/disaggregations/disaggregated-export/',
                                 {
                                     iso3__in: iso3,
-                                    start_year: conflictTimeRange[0],
-                                    end_year: conflictTimeRange[1],
+                                    release_environment: DATA_RELEASE,
+                                    cause: CONFLICT,
                                 },
                             ), clientCode)}
                         >
-                            Dissaggregated data
+                            {`Conflict disaggregated data ${year} (.xlsx)`}
+                        </ButtonLikeLink>
+                        <ButtonLikeLink
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            transparent
+                            actions={(
+                                <IoInformationCircleOutline
+                                    title={`${year} Conflict disaggregated caseloads formatted for GIS applications`}
+                                />
+                            )}
+                            href={suffixHelixRestEndpoint(prepareUrl(
+                                'gidd/disaggregations/disaggregated-geojson/',
+                                {
+                                    iso3__in: iso3,
+                                    release_environment: DATA_RELEASE,
+                                    cause: CONFLICT,
+                                },
+                            ), clientCode)}
+                        >
+                            {`Conflict disaggregated data ${year} (.geojson)`}
                         </ButtonLikeLink>
                     </PopupButton>
                 </>

@@ -1,8 +1,7 @@
 import React from 'react';
 import { IoExpand } from 'react-icons/io5';
-import { Modal } from '@togglecorp/toggle-ui';
+import { Button, Modal } from '@togglecorp/toggle-ui';
 import { _cs } from '@togglecorp/fujs';
-import Button from '#components/Button';
 
 import useBooleanState from '#hooks/useBooleanState';
 
@@ -58,9 +57,8 @@ function CarouselItem(props: Props) {
                 <Button
                     name={undefined}
                     className={styles.expandButton}
-                    variant="action"
-                    darkMode
                     onClick={setIsExpandedTrue}
+                    transparent
                 >
                     <IoExpand />
                 </Button>
