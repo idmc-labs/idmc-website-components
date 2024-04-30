@@ -149,7 +149,7 @@ function IduWidget(props: IduWidgetProps) {
                                     name={undefined}
                                     onClick={handleIduActivePage}
                                     actions={<IoArrowDown />}
-                                    variant="transparent"
+                                    transparent
                                 >
                                     Show Older Displacements
                                 </Button>
@@ -159,7 +159,7 @@ function IduWidget(props: IduWidgetProps) {
                                     name={undefined}
                                     onClick={showlessIduPage}
                                     actions={<IoArrowUp />}
-                                    variant="transparent"
+                                    transparent
                                 >
                                     Show Less
                                 </Button>

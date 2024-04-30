@@ -1086,7 +1086,7 @@ function GoodPractices(props: Props) {
                     {isSmallDisplay && (
                         <div className={styles.mobileActions}>
                             <Button
-                                variant="transparent"
+                                transparent
                                 onClick={showFilterModal}
                                 name={undefined}
                                 actions={<IoFilter />}
@@ -1140,7 +1140,7 @@ function GoodPractices(props: Props) {
                                     <DropdownMenu
                                         className={styles.orderDropdown}
                                         label={`${strings.sortLabel}: ${orderingOptions[orderingOptionValue]}`}
-                                        variant="transparent"
+                                        transparent
                                     >
                                         {orderingOptionKeys.map((ok) => (
                                             <DropdownMenuItem

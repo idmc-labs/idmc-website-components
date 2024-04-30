@@ -19,6 +19,7 @@ import {
     LineChart,
     Line,
 } from 'recharts';
+import { PopupButton } from '@togglecorp/toggle-ui';
 
 import ButtonLikeLink from '#components/ButtonLikeLink';
 import Header from '#components/Header';
@@ -195,32 +196,59 @@ function ConflictWidget(props: Props) {
             footerActions={(
                 <>
                     <ButtonLikeLink
-                        href={suffixHelixRestEndpoint(prepareUrl(
-                            'gidd/displacements/displacement-export/',
-                            {
-                                iso3__in: iso3,
-                                start_year: conflictTimeRange[0],
-                                end_year: conflictTimeRange[1],
-                            },
-                        ), clientCode)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={styles.conflictButton}
-                        icons={(
-                            <IoDownloadOutline />
-                        )}
-                    >
-                        Download Conflict Data
-                    </ButtonLikeLink>
-                    <ButtonLikeLink
+                        transparent
                         href={giddDisplacementDataLink}
-                        className={styles.conflictButton}
                         icons={(
                             <IoExitOutline />
                         )}
                     >
                         Go to IDMC&apos;s database
                     </ButtonLikeLink>
+                    <PopupButton
+                        className={styles.exportButton}
+                        label="Download"
+                        name="download"
+                        variant="primary"
+                        persistent={false}
+                        compact
+                    >
+                        <ButtonLikeLink
+                            target="_blank"
+                            transparent
+                            rel="noopener noreferrer"
+                            icons={(
+                                <IoDownloadOutline />
+                            )}
+                            href={suffixHelixRestEndpoint(prepareUrl(
+                                'gidd/displacements/displacement-export/',
+                                {
+                                    iso3__in: iso3,
+                                    start_year: conflictTimeRange[0],
+                                    end_year: conflictTimeRange[1],
+                                },
+                            ), clientCode)}
+                        >
+                            Full dataset
+                        </ButtonLikeLink>
+                        <ButtonLikeLink
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            transparent
+                            icons={(
+                                <IoDownloadOutline />
+                            )}
+                            href={suffixHelixRestEndpoint(prepareUrl(
+                                'gidd/displacements/displacement-export/',
+                                {
+                                    iso3__in: iso3,
+                                    start_year: conflictTimeRange[0],
+                                    end_year: conflictTimeRange[1],
+                                },
+                            ), clientCode)}
+                        >
+                            Dissaggregated data
+                        </ButtonLikeLink>
+                    </PopupButton>
                 </>
             )}
         >

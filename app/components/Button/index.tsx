@@ -1,25 +1,34 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { useButtonFeatures } from '@togglecorp/toggle-ui';
 import { _cs } from '@togglecorp/fujs';
 
 import RawButton, { Props as RawButtonProps } from '#components/RawButton';
 
 import styles from './styles.css';
 
-type ButtonVariantType = 'primary' | 'secondary' | 'action' | 'transparent';
+type ButtonVariantType = 'primary' | 'secondary' | 'action';
 
-export function useButtonFeatures(props: {
-    variant: ButtonVariantType,
+export interface Props<N> extends RawButtonProps<N> {
+    className?: string;
+    onClick?: (name: N, e: React.MouseEvent<HTMLButtonElement>) => void;
     icons?: React.ReactNode;
     actions?: React.ReactNode;
-    children?: React.ReactNode;
+    variant?: ButtonVariantType;
+    disabled?: boolean;
     darkMode?: boolean;
-}) {
+    children?: React.ReactNode;
+    transparent?: boolean;
+}
+
+function Button<N>(props: Props<N>) {
     const {
-        variant,
         icons,
         actions,
         children,
+        variant = 'primary',
         darkMode,
+        transparent,
+        ...otherProps
     } = props;
 
     const buttonClassName = _cs(
@@ -27,11 +36,15 @@ export function useButtonFeatures(props: {
         variant === 'primary' && styles.primary,
         variant === 'secondary' && styles.secondary,
         variant === 'action' && styles.action,
-        variant === 'transparent' && styles.transparent,
         darkMode && styles.darkMode,
+        transparent && styles.transparent,
     );
 
-    const childrenForOutput = (
+    const {
+        className,
+    } = useButtonFeatures(otherProps);
+
+    const childrenForOutput = useMemo(() => (
         <>
             {icons && (
                 <div className={styles.icons}>
@@ -47,53 +60,18 @@ export function useButtonFeatures(props: {
                 </div>
             )}
         </>
-    );
-
-    return {
-        buttonClassName,
-        children: childrenForOutput,
-    };
-}
-
-export interface Props<N> extends RawButtonProps<N> {
-    onClick?: (name: N, e: React.MouseEvent<HTMLButtonElement>) => void;
-    icons?: React.ReactNode;
-    actions?: React.ReactNode;
-    variant?: ButtonVariantType;
-    disabled?: boolean;
-    darkMode?: boolean;
-    children?: React.ReactNode;
-    className?: string;
-}
-
-function Button<N>(props: Props<N>) {
-    const {
-        className,
+    ), [
         icons,
-        actions,
         children,
-        variant = 'primary',
-        darkMode,
-        ...otherProps
-    } = props;
-
-    const {
-        buttonClassName,
-        children: childrenFromButtonFeatures,
-    } = useButtonFeatures({
-        variant,
-        icons,
         actions,
-        children,
-        darkMode,
-    });
+    ]);
 
     return (
         <RawButton
             className={_cs(className, buttonClassName)}
             {...otherProps}
         >
-            {childrenFromButtonFeatures}
+            {childrenForOutput}
         </RawButton>
     );
 }

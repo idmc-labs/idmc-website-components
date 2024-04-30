@@ -96,10 +96,10 @@ function DropdownMenu(props: Props) {
             <Button
                 {...buttonProps}
                 name={undefined}
-                variant="transparent"
                 elementRef={buttonRef}
                 className={className}
                 onClick={handleButtonClick}
+                transparent
                 actions={(
                     <>
                         {actions}

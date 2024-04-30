@@ -55,6 +55,7 @@
                 align-self: flex-start;
                 flex-basis: calc(100% / 3 * 2 - 2 * var(--tui-spacing-large) / 3);
                 flex-direction: column;
+                flex-grow: 1;
                 gap: var(--tui-spacing-medium);
 
                 .top {
@@ -127,6 +128,18 @@
                 .download-description {
                     color: #000;
                     font-size: var(--tui-font-size-extra-small);
+
+                }
+
+                .download-button {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: var(--tui-spacing-small);
+
+                    >* {
+                        flex: 1;
+                        min-width: fit-content;
+                    }
                 }
             }
         }

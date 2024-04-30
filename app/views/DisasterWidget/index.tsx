@@ -8,7 +8,7 @@ import {
     IoExitOutline,
 } from 'react-icons/io5';
 import {
-    MultiSelectInput,
+    MultiSelectInput, PopupButton,
 } from '@togglecorp/toggle-ui';
 import {
     ResponsiveContainer,
@@ -208,33 +208,63 @@ function DisasterWidget(props: Props) {
             footerActions={(
                 <>
                     <ButtonLikeLink
-                        href={suffixHelixRestEndpoint(prepareUrl(
-                            'gidd/disasters/disaster-export/',
-                            {
-                                iso3__in: iso3,
-                                start_year: disasterTimeRange[0],
-                                end_year: disasterTimeRange[1],
-                                hazard_type__in: disasterTypes,
-                            },
-                        ), clientCode)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={styles.disasterButton}
-                        icons={(
-                            <IoDownloadOutline />
-                        )}
-                    >
-                        Download Disaster Data
-                    </ButtonLikeLink>
-                    <ButtonLikeLink
+                        transparent
                         href={giddDisplacementDataLink}
-                        className={styles.disasterButton}
                         icons={(
                             <IoExitOutline />
                         )}
                     >
                         Go to IDMC&apos;s database
                     </ButtonLikeLink>
+                    <PopupButton
+                        className={styles.exportButton}
+                        label="Download"
+                        name="download"
+                        variant="primary"
+                        persistent={false}
+                        compact
+                    >
+                        <ButtonLikeLink
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            transparent
+                            compact
+                            icons={(
+                                <IoDownloadOutline />
+                            )}
+                            href={suffixHelixRestEndpoint(prepareUrl(
+                                'gidd/displacements/displacement-export/',
+                                {
+                                    iso3__in: iso3,
+                                    start_year: disasterTimeRange[0],
+                                    end_year: disasterTimeRange[1],
+                                    hazard_type__in: disasterTypes,
+                                },
+                            ), clientCode)}
+                        >
+                            Full dataset
+                        </ButtonLikeLink>
+                        <ButtonLikeLink
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            transparent
+                            compact
+                            href={suffixHelixRestEndpoint(prepareUrl(
+                                'gidd/disasters/disaster-export/',
+                                {
+                                    iso3__in: iso3,
+                                    start_year: disasterTimeRange[0],
+                                    end_year: disasterTimeRange[1],
+                                    hazard_type__in: disasterTypes,
+                                },
+                            ), clientCode)}
+                            icons={(
+                                <IoDownloadOutline />
+                            )}
+                        >
+                            Download Disaster Data
+                        </ButtonLikeLink>
+                    </PopupButton>
                 </>
             )}
             filters={(

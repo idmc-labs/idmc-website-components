@@ -40,6 +40,7 @@ import {
     BarChart,
     Bar,
 } from 'recharts';
+import { IoDownloadOutline } from 'react-icons/io5';
 
 import ButtonLikeLink from '#components/ButtonLikeLink';
 import ErrorBoundary from '#components/ErrorBoundary';
@@ -928,7 +929,7 @@ function Gidd(props: Props) {
                                 className={styles.resetButton}
                                 name="resetQuery"
                                 onClick={handleResetQueryClick}
-                                variant="transparent"
+                                transparent
                             >
                                 Reset Query
                             </Button>
@@ -940,39 +941,60 @@ function Gidd(props: Props) {
                             <p className={styles.headingDescription}>{mainText}</p>
                             <div className={styles.downloadSection}>
                                 <p className={styles.downloadDescription}>{downloadText}</p>
-                                {displacementCause === 'disaster' ? (
+                                <div className={styles.downloadButton}>
+                                    {displacementCause === 'disaster' ? (
+                                        <ButtonLikeLink
+                                            variant="primary"
+                                            compact
+                                            icons={<IoDownloadOutline />}
+                                            href={suffixHelixRestEndpoint(prepareUrl(
+                                                'gidd/disasters/disaster-export/',
+                                                {
+                                                    iso3__in: countries,
+                                                    start_year: timeRange[0],
+                                                    end_year: timeRange[1],
+                                                    hazard_type__in: hazardTypes,
+                                                },
+                                            ), clientCode)}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            Download Dataset
+                                        </ButtonLikeLink>
+                                    ) : (
+                                        <ButtonLikeLink
+                                            variant="primary"
+                                            compact
+                                            icons={<IoDownloadOutline />}
+                                            href={suffixHelixRestEndpoint(prepareUrl(
+                                                'gidd/displacements/displacement-export/',
+                                                {
+                                                    cause: displacementCause,
+                                                    iso3__in: countries,
+                                                    start_year: timeRange[0],
+                                                    end_year: timeRange[1],
+                                                },
+                                            ), clientCode)}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            Full Dataset
+                                        </ButtonLikeLink>
+                                    )}
                                     <ButtonLikeLink
-                                        href={suffixHelixRestEndpoint(prepareUrl(
-                                            'gidd/disasters/disaster-export/',
-                                            {
-                                                iso3__in: countries,
-                                                start_year: timeRange[0],
-                                                end_year: timeRange[1],
-                                                hazard_type__in: hazardTypes,
-                                            },
-                                        ), clientCode)}
+                                        variant="primary"
+                                        compact
+                                        icons={<IoDownloadOutline />}
+                                        href={suffixHelixRestEndpoint(
+                                            'gidd/displacements/disaggregated-export/',
+                                            clientCode,
+                                        )}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                     >
-                                        Download Dataset
+                                        Download Disaggregated Data
                                     </ButtonLikeLink>
-                                ) : (
-                                    <ButtonLikeLink
-                                        href={suffixHelixRestEndpoint(prepareUrl(
-                                            'gidd/displacements/displacement-export/',
-                                            {
-                                                cause: displacementCause,
-                                                iso3__in: countries,
-                                                start_year: timeRange[0],
-                                                end_year: timeRange[1],
-                                            },
-                                        ), clientCode)}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        Download Dataset
-                                    </ButtonLikeLink>
-                                )}
+                                </div>
                             </div>
                         </div>
                         <div className={styles.right}>

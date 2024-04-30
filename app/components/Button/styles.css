@@ -39,9 +39,25 @@
 
     &.transparent {
         background-color: transparent;
-        padding: 0;
+        padding: var(--tui-spacing-extra-small);
         color: var(--tui-color-brand);
         font-weight: var(--tui-font-weight-bold);
+
+        &[aria-disabled=true] {
+            color: var(--tui-color-text-on-dark);
+
+            &:hover {
+                color: var(--tui-color-text-on-light);
+            }
+        }
+
+        &:not([aria-disabled=true]) {
+            color: var(--tui-color-brand);
+
+            &:hover {
+                color: var(--tui-color-text-on-dark);
+            }
+        }
     }
 
     &.secondary {
@@ -71,7 +87,6 @@
             &.secondary {
                 background-color: var(--tui-color-background);
             }
-
             &.transparent,
             &.action {
                 color: var(--tui-color-brand);
