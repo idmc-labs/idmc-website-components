@@ -7,10 +7,10 @@ import {
     IoCheckmarkCircle,
     IoClose,
 } from 'react-icons/io5';
+import { Button } from '@togglecorp/toggle-ui';
 
 import { AlertVariant } from '../AlertContext';
 import ElementFragments from '../ElementFragments';
-import Button from '../Button';
 
 import { genericMemo } from '../../utils';
 
@@ -121,8 +121,8 @@ function Alert<N extends string>(props: Props<N>) {
                     <Button
                         name={undefined}
                         onClick={handleCloseButtonClick}
-                        variant="action"
                         disabled={hidden}
+                        transparent
                     >
                         <IoClose className={styles.icon} />
                     </Button>

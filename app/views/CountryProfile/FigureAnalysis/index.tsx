@@ -8,8 +8,8 @@ import {
     listToGroupList,
     compareNumber,
 } from '@togglecorp/fujs';
+import { Button } from '@togglecorp/toggle-ui';
 
-import Button from '#components/Button';
 import useModalState from '#hooks/useModalState';
 import Tabs from '#components/Tabs';
 import Tab from '#components/Tabs/Tab';
@@ -159,7 +159,7 @@ function FigureAnalysis(props: Props) {
                     name={undefined}
                     onClick={handleFigureAnalysisToggleClick}
                     actions={figureAnalysisShown ? <IoChevronUp /> : <IoChevronDown />}
-                    variant="transparent"
+                    transparent
                 >
                     Show Figure Analysis
                 </Button>

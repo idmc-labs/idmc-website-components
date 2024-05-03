@@ -13,12 +13,20 @@
         flex-wrap: wrap;
         gap: var(--tui-spacing-small);
 
-        .tag {
-            display: flex;
-            align-items: center;
-            background-color: var(--tui-color-background);
-            padding: var(--tui-spacing-super-small) var(--tui-spacing-small);
-            gap: var(--tui-spacing-small);
+        .chip-content {
+            padding: 0 var(--tui-spacing-extra-small);
+        }
+
+        .chip-action {
+            padding: 0;
+
+            .chip-action-icons {
+                padding: 0;
+            }
+
+            .chip-remove-button {
+                padding: var(--tui-spacing-extra-small);
+            }
         }
     }
 }

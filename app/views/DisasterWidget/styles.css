@@ -6,11 +6,10 @@
     }
 }
 
-.disaster-button {
-    background-color: var(--color-disaster);
-    height: 2.5rem;
+.export-button {
+    background-color: var(--tui-color-brand);
+    color: var(--tui-color-text-on-dark);
 }
-
 
 .infographic-list {
     display: flex;

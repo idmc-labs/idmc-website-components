@@ -1,42 +1,50 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { _cs } from '@togglecorp/fujs';
-
-import { useButtonFeatures } from '../Button';
+import { useButtonFeatures } from '@togglecorp/toggle-ui';
 
 import styles from './styles.css';
 
-interface Props extends React.HTMLProps<HTMLAnchorElement> {
-    variant?: 'primary' | 'secondary';
-    actions?: React.ReactNode;
-    icons?: React.ReactNode;
-}
+type Props = {
+    target?: string;
+    rel?: string;
+    href?: string;
+} & Parameters<typeof useButtonFeatures>[0]
 
 function ButtonLikeLink(props: Props) {
     const {
-        className,
-        variant = 'primary',
-        icons,
-        actions,
-        children,
+        disabled,
+        target,
+        rel,
+        href,
         ...otherProps
     } = props;
 
     const {
-        buttonClassName,
-        children: childrenFromButtonFeatures,
-    } = useButtonFeatures({
-        variant,
-        icons,
-        actions,
+        className,
         children,
+    } = useButtonFeatures({
+        ...otherProps,
+        disabled,
     });
+
+    const handleClick: React.MouseEventHandler<HTMLAnchorElement> = useCallback((e) => {
+        if (disabled) {
+            // NOTE: prevent action when disabled
+            e.preventDefault();
+        }
+    }, [disabled]);
 
     return (
         <a
-            className={_cs(className, buttonClassName, styles.buttonLikeLink)}
+            className={_cs(className, styles.button)}
+            href={href}
+            rel={rel}
+            aria-disabled={disabled}
+            target={target}
+            onClick={handleClick}
             {...otherProps}
         >
-            {childrenFromButtonFeatures}
+            {children}
         </a>
     );
 }

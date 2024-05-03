@@ -55,6 +55,7 @@
                 align-self: flex-start;
                 flex-basis: calc(100% / 3 * 2 - 2 * var(--tui-spacing-large) / 3);
                 flex-direction: column;
+                flex-grow: 1;
                 gap: var(--tui-spacing-medium);
 
                 .top {
@@ -93,10 +94,11 @@
                 }
 
                 .switch {
-                    color: #fff;
+                    color: var(--tui-color-foreground);
 
                     .switch-label {
                         padding: 0;
+                        color: var(--tui-color-foreground);
                         font-size: var(--tui-font-size-small);
                     }
                 }
@@ -127,6 +129,7 @@
                 .download-description {
                     color: #000;
                     font-size: var(--tui-font-size-extra-small);
+
                 }
             }
         }

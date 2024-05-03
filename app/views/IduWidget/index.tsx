@@ -10,8 +10,8 @@ import {
     IoArrowDown,
     IoArrowUp,
 } from 'react-icons/io5';
+import { Button } from '@togglecorp/toggle-ui';
 
-import Button from '#components/Button';
 import useIduMap from '#components/IduMap/useIduMap';
 import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
@@ -149,7 +149,7 @@ function IduWidget(props: IduWidgetProps) {
                                     name={undefined}
                                     onClick={handleIduActivePage}
                                     actions={<IoArrowDown />}
-                                    variant="transparent"
+                                    transparent
                                 >
                                     Show Older Displacements
                                 </Button>
@@ -159,7 +159,7 @@ function IduWidget(props: IduWidgetProps) {
                                     name={undefined}
                                     onClick={showlessIduPage}
                                     actions={<IoArrowUp />}
-                                    variant="transparent"
+                                    transparent
                                 >
                                     Show Less
                                 </Button>

@@ -35,7 +35,7 @@
     --tui-spacing-mega-large: 3rem;
     --tui-spacing-ultra-large: 4rem;
 
-    --tui-color-primary: rgb(65, 131, 196);
+    --tui-color-primary: #193256;
     --tui-color-accent: rgb(65, 131, 196);
     --tui-color-brand: #193256;
     --tui-color-brand-hover: #06179E;
@@ -108,22 +108,6 @@
 /* FIXME: We should not override style of elements */
 a {
     text-decoration: none;
-
-    &[aria-disabled=true] {
-        color: var(--tui-color-label);
-    }
-
-    &:not([aria-disabled=true]) {
-        color: var(--tui-color-accent);
-
-        &:hover {
-            color: var(--tui-color-brand);
-        }
-    }
-
-    &:visited {
-        text-decoration: none;
-    }
 }
 
 /* FIXME: We should not override style of elements */

@@ -4,9 +4,7 @@ import {
     IoChevronDown,
     IoChevronUp,
 } from 'react-icons/io5';
-import { Popup } from '@togglecorp/toggle-ui';
-
-import Button, { Props as ButtonProps } from '../Button';
+import { Button, ButtonProps, Popup } from '@togglecorp/toggle-ui';
 
 import { genericMemo } from '../../utils';
 import useBooleanState from '../../hooks/useBooleanState';
@@ -96,10 +94,10 @@ function DropdownMenu(props: Props) {
             <Button
                 {...buttonProps}
                 name={undefined}
-                variant="transparent"
                 elementRef={buttonRef}
                 className={className}
                 onClick={handleButtonClick}
+                transparent
                 actions={(
                     <>
                         {actions}

@@ -279,6 +279,8 @@ function useIduQuery(
             )}
             footerActions={(
                 <ButtonLikeLink
+                    variant="primary"
+                    compact
                     href={giddLink}
                     className={styles.disasterButton}
                     target="_parent"
