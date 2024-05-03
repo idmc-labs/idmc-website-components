@@ -166,7 +166,7 @@ export function suffixHelixRestEndpoint(path: string, clientCode: string) {
     if (path.includes('?')) {
         return `${HELIX_REST_ENDPOINT}${path}&client_id=${clientCode}&release_environment=${DATA_RELEASE}`;
     }
-    return `${HELIX_REST_ENDPOINT}${path}?cliend_id=${clientCode}&release_environment=${DATA_RELEASE}`;
+    return `${HELIX_REST_ENDPOINT}${path}?client_id=${clientCode}&release_environment=${DATA_RELEASE}`;
 }
 
 export function readStorage(key: string) {

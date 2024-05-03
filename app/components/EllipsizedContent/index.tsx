@@ -71,7 +71,7 @@ function EllipsizedContent(props: Props) {
         }
     }, [children, maxCharacters, isEllipsized]);
 
-    const handleShowEllipsized = useCallback(() => setIsEllipsized(!isEllipsized), [isEllipsized]);
+    const handleShowEllipsized = useCallback(() => setIsEllipsized((oldVal) => !oldVal), []);
 
     return (
         <div

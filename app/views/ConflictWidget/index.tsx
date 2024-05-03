@@ -245,7 +245,7 @@ function ConflictWidget(props: Props) {
                                 />
                             )}
                             href={suffixHelixRestEndpoint(prepareUrl(
-                                'gidd/disaggregations/disaggregated-export/',
+                                'gidd/disaggregations/disaggregation-export/',
                                 {
                                     iso3__in: iso3,
                                     release_environment: DATA_RELEASE,
@@ -265,7 +265,7 @@ function ConflictWidget(props: Props) {
                                 />
                             )}
                             href={suffixHelixRestEndpoint(prepareUrl(
-                                'gidd/disaggregations/disaggregated-geojson/',
+                                'gidd/disaggregations/disaggregation-geojson/',
                                 {
                                     iso3__in: iso3,
                                     release_environment: DATA_RELEASE,

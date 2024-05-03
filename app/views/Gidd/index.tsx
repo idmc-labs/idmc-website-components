@@ -987,7 +987,7 @@ function Gidd(props: Props) {
                                                     />
                                                 )}
                                                 href={suffixHelixRestEndpoint(
-                                                    'gidd/disaggregations/disaggregated-export/',
+                                                    'gidd/disaggregations/disaggregation-export/',
                                                     clientCode,
                                                 )}
                                                 target="_blank"
@@ -1004,7 +1004,7 @@ function Gidd(props: Props) {
                                                     />
                                                 )}
                                                 href={suffixHelixRestEndpoint(
-                                                    'gidd/disaggregations/disaggregated-geojson/',
+                                                    'gidd/disaggregations/disaggregation-geojson/',
                                                     clientCode,
                                                 )}
                                                 target="_blank"
@@ -1048,7 +1048,7 @@ function Gidd(props: Props) {
                                                     />
                                                 )}
                                                 href={suffixHelixRestEndpoint(prepareUrl(
-                                                    'gidd/disaggregations/disaggregated-export/',
+                                                    'gidd/disaggregations/disaggregation-export/',
                                                     {
                                                         iso3__in: countries,
                                                         release_environment: DATA_RELEASE,
@@ -1070,7 +1070,7 @@ function Gidd(props: Props) {
                                                     />
                                                 )}
                                                 href={suffixHelixRestEndpoint(prepareUrl(
-                                                    'gidd/disaggregations/disaggregated-geojson/',
+                                                    'gidd/disaggregations/disaggregation-geojson/',
                                                     {
                                                         iso3__in: countries,
                                                         release_environment: DATA_RELEASE,
@@ -1121,7 +1121,7 @@ function Gidd(props: Props) {
                                                     />
                                                 )}
                                                 href={suffixHelixRestEndpoint(prepareUrl(
-                                                    'gidd/disaggregations/disaggregated-export/',
+                                                    'gidd/disaggregations/disaggregation-export/',
                                                     {
                                                         cause: displacementCause,
                                                         iso3__in: countries,
@@ -1143,7 +1143,7 @@ function Gidd(props: Props) {
                                                     />
                                                 )}
                                                 href={suffixHelixRestEndpoint(prepareUrl(
-                                                    'gidd/disaggregations/disaggregated-geojson/',
+                                                    'gidd/disaggregations/disaggregation-geojson/',
                                                     {
                                                         cause: displacementCause,
                                                         iso3__in: countries,
