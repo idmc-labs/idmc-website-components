@@ -40,6 +40,7 @@ import {
     DATA_RELEASE,
     getHazardTypeLabel,
     prepareUrl,
+    isDisaggregationAvailable,
 } from '#utils/common';
 import {
     DisasterDataQuery,
@@ -138,20 +139,11 @@ function DisasterWidget(props: Props) {
     const [disasterTimeRangeActual, setDisasterTimeRange] = useState([START_YEAR, year]);
     const disasterTimeRange = useDebouncedValue(disasterTimeRangeActual);
 
-    const isSelectedGiddYear = useMemo(
-        () => {
-            if (
-                (disasterTimeRangeActual[0] === year && disasterTimeRangeActual[1] === year)
-                && year >= 2023
-            ) {
-                return true;
-            }
-            return false;
-        }, [
-            disasterTimeRangeActual,
-            year,
-        ],
-    );
+    const disaggregationAvailable = isDisaggregationAvailable({
+        filterStartYear: disasterTimeRangeActual[0],
+        filterEndYear: disasterTimeRangeActual[1],
+        giddYear: year,
+    });
 
     const {
         previousData: previousStatsData,
@@ -268,7 +260,7 @@ function DisasterWidget(props: Props) {
                             rel="noopener noreferrer"
                             transparent
                             compact
-                            disabled={!isSelectedGiddYear}
+                            disabled={!disaggregationAvailable}
                             actions={(
                                 <IoInformationCircleOutline
                                     title={`${year} Disaster disaggregated caseloads`}
@@ -291,10 +283,10 @@ function DisasterWidget(props: Props) {
                             rel="noopener noreferrer"
                             transparent
                             compact
-                            disabled={!isSelectedGiddYear}
+                            disabled={!disaggregationAvailable}
                             actions={(
                                 <IoInformationCircleOutline
-                                    title={`IMPORTANT: Please read the metadata in the ${year} disaggregated caseloads (geojson) formatted for GIS applications. `}
+                                    title={`${year} Disaster events disaggregated caseloads (geojson) formatted for GIS applications.\nIMPORTANT: Please read the metadata in the geojson`}
                                 />
                             )}
                             href={suffixHelixRestEndpoint(prepareUrl(

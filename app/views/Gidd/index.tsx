@@ -25,6 +25,7 @@ import {
     getHazardTypeLabel,
     suffixHelixRestEndpoint,
     prepareUrl,
+    isDisaggregationAvailable,
 } from '#utils/common';
 import {
     gql,
@@ -869,20 +870,11 @@ function Gidd(props: Props) {
         [disasterStats?.displacementsByHazardType],
     );
 
-    const isSelectedGiddYear = useMemo(
-        () => {
-            if (
-                (timeRange[0] === endYear && timeRange[1] === endYear)
-                && endYear >= 2023
-            ) {
-                return true;
-            }
-            return false;
-        }, [
-            timeRange,
-            endYear,
-        ],
-    );
+    const disaggregationAvailable = isDisaggregationAvailable({
+        filterStartYear: timeRange[0],
+        filterEndYear: timeRange[1],
+        giddYear: endYear,
+    });
 
     const maxDisplacementValue = sortedHazards[0]?.newDisplacementsRounded ?? undefined;
 
@@ -996,7 +988,7 @@ function Gidd(props: Props) {
                                             <ButtonLikeLink
                                                 transparent
                                                 compact
-                                                disabled={!isSelectedGiddYear}
+                                                disabled={!disaggregationAvailable}
                                                 actions={(
                                                     <IoInformationCircleOutline
                                                         title={`${endYear} Disaggregated caseloads`}
@@ -1014,10 +1006,10 @@ function Gidd(props: Props) {
                                             <ButtonLikeLink
                                                 transparent
                                                 compact
-                                                disabled={!isSelectedGiddYear}
+                                                disabled={!disaggregationAvailable}
                                                 actions={(
                                                     <IoInformationCircleOutline
-                                                        title={`IMPORTANT: Please read the metadata in the ${endYear} disaggregated caseloads (geojson) formatted for GIS applications. `}
+                                                        title={`${endYear} Disaggregated caseloads (geojson) formatted for GIS applications.\nIMPORTANT: Please read the metadata in the geojson`}
                                                     />
                                                 )}
                                                 href={suffixHelixRestEndpoint(
@@ -1059,7 +1051,7 @@ function Gidd(props: Props) {
                                             <ButtonLikeLink
                                                 transparent
                                                 compact
-                                                disabled={!isSelectedGiddYear}
+                                                disabled={!disaggregationAvailable}
                                                 actions={(
                                                     <IoInformationCircleOutline
                                                         title={`${endYear} Conflict disaggregated caseloads`}
@@ -1082,10 +1074,10 @@ function Gidd(props: Props) {
                                             <ButtonLikeLink
                                                 transparent
                                                 compact
-                                                disabled={!isSelectedGiddYear}
+                                                disabled={!disaggregationAvailable}
                                                 actions={(
                                                     <IoInformationCircleOutline
-                                                        title={`IMPORTANT: Please read the metadata in the ${endYear} disaggregated caseloads (geojson) formatted for GIS applications. `}
+                                                        title={`${endYear} Conflict disaggregated caseloads (geojson) formatted for GIS applications.\nIMPORTANT: Please read the metadata in the geojson`}
                                                     />
                                                 )}
                                                 href={suffixHelixRestEndpoint(prepareUrl(
@@ -1134,7 +1126,7 @@ function Gidd(props: Props) {
                                             <ButtonLikeLink
                                                 transparent
                                                 compact
-                                                disabled={!isSelectedGiddYear}
+                                                disabled={!disaggregationAvailable}
                                                 actions={(
                                                     <IoInformationCircleOutline
                                                         title={`${endYear} Disaster disaggregated caseloads`}
@@ -1157,10 +1149,10 @@ function Gidd(props: Props) {
                                             <ButtonLikeLink
                                                 transparent
                                                 compact
-                                                disabled={!isSelectedGiddYear}
+                                                disabled={!disaggregationAvailable}
                                                 actions={(
                                                     <IoInformationCircleOutline
-                                                        title={`IMPORTANT: Please read the metadata in the ${endYear} disaggregated caseloads (geojson) formatted for GIS applications. `}
+                                                        title={`${endYear} Disaster events disaggregated caseloads (geojson) formatted for GIS applications.\nIMPORTANT: Please read the metadata in the geojson`}
                                                     />
                                                 )}
                                                 href={suffixHelixRestEndpoint(prepareUrl(

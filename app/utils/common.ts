@@ -236,3 +236,20 @@ export function getMaximum<T>(
         return acc;
     }, list[0]);
 }
+
+export function isDisaggregationAvailable(args: {
+    filterStartYear: number,
+    filterEndYear: number,
+    giddYear: number,
+}) {
+    const {
+        filterStartYear,
+        filterEndYear,
+        giddYear,
+    } = args;
+    return (
+        filterStartYear === filterEndYear
+        && filterStartYear === giddYear
+        && giddYear >= 2023
+    );
+}

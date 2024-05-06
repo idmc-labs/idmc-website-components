@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import {
     gql,
     useQuery,
@@ -36,6 +36,7 @@ import {
     suffixHelixRestEndpoint,
     DATA_RELEASE,
     prepareUrl,
+    isDisaggregationAvailable,
 } from '#utils/common';
 import {
     ConflictDataQuery,
@@ -115,20 +116,11 @@ function ConflictWidget(props: Props) {
     const [conflictTimeRangeActual, setConflictTimeRange] = useState([START_YEAR, year]);
     const conflictTimeRange = useDebouncedValue(conflictTimeRangeActual);
 
-    const isSelectedGiddYear = useMemo(
-        () => {
-            if (
-                (conflictTimeRangeActual[0] === year && conflictTimeRangeActual[1] === year)
-                && year >= 2023
-            ) {
-                return true;
-            }
-            return false;
-        }, [
-            conflictTimeRangeActual,
-            year,
-        ],
-    );
+    const disaggregationAvailable = isDisaggregationAvailable({
+        filterStartYear: conflictTimeRangeActual[0],
+        filterEndYear: conflictTimeRangeActual[1],
+        giddYear: year,
+    });
 
     const {
         previousData: previousStatsData,
@@ -254,7 +246,7 @@ function ConflictWidget(props: Props) {
                             target="_blank"
                             rel="noopener noreferrer"
                             transparent
-                            disabled={!isSelectedGiddYear}
+                            disabled={!disaggregationAvailable}
                             actions={(
                                 <IoInformationCircleOutline
                                     title={`${year} Conflict disaggregated caseloads`}
@@ -272,13 +264,13 @@ function ConflictWidget(props: Props) {
                             {`Conflict disaggregated data ${year} (.xlsx)`}
                         </ButtonLikeLink>
                         <ButtonLikeLink
-                            disabled={!isSelectedGiddYear}
+                            disabled={!disaggregationAvailable}
                             target="_blank"
                             rel="noopener noreferrer"
                             transparent
                             actions={(
                                 <IoInformationCircleOutline
-                                    title={`IMPORTANT: Please read the metadata in the ${year} disaggregated caseloads (geojson) formatted for GIS applications. `}
+                                    title={`${year} Conflict disaggregated caseloads (geojson) formatted for GIS applications.\nIMPORTANT: Please read the metadata in the geojson`}
                                 />
                             )}
                             href={suffixHelixRestEndpoint(prepareUrl(
