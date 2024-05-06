@@ -40,6 +40,7 @@ import {
     DATA_RELEASE,
     getHazardTypeLabel,
     prepareUrl,
+    isDisaggregationAvailable,
 } from '#utils/common';
 import {
     DisasterDataQuery,
@@ -137,6 +138,12 @@ function DisasterWidget(props: Props) {
     const [disasterTypes, setDisasterTypes] = useState<string[]>([]);
     const [disasterTimeRangeActual, setDisasterTimeRange] = useState([START_YEAR, year]);
     const disasterTimeRange = useDebouncedValue(disasterTimeRangeActual);
+
+    const disaggregationAvailable = isDisaggregationAvailable({
+        filterStartYear: disasterTimeRangeActual[0],
+        filterEndYear: disasterTimeRangeActual[1],
+        giddYear: year,
+    });
 
     const {
         previousData: previousStatsData,
@@ -253,6 +260,7 @@ function DisasterWidget(props: Props) {
                             rel="noopener noreferrer"
                             transparent
                             compact
+                            disabled={!disaggregationAvailable}
                             actions={(
                                 <IoInformationCircleOutline
                                     title={`${year} Disaster disaggregated caseloads`}
@@ -275,9 +283,10 @@ function DisasterWidget(props: Props) {
                             rel="noopener noreferrer"
                             transparent
                             compact
+                            disabled={!disaggregationAvailable}
                             actions={(
                                 <IoInformationCircleOutline
-                                    title={`${year} Disaster disaggregated caseloads formatted for GIS applications`}
+                                    title={`${year} Disaster events disaggregated caseloads (geojson) formatted for GIS applications.\nIMPORTANT: Please read the metadata in the geojson`}
                                 />
                             )}
                             href={suffixHelixRestEndpoint(prepareUrl(

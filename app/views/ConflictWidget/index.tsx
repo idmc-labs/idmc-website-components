@@ -36,6 +36,7 @@ import {
     suffixHelixRestEndpoint,
     DATA_RELEASE,
     prepareUrl,
+    isDisaggregationAvailable,
 } from '#utils/common';
 import {
     ConflictDataQuery,
@@ -114,6 +115,12 @@ function ConflictWidget(props: Props) {
 
     const [conflictTimeRangeActual, setConflictTimeRange] = useState([START_YEAR, year]);
     const conflictTimeRange = useDebouncedValue(conflictTimeRangeActual);
+
+    const disaggregationAvailable = isDisaggregationAvailable({
+        filterStartYear: conflictTimeRangeActual[0],
+        filterEndYear: conflictTimeRangeActual[1],
+        giddYear: year,
+    });
 
     const {
         previousData: previousStatsData,
@@ -239,6 +246,7 @@ function ConflictWidget(props: Props) {
                             target="_blank"
                             rel="noopener noreferrer"
                             transparent
+                            disabled={!disaggregationAvailable}
                             actions={(
                                 <IoInformationCircleOutline
                                     title={`${year} Conflict disaggregated caseloads`}
@@ -256,12 +264,13 @@ function ConflictWidget(props: Props) {
                             {`Conflict disaggregated data ${year} (.xlsx)`}
                         </ButtonLikeLink>
                         <ButtonLikeLink
+                            disabled={!disaggregationAvailable}
                             target="_blank"
                             rel="noopener noreferrer"
                             transparent
                             actions={(
                                 <IoInformationCircleOutline
-                                    title={`${year} Conflict disaggregated caseloads formatted for GIS applications`}
+                                    title={`${year} Conflict disaggregated caseloads (geojson) formatted for GIS applications.\nIMPORTANT: Please read the metadata in the geojson`}
                                 />
                             )}
                             href={suffixHelixRestEndpoint(prepareUrl(
