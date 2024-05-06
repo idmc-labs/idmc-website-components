@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     gql,
     useQuery,
@@ -114,6 +114,21 @@ function ConflictWidget(props: Props) {
 
     const [conflictTimeRangeActual, setConflictTimeRange] = useState([START_YEAR, year]);
     const conflictTimeRange = useDebouncedValue(conflictTimeRangeActual);
+
+    const isSelectedGiddYear = useMemo(
+        () => {
+            if (
+                (conflictTimeRangeActual[0] === year && conflictTimeRangeActual[1] === year)
+                && year >= 2023
+            ) {
+                return true;
+            }
+            return false;
+        }, [
+            conflictTimeRangeActual,
+            year,
+        ],
+    );
 
     const {
         previousData: previousStatsData,
@@ -239,6 +254,7 @@ function ConflictWidget(props: Props) {
                             target="_blank"
                             rel="noopener noreferrer"
                             transparent
+                            disabled={!isSelectedGiddYear}
                             actions={(
                                 <IoInformationCircleOutline
                                     title={`${year} Conflict disaggregated caseloads`}
@@ -256,12 +272,13 @@ function ConflictWidget(props: Props) {
                             {`Conflict disaggregated data ${year} (.xlsx)`}
                         </ButtonLikeLink>
                         <ButtonLikeLink
+                            disabled={!isSelectedGiddYear}
                             target="_blank"
                             rel="noopener noreferrer"
                             transparent
                             actions={(
                                 <IoInformationCircleOutline
-                                    title={`${year} Conflict disaggregated caseloads formatted for GIS applications`}
+                                    title={`IMPORTANT: Please read the metadata in the ${year} disaggregated caseloads (geojson) formatted for GIS applications. `}
                                 />
                             )}
                             href={suffixHelixRestEndpoint(prepareUrl(

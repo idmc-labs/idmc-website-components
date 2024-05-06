@@ -138,6 +138,21 @@ function DisasterWidget(props: Props) {
     const [disasterTimeRangeActual, setDisasterTimeRange] = useState([START_YEAR, year]);
     const disasterTimeRange = useDebouncedValue(disasterTimeRangeActual);
 
+    const isSelectedGiddYear = useMemo(
+        () => {
+            if (
+                (disasterTimeRangeActual[0] === year && disasterTimeRangeActual[1] === year)
+                && year >= 2023
+            ) {
+                return true;
+            }
+            return false;
+        }, [
+            disasterTimeRangeActual,
+            year,
+        ],
+    );
+
     const {
         previousData: previousStatsData,
         data: statsData = previousStatsData,
@@ -253,6 +268,7 @@ function DisasterWidget(props: Props) {
                             rel="noopener noreferrer"
                             transparent
                             compact
+                            disabled={!isSelectedGiddYear}
                             actions={(
                                 <IoInformationCircleOutline
                                     title={`${year} Disaster disaggregated caseloads`}
@@ -275,9 +291,10 @@ function DisasterWidget(props: Props) {
                             rel="noopener noreferrer"
                             transparent
                             compact
+                            disabled={!isSelectedGiddYear}
                             actions={(
                                 <IoInformationCircleOutline
-                                    title={`${year} Disaster disaggregated caseloads formatted for GIS applications`}
+                                    title={`IMPORTANT: Please read the metadata in the ${year} disaggregated caseloads (geojson) formatted for GIS applications. `}
                                 />
                             )}
                             href={suffixHelixRestEndpoint(prepareUrl(
