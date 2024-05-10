@@ -50,19 +50,5 @@
         width: 100%;
         min-height: 60vh;
         overflow-x: auto;
-
-        .year {
-            width: 96px;
-        }
-
-        .date {
-            width: 120px;
-        }
-
-        .code {
-            width: 330px;
-            white-space: unset;
-            word-wrap: break-word;
-        }
     }
 }
