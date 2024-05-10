@@ -33,6 +33,11 @@ type DisplacementData = NonNullable<NonNullable<GiddDisplacementsQuery['giddPubl
 const displacementItemKeySelector = (item: { id: string }) => item.id;
 const DISPLACEMENTS_TABLE_PAGE_SIZE = 10;
 
+const smallNumberWidth = 80;
+const largeNumberWidth = 200;
+
+const mediumTextWidth = 220;
+
 const GIDD_DISPLACEMENTS = gql`
     query GiddDisplacements(
         $page: Int,
@@ -151,7 +156,11 @@ function DataTable(props: Props) {
                 'countryName',
                 'Country / Territory',
                 (item) => item.countryName,
-                { sortable: true },
+                {
+                    sortable: true,
+                    columnWidth: mediumTextWidth,
+                    columnStretch: true,
+                },
             ),
             createNumberColumn<DisplacementData, string>(
                 'year',
@@ -160,7 +169,7 @@ function DataTable(props: Props) {
                 {
                     sortable: true,
                     separator: '',
-                    columnWidth: 64,
+                    columnWidth: smallNumberWidth,
                 },
             ),
             isConflictDataShown ? createNumberColumn<DisplacementData, string>(
@@ -170,6 +179,7 @@ function DataTable(props: Props) {
                 {
                     sortable: true,
                     variant: 'conflict',
+                    columnWidth: largeNumberWidth,
                 },
             ) : undefined,
             isConflictDataShown ? createNumberColumn<DisplacementData, string>(
@@ -179,6 +189,7 @@ function DataTable(props: Props) {
                 {
                     sortable: true,
                     variant: 'conflict',
+                    columnWidth: largeNumberWidth,
                 },
             ) : undefined,
             isDisasterDataShown ? createNumberColumn<DisplacementData, string>(
@@ -188,6 +199,7 @@ function DataTable(props: Props) {
                 {
                     sortable: true,
                     variant: 'disaster',
+                    columnWidth: largeNumberWidth,
                 },
             ) : undefined,
             isDisasterDataShown ? createNumberColumn<DisplacementData, string>(
@@ -197,6 +209,7 @@ function DataTable(props: Props) {
                 {
                     sortable: true,
                     variant: 'disaster',
+                    columnWidth: largeNumberWidth,
                 },
             ) : undefined,
         ]).filter(isDefined),

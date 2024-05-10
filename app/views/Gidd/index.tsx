@@ -105,8 +105,7 @@ function getCountryStockCountSubLabel(count = 0, year: number) {
 }
 
 const mainText = 'Explore the Global Internal Displacement Database (GIDD), a global repository of internal displacement data since 2008.';
-const downloadText = 'Downloadable data files include metadata, copyright details, and methodological notes. Request access to APIs ';
-const apiAccessLink = 'https://forms.office.com/pages/responsepage.aspx?id=tNGGP2ssGkuyrm9elQvKHiYUF2VI1JhElGk_g_sjLJ5URFlRMFRBWjYxQUtWVExSOUtaTjE1VlZMWS4u&origin=lprLink';
+const downloadText = 'Downloadable data files include metadata, copyright details, and methodological notes.';
 const flowDetails = 'The internal displacements figure refers to the number of forced movements of people within the borders of their country recorded during the year. Figures may include individuals who have been displaced more than once.';
 const stockDetails = 'The total number of Internally Displaced People (IDPs) is a snapshot of all the people living in internal displacements at the end of the year.';
 
@@ -958,13 +957,6 @@ function Gidd(props: Props) {
                             <div className={styles.downloadSection}>
                                 <p className={styles.downloadDescription}>
                                     {downloadText}
-                                    <a
-                                        href={apiAccessLink}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        here
-                                    </a>
                                 </p>
                                 <PopupButton
                                     label="Download dataset"

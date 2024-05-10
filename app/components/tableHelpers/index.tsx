@@ -32,6 +32,7 @@ export function createExternalLinkColumn<D, K>(
         orderable?: boolean;
         hideable?: boolean;
         columnClassName?: string;
+        columnStretch?: boolean;
     },
 ) {
     const item: TableColumn<D, K, ExternalLinkProps, TableHeaderCellProps> & {
@@ -42,6 +43,7 @@ export function createExternalLinkColumn<D, K>(
         title,
         headerCellRenderer: TableHeaderCell,
         columnClassName: options?.columnClassName,
+        columnStretch: options?.columnStretch,
         headerCellRendererParams: {
             sortable: options?.sortable,
             filterType: options?.filterType,
@@ -78,6 +80,7 @@ export function createTextColumn<D, K>(
         columnClassName?: string;
         columnWidth?: number;
         cellRendererClassName?: string;
+        columnStretch?: boolean;
     },
 ) {
     const item: TableColumn<D, K, TextProps, TableHeaderCellProps> & {
@@ -88,7 +91,7 @@ export function createTextColumn<D, K>(
         title,
         headerCellRenderer: TableHeaderCell,
         columnClassName: options?.columnClassName,
-        columnStretch: true,
+        columnStretch: options?.columnStretch,
         headerCellRendererParams: {
             sortable: options?.sortable,
             filterType: options?.filterType,
@@ -140,7 +143,7 @@ export function createNumberColumn<D, K>(
             hideable: options?.hideable,
         },
         cellRenderer: Numeral,
-        columnWidth: options?.columnWidth,
+        columnWidth: options?.columnWidth ?? 160,
         headerCellRendererClassName: _cs(
             styles.header,
             styles.numberHeader,

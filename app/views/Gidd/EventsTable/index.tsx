@@ -37,6 +37,15 @@ import EventTitle, { Props as EventTitleProps } from '../EventTitle';
 
 import styles from './styles.css';
 
+const smallNumberWidth = 80;
+const largeNumberWidth = 200;
+
+const dateWidth = 120;
+
+const smallTextWidth = 200;
+const mediumTextWidth = 220;
+const largeTextWidth = 320;
+
 type EventData = NonNullable<NonNullable<GiddEventsQuery['giddPublicDisasters']>['results']>[number];
 const eventKeySelector = (item: { id: string }) => item.id;
 
@@ -183,7 +192,8 @@ function EventsTable(props: Props) {
                     eventId: data.eventId ?? undefined,
                     clientId: clientCode,
                 }),
-                columnWidth: 320,
+                columnWidth: largeTextWidth,
+                columnStretch: true,
             };
 
             return ([
@@ -191,7 +201,10 @@ function EventsTable(props: Props) {
                     'countryName',
                     'Country / Territory',
                     (item) => item.countryName,
-                    { sortable: true },
+                    {
+                        sortable: true,
+                        columnWidth: mediumTextWidth,
+                    },
                 ),
                 createNumberColumn<EventData, string>(
                     'year',
@@ -200,7 +213,7 @@ function EventsTable(props: Props) {
                     {
                         sortable: true,
                         separator: '',
-                        columnClassName: styles.year,
+                        columnWidth: smallNumberWidth,
                     },
                 ),
                 eventTitle,
@@ -211,7 +224,7 @@ function EventsTable(props: Props) {
                     (item) => item.eventCodes?.join('; ') || item.glideNumbers?.join('; '),
                     {
                         sortable: true,
-                        cellRendererClassName: styles.code,
+                        columnWidth: mediumTextWidth,
                     },
                 ),
                 createDateColumn<EventData, string>(
@@ -220,20 +233,26 @@ function EventsTable(props: Props) {
                     (item) => item.startDate,
                     {
                         sortable: true,
-                        columnClassName: styles.date,
+                        columnWidth: dateWidth,
                     },
                 ),
                 createNumberColumn<EventData, string>(
                     'newDisplacementRounded',
                     'Disaster Internal Displacements',
                     (item) => item.newDisplacementRounded,
-                    { sortable: true },
+                    {
+                        sortable: true,
+                        columnWidth: largeNumberWidth,
+                    },
                 ),
                 createTextColumn<EventData, string>(
                     'hazardCategoryName',
                     'Hazard Category',
                     (item) => item.hazardCategoryName,
-                    { sortable: true },
+                    {
+                        sortable: true,
+                        columnWidth: smallTextWidth,
+                    },
                 ),
                 createTextColumn<EventData, string>(
                     'hazardTypeName',
@@ -244,7 +263,10 @@ function EventsTable(props: Props) {
                             label: item.hazardTypeName,
                         })
                         : item.hazardTypeName),
-                    { sortable: true },
+                    {
+                        sortable: true,
+                        columnWidth: smallTextWidth,
+                    },
                 ),
             ]);
         },
@@ -279,6 +301,7 @@ function EventsTable(props: Props) {
                     data={eventsResponse?.giddPublicDisasters?.results}
                     keySelector={eventKeySelector}
                     columns={eventColumns}
+                    resizableColumn
                 />
             </SortContext.Provider>
         </div>
