@@ -88,6 +88,7 @@ export function createTextColumn<D, K>(
         title,
         headerCellRenderer: TableHeaderCell,
         columnClassName: options?.columnClassName,
+        columnStretch: true,
         headerCellRendererParams: {
             sortable: options?.sortable,
             filterType: options?.filterType,

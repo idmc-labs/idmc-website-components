@@ -855,9 +855,16 @@ function Gidd(props: Props) {
         ),
     )?.filter(isDefined);
 
-    const hazardOptions = removeNull(
-        countryFilterResponse?.giddPublicHazardTypes,
-    )?.filter(isDefined);
+    const hazardOptions = useMemo(
+        () => {
+            const options = removeNull(
+                countryFilterResponse?.giddPublicHazardTypes,
+            )?.filter(isDefined) ?? [];
+
+            return [...options].sort((a, b) => compareString(a?.name, b?.name));
+        },
+        [countryFilterResponse],
+    );
 
     const sortedHazards = useMemo(
         () => ([...(disasterStats?.displacementsByHazardType ?? [])].sort(
@@ -1263,7 +1270,7 @@ function Gidd(props: Props) {
                                                 name="disasterHazard"
                                                 className={styles.selectInput}
                                                 value={hazardTypes}
-                                                options={hazardOptions ?? undefined}
+                                                options={hazardOptions}
                                                 keySelector={idSelector}
                                                 labelSelector={hazardLabelSelector}
                                                 onChange={setHazardTypes}
