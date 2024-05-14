@@ -41,5 +41,9 @@
             flex-wrap: wrap;
             gap: var(--tui-spacing-large);
         }
+
+        .map-description {
+            flex-basis: 100%;
+        }
     }
 }

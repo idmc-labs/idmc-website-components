@@ -235,6 +235,7 @@ function DataTable(props: Props) {
                     keySelector={displacementItemKeySelector}
                     data={displacementsResponse?.giddPublicDisplacements?.results}
                     columns={columns}
+                    resizableColumn
                 />
             </SortContext.Provider>
         </div>

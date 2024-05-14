@@ -32,6 +32,10 @@
                 width: 100%;
                 max-width: var(--width-page-max);
                 gap: var(--tui-spacing-large);
+
+                .find-good-practice-button {
+                    align-self: flex-start;
+                }
             }
 
             .language-selection {
@@ -100,10 +104,6 @@
                     background-color: var(--tui-color-background);
                     padding: var(--tui-spacing-medium);
                     gap: var(--tui-spacing-medium);
-
-                    .new-good-practice {
-                        display: flex;
-                    }
                 }
             }
 
