@@ -304,6 +304,7 @@ function AddGoodPractice(props: Props) {
             onSubmit={handleSubmit}
         >
             <Modal
+                className={styles.modal}
                 onClose={onModalClose}
                 headingClassName={styles.headingContainer}
                 heading={(
@@ -320,12 +321,11 @@ function AddGoodPractice(props: Props) {
                     </div>
                 )}
                 footerClassName={styles.footer}
-                className={styles.modal}
                 footer={(
                     <Button
                         name={undefined}
                         type="submit"
-                        variant="accent"
+                        variant="primary"
                         onClick={handleSubmit}
                         disabled={pristine || createNewGoodPracticeLoading || !agreeTerms}
                         compact

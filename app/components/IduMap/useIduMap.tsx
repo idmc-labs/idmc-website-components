@@ -141,7 +141,7 @@ function useIduQuery(
 
     const idus = React.useMemo(() => (
         iso3
-            ? iduData?.idu.filter((item) => item.iso3 === iso3)
+            ? iduData?.idu?.filter((item) => item.iso3 === iso3)
             : iduData?.idu
     ), [iso3, iduData]);
 
@@ -204,6 +204,7 @@ function useIduQuery(
 
     const widget = (
         <Container
+            className={styles.container}
             filtersClassName={styles.filtersContainer}
             filters={(
                 <>
@@ -282,7 +283,6 @@ function useIduQuery(
                     variant="primary"
                     compact
                     href={giddLink}
-                    className={styles.disasterButton}
                     target="_parent"
                     icons={(
                         <IoExitOutline />

@@ -165,7 +165,7 @@ function IduWidget(props: IduWidgetProps) {
                                 </Button>
                             )}
                         </div>
-                        <div>
+                        <div className={styles.mapDescription}>
                             Hover over and click on the coloured bubbles to see near real-time
                             snapshots of situations of internal displacement.
                         </div>

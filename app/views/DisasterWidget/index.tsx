@@ -226,7 +226,7 @@ function DisasterWidget(props: Props) {
                     </ButtonLikeLink>
                     <PopupButton
                         className={styles.exportButton}
-                        label="Download data"
+                        label="Download dataset"
                         name="download"
                         variant="primary"
                         persistent={false}

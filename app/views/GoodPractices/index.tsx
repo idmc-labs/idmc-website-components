@@ -842,6 +842,7 @@ function GoodPractices(props: Props) {
                         />
                         <HTMLOutput value={goodPracticeDescription} />
                         <Button
+                            className={styles.findGoodPracticeButton}
                             onClick={handleJumpToGoodPractices}
                             name={undefined}
                         >
@@ -948,7 +949,7 @@ function GoodPractices(props: Props) {
                                 <Button
                                     name={undefined}
                                     onClick={showNewGoodPracticeModal}
-                                    className={styles.newGoodPractice}
+                                    variant="primary"
                                 >
                                     {strings.submitNewGoodPracticeLabel}
                                 </Button>
