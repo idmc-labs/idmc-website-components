@@ -975,10 +975,17 @@ function Gidd(props: Props) {
                                                         title="Annual updates of internal displacement data by country"
                                                     />
                                                 )}
-                                                href={suffixHelixRestEndpoint(
+                                                href={suffixHelixRestEndpoint(prepareUrl(
                                                     'gidd/displacements/displacement-export/',
-                                                    clientCode,
-                                                )}
+                                                    {
+                                                        iso3__in: countries,
+                                                        start_year: timeRange[0],
+                                                        end_year: timeRange[1],
+                                                        release_environment: DATA_RELEASE,
+                                                        hazard_type__in: hazardTypes,
+                                                        cause: displacementCause,
+                                                    },
+                                                ), clientCode)}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                             >
@@ -993,10 +1000,17 @@ function Gidd(props: Props) {
                                                         title={`${endYear} Disaggregated caseloads`}
                                                     />
                                                 )}
-                                                href={suffixHelixRestEndpoint(
+                                                href={suffixHelixRestEndpoint(prepareUrl(
                                                     'gidd/disaggregations/disaggregation-export/',
-                                                    clientCode,
-                                                )}
+                                                    {
+                                                        iso3__in: countries,
+                                                        start_year: timeRange[0],
+                                                        end_year: timeRange[1],
+                                                        release_environment: DATA_RELEASE,
+                                                        hazard_type__in: hazardTypes,
+                                                        cause: displacementCause,
+                                                    },
+                                                ), clientCode)}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                             >
@@ -1011,10 +1025,17 @@ function Gidd(props: Props) {
                                                         title={`${endYear} Disaggregated caseloads (geojson) formatted for GIS applications.\nIMPORTANT: Please read the metadata in the geojson`}
                                                     />
                                                 )}
-                                                href={suffixHelixRestEndpoint(
+                                                href={suffixHelixRestEndpoint(prepareUrl(
                                                     'gidd/disaggregations/disaggregation-geojson/',
-                                                    clientCode,
-                                                )}
+                                                    {
+                                                        iso3__in: countries,
+                                                        start_year: timeRange[0],
+                                                        end_year: timeRange[1],
+                                                        release_environment: DATA_RELEASE,
+                                                        hazard_type__in: hazardTypes,
+                                                        cause: displacementCause,
+                                                    },
+                                                ), clientCode)}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                             >
