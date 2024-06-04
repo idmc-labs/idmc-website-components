@@ -91,7 +91,6 @@ query GiddEvents(
             hazardTypeName
             iso3
             newDisplacementRounded
-            glideNumbers
             eventCodes
             startDate
             year
@@ -220,8 +219,7 @@ function EventsTable(props: Props) {
                 createTextColumn<EventData, string>(
                     'eventCodes',
                     'Event Codes',
-                    // NOTE: We are deprecating glideNumber and replacing with eventCode
-                    (item) => item.eventCodes?.join('; ') || item.glideNumbers?.join('; '),
+                    (item) => item.eventCodes?.join('; '),
                     {
                         sortable: true,
                         columnWidth: mediumTextWidth,

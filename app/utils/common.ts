@@ -197,12 +197,12 @@ export function prepareUrl(url: string, params: UrlParams): string {
         .filter((k) => isDefined(params[k]))
         .map((k) => {
             const param = params[k];
-            if (isNotDefined(param)) {
+            if (isNotDefined(param) || param === '' || (Array.isArray(param) && param.length === 0)) {
                 return undefined;
             }
             let val: string;
             if (Array.isArray(param)) {
-                val = param.join(',');
+                val = [...param].sort().join(',');
             } else if (typeof param === 'number' || typeof param === 'boolean') {
                 val = String(param);
             } else {
