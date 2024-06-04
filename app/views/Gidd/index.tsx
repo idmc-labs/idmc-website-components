@@ -978,12 +978,14 @@ function Gidd(props: Props) {
                                                 href={suffixHelixRestEndpoint(prepareUrl(
                                                     'gidd/displacements/displacement-export/',
                                                     {
+                                                        release_environment: DATA_RELEASE,
+                                                        // cause: empty
+
                                                         iso3__in: countries,
                                                         start_year: timeRange[0],
                                                         end_year: timeRange[1],
-                                                        release_environment: DATA_RELEASE,
-                                                        hazard_type__in: hazardTypes,
-                                                        cause: displacementCause,
+                                                        // disaster_type__in: not applicable
+                                                        // category: not implemented
                                                     },
                                                 ), clientCode)}
                                                 target="_blank"
@@ -1003,12 +1005,12 @@ function Gidd(props: Props) {
                                                 href={suffixHelixRestEndpoint(prepareUrl(
                                                     'gidd/disaggregations/disaggregation-export/',
                                                     {
-                                                        iso3__in: countries,
-                                                        start_year: timeRange[0],
-                                                        end_year: timeRange[1],
                                                         release_environment: DATA_RELEASE,
-                                                        hazard_type__in: hazardTypes,
-                                                        cause: displacementCause,
+                                                        // cause: empty
+
+                                                        iso3__in: countries,
+                                                        // disaster_type__in: not applicable
+                                                        // category: not implemented
                                                     },
                                                 ), clientCode)}
                                                 target="_blank"
@@ -1028,12 +1030,12 @@ function Gidd(props: Props) {
                                                 href={suffixHelixRestEndpoint(prepareUrl(
                                                     'gidd/disaggregations/disaggregation-geojson/',
                                                     {
-                                                        iso3__in: countries,
-                                                        start_year: timeRange[0],
-                                                        end_year: timeRange[1],
                                                         release_environment: DATA_RELEASE,
-                                                        hazard_type__in: hazardTypes,
-                                                        cause: displacementCause,
+                                                        // cause: empty
+
+                                                        iso3__in: countries,
+                                                        // disaster_type__in: not applicable
+                                                        // category: not implemented
                                                     },
                                                 ), clientCode)}
                                                 target="_blank"
@@ -1056,11 +1058,13 @@ function Gidd(props: Props) {
                                                 href={suffixHelixRestEndpoint(prepareUrl(
                                                     'gidd/displacements/displacement-export/',
                                                     {
+                                                        release_environment: DATA_RELEASE,
+                                                        cause: displacementCause, // conflict
+
                                                         iso3__in: countries,
                                                         start_year: timeRange[0],
                                                         end_year: timeRange[1],
-                                                        release_environment: DATA_RELEASE,
-                                                        cause: displacementCause,
+                                                        // category: not implemented
                                                     },
                                                 ), clientCode)}
                                                 target="_blank"
@@ -1080,10 +1084,12 @@ function Gidd(props: Props) {
                                                 href={suffixHelixRestEndpoint(prepareUrl(
                                                     'gidd/disaggregations/disaggregation-export/',
                                                     {
-                                                        iso3__in: countries,
                                                         release_environment: DATA_RELEASE,
-                                                        hazard_type__in: hazardTypes,
-                                                        cause: displacementCause,
+                                                        cause: displacementCause, // conflict
+
+                                                        iso3__in: countries,
+                                                        // disaster_type__in: not applicable
+                                                        // category: not implemented
                                                     },
                                                 ), clientCode)}
                                                 target="_blank"
@@ -1103,10 +1109,12 @@ function Gidd(props: Props) {
                                                 href={suffixHelixRestEndpoint(prepareUrl(
                                                     'gidd/disaggregations/disaggregation-geojson/',
                                                     {
-                                                        iso3__in: countries,
                                                         release_environment: DATA_RELEASE,
-                                                        hazard_type__in: hazardTypes,
-                                                        cause: displacementCause,
+                                                        cause: displacementCause, // conflict
+
+                                                        iso3__in: countries,
+                                                        // disaster_type__in: not applicable
+                                                        // category: not implemented
                                                     },
                                                 ), clientCode)}
                                                 target="_blank"
@@ -1131,11 +1139,14 @@ function Gidd(props: Props) {
                                                 href={suffixHelixRestEndpoint(prepareUrl(
                                                     'gidd/disasters/disaster-export/',
                                                     {
+                                                        release_environment: DATA_RELEASE,
+                                                        // cause: not applicable
+
                                                         iso3__in: countries,
+                                                        hazard_type__in: hazardTypes,
                                                         start_year: timeRange[0],
                                                         end_year: timeRange[1],
-                                                        release_environment: DATA_RELEASE,
-                                                        hazard_type__in: hazardTypes,
+                                                        // category: not implemented
                                                     },
                                                 ), clientCode)}
                                                 target="_blank"
@@ -1155,10 +1166,12 @@ function Gidd(props: Props) {
                                                 href={suffixHelixRestEndpoint(prepareUrl(
                                                     'gidd/disaggregations/disaggregation-export/',
                                                     {
-                                                        cause: displacementCause,
-                                                        iso3__in: countries,
                                                         release_environment: DATA_RELEASE,
-                                                        hazard_type__in: hazardTypes,
+                                                        cause: displacementCause, // Disaster
+
+                                                        iso3__in: countries,
+                                                        disaster_type__in: hazardTypes,
+                                                        // category: not implemented
                                                     },
                                                 ), clientCode)}
                                                 target="_blank"
@@ -1178,10 +1191,12 @@ function Gidd(props: Props) {
                                                 href={suffixHelixRestEndpoint(prepareUrl(
                                                     'gidd/disaggregations/disaggregation-geojson/',
                                                     {
-                                                        cause: displacementCause,
-                                                        iso3__in: countries,
                                                         release_environment: DATA_RELEASE,
-                                                        hazard_type__in: hazardTypes,
+                                                        cause: displacementCause, // Disaster
+
+                                                        iso3__in: countries,
+                                                        disaster_type__in: hazardTypes,
+                                                        // category: not implemented
                                                     },
                                                 ), clientCode)}
                                                 target="_blank"
