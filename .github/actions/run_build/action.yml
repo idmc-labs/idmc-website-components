@@ -69,7 +69,15 @@ runs:
           REACT_APP_ENVIRONMENT: ${{ inputs.REACT_APP_ENVIRONMENT }}
           BUILD_OUTPUT_DIR: ${{ inputs.BUILD_OUTPUT_DIR }}
       shell: bash
-      run: env > .env && yarn build && mv build/ $BUILD_OUTPUT_DIR
+      run: |
+        # Pass env to file for yarn build
+        env > .env &&
+        # Delete if already exists
+        rm -f generated/types.tsx &&
+        # Run build
+        yarn build &&
+        # Copy build files to output dir
+        mv build/ $BUILD_OUTPUT_DIR
 
     - name: Save build files as artifact (PREVIEW -> Helix-STAGING)
       uses: actions/upload-artifact@v4
