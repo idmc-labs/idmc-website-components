@@ -72,7 +72,7 @@ runs:
       run: env > .env && yarn build && mv build/ $BUILD_OUTPUT_DIR
 
     - name: Save build files as artifact (PREVIEW -> Helix-STAGING)
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.UPLOAD_ARTIFACT_NAME }}
         path: ${{ inputs.BUILD_OUTPUT_DIR }}
