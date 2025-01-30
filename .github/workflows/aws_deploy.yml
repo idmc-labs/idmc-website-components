@@ -34,13 +34,13 @@ jobs:
       url: ${{ inputs.GH_ENVIRONMENT_URL }}
 
     steps:
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.ARTIFACT_NAME }}
           path: ./build
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4.0.1
+        uses: aws-actions/configure-aws-credentials@v4.0.3
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ secrets.AWS_REGION }}
