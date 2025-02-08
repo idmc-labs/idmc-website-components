@@ -1,12 +1,11 @@
 # -------------------------- Dev ---------------------------------------
 
-FROM node:17-buster-slim AS dev
+FROM node:20-bookworm
 
 RUN apt-get update -y \
     && apt-get install -y --no-install-recommends \
-        git bash python3 g++ make \
-    # Allow git in /code
-    && git config --global --add safe.directory /code
+        git bash g++ make \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /code
 
