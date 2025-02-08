@@ -1,12 +1,9 @@
-// import { matchPath } from 'react-router-dom';
 import {
-    // reactRouterV5Instrumentation,
     BrowserOptions,
+    browserProfilingIntegration,
+    browserTracingIntegration,
+    replayIntegration,
 } from '@sentry/react';
-// import { Integrations } from '@sentry/tracing';
-
-// import browserHistory from '#base/configs/history';
-// import routes from '#base/configs/routes';
 
 const appCommitHash = process.env.REACT_APP_COMMITHASH;
 const appName = process.env.MY_APP_ID;
@@ -21,17 +18,18 @@ const sentryConfig: BrowserOptions | undefined = sentryDsn ? {
     environment: env,
     // sendDefaultPii: true,
     normalizeDepth: 5,
-    /*
     integrations: [
-        new Integrations.BrowserTracing({
-            routingInstrumentation: reactRouterV5Instrumentation(
-                browserHistory,
-                Object.entries(routes),
-                matchPath,
-            ),
-        }),
+        // TODO: We should also set document response header to include
+        // Document-Policy: js-profiling
+        browserProfilingIntegration(),
+        browserTracingIntegration(),
+        replayIntegration(),
     ],
-    */
+    tracesSampleRate: 1.0,
+    // FIXME: set this to the domains we have
+    tracePropagationTargets: ['localhost', /^\//],
+    replaysSessionSampleRate: 1.0,
+    profilesSampleRate: 1.0,
 } : undefined;
 
 export default sentryConfig;
