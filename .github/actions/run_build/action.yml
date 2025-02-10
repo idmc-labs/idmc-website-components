@@ -69,8 +69,6 @@ runs:
       run: |
         # Pass env to file for yarn build
         env > .env &&
-        # Delete if already exists
-        rm -f generated/types.tsx &&
         # Run build
         yarn build &&
         # Copy build files to output dir

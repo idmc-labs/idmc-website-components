@@ -1,10 +1,11 @@
 # -------------------------- Dev ---------------------------------------
 
-FROM node:20-bookworm
+FROM node:20-bookworm AS dev
 
 RUN apt-get update -y \
     && apt-get install -y --no-install-recommends \
         git bash g++ make \
+    && git config --global --add safe.directory /code \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /code
@@ -40,7 +41,7 @@ ENV REACT_APP_SENTRY_DSN=REACT_APP_SENTRY_DSN_PLACEHOLDER
 ENV REACT_APP_TINY_MCE_KEY=REACT_APP_TINY_MCE_KEY_PLACEHOLDER
 ENV REACT_APP_GA_TRACKING_ID=REACT_APP_GA_TRACKING_ID_PLACEHOLDER
 
-RUN env > .env && yarn build:unsafe
+RUN env > .env && yarn build
 
 # ---------------------------------------------------------------------------
 FROM nginx:1 AS nginx-serve
