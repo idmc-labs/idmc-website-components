@@ -47,7 +47,6 @@ runs:
           # Unsed variables
           REACT_APP_GA_TRACKING_ID: ''
           # Common
-          # TODO: is this required here?
           REACT_APP_HELIX_CLIENT_ID: IDMCWSHSOLO009
           REACT_APP_MAPBOX_ACCESS_TOKEN: pk.eyJ1IjoidG9nZ2xlY29ycCIsImEiOiJjazk5ZXMza2YxZmQ1M2dvNWxneTEycnQwIn0.K3u-ns63rFzM7CzrnOBm2w
           REACT_APP_MAPBOX_STYLE: mapbox://styles/togglecorp/cl50rwy0a002d14mo6w9zprio
@@ -77,7 +76,7 @@ runs:
         # Copy build files to output dir
         mv build/ $BUILD_OUTPUT_DIR
 
-    - name: Save build files as artifact (PREVIEW -> Helix-STAGING)
+    - name: Save build files as artifact
       uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.UPLOAD_ARTIFACT_NAME }}
