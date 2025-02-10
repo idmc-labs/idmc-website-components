@@ -4,10 +4,8 @@
     "version": "1.0.0",
     "description": "React components for IDMC website",
     "scripts": {
-        "deploy:dev": "test -d build && cp -f build/index.html build/200.html && surge --domain idmc-website-components.surge.sh build/",
         "test": "jest",
         "test:coverage": "jest --coverage",
-        "generate": "env-cmd -f .env graphql-codegen --config codegen.yml",
         "lint": "eslint ./app --report-unused-disable-directives",
         "typecheck": "tsc",
         "build": "webpack --mode=production --node-env=production",
@@ -15,12 +13,15 @@
         "build:prod": "webpack --mode=production --node-env=production",
         "watch": "webpack --watch",
         "start": "webpack serve --mode=development",
-        "initialize": "mkdir -p generated && yes n | cp -i type.template.tsx generated/types.tsx 2>/dev/null",
-        "check-unused": "unimported",
+        "pretest": "yarn initialize",
         "prelint": "yarn initialize",
         "pretypecheck": "yarn initialize",
         "prebuild": "yarn initialize",
-        "prestart": "yarn initialize"
+        "prewatch": "yarn initialize",
+        "prestart": "yarn initialize",
+        "initialize": "mkdir -p generated && if [ ! -f generated/types.tsx ]; then cp -i type.template.tsx generated/types.tsx 2>/dev/null; else true; fi ",
+        "generate": "env-cmd -f .env graphql-codegen --config codegen.yml",
+        "check-unused": "unimported"
     },
     "repository": {
         "type": "git",
