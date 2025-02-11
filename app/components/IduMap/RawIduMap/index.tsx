@@ -89,7 +89,7 @@ const sourceOption: mapboxgl.GeoJSONSourceRaw = {
     type: 'geojson',
 };
 
-const lightStyle = mapboxStyle || 'mapbox://styles/mapbox/light-v10';
+const lightStyle = mapboxStyle;
 
 interface Props {
     idus: IduDataQuery['idu'] | undefined;
