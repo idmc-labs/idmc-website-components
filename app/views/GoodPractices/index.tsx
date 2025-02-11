@@ -81,6 +81,7 @@ import {
     goodPracticesDashboard,
     commonLabels,
 } from '#base/configs/lang';
+import { mapboxStyle } from '#base/configs/mapbox';
 import useTranslation from '#hooks/useTranslation';
 import generateString from '#utils/strings';
 
@@ -240,7 +241,7 @@ const popupOptions: PopupOptions = {
 const keySelector = (d: { key: string }) => d.key;
 const labelSelector = (d: { label: string }) => d.label;
 
-const lightStyle = 'mapbox://styles/mapbox/light-v10';
+const lightStyle = mapboxStyle;
 
 const orangePointHaloCirclePaint: mapboxgl.CirclePaint = {
     'circle-opacity': 0.6,

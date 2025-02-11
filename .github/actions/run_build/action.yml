@@ -45,8 +45,6 @@ runs:
     - name: 🤞 Run Build 🧪
       env:
           # Unsed variables
-          GIDD_GRAPHQL_CODEGEN_ENDPOINT: ''
-          HELIX_GRAPHQL_CODEGEN_ENDPOINT: ''
           REACT_APP_GA_TRACKING_ID: ''
           # Common
           # TODO: is this required here?

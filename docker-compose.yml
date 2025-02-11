@@ -1,19 +1,27 @@
-version: '3.3'
-
 services:
   react:
     command: sh -c 'yarn install && yarn start'
     build:
-      context: ./
-      target: base
+      context: .
+      target: dev
     tty: true
     environment:
-      NODE_OPTIONS: --openssl-legacy-provider
-      GRAPHQL_CODEGEN_ENDPOINT: ${GRAPHQL_CODEGEN_ENDPOINT:-http://localhost:9000/graphql/}
-      REACT_APP_GRAPHQL_ENDPOINT: ${REACT_APP_GRAPHQL_ENDPOINT:-http://localhost:9000/graphql/}
+      REACT_APP_ENVIRONMENT: ${REACT_APP_ENVIRONMENT:-development}
+      REACT_APP_HELIX_GRAPHQL_ENDPOINT: ${REACT_APP_HELIX_GRAPHQL_ENDPOINT:-http://localhost:9000/graphql}
+      REACT_APP_HELIX_REST_ENDPOINT: ${REACT_APP_HELIX_REST_ENDPOINT:-http://localhost:9000/external-api/}
+      REACT_APP_GIDD_GRAPHQL_ENDPOINT: ${REACT_APP_GIDD_GRAPHQL_ENDPOINT:-http://localhost:7000/graphql/}
+      REACT_APP_DRUPAL_ENDPOINT: ${REACT_APP_DRUPAL_ENDPOINT:-https://www.internal-displacement.org}
+      REACT_APP_DRUPAL_REST_ENDPOINT: ${REACT_APP_DRUPAL_REST_ENDPOINT:-https://api.internal-displacement.org}
+      REACT_APP_HCAPTCHA_SITEKEY: ${REACT_APP_HCAPTCHA_SITEKEY:-10000000-ffff-ffff-ffff-000000000001}
+      REACT_APP_MAPBOX_STYLE: ${REACT_APP_MAPBOX_STYLE:-mapbox://styles/idmcda/ck9x61jf5148n1in1wws4mswc}
+
+      HELIX_GRAPHQL_CODEGEN_ENDPOINT: ${HELIX_GRAPHQL_CODEGEN_ENDPOINT:-http://host.docker.internal:9000/graphql}
+      GIDD_GRAPHQL_CODEGEN_ENDPOINT: ${GIDD_GRAPHQL_CODEGEN_ENDPOINT:-http://host.docker.internal:7000/graphql/}
     env_file:
       - .env
     volumes:
       - .:/code
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - '3081:3081'
