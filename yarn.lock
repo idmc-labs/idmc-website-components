@@ -13349,6 +13349,11 @@ tinycolor2@^1.4.1:
   resolved "https://registry.yarnpkg.com/tinymce/-/tinymce-6.3.1.tgz#cc5cf2b9f702d429cf5d1d21ed62245d768bfc4f"
   integrity sha512-+oCwXuTxAdJXVJ0130OxQz0JDNsqg3deuzgeUo8X5Vb27EzCJgXwO5eWvCxvkxpQo4oiHMVlM4tUIpTUHufHGQ==
 
+tinymce@^7.7.0:
+  version "7.7.0"
+  resolved "https://registry.yarnpkg.com/tinymce/-/tinymce-7.7.0.tgz#4630c24d6696c58a43a9f5ba131ab331d6feb497"
+  integrity sha512-zDFPXeje5fQIxuYzv9fE6YmjFBQmeB9SU+85ofizIHqCCkbBnDdEWhD5R8rBu9MwdjIQP3aNohgGe9D6JOhNaw==
+
 tinyqueue@^2.0.3:
   version "2.0.3"
   resolved "https://registry.npmjs.org/tinyqueue/-/tinyqueue-2.0.3.tgz"
