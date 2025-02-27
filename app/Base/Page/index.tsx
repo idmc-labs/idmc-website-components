@@ -1,8 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useLayoutEffect } from 'react';
 import {
     gql,
     useQuery,
 } from '@apollo/client';
+import { addBreadcrumb } from '@sentry/react';
 
 import Home from '#views/Home';
 import CountryProfile, { Props as CountryProfileProps } from '#views/CountryProfile';
@@ -118,6 +119,28 @@ function DisasterWidgetWithYear(props: Omit<DisasterWidgetProps, 'endYear'>) {
     );
 }
 
+export interface DocumentTitleProps {
+    value: string;
+    standaloneMode: boolean;
+}
+
+function DocumentTitle({ value, standaloneMode }: DocumentTitleProps) {
+    useLayoutEffect(
+        () => {
+            if (standaloneMode) {
+                document.title = value;
+            }
+            addBreadcrumb({
+                category: 'navigation',
+                message: `Component Mount: ${value}`,
+                level: 'info',
+            });
+        },
+        [value, standaloneMode],
+    );
+    return null;
+}
+
 interface Props {
     className?: string;
     page?: string;
@@ -141,15 +164,25 @@ function Page(props: Props) {
 
     if (page === 'good-practices') {
         return (
-            <GoodPractices
-                className={className}
-            />
+            <>
+                <DocumentTitle
+                    standaloneMode={standaloneMode}
+                    value="Good Practices"
+                />
+                <GoodPractices
+                    className={className}
+                />
+            </>
         );
     }
     if (page === 'good-practice') {
         if (!currentId) {
             return (
                 <div className={styles.message}>
+                    <DocumentTitle
+                        value="Good Practice"
+                        standaloneMode={standaloneMode}
+                    />
                     <div>
                         Query parameter id is missing.
                     </div>
@@ -157,16 +190,26 @@ function Page(props: Props) {
             );
         }
         return (
-            <GoodPractice
-                className={className}
-                id={currentId}
-            />
+            <>
+                <DocumentTitle
+                    value={`Good Practice | ${currentId}`}
+                    standaloneMode={standaloneMode}
+                />
+                <GoodPractice
+                    className={className}
+                    id={currentId}
+                />
+            </>
         );
     }
     if (page === 'country-profile') {
         if (!currentCountry) {
             return (
                 <div className={styles.message}>
+                    <DocumentTitle
+                        value="Country Profile"
+                        standaloneMode={standaloneMode}
+                    />
                     <div>
                         Query parameter iso3 is missing.
                     </div>
@@ -176,6 +219,10 @@ function Page(props: Props) {
         if (!clientCode) {
             return (
                 <div className={styles.message}>
+                    <DocumentTitle
+                        value="Country Profile"
+                        standaloneMode={standaloneMode}
+                    />
                     <div>
                         Client code is missing.
                     </div>
@@ -184,18 +231,28 @@ function Page(props: Props) {
         }
 
         return (
-            <CountryProfileWithYear
-                className={className}
-                iso3={currentCountry}
-                countryName={currentCountryName}
-                clientCode={clientCode}
-            />
+            <>
+                <DocumentTitle
+                    value={`Country Profile | ${currentCountry}`}
+                    standaloneMode={standaloneMode}
+                />
+                <CountryProfileWithYear
+                    className={className}
+                    iso3={currentCountry}
+                    countryName={currentCountryName}
+                    clientCode={clientCode}
+                />
+            </>
         );
     }
     if (page === 'gidd') {
         if (!clientCode) {
             return (
                 <div className={styles.message}>
+                    <DocumentTitle
+                        value="GIDD Dashboard"
+                        standaloneMode={standaloneMode}
+                    />
                     <div>
                         Client code is missing.
                     </div>
@@ -203,15 +260,25 @@ function Page(props: Props) {
             );
         }
         return (
-            <GiddWithYear
-                clientCode={clientCode}
-            />
+            <>
+                <DocumentTitle
+                    value="GIDD Dashboard"
+                    standaloneMode={standaloneMode}
+                />
+                <GiddWithYear
+                    clientCode={clientCode}
+                />
+            </>
         );
     }
     if (page === 'idu-map') {
         if (!clientCode) {
             return (
                 <div className={styles.message}>
+                    <DocumentTitle
+                        value="IDU Map"
+                        standaloneMode={standaloneMode}
+                    />
                     <div>
                         Client code is missing.
                     </div>
@@ -219,15 +286,25 @@ function Page(props: Props) {
             );
         }
         return (
-            <IduMap
-                clientCode={clientCode}
-            />
+            <>
+                <DocumentTitle
+                    value="IDU Map"
+                    standaloneMode={standaloneMode}
+                />
+                <IduMap
+                    clientCode={clientCode}
+                />
+            </>
         );
     }
     if (page === 'conflict-widget') {
         if (!clientCode) {
             return (
                 <div className={styles.message}>
+                    <DocumentTitle
+                        value="Confilct"
+                        standaloneMode={standaloneMode}
+                    />
                     <div>
                         Client code is missing.
                     </div>
@@ -237,6 +314,10 @@ function Page(props: Props) {
         if (!currentCountry) {
             return (
                 <div className={styles.message}>
+                    <DocumentTitle
+                        value="Confilct"
+                        standaloneMode={standaloneMode}
+                    />
                     <div>
                         Query parameter iso3 is missing.
                     </div>
@@ -244,16 +325,26 @@ function Page(props: Props) {
             );
         }
         return (
-            <ConflictWidgetWithYear
-                iso3={currentCountry}
-                clientCode={clientCode}
-            />
+            <>
+                <DocumentTitle
+                    value={`Conflict | ${currentCountry}`}
+                    standaloneMode={standaloneMode}
+                />
+                <ConflictWidgetWithYear
+                    iso3={currentCountry}
+                    clientCode={clientCode}
+                />
+            </>
         );
     }
     if (page === 'disaster-widget') {
         if (!clientCode) {
             return (
                 <div className={styles.message}>
+                    <DocumentTitle
+                        value="Disaster"
+                        standaloneMode={standaloneMode}
+                    />
                     <div>
                         Client code is missing.
                     </div>
@@ -263,6 +354,10 @@ function Page(props: Props) {
         if (!currentCountry) {
             return (
                 <div className={styles.message}>
+                    <DocumentTitle
+                        value="Disaster"
+                        standaloneMode={standaloneMode}
+                    />
                     <div>
                         Query parameter iso3 is missing.
                     </div>
@@ -270,16 +365,26 @@ function Page(props: Props) {
             );
         }
         return (
-            <DisasterWidgetWithYear
-                iso3={currentCountry}
-                clientCode={clientCode}
-            />
+            <>
+                <DocumentTitle
+                    value={`Disaster | ${currentCountry}`}
+                    standaloneMode={standaloneMode}
+                />
+                <DisasterWidgetWithYear
+                    iso3={currentCountry}
+                    clientCode={clientCode}
+                />
+            </>
         );
     }
     if (page === 'idu-widget') {
         if (!clientCode) {
             return (
                 <div className={styles.message}>
+                    <DocumentTitle
+                        value="IDU"
+                        standaloneMode={standaloneMode}
+                    />
                     <div>
                         Client code is missing.
                     </div>
@@ -289,6 +394,10 @@ function Page(props: Props) {
         if (!currentCountry) {
             return (
                 <div className={styles.message}>
+                    <DocumentTitle
+                        value="IDU"
+                        standaloneMode={standaloneMode}
+                    />
                     <div>
                         Query parameter iso3 is missing.
                     </div>
@@ -296,21 +405,37 @@ function Page(props: Props) {
             );
         }
         return (
-            <IduWidget
-                iso3={currentCountry}
-                clientCode={clientCode}
-            />
+            <>
+                <DocumentTitle
+                    value={`IDU | ${currentCountry}`}
+                    standaloneMode={standaloneMode}
+                />
+                <IduWidget
+                    iso3={currentCountry}
+                    clientCode={clientCode}
+                />
+            </>
         );
     }
 
     if (standaloneMode) {
         return (
-            <Home />
+            <>
+                <DocumentTitle
+                    value="Home"
+                    standaloneMode={standaloneMode}
+                />
+                <Home />
+            </>
         );
     }
 
     return (
         <div className={styles.message}>
+            <DocumentTitle
+                value="404"
+                standaloneMode={standaloneMode}
+            />
             <div>
                 Some error occurred!
             </div>

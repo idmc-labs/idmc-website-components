@@ -1,12 +1,12 @@
 # -------------------------- Dev ---------------------------------------
 
-FROM node:17-buster-slim AS dev
+FROM node:20-bookworm AS dev
 
 RUN apt-get update -y \
     && apt-get install -y --no-install-recommends \
-        git bash python3 g++ make \
-    # Allow git in /code
-    && git config --global --add safe.directory /code
+        git bash g++ make \
+    && git config --global --add safe.directory /code \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /code
 
@@ -38,10 +38,9 @@ ENV REACT_APP_HELIX_CLIENT_ID=REACT_APP_HELIX_CLIENT_ID_PLACEHOLDER
 ENV REACT_APP_DATA_RELEASE=REACT_APP_DATA_RELEASE_PLACEHOLDER
 ENV REACT_APP_MAPBOX_ACCESS_TOKEN=REACT_APP_MAPBOX_ACCESS_TOKEN_PLACEHOLDER
 ENV REACT_APP_SENTRY_DSN=REACT_APP_SENTRY_DSN_PLACEHOLDER
-ENV REACT_APP_TINY_MCE_KEY=REACT_APP_TINY_MCE_KEY_PLACEHOLDER
 ENV REACT_APP_GA_TRACKING_ID=REACT_APP_GA_TRACKING_ID_PLACEHOLDER
 
-RUN env > .env && yarn build:unsafe
+RUN env > .env && yarn build
 
 # ---------------------------------------------------------------------------
 FROM nginx:1 AS nginx-serve

@@ -281,6 +281,9 @@ module.exports = () => {
                 watchOptions: {
                     ignored: /node_modules/,
                 },
+                headers: {
+                    'Document-Policy': 'js-profiling',
+                },
 
                 clientLogLevel: 'none',
                 publicPath: '/',

@@ -4,10 +4,8 @@
     "version": "1.0.0",
     "description": "React components for IDMC website",
     "scripts": {
-        "deploy:dev": "test -d build && cp -f build/index.html build/200.html && surge --domain idmc-website-components.surge.sh build/",
         "test": "jest",
         "test:coverage": "jest --coverage",
-        "generate": "env-cmd -f .env graphql-codegen --config codegen.yml",
         "lint": "eslint ./app --report-unused-disable-directives",
         "typecheck": "tsc",
         "build": "webpack --mode=production --node-env=production",
@@ -15,12 +13,15 @@
         "build:prod": "webpack --mode=production --node-env=production",
         "watch": "webpack --watch",
         "start": "webpack serve --mode=development",
-        "initialize": "mkdir -p generated && yes n | cp -i type.template.tsx generated/types.tsx 2>/dev/null",
-        "check-unused": "unimported",
+        "pretest": "yarn initialize",
         "prelint": "yarn initialize",
         "pretypecheck": "yarn initialize",
         "prebuild": "yarn initialize",
-        "prestart": "yarn initialize"
+        "prewatch": "yarn initialize",
+        "prestart": "yarn initialize",
+        "initialize": "mkdir -p generated && if [ ! -f generated/types.tsx ]; then cp -i type.template.tsx generated/types.tsx 2>/dev/null; else true; fi ",
+        "generate": "env-cmd -f .env graphql-codegen --config codegen.yml",
+        "check-unused": "unimported"
     },
     "repository": {
         "type": "git",
@@ -38,7 +39,8 @@
         "@babel/runtime": "^7.17.9",
         "@hcaptcha/react-hcaptcha": "^1.4.4",
         "@mapbox/mapbox-gl-draw": "^1.3.0",
-        "@sentry/react": "^6.19.7",
+        "@sentry/react": "^8.54.0",
+        "@sentry/tracing": "^7.120.3",
         "@tinymce/tinymce-react": "^4.2.0",
         "@togglecorp/fujs": "^1.9.3",
         "@togglecorp/re-map": "^0.1.3",
@@ -63,7 +65,8 @@
         "react-showdown": "^2.3.1",
         "react-slider": "^2.0.0",
         "recharts": "^2.1.9",
-        "sanitize-html": "^2.7.0"
+        "sanitize-html": "^2.7.0",
+        "tinymce": "^7.7.0"
     },
     "devDependencies": {
         "@babel/core": "^7.17.9",
