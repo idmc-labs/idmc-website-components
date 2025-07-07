@@ -942,29 +942,15 @@ function GoodPractices(props: Props) {
                         ) : (
                             <div className={styles.faqList} />
                         )}
-                        <div className={styles.sidePane}>
+                        {contactInformation && (
                             <div className={styles.block}>
-                                <h4>
-                                    {strings.addNewGoodPracticeHeading}
-                                </h4>
-                                <Button
-                                    name={undefined}
-                                    onClick={showNewGoodPracticeModal}
-                                    variant="primary"
-                                >
-                                    {strings.submitNewGoodPracticeLabel}
-                                </Button>
+                                <EllipsizedContent>
+                                    <HTMLOutput
+                                        value={contactInformation}
+                                    />
+                                </EllipsizedContent>
                             </div>
-                            {contactInformation && (
-                                <div className={styles.block}>
-                                    <EllipsizedContent>
-                                        <HTMLOutput
-                                            value={contactInformation}
-                                        />
-                                    </EllipsizedContent>
-                                </div>
-                            )}
-                        </div>
+                        )}
                     </section>
                 )}
                 <section
