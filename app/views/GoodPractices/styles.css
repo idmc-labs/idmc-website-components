@@ -89,13 +89,22 @@
                 }
             }
 
-            .block {
+            .side-pane {
                 display: flex;
+                flex-basis: 30%;
                 flex-direction: column;
-                border-radius: 0.25rem;
-                background-color: var(--tui-color-background);
-                padding: var(--tui-spacing-medium);
+                flex-shrink: 0;
                 gap: var(--tui-spacing-medium);
+                margin-top: 5rem;
+
+                .block {
+                    display: flex;
+                    flex-direction: column;
+                    border-radius: 0.25rem;
+                    background-color: var(--tui-color-background);
+                    padding: var(--tui-spacing-medium);
+                    gap: var(--tui-spacing-medium);
+                }
             }
 
             @media (max-width: 1000px) {

@@ -342,7 +342,6 @@ function GoodPractices(props: Props) {
 
     const [
         addNewGoodPracticeModalShown,
-        showNewGoodPracticeModal,
         hideNewGoodPracticeModal,
     ] = useModalState<boolean>(false);
 
@@ -942,15 +941,17 @@ function GoodPractices(props: Props) {
                         ) : (
                             <div className={styles.faqList} />
                         )}
-                        {contactInformation && (
-                            <div className={styles.block}>
-                                <EllipsizedContent>
-                                    <HTMLOutput
-                                        value={contactInformation}
-                                    />
-                                </EllipsizedContent>
-                            </div>
-                        )}
+                        <div className={styles.sidePane}>
+                            {contactInformation && (
+                                <div className={styles.block}>
+                                    <EllipsizedContent>
+                                        <HTMLOutput
+                                            value={contactInformation}
+                                        />
+                                    </EllipsizedContent>
+                                </div>
+                            )}
+                        </div>
                     </section>
                 )}
                 <section
