@@ -373,19 +373,6 @@ function GoodPractice(props: Props) {
                             </div>
                         )}
                         <div className={styles.blockList}>
-                            {submitDescription && (
-                                <div className={styles.block}>
-                                    <h4>
-                                        {strings.addNewGoodPracticeHeading}
-                                    </h4>
-                                    <Button
-                                        name={undefined}
-                                        onClick={showNewGoodPracticeModal}
-                                    >
-                                        {strings.submitNewGoodPracticeLabel}
-                                    </Button>
-                                </div>
-                            )}
                             {contactInformation && (
                                 <div className={styles.block}>
                                     <EllipsizedContent>
