@@ -11,7 +11,6 @@ import {
     useQuery,
     useMutation,
 } from '@apollo/client';
-import { Button } from '@togglecorp/toggle-ui';
 
 import { IoChevronForward } from 'react-icons/io5';
 
@@ -139,7 +138,6 @@ function GoodPractice(props: Props) {
 
     const [
         addNewGoodPracticeModalShown,
-        showNewGoodPracticeModal,
         hideNewGoodPracticeModal,
     ] = useModalState<boolean>(false);
 
@@ -204,7 +202,6 @@ function GoodPractice(props: Props) {
     const [
         goodPracticeDescription,
         contactInformation,
-        submitDescription,
     ] = React.useMemo(() => {
         const staticPageMap = listToMap(staticPageResponse?.staticPages, (d) => d.type);
         return [
