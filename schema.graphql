@@ -18,13 +18,26 @@ type IduData {
   displacement_start_date: String
   displacement_end_date: String
   year: Int
+  event_id: Int
   event_name: String
   event_start_date: String
   event_end_date: String
+  event_codes: String
+  event_code_types: String
   category: String
   subcategory: String
   type: String
   subtype: String
+  role: String
+  old_id: Int
+  sources: String
+  source_url: String
+  locations_name: String
+  locations_coordinates: String
+  locations_accuracy: String
+  locations_type: String
+  displacement_occurred: String
+  created_at: String
   standard_popup_text: String
   standard_info_text: String
 }

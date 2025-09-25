@@ -56,9 +56,10 @@ const IDU_DATA = gql`
             id
             country
             iso3
-            centroid
             latitude
             longitude
+            centroid
+            role
             displacement_type
             qualifier
             figure
@@ -66,7 +67,10 @@ const IDU_DATA = gql`
             displacement_start_date
             displacement_end_date
             year
+            event_id
             event_name
+            event_codes
+            event_code_types
             event_start_date
             event_end_date
             category
@@ -75,6 +79,15 @@ const IDU_DATA = gql`
             subtype
             standard_popup_text
             standard_info_text
+            old_id
+            sources
+            source_url
+            locations_name
+            locations_coordinates
+            locations_accuracy
+            locations_type
+            displacement_occurred
+            created_at
         }
     }
 `;
