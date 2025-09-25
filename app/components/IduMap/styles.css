@@ -1,7 +1,7 @@
 .container {
     flex-basis: 100%;
-    .filters-container {
 
+    .filters-container {
         .displacement-legend {
             display: flex;
             flex-basis: 20%;
@@ -44,10 +44,27 @@
                 width: 100%;
             }
         }
+
         @media (max-width: 1000px) {
             .time-range-container {
                 padding-right: var(--tui-spacing-medium);
             }
+        }
+    }
+
+    .footer-container {
+        align-items: flex-end;
+        gap: var(--tui-spacing-extra-small);
+    }
+
+    .documentation-link {
+        display: flex;
+        align-items: center;
+        gap: var(--tui-spacing-super-small);
+        color: var(--tui-color-text);
+
+        &:hover {
+            text-decoration: underline;
         }
     }
 }
