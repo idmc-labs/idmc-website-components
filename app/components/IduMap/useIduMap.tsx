@@ -12,7 +12,12 @@ import {
 } from 'mapbox-gl';
 import {
     IoExitOutline,
+    IoHelpCircleOutline,
+    IoDownloadOutline,
 } from 'react-icons/io5';
+import {
+    Button,
+} from '@togglecorp/toggle-ui';
 import {
     isNotDefined,
 } from '@togglecorp/fujs';
@@ -51,9 +56,10 @@ const IDU_DATA = gql`
             id
             country
             iso3
-            centroid
             latitude
             longitude
+            centroid
+            role
             displacement_type
             qualifier
             figure
@@ -61,7 +67,10 @@ const IDU_DATA = gql`
             displacement_start_date
             displacement_end_date
             year
+            event_id
             event_name
+            event_codes
+            event_code_types
             event_start_date
             event_end_date
             category
@@ -70,6 +79,15 @@ const IDU_DATA = gql`
             subtype
             standard_popup_text
             standard_info_text
+            old_id
+            sources
+            source_url
+            locations_name
+            locations_coordinates
+            locations_accuracy
+            locations_type
+            displacement_occurred
+            created_at
         }
     }
 `;
@@ -174,6 +192,25 @@ function useIduQuery(
         })
     ), [idus, iduFilterStartDate, iduFilterEndDate, mapNoOfDisplacements, mapTypeOfDisplacements]);
 
+    const handleDownload = useCallback(() => {
+        if (isNotDefined(idusForMap)) {
+            return;
+        }
+
+        const jsonStr = JSON.stringify(idusForMap);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'idu-data.json';
+        document.body.appendChild(link);
+        link.click();
+
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }, [idusForMap]);
+
     const handleTypeOfDisplacementsChange = useCallback((value: DisplacementType) => {
         setMapTypeOfDisplacements((oldValue: DisplacementType[]) => {
             const newValue = [...oldValue];
@@ -206,6 +243,7 @@ function useIduQuery(
         <Container
             className={styles.container}
             filtersClassName={styles.filtersContainer}
+            footerContainerClassName={styles.footerContainer}
             filters={(
                 <>
                     <div className={styles.timeRangeContainer}>
@@ -278,18 +316,41 @@ function useIduQuery(
                     </div>
                 </>
             )}
-            footerActions={(
-                <ButtonLikeLink
-                    variant="primary"
-                    compact
-                    href={giddLink}
-                    target="_parent"
-                    icons={(
-                        <IoExitOutline />
-                    )}
+            footer={(
+                <a
+                    className={styles.documentationLink}
+                    href="https://www.internal-displacement.org/database/api-documentation/"
+                    rel="noreferrer"
+                    target="_blank"
                 >
-                    Go to IDMC&apos;s database
-                </ButtonLikeLink>
+                    <IoHelpCircleOutline />
+                    API Documentation
+                </a>
+            )}
+            footerActions={(
+                <>
+                    <Button
+                        name={undefined}
+                        onClick={handleDownload}
+                        icons={(
+                            <IoDownloadOutline />
+                        )}
+                        disabled={isNotDefined(idusForMap)}
+                    >
+                        Download dataset
+                    </Button>
+                    <ButtonLikeLink
+                        variant="primary"
+                        compact
+                        href={giddLink}
+                        target="_parent"
+                        icons={(
+                            <IoExitOutline />
+                        )}
+                    >
+                        Go to IDMC&apos;s database
+                    </ButtonLikeLink>
+                </>
             )}
         >
             <RawIduMap

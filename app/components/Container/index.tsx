@@ -18,6 +18,9 @@ interface Props {
     headerDescription?: React.ReactNode;
     footerActions?: React.ReactNode;
     footer?: React.ReactNode;
+    footerClassName?: string;
+    footerContainerClassName?: string;
+    footerActionsClassName?: string;
     children?: React.ReactNode;
     filters?: React.ReactNode;
     filtersClassName?: string;
@@ -36,6 +39,9 @@ function Container(props: Props) {
         headerDescription,
         footer,
         footerActions,
+        footerClassName,
+        footerContainerClassName,
+        footerActionsClassName,
         children,
         filters,
         filtersClassName,
@@ -64,12 +70,12 @@ function Container(props: Props) {
                 {children}
             </div>
             {(footerActions || footer) && (
-                <div className={styles.footerContainer}>
-                    <div className={styles.footer}>
+                <div className={_cs(styles.footerContainer, footerContainerClassName)}>
+                    <div className={_cs(styles.footer, footerClassName)}>
                         {footer}
                     </div>
                     {footerActions && (
-                        <div className={styles.footerActions}>
+                        <div className={_cs(styles.footerActions, footerActionsClassName)}>
                             {footerActions}
                         </div>
                     )}
