@@ -196,8 +196,15 @@ function useIduQuery(
         if (isNotDefined(idusForMap)) {
             return;
         }
+        const onlyData = idusForMap.map((item) => {
+            const {
+                __typename,
+                ...remaining
+            } = item as (typeof item & { __typename: string });
+            return remaining;
+        });
 
-        const jsonStr = JSON.stringify(idusForMap);
+        const jsonStr = JSON.stringify(onlyData);
         const blob = new Blob([jsonStr], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
 
