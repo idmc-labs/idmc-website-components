@@ -192,28 +192,72 @@ function useIduQuery(
         })
     ), [idus, iduFilterStartDate, iduFilterEndDate, mapNoOfDisplacements, mapTypeOfDisplacements]);
 
-    const handleDownload = useCallback(() => {
+    const handleDownloadCsv = useCallback(() => {
         if (isNotDefined(idusForMap)) {
             return;
         }
+
         const onlyData = idusForMap.map((item) => {
-            const {
-                __typename,
-                ...remaining
-            } = item as (typeof item & { __typename: string });
+            const { __typename, ...remaining } = item as (typeof item & { __typename: string });
             return remaining;
         });
 
-        const jsonStr = JSON.stringify(onlyData);
-        const blob = new Blob([jsonStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
+        if (onlyData.length === 0) return;
 
+        const headers = Object.keys(onlyData[0]);
+        const csvRows = [
+            headers.join(','),
+            ...onlyData.map((row) => headers.map((field) => {
+                const value = row[field];
+                const escaped = typeof value === 'string'
+                    ? `"${value.replace(/"/g, '""')}"`
+                    : value ?? '';
+                return escaped;
+            }).join(',')),
+        ];
+
+        const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = 'idu-data.json';
+        link.download = 'idu-data.csv';
         document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }, [idusForMap]);
 
+    const handleDownloadGeoJson = useCallback(() => {
+        if (isNotDefined(idusForMap)) {
+            return;
+        }
+
+        const features = idusForMap.map((item) => {
+            const {
+                __typename,
+                geometry,
+                ...properties
+            } = item as (typeof item & { __typename: string, geometry?: any });
+            return {
+                type: 'Feature',
+                geometry: geometry ?? null,
+                // geometry can be { type: "Point", coordinates: [lng, lat] }
+                properties,
+            };
+        });
+
+        const geojson = {
+            type: 'FeatureCollection',
+            features,
+        };
+
+        const blob = new Blob([JSON.stringify(geojson, null, 2)], { type: 'application/geo+json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'idu-data.geojson';
+        document.body.appendChild(link);
+        link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
     }, [idusForMap]);
@@ -338,13 +382,23 @@ function useIduQuery(
                 <>
                     <Button
                         name={undefined}
-                        onClick={handleDownload}
+                        onClick={handleDownloadGeoJson}
                         icons={(
                             <IoDownloadOutline />
                         )}
                         disabled={isNotDefined(idusForMap)}
                     >
-                        Download dataset
+                        Download geojson dataset
+                    </Button>
+                    <Button
+                        name={undefined}
+                        onClick={handleDownloadCsv}
+                        icons={(
+                            <IoDownloadOutline />
+                        )}
+                        disabled={isNotDefined(idusForMap)}
+                    >
+                        Download csv dataset
                     </Button>
                     <ButtonLikeLink
                         variant="primary"
