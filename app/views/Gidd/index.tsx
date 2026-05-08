@@ -25,7 +25,6 @@ import {
     getHazardTypeLabel,
     suffixHelixRestEndpoint,
     prepareUrl,
-    isDisaggregationAvailable,
 } from '#utils/common';
 import {
     gql,
@@ -876,11 +875,7 @@ function Gidd(props: Props) {
         [disasterStats?.displacementsByHazardType],
     );
 
-    const disaggregationAvailable = isDisaggregationAvailable({
-        filterStartYear: timeRange[0],
-        filterEndYear: timeRange[1],
-        giddYear: endYear,
-    });
+    const isValidYearFilter = timeRange[0] === timeRange[1] && timeRange[0] >= 2023;
 
     const maxDisplacementValue = sortedHazards[0]?.newDisplacementsRounded ?? undefined;
 
@@ -996,10 +991,12 @@ function Gidd(props: Props) {
                                             <ButtonLikeLink
                                                 transparent
                                                 compact
-                                                disabled={!disaggregationAvailable}
+                                                disabled={!isValidYearFilter}
                                                 actions={(
                                                     <IoInformationCircleOutline
-                                                        title={`${endYear} Disaggregated caseloads`}
+                                                        title={isValidYearFilter
+                                                            ? `${timeRange[1]} Disaggregated caseloads`
+                                                            : undefined}
                                                     />
                                                 )}
                                                 href={suffixHelixRestEndpoint(prepareUrl(
@@ -1011,20 +1008,24 @@ function Gidd(props: Props) {
                                                         iso3__in: countries,
                                                         // disaster_type__in: not applicable
                                                         // category: not implemented
+                                                        start_year: timeRange[0],
+                                                        end_year: timeRange[1],
                                                     },
                                                 ), clientCode)}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                             >
-                                                {`Disaggregated data ${endYear} (.xlsx)`}
+                                                {`Disaggregated data ${timeRange[1]} (.xlsx)`}
                                             </ButtonLikeLink>
                                             <ButtonLikeLink
                                                 transparent
                                                 compact
-                                                disabled={!disaggregationAvailable}
+                                                disabled={!isValidYearFilter}
                                                 actions={(
                                                     <IoInformationCircleOutline
-                                                        title={`${endYear} Disaggregated caseloads (geojson) formatted for GIS applications.\nIMPORTANT: Please read the metadata in the geojson`}
+                                                        title={isValidYearFilter
+                                                            ? `${timeRange[1]} Disaggregated caseloads (geojson) formatted for GIS applications.\nIMPORTANT: Please read the metadata in the geojson`
+                                                            : undefined}
                                                     />
                                                 )}
                                                 href={suffixHelixRestEndpoint(prepareUrl(
@@ -1036,12 +1037,14 @@ function Gidd(props: Props) {
                                                         iso3__in: countries,
                                                         // disaster_type__in: not applicable
                                                         // category: not implemented
+                                                        start_year: timeRange[0],
+                                                        end_year: timeRange[1],
                                                     },
                                                 ), clientCode)}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                             >
-                                                {`Disaggregated data ${endYear} (.geojson)`}
+                                                {`Disaggregated data ${timeRange[1]} (.geojson)`}
                                             </ButtonLikeLink>
                                         </>
                                     )}
@@ -1075,10 +1078,12 @@ function Gidd(props: Props) {
                                             <ButtonLikeLink
                                                 transparent
                                                 compact
-                                                disabled={!disaggregationAvailable}
+                                                disabled={!isValidYearFilter}
                                                 actions={(
                                                     <IoInformationCircleOutline
-                                                        title={`${endYear} Conflict disaggregated caseloads`}
+                                                        title={isValidYearFilter
+                                                            ? `${timeRange[1]} Conflict disaggregated caseloads`
+                                                            : undefined}
                                                     />
                                                 )}
                                                 href={suffixHelixRestEndpoint(prepareUrl(
@@ -1090,20 +1095,24 @@ function Gidd(props: Props) {
                                                         iso3__in: countries,
                                                         // disaster_type__in: not applicable
                                                         // category: not implemented
+                                                        start_year: timeRange[0],
+                                                        end_year: timeRange[1],
                                                     },
                                                 ), clientCode)}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                             >
-                                                {`Conflict disaggregated data ${endYear} (.xlsx)`}
+                                                {`Conflict disaggregated data ${timeRange[1]} (.xlsx)`}
                                             </ButtonLikeLink>
                                             <ButtonLikeLink
                                                 transparent
                                                 compact
-                                                disabled={!disaggregationAvailable}
+                                                disabled={!isValidYearFilter}
                                                 actions={(
                                                     <IoInformationCircleOutline
-                                                        title={`${endYear} Conflict disaggregated caseloads (geojson) formatted for GIS applications.\nIMPORTANT: Please read the metadata in the geojson`}
+                                                        title={isValidYearFilter
+                                                            ? `${timeRange[1]} Conflict disaggregated caseloads (geojson) formatted for GIS applications.\nIMPORTANT: Please read the metadata in the geojson`
+                                                            : undefined}
                                                     />
                                                 )}
                                                 href={suffixHelixRestEndpoint(prepareUrl(
@@ -1115,12 +1124,14 @@ function Gidd(props: Props) {
                                                         iso3__in: countries,
                                                         // disaster_type__in: not applicable
                                                         // category: not implemented
+                                                        start_year: timeRange[0],
+                                                        end_year: timeRange[1],
                                                     },
                                                 ), clientCode)}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                             >
-                                                {`Conflict disaggregated data ${endYear} (.geojson)`}
+                                                {`Conflict disaggregated data ${timeRange[1]} (.geojson)`}
 
                                             </ButtonLikeLink>
                                         </>
@@ -1157,10 +1168,12 @@ function Gidd(props: Props) {
                                             <ButtonLikeLink
                                                 transparent
                                                 compact
-                                                disabled={!disaggregationAvailable}
+                                                disabled={!isValidYearFilter}
                                                 actions={(
                                                     <IoInformationCircleOutline
-                                                        title={`${endYear} Disaster disaggregated caseloads`}
+                                                        title={isValidYearFilter
+                                                            ? `${timeRange[1]} Disaster disaggregated caseloads`
+                                                            : undefined}
                                                     />
                                                 )}
                                                 href={suffixHelixRestEndpoint(prepareUrl(
@@ -1172,20 +1185,24 @@ function Gidd(props: Props) {
                                                         iso3__in: countries,
                                                         disaster_type__in: hazardTypes,
                                                         // category: not implemented
+                                                        start_year: timeRange[0],
+                                                        end_year: timeRange[1],
                                                     },
                                                 ), clientCode)}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                             >
-                                                {`Disaster events disaggregated data ${endYear} (.xlsx)`}
+                                                {`Disaster events disaggregated data ${timeRange[1]} (.xlsx)`}
                                             </ButtonLikeLink>
                                             <ButtonLikeLink
                                                 transparent
                                                 compact
-                                                disabled={!disaggregationAvailable}
+                                                disabled={!isValidYearFilter}
                                                 actions={(
                                                     <IoInformationCircleOutline
-                                                        title={`${endYear} Disaster events disaggregated caseloads (geojson) formatted for GIS applications.\nIMPORTANT: Please read the metadata in the geojson`}
+                                                        title={isValidYearFilter
+                                                            ? `${timeRange[1]} Disaster events disaggregated caseloads (geojson) formatted for GIS applications.\nIMPORTANT: Please read the metadata in the geojson`
+                                                            : undefined}
                                                     />
                                                 )}
                                                 href={suffixHelixRestEndpoint(prepareUrl(
@@ -1197,14 +1214,24 @@ function Gidd(props: Props) {
                                                         iso3__in: countries,
                                                         disaster_type__in: hazardTypes,
                                                         // category: not implemented
+                                                        start_year: timeRange[0],
+                                                        end_year: timeRange[1],
                                                     },
                                                 ), clientCode)}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                             >
-                                                {`Disaster events disaggregated data ${endYear} (.geojson)`}
+                                                {`Disaster events disaggregated data ${timeRange[1]} (.geojson)`}
                                             </ButtonLikeLink>
                                         </>
+                                    )}
+
+                                    {!isValidYearFilter && (
+                                        <p className={styles.exportMessage}>
+                                            Note: Disaggregated data can only be downloaded one
+                                            <br />
+                                            year at a time, and is only available for 2023 onwards.
+                                        </p>
                                     )}
                                 </PopupButton>
                             </div>
