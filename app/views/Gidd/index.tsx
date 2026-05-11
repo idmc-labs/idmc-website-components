@@ -25,6 +25,7 @@ import {
     getHazardTypeLabel,
     suffixHelixRestEndpoint,
     prepareUrl,
+    isDisaggregationAvailable,
 } from '#utils/common';
 import {
     gql,
@@ -875,7 +876,10 @@ function Gidd(props: Props) {
         [disasterStats?.displacementsByHazardType],
     );
 
-    const isValidYearFilter = timeRange[0] === timeRange[1] && timeRange[0] >= 2023;
+    const disaggregationAvailable = isDisaggregationAvailable({
+        filterStartYear: timeRange[0],
+        filterEndYear: timeRange[1],
+    });
 
     const maxDisplacementValue = sortedHazards[0]?.newDisplacementsRounded ?? undefined;
 
@@ -954,6 +958,7 @@ function Gidd(props: Props) {
                                     {downloadText}
                                 </p>
                                 <PopupButton
+                                    popupClassName={styles.popup}
                                     label="Download dataset"
                                     name="download"
                                     variant="primary"
@@ -991,10 +996,10 @@ function Gidd(props: Props) {
                                             <ButtonLikeLink
                                                 transparent
                                                 compact
-                                                disabled={!isValidYearFilter}
+                                                disabled={!disaggregationAvailable}
                                                 actions={(
                                                     <IoInformationCircleOutline
-                                                        title={isValidYearFilter
+                                                        title={disaggregationAvailable
                                                             ? `${timeRange[1]} Disaggregated caseloads`
                                                             : undefined}
                                                     />
@@ -1020,10 +1025,10 @@ function Gidd(props: Props) {
                                             <ButtonLikeLink
                                                 transparent
                                                 compact
-                                                disabled={!isValidYearFilter}
+                                                disabled={!disaggregationAvailable}
                                                 actions={(
                                                     <IoInformationCircleOutline
-                                                        title={isValidYearFilter
+                                                        title={disaggregationAvailable
                                                             ? `${timeRange[1]} Disaggregated caseloads (geojson) formatted for GIS applications.\nIMPORTANT: Please read the metadata in the geojson`
                                                             : undefined}
                                                     />
@@ -1078,10 +1083,10 @@ function Gidd(props: Props) {
                                             <ButtonLikeLink
                                                 transparent
                                                 compact
-                                                disabled={!isValidYearFilter}
+                                                disabled={!disaggregationAvailable}
                                                 actions={(
                                                     <IoInformationCircleOutline
-                                                        title={isValidYearFilter
+                                                        title={disaggregationAvailable
                                                             ? `${timeRange[1]} Conflict disaggregated caseloads`
                                                             : undefined}
                                                     />
@@ -1107,10 +1112,10 @@ function Gidd(props: Props) {
                                             <ButtonLikeLink
                                                 transparent
                                                 compact
-                                                disabled={!isValidYearFilter}
+                                                disabled={!disaggregationAvailable}
                                                 actions={(
                                                     <IoInformationCircleOutline
-                                                        title={isValidYearFilter
+                                                        title={disaggregationAvailable
                                                             ? `${timeRange[1]} Conflict disaggregated caseloads (geojson) formatted for GIS applications.\nIMPORTANT: Please read the metadata in the geojson`
                                                             : undefined}
                                                     />
@@ -1168,10 +1173,10 @@ function Gidd(props: Props) {
                                             <ButtonLikeLink
                                                 transparent
                                                 compact
-                                                disabled={!isValidYearFilter}
+                                                disabled={!disaggregationAvailable}
                                                 actions={(
                                                     <IoInformationCircleOutline
-                                                        title={isValidYearFilter
+                                                        title={disaggregationAvailable
                                                             ? `${timeRange[1]} Disaster disaggregated caseloads`
                                                             : undefined}
                                                     />
@@ -1197,10 +1202,10 @@ function Gidd(props: Props) {
                                             <ButtonLikeLink
                                                 transparent
                                                 compact
-                                                disabled={!isValidYearFilter}
+                                                disabled={!disaggregationAvailable}
                                                 actions={(
                                                     <IoInformationCircleOutline
-                                                        title={isValidYearFilter
+                                                        title={disaggregationAvailable
                                                             ? `${timeRange[1]} Disaster events disaggregated caseloads (geojson) formatted for GIS applications.\nIMPORTANT: Please read the metadata in the geojson`
                                                             : undefined}
                                                     />
@@ -1226,10 +1231,9 @@ function Gidd(props: Props) {
                                         </>
                                     )}
 
-                                    {!isValidYearFilter && (
+                                    {!disaggregationAvailable && (
                                         <p className={styles.exportMessage}>
                                             Note: Disaggregated data can only be downloaded one
-                                            <br />
                                             year at a time, and is only available for 2023 onwards.
                                         </p>
                                     )}

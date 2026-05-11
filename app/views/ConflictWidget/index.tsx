@@ -119,7 +119,6 @@ function ConflictWidget(props: Props) {
     const disaggregationAvailable = isDisaggregationAvailable({
         filterStartYear: conflictTimeRangeActual[0],
         filterEndYear: conflictTimeRangeActual[1],
-        giddYear: year,
     });
 
     const {
@@ -214,6 +213,7 @@ function ConflictWidget(props: Props) {
                     </ButtonLikeLink>
                     <PopupButton
                         className={styles.exportButton}
+                        popupClassName={styles.popup}
                         label="Download dataset"
                         name="download"
                         variant="primary"
@@ -249,7 +249,7 @@ function ConflictWidget(props: Props) {
                             disabled={!disaggregationAvailable}
                             actions={(
                                 <IoInformationCircleOutline
-                                    title={`${year} Conflict disaggregated caseloads`}
+                                    title={`${conflictTimeRangeActual[1]} Conflict disaggregated caseloads`}
                                 />
                             )}
                             href={suffixHelixRestEndpoint(prepareUrl(
@@ -258,10 +258,12 @@ function ConflictWidget(props: Props) {
                                     iso3__in: iso3,
                                     release_environment: DATA_RELEASE,
                                     cause: CONFLICT,
+                                    start_year: conflictTimeRangeActual[0],
+                                    end_year: conflictTimeRangeActual[1],
                                 },
                             ), clientCode)}
                         >
-                            {`Conflict disaggregated data ${year} (.xlsx)`}
+                            {`Conflict disaggregated data ${conflictTimeRangeActual[1]} (.xlsx)`}
                         </ButtonLikeLink>
                         <ButtonLikeLink
                             disabled={!disaggregationAvailable}
@@ -270,7 +272,7 @@ function ConflictWidget(props: Props) {
                             transparent
                             actions={(
                                 <IoInformationCircleOutline
-                                    title={`${year} Conflict disaggregated caseloads (geojson) formatted for GIS applications.\nIMPORTANT: Please read the metadata in the geojson`}
+                                    title={`${conflictTimeRangeActual[1]} Conflict disaggregated caseloads (geojson) formatted for GIS applications.\nIMPORTANT: Please read the metadata in the geojson`}
                                 />
                             )}
                             href={suffixHelixRestEndpoint(prepareUrl(
@@ -279,11 +281,19 @@ function ConflictWidget(props: Props) {
                                     iso3__in: iso3,
                                     release_environment: DATA_RELEASE,
                                     cause: CONFLICT,
+                                    start_year: conflictTimeRangeActual[0],
+                                    end_year: conflictTimeRangeActual[1],
                                 },
                             ), clientCode)}
                         >
-                            {`Conflict disaggregated data ${year} (.geojson)`}
+                            {`Conflict disaggregated data ${conflictTimeRangeActual[1]} (.geojson)`}
                         </ButtonLikeLink>
+                        {!disaggregationAvailable && (
+                            <p className={styles.exportMessage}>
+                                Note: Disaggregated data can only be downloaded one
+                                year at a time, and is only available for 2023 onwards.
+                            </p>
+                        )}
                     </PopupButton>
                 </>
             )}
