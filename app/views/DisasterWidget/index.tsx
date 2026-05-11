@@ -248,7 +248,6 @@ function DisasterWidget(props: Props) {
                                     iso3__in: iso3,
                                     start_year: disasterTimeRange[0],
                                     end_year: disasterTimeRange[1],
-                                    release_environment: DATA_RELEASE,
                                     hazard_type__in: disasterTypes,
                                 },
                             ), clientCode)}
@@ -270,7 +269,6 @@ function DisasterWidget(props: Props) {
                                 'gidd/disaggregations/disaggregation-export/',
                                 {
                                     iso3__in: iso3,
-                                    release_environment: DATA_RELEASE,
                                     hazard_type__in: disasterTypes,
                                     cause: DISASTER,
                                     start_year: disasterTimeRangeActual[0],
@@ -295,7 +293,6 @@ function DisasterWidget(props: Props) {
                                 'gidd/disaggregations/disaggregation-geojson/',
                                 {
                                     iso3__in: iso3,
-                                    release_environment: DATA_RELEASE,
                                     hazard_type__in: disasterTypes,
                                     cause: DISASTER,
                                     start_year: disasterTimeRangeActual[0],

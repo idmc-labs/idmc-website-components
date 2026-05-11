@@ -978,7 +978,6 @@ function Gidd(props: Props) {
                                                 href={suffixHelixRestEndpoint(prepareUrl(
                                                     'gidd/displacements/displacement-export/',
                                                     {
-                                                        release_environment: DATA_RELEASE,
                                                         // cause: empty
 
                                                         iso3__in: countries,
@@ -1007,7 +1006,6 @@ function Gidd(props: Props) {
                                                 href={suffixHelixRestEndpoint(prepareUrl(
                                                     'gidd/disaggregations/disaggregation-export/',
                                                     {
-                                                        release_environment: DATA_RELEASE,
                                                         // cause: empty
 
                                                         iso3__in: countries,
@@ -1036,7 +1034,6 @@ function Gidd(props: Props) {
                                                 href={suffixHelixRestEndpoint(prepareUrl(
                                                     'gidd/disaggregations/disaggregation-geojson/',
                                                     {
-                                                        release_environment: DATA_RELEASE,
                                                         // cause: empty
 
                                                         iso3__in: countries,
@@ -1066,7 +1063,6 @@ function Gidd(props: Props) {
                                                 href={suffixHelixRestEndpoint(prepareUrl(
                                                     'gidd/displacements/displacement-export/',
                                                     {
-                                                        release_environment: DATA_RELEASE,
                                                         cause: displacementCause, // conflict
 
                                                         iso3__in: countries,
@@ -1094,7 +1090,6 @@ function Gidd(props: Props) {
                                                 href={suffixHelixRestEndpoint(prepareUrl(
                                                     'gidd/disaggregations/disaggregation-export/',
                                                     {
-                                                        release_environment: DATA_RELEASE,
                                                         cause: displacementCause, // conflict
 
                                                         iso3__in: countries,
@@ -1123,7 +1118,6 @@ function Gidd(props: Props) {
                                                 href={suffixHelixRestEndpoint(prepareUrl(
                                                     'gidd/disaggregations/disaggregation-geojson/',
                                                     {
-                                                        release_environment: DATA_RELEASE,
                                                         cause: displacementCause, // conflict
 
                                                         iso3__in: countries,
@@ -1155,7 +1149,6 @@ function Gidd(props: Props) {
                                                 href={suffixHelixRestEndpoint(prepareUrl(
                                                     'gidd/disasters/disaster-export/',
                                                     {
-                                                        release_environment: DATA_RELEASE,
                                                         // cause: not applicable
 
                                                         iso3__in: countries,
@@ -1184,7 +1177,6 @@ function Gidd(props: Props) {
                                                 href={suffixHelixRestEndpoint(prepareUrl(
                                                     'gidd/disaggregations/disaggregation-export/',
                                                     {
-                                                        release_environment: DATA_RELEASE,
                                                         cause: displacementCause, // Disaster
 
                                                         iso3__in: countries,
@@ -1213,7 +1205,6 @@ function Gidd(props: Props) {
                                                 href={suffixHelixRestEndpoint(prepareUrl(
                                                     'gidd/disaggregations/disaggregation-geojson/',
                                                     {
-                                                        release_environment: DATA_RELEASE,
                                                         cause: displacementCause, // Disaster
 
                                                         iso3__in: countries,

@@ -235,7 +235,6 @@ function ConflictWidget(props: Props) {
                                     iso3__in: iso3,
                                     start_year: conflictTimeRange[0],
                                     end_year: conflictTimeRange[1],
-                                    release_environment: DATA_RELEASE,
                                     cause: CONFLICT,
                                 },
                             ), clientCode)}
@@ -256,7 +255,6 @@ function ConflictWidget(props: Props) {
                                 'gidd/disaggregations/disaggregation-export/',
                                 {
                                     iso3__in: iso3,
-                                    release_environment: DATA_RELEASE,
                                     cause: CONFLICT,
                                     start_year: conflictTimeRangeActual[0],
                                     end_year: conflictTimeRangeActual[1],
@@ -279,7 +277,6 @@ function ConflictWidget(props: Props) {
                                 'gidd/disaggregations/disaggregation-geojson/',
                                 {
                                     iso3__in: iso3,
-                                    release_environment: DATA_RELEASE,
                                     cause: CONFLICT,
                                     start_year: conflictTimeRangeActual[0],
                                     end_year: conflictTimeRangeActual[1],
