@@ -142,7 +142,6 @@ function DisasterWidget(props: Props) {
     const disaggregationAvailable = isDisaggregationAvailable({
         filterStartYear: disasterTimeRangeActual[0],
         filterEndYear: disasterTimeRangeActual[1],
-        giddYear: year,
     });
 
     const {
@@ -226,6 +225,7 @@ function DisasterWidget(props: Props) {
                     </ButtonLikeLink>
                     <PopupButton
                         className={styles.exportButton}
+                        popupClassName={styles.popup}
                         label="Download dataset"
                         name="download"
                         variant="primary"
@@ -248,7 +248,6 @@ function DisasterWidget(props: Props) {
                                     iso3__in: iso3,
                                     start_year: disasterTimeRange[0],
                                     end_year: disasterTimeRange[1],
-                                    release_environment: DATA_RELEASE,
                                     hazard_type__in: disasterTypes,
                                 },
                             ), clientCode)}
@@ -263,20 +262,21 @@ function DisasterWidget(props: Props) {
                             disabled={!disaggregationAvailable}
                             actions={(
                                 <IoInformationCircleOutline
-                                    title={`${year} Disaster disaggregated caseloads`}
+                                    title={`${disasterTimeRangeActual[1]} Disaster disaggregated caseloads`}
                                 />
                             )}
                             href={suffixHelixRestEndpoint(prepareUrl(
                                 'gidd/disaggregations/disaggregation-export/',
                                 {
                                     iso3__in: iso3,
-                                    release_environment: DATA_RELEASE,
                                     hazard_type__in: disasterTypes,
                                     cause: DISASTER,
+                                    start_year: disasterTimeRangeActual[0],
+                                    end_year: disasterTimeRangeActual[1],
                                 },
                             ), clientCode)}
                         >
-                            {`Disaster events disaggregated data ${year} (.xlsx)`}
+                            {`Disaster events disaggregated data ${disasterTimeRangeActual[1]} (.xlsx)`}
                         </ButtonLikeLink>
                         <ButtonLikeLink
                             target="_blank"
@@ -286,21 +286,28 @@ function DisasterWidget(props: Props) {
                             disabled={!disaggregationAvailable}
                             actions={(
                                 <IoInformationCircleOutline
-                                    title={`${year} Disaster events disaggregated caseloads (geojson) formatted for GIS applications.\nIMPORTANT: Please read the metadata in the geojson`}
+                                    title={`${disasterTimeRangeActual[1]} Disaster events disaggregated caseloads (geojson) formatted for GIS applications.\nIMPORTANT: Please read the metadata in the geojson`}
                                 />
                             )}
                             href={suffixHelixRestEndpoint(prepareUrl(
                                 'gidd/disaggregations/disaggregation-geojson/',
                                 {
                                     iso3__in: iso3,
-                                    release_environment: DATA_RELEASE,
                                     hazard_type__in: disasterTypes,
                                     cause: DISASTER,
+                                    start_year: disasterTimeRangeActual[0],
+                                    end_year: disasterTimeRangeActual[1],
                                 },
                             ), clientCode)}
                         >
-                            {`Disaster events disaggregated data ${year} (.geojson)`}
+                            {`Disaster events disaggregated data ${disasterTimeRangeActual[1]} (.geojson)`}
                         </ButtonLikeLink>
+                        {!disaggregationAvailable && (
+                            <p className={styles.exportMessage}>
+                                Note: Disaggregated data can only be downloaded one
+                                year at a time, and is only available for 2023 onwards.
+                            </p>
+                        )}
                     </PopupButton>
                 </>
             )}

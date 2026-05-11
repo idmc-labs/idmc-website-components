@@ -240,16 +240,13 @@ export function getMaximum<T>(
 export function isDisaggregationAvailable(args: {
     filterStartYear: number,
     filterEndYear: number,
-    giddYear: number,
 }) {
     const {
         filterStartYear,
         filterEndYear,
-        giddYear,
     } = args;
     return (
         filterStartYear === filterEndYear
-        && filterStartYear === giddYear
-        && giddYear >= 2023
+        && filterStartYear >= 2023
     );
 }
