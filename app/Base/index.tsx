@@ -5,7 +5,6 @@ import {
     ApolloClient,
     ApolloProvider,
 } from '@apollo/client';
-import ReactGA from 'react-ga';
 import { listToMap, unique } from '@togglecorp/fujs';
 
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -18,10 +17,8 @@ import AlertContext, { AlertOptions } from '#components/AlertContext';
 
 import LanguageContext, { Lang } from '#context/LanguageContext';
 import PreloadMessage from '#base/components/PreloadMessage';
-import browserHistory from '#base/configs/history';
 import sentryConfig from '#base/configs/sentry';
 import apolloConfig from '#base/configs/apollo';
-import { trackingId, gaConfig } from '#base/configs/googleAnalytics';
 import { mapboxToken } from '#base/configs/mapbox';
 import useLocalStorage from '#hooks/useLocalStorage';
 import { HELIX_CLIENT_CODE } from '#utils/common';
@@ -33,15 +30,6 @@ setMapboxToken(mapboxToken);
 
 if (sentryConfig) {
     init(sentryConfig);
-}
-
-if (trackingId) {
-    ReactGA.initialize(trackingId, gaConfig);
-    browserHistory.listen((location) => {
-        const page = location.pathname ?? window.location.pathname;
-        ReactGA.set({ page });
-        ReactGA.pageview(page);
-    });
 }
 
 const apolloClient = new ApolloClient(apolloConfig);

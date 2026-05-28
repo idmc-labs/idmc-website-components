@@ -16,6 +16,7 @@ const config = {
     settings: {
         'import/resolver': {
             'babel-module': {},
+            'typescript': {},
         },
         react: {
             version: 'detect',

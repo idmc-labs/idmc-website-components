@@ -1,9 +1,11 @@
-import React, { useMemo, useLayoutEffect } from 'react';
+import React, { useMemo, useLayoutEffect, useEffect } from 'react';
+import { isDefined } from '@togglecorp/fujs';
 import {
     gql,
     useQuery,
 } from '@apollo/client';
 import { addBreadcrumb } from '@sentry/react';
+import ReactGA from 'react-ga4';
 
 import Home from '#views/Home';
 import CountryProfile, { Props as CountryProfileProps } from '#views/CountryProfile';
@@ -141,6 +143,54 @@ function DocumentTitle({ value, standaloneMode }: DocumentTitleProps) {
     return null;
 }
 
+const pageTitleMap = [
+    {
+        page: 'home',
+        title: 'Home',
+        category: 'home',
+    },
+    {
+        page: 'good-practices',
+        title: 'Good Practices',
+        category: 'other',
+    },
+    {
+        page: 'good-practice',
+        title: 'Good Practice',
+        category: 'other',
+    },
+    {
+        page: 'country-profile',
+        title: 'Country Profile',
+        category: 'country-profile',
+    },
+    {
+        page: 'gidd',
+        title: 'GIDD dashboard',
+        category: 'global',
+    },
+    {
+        page: 'idu-map',
+        title: 'IDU Map',
+        category: 'country-profile',
+    },
+    {
+        page: 'conflict-widget',
+        title: 'Conflict',
+        category: 'country-profile',
+    },
+    {
+        page: 'disaster-widget',
+        title: 'Disaster',
+        category: 'country-profile',
+    },
+    {
+        page: 'idu-widget',
+        title: 'IDU',
+        category: 'global',
+    },
+];
+
 interface Props {
     className?: string;
     page?: string;
@@ -161,6 +211,18 @@ function Page(props: Props) {
         iso3: currentCountry,
         clientCode,
     } = props;
+
+    useEffect(() => {
+        // NOTE: Homepage returns 'undefined' value for page
+        const safePage = isDefined(page) ? page : 'home';
+        const pageItem = pageTitleMap.find((p) => p.page === safePage);
+        ReactGA.send({
+            hitType: 'pageview',
+            page_path: safePage,
+            page_title: pageItem?.title,
+            content_group: pageItem?.category,
+        });
+    }, [page]);
 
     if (page === 'good-practices') {
         return (
