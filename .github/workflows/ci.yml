@@ -100,7 +100,7 @@ jobs:
 
   helix_staging_preview_deploy:
     name: PREVIEW / HELIX-STAGING
-    if: github.ref == 'refs/heads/deploy-staging'
+    if: github.ref == 'refs/heads/deploy'
     needs: run_build
     uses: ./.github/workflows/aws_deploy.yml
     secrets: inherit
@@ -111,7 +111,7 @@ jobs:
 
   helix_prod_preview_deploy:
     name: PREVIEW / HELIX-PROD
-    if: github.ref == 'refs/heads/deploy-prod'
+    if: github.ref == 'refs/heads/deploy'
     needs: run_build
     uses: ./.github/workflows/aws_deploy.yml
     secrets: inherit
@@ -122,7 +122,7 @@ jobs:
 
   helix_prod_release_deploy:
     name: RELEASE / HELIX-PROD
-    if: github.ref == 'refs/heads/deploy-prod'
+    if: github.ref == 'refs/heads/deploy'
     needs: helix_prod_preview_deploy
     uses: ./.github/workflows/aws_deploy.yml
     secrets: inherit
