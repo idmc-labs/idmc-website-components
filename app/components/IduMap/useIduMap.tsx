@@ -31,6 +31,7 @@ import ButtonLikeLink from '#components/ButtonLikeLink';
 import Header from '#components/Header';
 import SliderInput from '#components/SliderInput';
 import Container from '#components/Container';
+import Message from '#components/Message';
 
 import {
     monthList,
@@ -99,7 +100,7 @@ type DisplacementNumber = 'less-than-100' | 'less-than-1000' | 'more-than-1000';
 const TODAY = new Date();
 const MONTHS = 6;
 
-function useIduQuery(
+function useIduMap(
     clientCode: string,
     boundingBox?: LngLatBounds | undefined,
     iso3?: string,
@@ -145,9 +146,8 @@ function useIduQuery(
     const {
         previousData: previousIduData,
         data: iduData = previousIduData,
-        // TODO: handle loading and error
-        // loading: iduDataLoading,
-        // error: iduDataError,
+        loading,
+        error,
     } = useQuery<IduDataQuery, IduDataQueryVariables>(
         IDU_DATA,
         {
@@ -246,6 +246,13 @@ function useIduQuery(
         });
     }, [setMapNoOfDisplacements]);
 
+    if (error) {
+        return {
+            idus,
+            widget: <Message message="Some error occurred!" />,
+        };
+    }
+
     const widget = (
         <Container
             className={styles.container}
@@ -342,7 +349,7 @@ function useIduQuery(
                         icons={(
                             <IoDownloadOutline />
                         )}
-                        disabled={isNotDefined(idusForMap)}
+                        disabled={loading || isNotDefined(idusForMap)}
                     >
                         Download dataset
                     </Button>
@@ -373,4 +380,4 @@ function useIduQuery(
     };
 }
 
-export default useIduQuery;
+export default useIduMap;

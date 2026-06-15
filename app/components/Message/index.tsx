@@ -22,6 +22,7 @@ export interface Props {
     erroredEmptyIcon?: React.ReactNode;
     onReload?: () => void;
     actions?: React.ReactNode;
+    heading?: React.ReactNode;
     message?: React.ReactNode;
     pendingMessage?: string;
     emptyMessage?: React.ReactNode;
@@ -49,6 +50,7 @@ function Message(props: Props) {
         filteredEmptyIcon,
         erroredEmptyIcon,
         message: messageFromProps,
+        heading,
         pendingMessage,
         emptyMessage,
         filteredEmptyMessage,
@@ -93,7 +95,7 @@ function Message(props: Props) {
         }
     }
 
-    if (!icon && !message) {
+    if (!icon && !message && !heading) {
         return null;
     }
 
@@ -111,6 +113,11 @@ function Message(props: Props) {
             {!messageIconHidden && (
                 <div className={styles.iconContainer}>
                     {icon}
+                </div>
+            )}
+            {heading && (
+                <div className={styles.heading}>
+                    {heading}
                 </div>
             )}
             {!messageHidden && (

@@ -31,11 +31,13 @@ import TextOutput from '#components/TextOutput';
 import RelatedMaterialItem from '#components/RelatedMaterialItem';
 import TooltipIcon from '#components/TooltipIcon';
 import FigureAnalysis from '#components/FigureAnalysis';
+import Message from '#components/Message';
 
 import {
     getMaximum,
 } from '#utils/common';
 
+import useYear from '#hooks/useYear';
 import IduWidget from '../IduWidget';
 import ConflictWidget from '../ConflictWidget';
 import DisasterWidget from '../DisasterWidget';
@@ -554,6 +556,25 @@ function CountryProfile(props: Props) {
                 </div>
             </div>
         </div>
+    );
+}
+
+export function CountryProfileWithYear(props: Omit<Props, 'endYear'>) {
+    // eslint-disable-next-line react/destructuring-assignment
+    const { loading, year, error } = useYear(props.clientCode);
+    if (loading) {
+        return null;
+    }
+    if (error || !year) {
+        return (
+            <Message message="Some error occurred!" />
+        );
+    }
+    return (
+        <CountryProfile
+            {...props}
+            endYear={year}
+        />
     );
 }
 

@@ -13,6 +13,11 @@
         font-size: 3em;
     }
 
+    .heading {
+        font-size: var(--tui-font-size-super-large);
+        font-weight: var(--tui-font-weight-bold);
+    }
+
     &.compact {
         .icon-container {
             font-size: 1em;

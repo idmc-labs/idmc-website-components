@@ -5,7 +5,7 @@ import {
     ApolloClient,
     ApolloProvider,
 } from '@apollo/client';
-import { listToMap, unique } from '@togglecorp/fujs';
+import { unique } from '@togglecorp/fujs';
 
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '@togglecorp/toggle-ui/build/index.css';
@@ -14,14 +14,14 @@ import { setMapboxToken } from '@togglecorp/re-map';
 
 import AlertContainer from '#components/AlertContainer';
 import AlertContext, { AlertOptions } from '#components/AlertContext';
+import Message from '#components/Message';
 
 import LanguageContext, { Lang } from '#context/LanguageContext';
-import PreloadMessage from '#base/components/PreloadMessage';
 import sentryConfig from '#base/configs/sentry';
 import apolloConfig from '#base/configs/apollo';
 import { mapboxToken } from '#base/configs/mapbox';
 import useLocalStorage from '#hooks/useLocalStorage';
-import { HELIX_CLIENT_CODE } from '#utils/common';
+import { parseQueryString, standaloneMode } from '#utils/common';
 
 import Page from './Page';
 import styles from './styles.css';
@@ -34,53 +34,19 @@ if (sentryConfig) {
 
 const apolloClient = new ApolloClient(apolloConfig);
 
-export function parseQueryString(value: string) {
-    const val = value.substring(1);
-    return listToMap(
-        val.split('&').map((token) => token.split('=')),
-        (item) => item[0],
-        (item) => item[1],
-    );
-}
-
 interface Win {
-    standaloneMode?: boolean;
     page?: string;
-    iso3?: string;
-    countryName?: string;
-    id?: string;
 }
 
 interface Query {
     page?: string;
-    clientCode?: string;
-
-    // For country profile
-    iso3?: string;
-    countryName?: string;
-
-    // For good practices
-    id?: string;
 }
-
-const standaloneMode = (window as Win).standaloneMode ?? false;
 
 const query: Query = parseQueryString(window.location.search);
 
 const currentPage = standaloneMode
     ? query.page
     : (window as Win).page;
-const currentCountry = standaloneMode
-    ? query.iso3
-    : (window as Win).iso3;
-const currentCountryName = standaloneMode
-    ? query.countryName
-    : (window as Win).countryName;
-// NOTE: We are directly using id from query for the good practices
-const currentId = query.id;
-const currentClientCode = standaloneMode
-    ? query.clientCode
-    : HELIX_CLIENT_CODE;
 
 function Base() {
     const [lang, setLang] = useLocalStorage<Lang>('idmc-website-language', 'en', false);
@@ -164,9 +130,9 @@ function Base() {
             <ErrorBoundary
                 showDialog
                 fallback={(
-                    <PreloadMessage
+                    <Message
                         heading="Oh no!"
-                        content="Some error occurred!"
+                        message="Some error occurred!"
                     />
                 )}
             >
@@ -175,13 +141,8 @@ function Base() {
                         <AlertContext.Provider value={alertContext}>
                             <AlertContainer className={styles.alertContainer} />
                             <Page
-                                clientCode={currentClientCode}
-                                iso3={currentCountry}
                                 className={styles.view}
                                 page={currentPage}
-                                standaloneMode={standaloneMode}
-                                countryName={currentCountryName}
-                                id={currentId}
                             />
                         </AlertContext.Provider>
                     </LanguageContext.Provider>
