@@ -4,8 +4,7 @@ on:
   pull_request:
   push:
     branches:
-      - deploy-staging
-      - deploy-prod
+      - deploy
 
 jobs:
   lint_test:
@@ -70,7 +69,6 @@ jobs:
 
       - name: 🤞 Run Build 🧪 (PREVIEW -> Helix-STAGING)
         uses: ./.github/actions/run_build
-        if: github.ref == 'refs/heads/deploy-staging'
         with:
           REACT_APP_ENVIRONMENT: preview
           BUILD_OUTPUT_DIR: build-preview-helix-staging/
@@ -81,7 +79,6 @@ jobs:
           REACT_APP_HELIX_REST_ENDPOINT: https://helix-tools-api-staging.idmcdb.org/external-api/
 
       - name: 🤞 Run Build 🧪 (PREVIEW -> Helix-PROD)
-        if: github.ref == 'refs/heads/deploy-prod'
         uses: ./.github/actions/run_build
         with:
           REACT_APP_ENVIRONMENT: preview
@@ -90,7 +87,6 @@ jobs:
           REACT_APP_DATA_RELEASE: PRE_RELEASE
 
       - name: 🤞 Run Build 🧪 (RELEASE -> Helix-PROD)
-        if: github.ref == 'refs/heads/deploy-prod'
         uses: ./.github/actions/run_build
         with:
           REACT_APP_ENVIRONMENT: release
@@ -100,7 +96,6 @@ jobs:
 
   helix_staging_preview_deploy:
     name: PREVIEW / HELIX-STAGING
-    if: github.ref == 'refs/heads/deploy'
     needs: run_build
     uses: ./.github/workflows/aws_deploy.yml
     secrets: inherit
@@ -111,8 +106,7 @@ jobs:
 
   helix_prod_preview_deploy:
     name: PREVIEW / HELIX-PROD
-    if: github.ref == 'refs/heads/deploy'
-    needs: run_build
+    needs: helix_staging_preview_deploy
     uses: ./.github/workflows/aws_deploy.yml
     secrets: inherit
     with:
@@ -122,8 +116,7 @@ jobs:
 
   helix_prod_release_deploy:
     name: RELEASE / HELIX-PROD
-    if: github.ref == 'refs/heads/deploy'
-    needs: helix_prod_preview_deploy
+    needs: helix_staging_preview_deploy
     uses: ./.github/workflows/aws_deploy.yml
     secrets: inherit
     with:
