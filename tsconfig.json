@@ -12,7 +12,7 @@
         "allowSyntheticDefaultImports": true,
         "baseUrl": ".",
         "esModuleInterop": true,
-        "moduleResolution": "node",
+        "moduleResolution": "bundler",
 
         "paths": {
             "#generated/*": ["./generated/*"],

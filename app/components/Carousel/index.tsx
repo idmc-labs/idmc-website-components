@@ -159,8 +159,8 @@ function Carousel(props: Props) {
             newItems.splice(index, 1);
 
             const newActiveItem = (
-                isDefined(prevState.activeItem) && prevState.activeItem
-            ) > newItems.length
+                isDefined(prevState.activeItem) && prevState.activeItem > newItems.length
+            )
                 ? newItems.length
                 : prevState.activeItem;
 
