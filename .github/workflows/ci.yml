@@ -58,6 +58,7 @@ jobs:
           BUILD_OUTPUT_DIR: build-dev/
           UPLOAD_ARTIFACT_NAME: dev-idmc-website-components
           REACT_APP_DATA_RELEASE: RELEASE
+          REACT_APP_GA_TRACKING_ID: ''
 
   run_build:
     name: 🚴 Build 🚴
@@ -82,6 +83,7 @@ jobs:
           BUILD_OUTPUT_DIR: build-preview-helix-staging/
           UPLOAD_ARTIFACT_NAME: helix-staging-preview-idmc-website-components
           REACT_APP_DATA_RELEASE: PRE_RELEASE
+          REACT_APP_GA_TRACKING_ID: G-7KZ7QNJKWG
           # Overwrite
           REACT_APP_HELIX_GRAPHQL_ENDPOINT: https://helix-tools-api-staging.idmcdb.org/graphql
           REACT_APP_HELIX_REST_ENDPOINT: https://helix-tools-api-staging.idmcdb.org/external-api/
@@ -93,6 +95,7 @@ jobs:
           BUILD_OUTPUT_DIR: build-preview/
           UPLOAD_ARTIFACT_NAME: preview-idmc-website-components
           REACT_APP_DATA_RELEASE: PRE_RELEASE
+          REACT_APP_GA_TRACKING_ID: G-7KZ7QNJKWG
 
       - name: 🤞 Run Build 🧪 (RELEASE -> Helix-PROD)
         uses: ./.github/actions/run_build
@@ -101,6 +104,7 @@ jobs:
           BUILD_OUTPUT_DIR: build-release/
           UPLOAD_ARTIFACT_NAME: release-idmc-website-components
           REACT_APP_DATA_RELEASE: RELEASE
+          REACT_APP_GA_TRACKING_ID: G-J8ZKYT48SC
 
   helix_staging_preview_deploy:
     name: PREVIEW / HELIX-STAGING
