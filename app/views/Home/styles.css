@@ -4,6 +4,16 @@
     gap: var(--tui-spacing-large);
     padding: var(--tui-spacing-large);
 
+    .header {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--tui-spacing-large);
+
+        .spacer {
+            flex-grow: 1;
+        }
+    }
+
     .filters {
         display: flex;
         flex-wrap: wrap;
@@ -23,7 +33,7 @@
             background-color: var(--tui-color-background);
             padding: var(--tui-spacing-medium);
 
-            max-height: 500px;
+            max-height: 240px;
             overflow: auto;
 
             .items {
