@@ -36,14 +36,18 @@ function Page(props: Props) {
                 level: 'info',
             });
 
+            const iso3 = readString('iso3');
+
             ReactGA.send({
                 hitType: 'pageview',
                 page: route.pattern,
                 title: route.title,
                 content_group: route.category,
+                // Custom dimensions
+                country_iso3: iso3.value ? iso3.value.toUpperCase() : undefined,
             });
-            // NOTE: We want to add page here so that subsequent 404 errors also track page views
         },
+        // NOTE: We want to add page here so that subsequent 404 errors also track page views
         [name, route],
     );
 
