@@ -31,6 +31,21 @@ export function parseQueryString(value: string) {
     );
 }
 
+// NOTE: clientCode is sensitive and must not leak into analytics URLs
+// (page_location / page_referrer). Strip it from a URL before sending to GA.
+export function stripClientCode(rawUrl: string | undefined): string | undefined {
+    if (isFalsyString(rawUrl)) {
+        return undefined;
+    }
+    try {
+        const url = new URL(rawUrl, window.location.origin);
+        url.searchParams.delete('clientCode');
+        return url.toString();
+    } catch {
+        return undefined;
+    }
+}
+
 export function rankedSearchOnList<T>(
     list: T[],
     searchString: string | undefined,

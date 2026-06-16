@@ -12,6 +12,7 @@ import {
     readInteger,
     readClientCode,
 } from '#utils/params';
+import { stripClientCode } from '#utils/common';
 
 interface Props {
     className?: string;
@@ -37,14 +38,18 @@ function Page(props: Props) {
             });
 
             const iso3 = readString('iso3');
+            const clientCode = readClientCode();
 
             ReactGA.send({
                 hitType: 'pageview',
                 page: route.pattern,
                 title: route.title,
                 content_group: route.category,
+                location: stripClientCode(window.location.href),
+                page_referrer: stripClientCode(document.referrer),
                 // Custom dimensions
                 country_iso3: iso3.value ? iso3.value.toUpperCase() : undefined,
+                client_code: clientCode.value ? clientCode.value : undefined,
             });
         },
         // NOTE: We want to add page here so that subsequent 404 errors also track page views
