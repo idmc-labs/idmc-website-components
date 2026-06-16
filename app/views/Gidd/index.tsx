@@ -58,6 +58,7 @@ import TabPanel from '#components/Tabs/TabPanel';
 import GridFilterInputContainer from '#components/GridFilterInputContainer';
 import useDebouncedValue from '#hooks/useDebouncedValue';
 import DisplacementIcon from '#components/DisplacementIcon';
+import Message from '#components/Message';
 import {
     GiddFilterOptionsQuery,
     GiddFilterOptionsQueryVariables,
@@ -65,6 +66,7 @@ import {
     GiddStatisticsQueryVariables,
 } from '#generated/types';
 
+import useYear from '#hooks/useYear';
 import EventsTable from './EventsTable';
 import DataTable from './DataTable';
 
@@ -1598,4 +1600,23 @@ function Gidd(props: Props) {
         </div>
     );
 }
+export function GiddWithYear(props: Omit<Props, 'endYear'>) {
+    // eslint-disable-next-line react/destructuring-assignment
+    const { loading, year, error } = useYear(props.clientCode);
+    if (loading) {
+        return null;
+    }
+    if (error || !year) {
+        return (
+            <Message message="Some error occurred!" />
+        );
+    }
+    return (
+        <Gidd
+            {...props}
+            endYear={year}
+        />
+    );
+}
+
 export default Gidd;

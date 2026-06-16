@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" translate="no">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Embedded: Conflict Widget</title>
+        <!--
+            NOTE: Asset references differ between development and production builds.
+            In a production build, component styles are extracted into /css/main.css
+            and the webpack runtime is split into /js/runtime.bundle.js (which must load
+            before main.bundle.js below). In development both are inlined into
+            main.bundle.js (styles injected by style-loader), so /css/main.css and
+            /js/runtime.bundle.js do not exist and will 404 harmlessly.
+        -->
+        <link rel="stylesheet" href="./base.css" />
+        <link rel="stylesheet" href="/css/main.css" />
+        <style>
+            :root { --embed-min-height: 400px; }
+        </style>
+        <script>
+            window.page = 'conflict-widget';
+            window.iso3 = 'AFG';
+        </script>
+    </head>
+    <body>
+        <div id="app-container">
+            <div class="embed-loading">Loading...</div>
+        </div>
+        <script type="text/javascript" src="/js/runtime.bundle.js"></script>
+        <script type="text/javascript" src="/js/main.bundle.js"></script>
+    </body>
+</html>

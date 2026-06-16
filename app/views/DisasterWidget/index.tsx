@@ -31,6 +31,7 @@ import Infographic from '#components/Infographic';
 import SliderInput from '#components/SliderInput';
 import Container from '#components/Container';
 import TooltipIcon from '#components/TooltipIcon';
+import Message from '#components/Message';
 
 import {
     formatNumber,
@@ -49,6 +50,7 @@ import {
     DisasterStatsQueryVariables,
 } from '#generated/types';
 
+import useYear from '#hooks/useYear';
 import { countryMetadata } from '../CountryProfile/data';
 import useDebouncedValue from '../../hooks/useDebouncedValue';
 import styles from './styles.css';
@@ -464,4 +466,23 @@ function DisasterWidget(props: Props) {
         </Container>
     );
 }
+export function DisasterWidgetWithYear(props: Omit<Props, 'endYear'>) {
+    // eslint-disable-next-line react/destructuring-assignment
+    const { loading, year, error } = useYear(props.clientCode);
+    if (loading) {
+        return null;
+    }
+    if (error || !year) {
+        return (
+            <Message message="Some error occurred!" />
+        );
+    }
+    return (
+        <DisasterWidget
+            {...props}
+            endYear={year}
+        />
+    );
+}
+
 export default DisasterWidget;

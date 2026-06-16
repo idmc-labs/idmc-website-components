@@ -4,6 +4,7 @@ import {
     isNotDefined,
     isDefined,
     isFalsyString,
+    listToMap,
     sum,
     caseInsensitiveSubmatch,
     compareStringSearch,
@@ -20,6 +21,30 @@ export const HELIX_CLIENT_CODE = process.env.REACT_APP_HELIX_CLIENT_ID as string
 export const DATA_RELEASE = process.env.REACT_APP_DATA_RELEASE as string || '';
 
 export const standaloneMode = (window as { standaloneMode?: boolean }).standaloneMode ?? false;
+
+export function parseQueryString(value: string) {
+    const val = value.substring(1);
+    return listToMap(
+        val.split('&').map((token) => token.split('=')),
+        (item) => item[0],
+        (item) => item[1],
+    );
+}
+
+// NOTE: clientCode is sensitive and must not leak into analytics URLs
+// (page_location / page_referrer). Strip it from a URL before sending to GA.
+export function stripClientCode(rawUrl: string | undefined): string | undefined {
+    if (isFalsyString(rawUrl)) {
+        return undefined;
+    }
+    try {
+        const url = new URL(rawUrl, window.location.origin);
+        url.searchParams.delete('clientCode');
+        return url.toString();
+    } catch {
+        return undefined;
+    }
+}
 
 export function rankedSearchOnList<T>(
     list: T[],

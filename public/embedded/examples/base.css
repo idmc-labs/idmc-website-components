@@ -1,0 +1,26 @@
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+#app-container {
+    min-height: var(--embed-min-height, 100vh);
+}
+
+/* Mirrors the <Message /> component */
+.embed-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--embed-min-height, 100vh);
+    gap: 10px;
+    padding: 10px;
+    text-align: center;
+    color: rgba(0, 0, 0, 0.5);
+    font-size: 32px;
+}

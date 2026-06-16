@@ -198,6 +198,7 @@ function RawIduMap(props: Props) {
             mapOptions={{
                 logoPosition: 'bottom-left',
                 scrollZoom: false,
+                zoom: 1,
             }}
             scaleControlShown
             navControlShown
