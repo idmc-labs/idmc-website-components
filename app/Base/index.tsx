@@ -142,7 +142,7 @@ function Base() {
                             <AlertContainer className={styles.alertContainer} />
                             <Page
                                 className={styles.view}
-                                page={currentPage}
+                                name={currentPage}
                             />
                         </AlertContext.Provider>
                     </LanguageContext.Provider>

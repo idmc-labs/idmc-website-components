@@ -16,16 +16,16 @@ import {
 interface Props {
     className?: string;
     // FIXME: make this typesafe
-    page?: string;
+    name?: string;
 }
 
 function Page(props: Props) {
     const {
         className,
-        page,
+        name,
     } = props;
 
-    const requestedPage = page ?? 'home';
+    const requestedPage = name ?? 'home';
     const route = routeSettings[requestedPage] ?? notFoundRoute;
 
     useEffect(
@@ -44,7 +44,7 @@ function Page(props: Props) {
             });
             // NOTE: We want to add page here so that subsequent 404 errors also track page views
         },
-        [page, route],
+        [name, route],
     );
 
     const Loader = route.loader;
