@@ -4,13 +4,21 @@ import {
     browserTracingIntegration,
     replayIntegration,
 } from '@sentry/react';
+import { readRuntimeConfig } from '#utils/runtimeConfig';
 
 const appCommitHash = process.env.REACT_APP_COMMITHASH;
 const appName = process.env.MY_APP_ID;
 
-const sentryDsn = process.env.REACT_APP_SENTRY_DSN;
+// NOTE: reading the DSN through readRuntimeConfig() is what keeps the check below
+// alive in the minified bundle, so a deployment that supplies no DSN really gets
+// no Sentry -- rather than an initialised client with tracing, session replay and
+// profiling attached to a DSN of `undefined`.
+const sentryDsn = readRuntimeConfig(process.env.REACT_APP_SENTRY_DSN);
 
-const env = process.env.REACT_APP_ENVIRONMENT;
+// NOTE: String() rather than readRuntimeConfig() so an environment that was never
+// supplied tags events as `undefined`, instead of being dropped and letting Sentry
+// apply its own `production` default.
+const env = String(process.env.REACT_APP_ENVIRONMENT);
 
 const sentryConfig: BrowserOptions | undefined = sentryDsn ? {
     dsn: sentryDsn,
