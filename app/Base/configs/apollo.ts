@@ -12,6 +12,7 @@ import {
     DRUPAL_REST_ENDPOINT,
     readStorage,
 } from '#utils/common';
+import { requireRuntimeConfig } from '#utils/runtimeConfig';
 import { ApolloLink } from 'apollo-link';
 import { RestLink } from 'apollo-link-rest';
 import { createUploadLink } from 'apollo-upload-client';
@@ -19,8 +20,8 @@ import { createUploadLink } from 'apollo-upload-client';
 // FIXME: move this to utils
 const langStorageKey = 'idmc-website-language';
 
-const GIDD_GRAPHQL_ENDPOINT = process.env.REACT_APP_GIDD_GRAPHQL_ENDPOINT as string;
-const HELIX_GRAPHQL_ENDPOINT = process.env.REACT_APP_HELIX_GRAPHQL_ENDPOINT as string;
+const GIDD_GRAPHQL_ENDPOINT = requireRuntimeConfig('REACT_APP_GIDD_GRAPHQL_ENDPOINT', process.env.REACT_APP_GIDD_GRAPHQL_ENDPOINT);
+const HELIX_GRAPHQL_ENDPOINT = requireRuntimeConfig('REACT_APP_HELIX_GRAPHQL_ENDPOINT', process.env.REACT_APP_HELIX_GRAPHQL_ENDPOINT);
 
 const giddGqlLink = new HttpLink({
     uri: GIDD_GRAPHQL_ENDPOINT,

@@ -13,12 +13,13 @@ import {
     formatNumberRaw,
     getAutoPrecision,
 } from '#components/Numeral';
+import { requireRuntimeConfig } from '#utils/runtimeConfig';
 
-export const DRUPAL_REST_ENDPOINT = process.env.REACT_APP_DRUPAL_REST_ENDPOINT as string || '';
-export const DRUPAL_ENDPOINT = process.env.REACT_APP_DRUPAL_ENDPOINT as string || '';
-export const HELIX_REST_ENDPOINT = process.env.REACT_APP_HELIX_REST_ENDPOINT as string;
-export const HELIX_CLIENT_CODE = process.env.REACT_APP_HELIX_CLIENT_ID as string || '';
-export const DATA_RELEASE = process.env.REACT_APP_DATA_RELEASE as string || '';
+export const DRUPAL_REST_ENDPOINT = requireRuntimeConfig('REACT_APP_DRUPAL_REST_ENDPOINT', process.env.REACT_APP_DRUPAL_REST_ENDPOINT);
+export const DRUPAL_ENDPOINT = requireRuntimeConfig('REACT_APP_DRUPAL_ENDPOINT', process.env.REACT_APP_DRUPAL_ENDPOINT);
+export const HELIX_REST_ENDPOINT = requireRuntimeConfig('REACT_APP_HELIX_REST_ENDPOINT', process.env.REACT_APP_HELIX_REST_ENDPOINT);
+export const HELIX_CLIENT_CODE = requireRuntimeConfig('REACT_APP_HELIX_CLIENT_ID', process.env.REACT_APP_HELIX_CLIENT_ID);
+export const DATA_RELEASE = requireRuntimeConfig('REACT_APP_DATA_RELEASE', process.env.REACT_APP_DATA_RELEASE);
 
 export const standaloneMode = (window as { standaloneMode?: boolean }).standaloneMode ?? false;
 
