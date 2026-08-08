@@ -3,6 +3,7 @@
 /build
 /coverage
 /generated
+/docs
 
 .env
 .env.dev
