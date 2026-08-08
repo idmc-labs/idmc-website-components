@@ -1,70 +1,223 @@
-.container {
+.dashboard {
+    /* Single knob to scale only the SPACING of dashboard components (font sizes
+       stay at the app defaults). Spacing tokens are rem-based (app/Base/styles.css),
+       redefined here as calc(base * scale). */
+    --idu-scale: 0.5;
+
+    --tui-spacing-ultra-small: calc(0.1rem * var(--idu-scale));
+    --tui-spacing-extra-extra-small: calc(0.3rem * var(--idu-scale));
+    --tui-spacing-extra-small: calc(0.7rem * var(--idu-scale));
+    --tui-spacing-small: calc(0.8rem * var(--idu-scale));
+    --tui-spacing-medium: calc(1rem * var(--idu-scale));
+    --tui-spacing-large: calc(1.26rem * var(--idu-scale));
+
+    /* app sets input-section radius to 0; give the dashboard inputs a small radius */
+    --tui-radius-border-input-section: 0.25rem;
+
+    display: flex;
     flex-basis: 100%;
+    flex-direction: column;
+    gap: var(--tui-spacing-medium);
 
-    .filters-container {
-        .displacement-legend {
+    .top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: var(--tui-spacing-small);
+
+        .top-actions {
             display: flex;
-            flex-basis: 20%;
-            flex-direction: column;
-            gap: var(--tui-spacing-extra-small);
+            align-items: center;
+            gap: var(--tui-spacing-small);
+        }
+    }
 
-            .legend-element-list {
+    .filter-bar {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: var(--tui-spacing-small);
+
+        .search {
+            flex: 0 1 10rem;
+            max-width: 10rem;
+        }
+
+        .cause {
+            flex-shrink: 0;
+        }
+
+        .trigger-types,
+        .countries {
+            flex: 0 1 12rem;
+            max-width: 12rem;
+        }
+
+        .date-range {
+            flex-shrink: 0;
+        }
+    }
+
+    .panes {
+        display: flex;
+        align-items: stretch;
+        gap: var(--tui-spacing-medium);
+
+        .left-pane {
+            position: relative;
+            flex-basis: 62%;
+            flex-grow: 1;
+
+            .view-toggle {
+                position: absolute;
+                top: var(--tui-spacing-small);
+                left: var(--tui-spacing-small);
+            }
+
+            /* keep the map's own controls below the (fixed) input popups */
+            :global {
+                .mapboxgl-ctrl-top-left,
+                .mapboxgl-ctrl-top-right,
+                .mapboxgl-ctrl-bottom-left,
+                .mapboxgl-ctrl-bottom-right {
+                    z-index: 0;
+                }
+            }
+
+            .table-placeholder {
                 display: flex;
-                flex-grow: 1;
-                gap: var(--tui-spacing-small);
-                height: 3rem;
+                align-items: center;
+                justify-content: center;
+                height: 32rem;
+                color: var(--tui-color-label, #7a7a7a);
             }
         }
-        .number-legend {
-            display: flex;
-            flex-basis: 40%;
-            flex-direction: column;
-            gap: var(--tui-spacing-extra-small);
 
-            .legend-element-list {
+        .right-pane {
+            display: flex;
+            flex-basis: 38%;
+            flex-direction: column;
+            gap: var(--tui-spacing-small);
+
+            .carousel {
                 display: flex;
+                flex-direction: column;
                 flex-grow: 1;
                 gap: var(--tui-spacing-small);
-                height: 3rem;
+
+                .slides {
+                    position: relative;
+                    flex-grow: 1;
+
+                    .slide {
+                        height: 100%;
+
+                        .slide-placeholder {
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            height: 100%;
+                            min-height: 24rem;
+                            color: var(--tui-color-label, #7a7a7a);
+                        }
+                    }
+                }
+
+                .carousel-selector {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+
+                    .pager {
+                        /* fixed rem so the pager isn't shrunk by --idu-scale */
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 0.5rem;
+                        border: 1px solid var(--tui-color-separator, #d0d5dd);
+                        border-radius: 2rem;
+                        padding: 0.5rem 0.875rem;
+                        /* shrink the dot / chevron icons */
+                        font-size: 0.6rem;
+
+                        .pager-button {
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            padding: 0.125rem;
+
+                            svg {
+                                display: block;
+                            }
+                        }
+
+                        .pager-divider {
+                            align-self: stretch;
+                            margin-right: 0.5rem;
+                            margin-left: 0.5rem;
+                            border-left: 1px solid var(--tui-color-separator, #d0d5dd);
+                        }
+
+                        .definitions {
+                            display: inline-flex;
+                            align-items: center;
+                            white-space: nowrap;
+                            color: var(--tui-color-text, #333);
+                            font-size: var(--tui-font-size-small);
+                            gap: var(--tui-spacing-super-small);
+                        }
+                    }
+                }
             }
-            @media (max-width: 1000px) {
-                .legend-element-list {
-                    gap: var(--tui-spacing-extra-extra-small);
+
+            .right-footer {
+                display: flex;
+                align-items: flex-start;
+                flex-direction: column;
+                border-radius: 0.5rem;
+                background-color: var(--tui-filter-background-color, #eff4fa);
+                padding: var(--tui-spacing-medium);
+                gap: var(--tui-spacing-small);
+
+                .footer-text {
+                    margin: 0;
+                    color: var(--tui-color-label, #7a7a7a);
+                    font-size: var(--tui-font-size-small);
+                }
+
+                .download-button {
+                    border: 1px solid var(--tui-color-separator, #d0d5dd);
+                    background-color: #fff;
+                    color: var(--tui-color-text, #333);
                 }
             }
         }
+    }
 
-        .time-range-container {
-            display: flex;
+    @media (max-width: 900px) {
+        .panes {
             flex-direction: column;
-            flex-grow: 1;
-            gap: var(--tui-spacing-medium);
 
-            .time-range-input {
-                width: 100%;
-            }
-        }
-
-        @media (max-width: 1000px) {
-            .time-range-container {
-                padding-right: var(--tui-spacing-medium);
+            .left-pane,
+            .right-pane {
+                flex-basis: auto;
             }
         }
     }
+}
 
-    .footer-container {
-        align-items: flex-end;
-        gap: var(--tui-spacing-extra-small);
-    }
+/* The date-range calendar portals to <body>, so it can't inherit the dashboard
+   scope, and toggle-ui exposes no popup className accessor. Scale it via its
+   global class so it matches. (Only IDU uses range date inputs, so this is
+   effectively dashboard-only in practice.) */
+:global {
+    [class*="calendar-popup"] {
+        --idu-scale: 0.5;
 
-    .documentation-link {
-        display: flex;
-        align-items: center;
-        gap: var(--tui-spacing-super-small);
-        color: var(--tui-color-text);
-
-        &:hover {
-            text-decoration: underline;
-        }
+        --tui-spacing-ultra-small: calc(0.1rem * var(--idu-scale));
+        --tui-spacing-extra-extra-small: calc(0.3rem * var(--idu-scale));
+        --tui-spacing-extra-small: calc(0.7rem * var(--idu-scale));
+        --tui-spacing-small: calc(0.8rem * var(--idu-scale));
+        --tui-spacing-medium: calc(1rem * var(--idu-scale));
+        --tui-spacing-large: calc(1.26rem * var(--idu-scale));
     }
 }
