@@ -50,6 +50,7 @@ import useBooleanState from '#hooks/useBooleanState';
 import { suffixDrupalEndpoint } from '#utils/common';
 
 import RawIduMap from './RawIduMap';
+import IduTable from './IduTable';
 
 import styles from './styles.css';
 
@@ -472,9 +473,7 @@ function useIduMap(
                             boundingBox={boundingBox}
                         />
                     ) : (
-                        <div className={styles.tablePlaceholder}>
-                            Table view coming soon
-                        </div>
+                        <IduTable idus={idusForMap} />
                     )}
                     <SegmentInput
                         className={styles.viewToggle}

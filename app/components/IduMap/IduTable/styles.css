@@ -1,0 +1,51 @@
+.idu-table {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    padding-top: 2.25rem;
+    height: 32rem;
+    gap: var(--tui-spacing-small);
+
+    .table {
+        flex-grow: 1;
+        overflow: auto;
+
+        th {
+            --tui-font-size-medium: 0.8rem;
+            background-color: #f0f3f7;
+            text-transform: uppercase;
+            font-size: var(--tui-font-size-medium);
+        }
+
+        /* right-align every column except the 2nd (Event) and the last (Hazard) */
+        th:not(:nth-child(2)):not(:last-child),
+        td:not(:nth-child(2)):not(:last-child) {
+            text-align: right;
+        }
+
+        tbody tr:nth-child(even) td {
+            background-color: #f7f9fc;
+        }
+    }
+
+    .sorted-header {
+        font-weight: 700;
+    }
+
+    .figure {
+        font-weight: 600;
+    }
+
+    .conflict {
+        color: var(--color-conflict);
+    }
+
+    .disaster {
+        color: var(--color-disaster);
+    }
+
+    .pager {
+        align-self: flex-end;
+        flex-shrink: 0;
+    }
+}
