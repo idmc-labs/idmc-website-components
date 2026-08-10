@@ -83,14 +83,6 @@
                     z-index: 0;
                 }
             }
-
-            .table-placeholder {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                height: 32rem;
-                color: var(--tui-color-label, #7a7a7a);
-            }
         }
 
         .right-pane {

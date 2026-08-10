@@ -81,6 +81,7 @@ export function createTextColumn<D, K>(
         columnWidth?: number;
         cellRendererClassName?: string;
         columnStretch?: boolean;
+        headerCellRendererClassName?: string;
     },
 ) {
     const item: TableColumn<D, K, TextProps, TableHeaderCellProps> & {
@@ -100,7 +101,7 @@ export function createTextColumn<D, K>(
         },
         cellRenderer: Text,
         columnWidth: options?.columnWidth,
-        headerCellRendererClassName: styles.header,
+        headerCellRendererClassName: _cs(styles.header, options?.headerCellRendererClassName),
         cellRendererParams: (_: K, datum: D): TextProps => ({
             value: accessor(datum),
         }),
@@ -126,6 +127,7 @@ export function createNumberColumn<D, K>(
         placeholder?: string;
         columnClassName?: string;
         columnWidth?: number;
+        headerCellRendererClassName?: string;
     },
 ) {
     const item: TableColumn<D, K, NumeralProps, TableHeaderCellProps> & {
@@ -148,6 +150,7 @@ export function createNumberColumn<D, K>(
             styles.header,
             styles.numberHeader,
             options?.variant && styles[options.variant],
+            options?.headerCellRendererClassName,
         ),
         cellRendererClassName: styles.number,
         cellRendererParams: (_: K, datum: D): NumeralProps => ({
