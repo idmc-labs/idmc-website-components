@@ -1,6 +1,6 @@
 .map-container {
     width: 100%;
-    height: 32rem;
+    height: var(--idu-pane-height, 32rem);
 }
 
 .map-popup {

@@ -3,7 +3,7 @@
     display: flex;
     flex-direction: column;
     padding-top: 2.25rem;
-    height: 32rem;
+    height: var(--idu-pane-height, 32rem);
     gap: var(--tui-spacing-small);
 
     .table {
@@ -17,7 +17,6 @@
             font-size: var(--tui-font-size-medium);
         }
 
-        /* right-align every column except the 2nd (Event) and the last (Hazard) */
         th:not(:nth-child(2)):not(:last-child),
         td:not(:nth-child(2)):not(:last-child) {
             text-align: right;

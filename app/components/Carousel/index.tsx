@@ -19,12 +19,15 @@ function bound(value: number, min: number, max: number) {
 interface Props {
     className?: string;
     children: React.ReactNode;
+    // auto-advance to the next item on a timer (default: true)
+    autoPlay?: boolean;
 }
 
 function Carousel(props: Props) {
     const {
         className,
         children,
+        autoPlay = true,
     } = props;
 
     const autoChangeTimerRef = React.useRef<number>(CAROUSEL_ITEM_CHANGE_DURATION);
@@ -81,14 +84,14 @@ function Carousel(props: Props) {
 
     React.useEffect(() => {
         let intervalId: number;
-        if (shouldAnimate) {
+        if (autoPlay && shouldAnimate) {
             intervalId = window.setInterval(decreaseTimer, 1000);
         }
 
         return () => {
             window.clearInterval(intervalId);
         };
-    }, [shouldAnimate, decreaseTimer]);
+    }, [autoPlay, shouldAnimate, decreaseTimer]);
 
     type setterFn = React.Dispatch<React.SetStateAction<number | undefined>>;
     const setActiveItemSafe: setterFn = React.useCallback((newValueOrSetter) => {
