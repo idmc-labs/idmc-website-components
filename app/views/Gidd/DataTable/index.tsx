@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import {
     _cs,
     isDefined,
@@ -93,6 +93,7 @@ interface Props {
     activePage: number;
     onActivePageChange: (newVal: number) => void;
     clientCode: string;
+    abbreviate: boolean;
 }
 
 function DataTable(props: Props) {
@@ -107,10 +108,15 @@ function DataTable(props: Props) {
         onActivePageChange,
         cause,
         clientCode,
+        abbreviate,
     } = props;
 
     const overallDataSortState = useSortState({ name: 'year', direction: 'dsc' });
     const { sorting } = overallDataSortState;
+
+    const sortedHeaderClassName = useCallback((columnId: string) => (
+        sorting?.name === columnId ? styles.sortedHeader : undefined
+    ), [sorting]);
 
     const giddDisplacementsVariables = useMemo(() => ({
         ordering: `${sorting?.direction === 'asc' ? '' : '-'}${sorting?.name}`,
@@ -160,6 +166,7 @@ function DataTable(props: Props) {
                     sortable: true,
                     columnWidth: mediumTextWidth,
                     columnStretch: true,
+                    headerCellRendererClassName: sortedHeaderClassName('countryName'),
                 },
             ),
             createNumberColumn<DisplacementData, string>(
@@ -170,6 +177,7 @@ function DataTable(props: Props) {
                     sortable: true,
                     separator: '',
                     columnWidth: smallNumberWidth,
+                    headerCellRendererClassName: sortedHeaderClassName('year'),
                 },
             ),
             isConflictDataShown ? createNumberColumn<DisplacementData, string>(
@@ -179,7 +187,9 @@ function DataTable(props: Props) {
                 {
                     sortable: true,
                     variant: 'conflict',
+                    abbreviate,
                     columnWidth: largeNumberWidth,
+                    headerCellRendererClassName: sortedHeaderClassName('conflictNewDisplacementRounded'),
                 },
             ) : undefined,
             isConflictDataShown ? createNumberColumn<DisplacementData, string>(
@@ -189,7 +199,9 @@ function DataTable(props: Props) {
                 {
                     sortable: true,
                     variant: 'conflict',
+                    abbreviate,
                     columnWidth: largeNumberWidth,
+                    headerCellRendererClassName: sortedHeaderClassName('conflictTotalDisplacementRounded'),
                 },
             ) : undefined,
             isDisasterDataShown ? createNumberColumn<DisplacementData, string>(
@@ -199,7 +211,9 @@ function DataTable(props: Props) {
                 {
                     sortable: true,
                     variant: 'disaster',
+                    abbreviate,
                     columnWidth: largeNumberWidth,
+                    headerCellRendererClassName: sortedHeaderClassName('disasterNewDisplacementRounded'),
                 },
             ) : undefined,
             isDisasterDataShown ? createNumberColumn<DisplacementData, string>(
@@ -209,19 +223,32 @@ function DataTable(props: Props) {
                 {
                     sortable: true,
                     variant: 'disaster',
+                    abbreviate,
                     columnWidth: largeNumberWidth,
+                    headerCellRendererClassName: sortedHeaderClassName('disasterTotalDisplacementRounded'),
                 },
             ) : undefined,
         ]).filter(isDefined),
         [
+            sortedHeaderClassName,
             isConflictDataShown,
             isDisasterDataShown,
+            abbreviate,
         ],
     );
 
     return (
         <div className={_cs(className, styles.dataTable)}>
             <SortContext.Provider value={overallDataSortState}>
+                <Table
+                    // using dynamic key to reset the column width caching
+                    key={columns.map((column) => column.id).join(',')}
+                    containerClassName={styles.table}
+                    keySelector={displacementItemKeySelector}
+                    data={displacementsResponse?.giddPublicDisplacements?.results}
+                    columns={columns}
+                    resizableColumn
+                />
                 <Pager
                     className={styles.pager}
                     activePage={activePage}
@@ -229,13 +256,6 @@ function DataTable(props: Props) {
                     maxItemsPerPage={DISPLACEMENTS_TABLE_PAGE_SIZE}
                     onActivePageChange={onActivePageChange}
                     itemsPerPageControlHidden
-                />
-                <Table
-                    containerClassName={styles.table}
-                    keySelector={displacementItemKeySelector}
-                    data={displacementsResponse?.giddPublicDisplacements?.results}
-                    columns={columns}
-                    resizableColumn
                 />
             </SortContext.Provider>
         </div>
