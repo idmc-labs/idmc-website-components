@@ -1,0 +1,24 @@
+.filter-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--tui-spacing-small);
+    border: 1px solid var(--tui-color-separator, #d0d5dd);
+    border-radius: 1rem;
+    background-color: var(--tui-color-background-selected, #e4ecf7);
+    padding: var(--tui-spacing-extra-small) var(--tui-spacing-small-medium);
+    max-width: 20rem;
+
+    .label {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: var(--tui-font-size-small);
+    }
+
+    .remove {
+        display: inline-flex;
+        align-items: center;
+        flex-shrink: 0;
+        color: var(--tui-color-label, #7a7a7a);
+    }
+}
