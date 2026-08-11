@@ -31,5 +31,25 @@
         width: 100%;
         min-height: 60vh;
         overflow-x: auto;
+
+        th {
+            --tui-font-size-medium: 0.7rem;
+            background-color: #f0f3f7;
+            text-transform: uppercase;
+            font-size: var(--tui-font-size-medium);
+        }
+
+        th:not(:first-child),
+        td:not(:first-child) {
+            text-align: right;
+        }
+
+        tbody tr:nth-child(even) td {
+            background-color: #f7f9fc;
+        }
+    }
+
+    .sorted-header {
+        font-weight: 700;
     }
 }

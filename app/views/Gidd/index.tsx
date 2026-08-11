@@ -1,4 +1,9 @@
-import React, { useMemo, useCallback, useState } from 'react';
+import React, {
+    useMemo,
+    useCallback,
+    useState,
+    useEffect,
+} from 'react';
 import {
     _cs,
     compareString,
@@ -7,15 +12,23 @@ import {
     listToGroupList,
     isDefined,
     compareNumber,
+    sum,
 } from '@togglecorp/fujs';
 import {
     Switch,
     SelectInput,
     MultiSelectInput,
-    List,
+    SegmentInput,
+    TextInput,
     Button,
-    PopupButton,
 } from '@togglecorp/toggle-ui';
+import {
+    IoSearchOutline,
+    IoFilterOutline,
+    IoChevronDownOutline,
+    IoChevronUpOutline,
+    IoRefreshOutline,
+} from 'react-icons/io5';
 import { removeNull } from '@togglecorp/toggle-form';
 import {
     formatNumber,
@@ -23,8 +36,6 @@ import {
     sumAndRemoveZero,
     DATA_RELEASE,
     getHazardTypeLabel,
-    suffixHelixRestEndpoint,
-    prepareUrl,
     isDisaggregationAvailable,
 } from '#utils/common';
 import {
@@ -43,21 +54,15 @@ import {
     BarChart,
     Bar,
 } from 'recharts';
-import { IoInformationCircleOutline } from 'react-icons/io5';
 
-import ButtonLikeLink from '#components/ButtonLikeLink';
 import ErrorBoundary from '#components/ErrorBoundary';
-import SliderInput from '#components/SliderInput';
 import Header from '#components/Header';
-import ProgressLine from '#components/ProgressLine';
 import NumberBlock from '#components/NumberBlock';
-import Tabs from '#components/Tabs';
-import Tab from '#components/Tabs/Tab';
-import TabList from '#components/Tabs/TabList';
-import TabPanel from '#components/Tabs/TabPanel';
-import GridFilterInputContainer from '#components/GridFilterInputContainer';
+import RawButton from '#components/RawButton';
+import SlideCarousel from '#components/SlideCarousel';
+import FilterPill from '#components/IduMap/FilterPill';
 import useDebouncedValue from '#hooks/useDebouncedValue';
-import DisplacementIcon from '#components/DisplacementIcon';
+import useDocumentSize from '#hooks/useDocumentSize';
 import Message from '#components/Message';
 import {
     GiddFilterOptionsQuery,
@@ -69,6 +74,11 @@ import {
 import useYear from '#hooks/useYear';
 import EventsTable from './EventsTable';
 import DataTable from './DataTable';
+import DownloadMenu from './DownloadMenu';
+import GiddMap from './GiddMap';
+import HazardBreakdownCard from './HazardBreakdownCard';
+import LargestEventsCard from './LargestEventsCard';
+import FigureAnalysisCard from './FigureAnalysisCard';
 
 import styles from './styles.css';
 
@@ -106,14 +116,11 @@ function getCountryStockCountSubLabel(count = 0, year: number) {
     return `In ${count} countries and territories as of ${year}`;
 }
 
-const mainText = 'Explore the Global Internal Displacement Database (GIDD), a global repository of internal displacement data since 2008.';
+const headingText = 'Global Internal Displacement Database (GIDD)';
+const mainText = 'Explore the GIDD, IDMC’s global repository of internal displacement data, covering 2008 to the present.';
 const downloadText = 'Downloadable data files include metadata, copyright details, and methodological notes.';
 const flowDetails = 'The internal displacements figure refers to the number of forced movements of people within the borders of their country recorded during the year. Figures may include individuals who have been displaced more than once.';
 const stockDetails = 'The total number of Internally Displaced People (IDPs) is a snapshot of all the people living in internal displacements at the end of the year.';
-
-type HazardData = NonNullable<NonNullable<GiddStatisticsQuery['giddPublicDisasterStatistics']>['displacementsByHazardType']>[number];
-
-const hazardKeySelector = (item: HazardData) => item.id;
 
 const GIDD_FILTER_OPTIONS = gql`
     query GiddFilterOptions(
@@ -279,22 +286,35 @@ function nameSelector(d: { idmcShortName: string }) {
     return d.idmcShortName;
 }
 
-function hazardLabelSelector(d: { id: string, name: string }) {
+function triggerTypeLabelSelector(d: { id: string, name: string }) {
     return getHazardTypeLabel({ id: d.id, label: d.name });
 }
 
+function yearKeySelector(d: { key: number }) {
+    return d.key;
+}
+
+function yearLabelSelector(d: { label: string }) {
+    return d.label;
+}
+
 type Cause = 'conflict' | 'disaster';
-type CauseOption = {
-    key: Cause;
+type CauseSegmentKey = Cause | 'all';
+type CauseSegmentOption = {
+    key: CauseSegmentKey;
     label: string;
 };
-const causeKeySelector = (option: CauseOption) => option.key;
-const causeLabelSelector = (option: CauseOption) => option.label;
+const causeSegmentKeySelector = (option: CauseSegmentOption) => option.key;
+const causeSegmentLabelSelector = (option: CauseSegmentOption) => option.label;
 
-const displacementCauseOptions: CauseOption[] = [
+const causeSegmentOptions: CauseSegmentOption[] = [
+    {
+        key: 'all',
+        label: 'All',
+    },
     {
         key: 'conflict',
-        label: 'Conflict and violence',
+        label: 'Conflict',
     },
     {
         key: 'disaster',
@@ -320,6 +340,48 @@ const displacementCategoryOptions: CategoryOption[] = [
     },
 ];
 
+type Precision = 'rounded' | 'exact';
+type PrecisionOption = {
+    key: Precision;
+    label: string;
+};
+const precisionKeySelector = (option: PrecisionOption) => option.key;
+const precisionLabelSelector = (option: PrecisionOption) => option.label;
+const precisionOptions: PrecisionOption[] = [
+    {
+        key: 'rounded',
+        label: 'Rounded',
+    },
+    {
+        key: 'exact',
+        label: 'Exact',
+    },
+];
+
+type View = 'map' | 'table' | 'charts' | 'events';
+type ViewOption = {
+    key: View;
+    label: string;
+};
+const viewKeySelector = (option: ViewOption) => option.key;
+const viewLabelSelector = (option: ViewOption) => option.label;
+const allViewOptions: ViewOption[] = [
+    { key: 'map', label: 'Map' },
+    { key: 'table', label: 'Table' },
+    { key: 'charts', label: 'Charts' },
+    { key: 'events', label: 'Events' },
+];
+
+// matches IduMap's mobile breakpoint — the map is hidden on mobile there too
+const MOBILE_BREAKPOINT = 720;
+
+type RegionOption = {
+    key: string;
+    label: string;
+};
+const regionKeySelector = (option: RegionOption) => option.key;
+const regionLabelSelector = (option: RegionOption) => option.label;
+
 export interface Props {
     endYear: number;
     clientCode: string;
@@ -335,28 +397,45 @@ function Gidd(props: Props) {
     const [displacementCause, setDisplacementCause] = useState<Cause | undefined>();
     const [combineCauseCharts, setCombineCauseCharts] = useState(false);
     const [displacementCategory, setDisplacementCategory] = useState<Category | undefined>();
-    const [selectedTable, setSelectedTable] = useState<'events' | 'data'>('data');
-    const [disasterFiltersShown, setDisasterFilterVisibility] = useState(false);
+    const [activeView, setActiveView] = useState<View>('map');
     const [combineCountriesChart, setCombineCountriesChart] = useState(false);
     const [dataActivePage, setDataActivePage] = useState<number>(1);
     const [eventsActivePage, setEventsActivePage] = useState<number>(1);
+    const [eventSearchText, setEventSearchText] = useState<string | undefined>();
+    const [precision, setPrecision] = useState<Precision>('rounded');
     const [
         countries,
         setCountries,
     ] = useState<string[]>([]);
     const [
-        hazardTypes,
-        setHazardTypes,
+        triggerTypes,
+        setTriggerTypes,
     ] = useState<string[]>([]);
+    const [regions, setRegions] = useState<string[]>([]);
+    const [filtersExpanded, setFiltersExpanded] = useState(false);
+
+    const { width: viewportWidth } = useDocumentSize();
+    const isMobile = viewportWidth <= MOBILE_BREAKPOINT;
+
+    const viewOptions = useMemo(() => (
+        isMobile ? allViewOptions.filter((option) => option.key !== 'map') : allViewOptions
+    ), [isMobile]);
+
+    useEffect(() => {
+        if (isMobile) {
+            setActiveView((prevView) => (prevView === 'map' ? 'table' : prevView));
+        }
+    }, [isMobile]);
+
+    const handleFiltersToggle = useCallback(() => {
+        setFiltersExpanded((prev) => !prev);
+    }, []);
 
     const handleCauseChange = useCallback((newVal: Cause | undefined) => {
         setDisplacementCause(newVal);
 
         if (newVal === 'conflict' || newVal === undefined) {
-            setHazardTypes([]);
-        }
-        if (newVal === 'disaster') {
-            setSelectedTable('events');
+            setTriggerTypes([]);
         }
         if (newVal) {
             setCombineCauseCharts(false);
@@ -364,8 +443,12 @@ function Gidd(props: Props) {
         setDataActivePage(1);
         setEventsActivePage(1);
     }, [
-        setHazardTypes,
+        setTriggerTypes,
     ]);
+
+    const handleCauseSegmentChange = useCallback((newVal: CauseSegmentKey) => {
+        handleCauseChange(newVal === 'all' ? undefined : newVal);
+    }, [handleCauseChange]);
 
     const handleCountriesChange = useCallback((newVal: string[]) => {
         setCountries(newVal);
@@ -377,6 +460,10 @@ function Gidd(props: Props) {
         setEventsActivePage(1);
     }, [setCountries]);
 
+    const handleCountryFocus = useCallback((iso3: string) => {
+        handleCountriesChange([iso3]);
+    }, [handleCountriesChange]);
+
     const handleTimeRangeChange = useCallback((newVal: number[]) => {
         setTimeRange(newVal);
 
@@ -384,18 +471,35 @@ function Gidd(props: Props) {
         setEventsActivePage(1);
     }, []);
 
-    const handleResetQueryClick = useCallback(() => {
+    const handleStartYearChange = useCallback((newVal: number | undefined) => {
+        if (isNotDefined(newVal)) {
+            return;
+        }
+        handleTimeRangeChange([newVal, Math.max(newVal, timeRange[1])]);
+    }, [timeRange, handleTimeRangeChange]);
+
+    const handleEndYearChange = useCallback((newVal: number | undefined) => {
+        if (isNotDefined(newVal)) {
+            return;
+        }
+        handleTimeRangeChange([Math.min(timeRange[0], newVal), newVal]);
+    }, [timeRange, handleTimeRangeChange]);
+
+    const handleReset = useCallback(() => {
         handleCountriesChange([]);
-        setHazardTypes([]);
+        setTriggerTypes([]);
+        setRegions([]);
         handleCauseChange(undefined);
         setTimeRange([endYear, endYear]);
         setDisplacementCategory(undefined);
+        setActiveView(isMobile ? 'table' : 'map');
         setDataActivePage(1);
         setEventsActivePage(1);
     }, [
         handleCauseChange,
         handleCountriesChange,
-        setHazardTypes,
+        setTriggerTypes,
+        isMobile,
         endYear,
     ]);
 
@@ -412,6 +516,16 @@ function Gidd(props: Props) {
             (_, index) => domainForCharts[0] + index,
         )
     ), [domainForCharts]);
+
+    const yearFilterOptions = useMemo(() => (
+        Array.from(
+            { length: (endYear - START_YEAR) + 1 },
+            (_, index) => {
+                const year = START_YEAR + index;
+                return { key: year, label: String(year) };
+            },
+        )
+    ), [endYear]);
 
     const isDisasterDataShown = displacementCause === 'disaster' || isNotDefined(displacementCause);
     const isConflictDataShown = displacementCause === 'conflict' || isNotDefined(displacementCause);
@@ -434,13 +548,70 @@ function Gidd(props: Props) {
         },
     );
 
+    const { regionToIso3, regionOptions } = useMemo(() => {
+        const regionNames = new Map<string, string>();
+        const regionIso3Map = new Map<string, string[]>();
+        (countryFilterResponse?.giddPublicCountries ?? []).forEach((country) => {
+            if (country?.region && isDefined(country.iso3)) {
+                regionNames.set(country.region.id, country.region.name ?? country.region.id);
+                const existing = regionIso3Map.get(country.region.id) ?? [];
+                existing.push(country.iso3);
+                regionIso3Map.set(country.region.id, existing);
+            }
+        });
+        const options: RegionOption[] = [...regionNames.entries()]
+            .map(([id, name]) => ({ key: id, label: name }))
+            .sort((a, b) => compareString(a.label, b.label));
+        return { regionToIso3: regionIso3Map, regionOptions: options };
+    }, [countryFilterResponse]);
+
+    const applyRegions = useCallback((nextRegions: string[]) => {
+        setRegions(nextRegions);
+        if (nextRegions.length > 0) {
+            const allowed = new Set(nextRegions.flatMap((id) => regionToIso3.get(id) ?? []));
+            setCountries((prev) => prev.filter((iso3) => allowed.has(iso3)));
+        }
+        setDataActivePage(1);
+        setEventsActivePage(1);
+    }, [regionToIso3]);
+
+    const countriesOptions = useMemo(() => {
+        const allowedIso3 = regions.length > 0
+            ? new Set(regions.flatMap((id) => regionToIso3.get(id) ?? []))
+            : undefined;
+        return removeNull(
+            [...(countryFilterResponse?.giddPublicCountries ?? [])],
+        )?.filter(isDefined)
+            .filter((country) => (
+                !allowedIso3 || (isDefined(country.iso3) && allowedIso3.has(country.iso3))
+            ))
+            .sort((a, b) => compareString(a.idmcShortName, b.idmcShortName));
+    }, [countryFilterResponse, regions, regionToIso3]);
+
+    const effectiveCountries = useMemo(() => {
+        if (countries.length > 0) {
+            return countries;
+        }
+        if (regions.length > 0) {
+            return Array.from(new Set(regions.flatMap((id) => regionToIso3.get(id) ?? [])));
+        }
+        return countries;
+    }, [countries, regions, regionToIso3]);
+
+    const figureAnalysisCountries = useMemo(() => (
+        countries.map((iso3) => {
+            const option = countriesOptions?.find((item) => item.iso3 === iso3);
+            return { iso3, name: option?.idmcShortName ?? iso3 };
+        })
+    ), [countries, countriesOptions]);
+
     const showCombinedCountries = combineCountriesChart
         || countries.length > 3 || countries.length === 0;
 
     const statisticsVariables = useMemo(() => ({
-        countriesIso3: countries,
+        countriesIso3: effectiveCountries,
         combineCountries: showCombinedCountries,
-        hazardTypes: displacementCause === 'disaster' ? hazardTypes : undefined,
+        hazardTypes: isDisasterDataShown ? triggerTypes : undefined,
         startYear: timeRange[0],
         endYear: timeRange[1],
         startYearForTimeseries: timeRange[0] === timeRange[1] ? START_YEAR : timeRange[0],
@@ -448,11 +619,11 @@ function Gidd(props: Props) {
         releaseEnvironment: DATA_RELEASE,
         clientId: clientCode,
     }), [
-        displacementCause,
-        hazardTypes,
+        isDisasterDataShown,
+        triggerTypes,
         showCombinedCountries,
         timeRange,
-        countries,
+        effectiveCountries,
         clientCode,
     ]);
 
@@ -850,13 +1021,7 @@ function Gidd(props: Props) {
         showCombinedCountries,
     ]);
 
-    const countriesOptions = removeNull(
-        [...(countryFilterResponse?.giddPublicCountries ?? [])]?.sort(
-            (foo, bar) => compareString(foo.idmcShortName, bar.idmcShortName),
-        ),
-    )?.filter(isDefined);
-
-    const hazardOptions = useMemo(
+    const triggerTypeOptions = useMemo(
         () => {
             const options = removeNull(
                 countryFilterResponse?.giddPublicHazardTypes,
@@ -885,27 +1050,24 @@ function Gidd(props: Props) {
 
     const maxDisplacementValue = sortedHazards[0]?.newDisplacementsRounded ?? undefined;
 
-    const handleAdditionalFiltersChange = useCallback((newVal) => {
-        if (newVal) {
-            handleCauseChange('disaster');
-        }
-        setDisasterFilterVisibility(newVal);
-    }, [
-        handleCauseChange,
-    ]);
+    const hazardGrandTotal = useMemo(
+        () => sum(sortedHazards.map((hazard) => hazard.newDisplacementsRounded ?? 0)),
+        [sortedHazards],
+    );
 
-    const hazardRendererParams = useCallback((_: string, hazard: HazardData) => ({
-        total: maxDisplacementValue,
-        value: hazard.newDisplacementsRounded ?? undefined,
-        // hazardType: getHazardTypeLabel(hazard),
-        icon: (
-            <DisplacementIcon
-                displacementType="Disaster"
-                disasterType={getHazardTypeLabel(hazard)}
-            />
-        ),
-        title: getHazardTypeLabel(hazard),
-    }), [maxDisplacementValue]);
+    const selectedTriggerType = triggerTypes.length === 1 ? triggerTypes[0] : undefined;
+
+    const handleHazardSelect = useCallback((triggerType: string) => {
+        setTriggerTypes((prev) => (
+            prev.length === 1 && prev[0] === triggerType ? [] : [triggerType]
+        ));
+        setDataActivePage(1);
+        setEventsActivePage(1);
+    }, []);
+
+    const handleViewEvents = useCallback(() => {
+        setActiveView('events');
+    }, []);
 
     const chartTypeSelection = (
         <div className={styles.chartTypeContainer}>
@@ -934,667 +1096,624 @@ function Gidd(props: Props) {
         </div>
     );
 
+    const flowChartBlock = displacementCategory !== 'stock' && (
+        <div className={styles.chartBlock}>
+            <Header
+                heading="Internal Displacements"
+                headingSize="medium"
+                headingTooltip={flowDetails}
+                headingDescription={`New displacements per year globally, ${domainForCharts[0]}–${domainForCharts[1]}`}
+            />
+            <div className={styles.chartPanel}>
+                <ErrorBoundary>
+                    <ResponsiveContainer>
+                        <BarChart
+                            data={flowTimeseries}
+                            margin={chartMargins}
+                        >
+                            <CartesianGrid
+                                vertical={false}
+                                strokeDasharray="3 3"
+                            />
+                            <XAxis
+                                dataKey="year"
+                                axisLine={false}
+                                allowDecimals={false}
+                                type="number"
+                                domain={domainForCharts}
+                                padding={{ left: 20, right: 20 }}
+                            />
+                            <YAxis
+                                axisLine={false}
+                                tickFormatter={formatNumber}
+                            />
+                            <Tooltip
+                                formatter={formatNumber}
+                            />
+                            <Legend />
+                            {barConfigs.map((barConfig) => (
+                                <Bar
+                                    maxBarSize={6}
+                                    dataKey={barConfig.dataKey}
+                                    stackId={barConfig.stackId}
+                                    key={barConfig.key}
+                                    fill={barConfig.fill}
+                                    name={barConfig.name}
+                                />
+                            ))}
+                        </BarChart>
+                    </ResponsiveContainer>
+                </ErrorBoundary>
+            </div>
+        </div>
+    );
+
+    const stockChartBlock = displacementCategory !== 'flow' && (
+        <div className={styles.chartBlock}>
+            <Header
+                heading="Internally displaced people (IDPs)"
+                headingTooltip={stockDetails}
+                headingSize="medium"
+                headingDescription={`People living in displacement at year end globally, as of ${domainForCharts[1]}`}
+            />
+            <div className={styles.chartPanel}>
+                <ErrorBoundary>
+                    <ResponsiveContainer>
+                        <LineChart
+                            data={stockTimeseries}
+                            margin={chartMargins}
+                        >
+                            <CartesianGrid
+                                vertical={false}
+                                strokeDasharray="3 3"
+                            />
+                            <XAxis
+                                dataKey="year"
+                                axisLine={false}
+                                type="number"
+                                padding={{ left: 20, right: 20 }}
+                                allowDecimals={false}
+                                domain={domainForCharts}
+                            />
+                            <YAxis
+                                axisLine={false}
+                                tickFormatter={formatNumber}
+                            />
+                            <Tooltip
+                                formatter={formatNumber}
+                            />
+                            <Legend />
+                            {lineConfigs.map((lineConfig) => (
+                                <Line
+                                    dataKey={lineConfig.dataKey}
+                                    key={lineConfig.key}
+                                    stroke={lineConfig.fill}
+                                    name={lineConfig.name}
+                                    strokeWidth={2}
+                                    connectNulls
+                                    dot
+                                />
+                            ))}
+                        </LineChart>
+                    </ResponsiveContainer>
+                </ErrorBoundary>
+            </div>
+        </div>
+    );
+
+    const isFlowSelected = displacementCategory === 'flow';
+    const isStockSelected = displacementCategory === 'stock';
+
+    const shownOnMap = (
+        <span className={styles.shownOnMap}>
+            <span className={styles.shownOnMapDot} />
+            shown on map
+        </span>
+    );
+    const showOnMapFlow = (
+        <RawButton
+            name={undefined}
+            className={styles.showOnMapButton}
+            onClick={() => setDisplacementCategory('flow')}
+        >
+            show on map →
+        </RawButton>
+    );
+    const showOnMapStock = (
+        <RawButton
+            name={undefined}
+            className={styles.showOnMapButton}
+            onClick={() => setDisplacementCategory('stock')}
+        >
+            show on map →
+        </RawButton>
+    );
+
+    const glanceCard = (
+        <div className={styles.glanceCard}>
+            <div className={_cs(styles.glanceSection, isFlowSelected && styles.selected)}>
+                <Header
+                    heading="Internal Displacements"
+                    headingSize="medium"
+                    headingTooltip={flowDetails}
+                    actions={isFlowSelected ? shownOnMap : showOnMapFlow}
+                />
+                {!displacementCause && (
+                    <NumberBlock
+                        label="Total"
+                        size="large"
+                        subLabel={getCountryCountSubLabel(
+                            combinedStats?.internalDisplacementCountries,
+                        )}
+                        value={combinedStats?.internalDisplacementsRounded}
+                        abbreviated={precision === 'rounded'}
+                    />
+                )}
+                <div className={styles.numberRow}>
+                    {isConflictDataShown && (
+                        <NumberBlock
+                            label="Total by conflict and violence"
+                            size={displacementCause ? 'large' : 'medium'}
+                            variant="conflict"
+                            subLabel={getCountryCountSubLabel(
+                                conflictStats?.internalDisplacementCountries,
+                            )}
+                            value={conflictStats?.newDisplacementsRounded}
+                            abbreviated={precision === 'rounded'}
+                        />
+                    )}
+                    {isDisasterDataShown && (
+                        <NumberBlock
+                            label="Total by disasters"
+                            size={displacementCause ? 'large' : 'medium'}
+                            variant="disaster"
+                            subLabel={getCountryCountSubLabel(
+                                disasterStats?.internalDisplacementCountries,
+                            )}
+                            value={disasterStats?.newDisplacementsRounded}
+                            abbreviated={precision === 'rounded'}
+                        />
+                    )}
+                </div>
+            </div>
+            <div className={_cs(styles.glanceSection, isStockSelected && styles.selected)}>
+                <Header
+                    heading="Internally displaced people (IDPs)"
+                    headingTooltip={stockDetails}
+                    headingSize="medium"
+                    actions={isStockSelected ? shownOnMap : showOnMapStock}
+                />
+                {!displacementCause && (
+                    <NumberBlock
+                        label="Total"
+                        size="large"
+                        subLabel={getCountryStockCountSubLabel(
+                            combinedStats?.totalDisplacementCountries,
+                            timeRange[1],
+                        )}
+                        value={combinedStats?.totalDisplacementsRounded}
+                        abbreviated={precision === 'rounded'}
+                    />
+                )}
+                <div className={styles.numberRow}>
+                    {isConflictDataShown && (
+                        <NumberBlock
+                            label="Total by conflict and violence"
+                            variant="conflict"
+                            size={displacementCause ? 'large' : 'medium'}
+                            subLabel={getCountryStockCountSubLabel(
+                                conflictStats?.totalDisplacementCountries,
+                                timeRange[1],
+                            )}
+                            value={conflictStats?.totalDisplacementsRounded}
+                            abbreviated={precision === 'rounded'}
+                        />
+                    )}
+                    {isDisasterDataShown && (
+                        <NumberBlock
+                            label="Total by disasters"
+                            size={displacementCause ? 'large' : 'medium'}
+                            variant="disaster"
+                            subLabel={getCountryStockCountSubLabel(
+                                disasterStats?.totalDisplacementCountries,
+                                timeRange[1],
+                            )}
+                            value={disasterStats?.totalDisplacementsRounded}
+                            abbreviated={precision === 'rounded'}
+                        />
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+
+    const glanceSlides: { key: string; content: React.ReactNode }[] = [
+        { key: 'glance', content: glanceCard },
+    ];
+    if (displacementCause === 'disaster') {
+        glanceSlides.push({
+            key: 'hazard',
+            content: (
+                <HazardBreakdownCard
+                    className={styles.glanceCard}
+                    sortedHazards={sortedHazards}
+                    maxDisplacementValue={maxDisplacementValue}
+                    grandTotal={hazardGrandTotal}
+                    totalEvents={disasterStats?.totalEvents}
+                    selectedTriggerType={selectedTriggerType}
+                    onHazardSelect={handleHazardSelect}
+                    abbreviate={precision === 'rounded'}
+                />
+            ),
+        });
+        glanceSlides.push({
+            key: 'events',
+            content: (
+                <LargestEventsCard
+                    className={styles.glanceCard}
+                    countriesIso3={effectiveCountries}
+                    hazardTypes={triggerTypes}
+                    startYear={timeRange[0]}
+                    endYear={timeRange[1]}
+                    clientCode={clientCode}
+                    onViewEvents={handleViewEvents}
+                    abbreviate={precision === 'rounded'}
+                />
+            ),
+        });
+    }
+    glanceSlides.push({
+        key: 'figure-analysis',
+        content: (
+            <FigureAnalysisCard
+                className={styles.glanceCard}
+                countries={figureAnalysisCountries}
+                year={timeRange[1]}
+                clientCode={clientCode}
+            />
+        ),
+    });
+
+    const appliedFilterCount = (
+        (isDefined(displacementCategory) ? 1 : 0)
+        + (isDefined(displacementCause) ? 1 : 0)
+        + (triggerTypes.length > 0 ? 1 : 0)
+        + (regions.length > 0 ? 1 : 0)
+        + (countries.length > 0 ? 1 : 0)
+        + (timeRange[0] !== endYear || timeRange[1] !== endYear ? 1 : 0)
+    );
+
+    const activeFilters = useMemo(() => {
+        const filters: { key: string; label: string; onRemove: () => void }[] = [];
+        if (displacementCategory) {
+            const option = displacementCategoryOptions.find(
+                (item) => item.key === displacementCategory,
+            );
+            filters.push({
+                key: 'category',
+                label: option?.label ?? displacementCategory,
+                onRemove: () => setDisplacementCategory(undefined),
+            });
+        }
+        if (displacementCause) {
+            const option = causeSegmentOptions.find((item) => item.key === displacementCause);
+            filters.push({
+                key: 'cause',
+                label: option?.label ?? displacementCause,
+                onRemove: () => handleCauseSegmentChange('all'),
+            });
+        }
+        triggerTypes.forEach((triggerType) => {
+            const option = triggerTypeOptions.find((item) => item.id === triggerType);
+            filters.push({
+                key: `trigger:${triggerType}`,
+                label: option ? triggerTypeLabelSelector(option) : triggerType,
+                onRemove: () => setTriggerTypes(
+                    (prev) => prev.filter((item) => item !== triggerType),
+                ),
+            });
+        });
+        regions.forEach((regionId) => {
+            const option = regionOptions.find((item) => item.key === regionId);
+            filters.push({
+                key: `region:${regionId}`,
+                label: option?.label ?? regionId,
+                onRemove: () => applyRegions(regions.filter((item) => item !== regionId)),
+            });
+        });
+        countries.forEach((iso3) => {
+            const option = countriesOptions?.find((item) => item.iso3 === iso3);
+            filters.push({
+                key: `country:${iso3}`,
+                label: option?.idmcShortName ?? iso3,
+                onRemove: () => handleCountriesChange(countries.filter((item) => item !== iso3)),
+            });
+        });
+        if (timeRange[0] !== endYear || timeRange[1] !== endYear) {
+            filters.push({
+                key: 'timescale',
+                label: `${timeRange[0]} - ${timeRange[1]}`,
+                onRemove: () => setTimeRange([endYear, endYear]),
+            });
+        }
+        return filters;
+    }, [
+        displacementCategory,
+        displacementCause,
+        triggerTypes,
+        triggerTypeOptions,
+        regions,
+        regionOptions,
+        applyRegions,
+        countries,
+        countriesOptions,
+        handleCountriesChange,
+        handleCauseSegmentChange,
+        timeRange,
+        endYear,
+    ]);
+
     return (
         <div className={styles.bodyContainer}>
             <div className={styles.gidd}>
-                <div className={styles.filterContainer}>
-                    <Header
-                        heading="IDMC Data Portal"
-                        actions={(
-                            <Button
-                                className={styles.resetButton}
-                                name="resetQuery"
-                                onClick={handleResetQueryClick}
-                                transparent
-                            >
-                                Reset Query
-                            </Button>
+                <div className={styles.headerRow}>
+                    <div className={styles.headerText}>
+                        <h1 className={styles.heading}>{headingText}</h1>
+                        <p className={styles.headingDescription}>{mainText}</p>
+                    </div>
+                    <div className={styles.headerActions}>
+                        <Button
+                            name="resetQuery"
+                            onClick={handleReset}
+                            icons={<IoRefreshOutline />}
+                            transparent
+                        >
+                            Reset filters
+                        </Button>
+                    </div>
+                </div>
+
+                <div className={_cs(styles.filters, filtersExpanded && styles.filtersExpanded)}>
+                    <RawButton
+                        name={undefined}
+                        className={styles.filtersToggle}
+                        onClick={handleFiltersToggle}
+                    >
+                        <IoFilterOutline />
+                        Filters
+                        {appliedFilterCount > 0 && (
+                            <span className={styles.countPill}>
+                                {appliedFilterCount}
+                            </span>
                         )}
-                        darkMode
-                    />
-                    <div className={styles.filterBodyContainer}>
-                        <div className={styles.leftSection}>
-                            <p className={styles.headingDescription}>{mainText}</p>
-                            <div className={styles.downloadSection}>
-                                <p className={styles.downloadDescription}>
-                                    {downloadText}
-                                </p>
-                                <PopupButton
-                                    popupClassName={styles.popup}
-                                    label="Download dataset"
-                                    name="download"
-                                    variant="primary"
-                                    persistent={false}
-                                    compact
-                                >
-                                    {displacementCause !== 'disaster' && displacementCause !== 'conflict' && (
-                                        <>
-                                            <ButtonLikeLink
-                                                transparent
-                                                compact
-                                                actions={(
-                                                    <IoInformationCircleOutline
-                                                        title="Annual updates of internal displacement data by country"
-                                                    />
-                                                )}
-                                                href={suffixHelixRestEndpoint(prepareUrl(
-                                                    'gidd/displacements/displacement-export/',
-                                                    {
-                                                        // cause: empty
-
-                                                        iso3__in: countries,
-                                                        start_year: timeRange[0],
-                                                        end_year: timeRange[1],
-                                                        // disaster_type__in: not applicable
-                                                        // category: not implemented
-                                                    },
-                                                ), clientCode)}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                Annual displacement data (.xlsx)
-                                            </ButtonLikeLink>
-                                            <ButtonLikeLink
-                                                transparent
-                                                compact
-                                                disabled={!disaggregationAvailable}
-                                                actions={(
-                                                    <IoInformationCircleOutline
-                                                        title={disaggregationAvailable
-                                                            ? `${timeRange[1]} Disaggregated caseloads`
-                                                            : undefined}
-                                                    />
-                                                )}
-                                                href={suffixHelixRestEndpoint(prepareUrl(
-                                                    'gidd/disaggregations/disaggregation-export/',
-                                                    {
-                                                        // cause: empty
-
-                                                        iso3__in: countries,
-                                                        // disaster_type__in: not applicable
-                                                        // category: not implemented
-                                                        start_year: timeRange[0],
-                                                        end_year: timeRange[1],
-                                                    },
-                                                ), clientCode)}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                {`Disaggregated data ${timeRange[1]} (.xlsx)`}
-                                            </ButtonLikeLink>
-                                            <ButtonLikeLink
-                                                transparent
-                                                compact
-                                                disabled={!disaggregationAvailable}
-                                                actions={(
-                                                    <IoInformationCircleOutline
-                                                        title={disaggregationAvailable
-                                                            ? `${timeRange[1]} Disaggregated caseloads (geojson) formatted for GIS applications.\nIMPORTANT: Please read the metadata in the geojson`
-                                                            : undefined}
-                                                    />
-                                                )}
-                                                href={suffixHelixRestEndpoint(prepareUrl(
-                                                    'gidd/disaggregations/disaggregation-geojson/',
-                                                    {
-                                                        // cause: empty
-
-                                                        iso3__in: countries,
-                                                        // disaster_type__in: not applicable
-                                                        // category: not implemented
-                                                        start_year: timeRange[0],
-                                                        end_year: timeRange[1],
-                                                    },
-                                                ), clientCode)}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                {`Disaggregated data ${timeRange[1]} (.geojson)`}
-                                            </ButtonLikeLink>
-                                        </>
-                                    )}
-                                    {displacementCause === 'conflict' && (
-                                        <>
-                                            <ButtonLikeLink
-                                                transparent
-                                                compact
-                                                actions={(
-                                                    <IoInformationCircleOutline
-                                                        title="Annual updates of internal displacement data related to conflict"
-                                                    />
-                                                )}
-                                                href={suffixHelixRestEndpoint(prepareUrl(
-                                                    'gidd/displacements/displacement-export/',
-                                                    {
-                                                        cause: displacementCause, // conflict
-
-                                                        iso3__in: countries,
-                                                        start_year: timeRange[0],
-                                                        end_year: timeRange[1],
-                                                        // category: not implemented
-                                                    },
-                                                ), clientCode)}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                Conflict annual aggregated data (.xlsx)
-                                            </ButtonLikeLink>
-                                            <ButtonLikeLink
-                                                transparent
-                                                compact
-                                                disabled={!disaggregationAvailable}
-                                                actions={(
-                                                    <IoInformationCircleOutline
-                                                        title={disaggregationAvailable
-                                                            ? `${timeRange[1]} Conflict disaggregated caseloads`
-                                                            : undefined}
-                                                    />
-                                                )}
-                                                href={suffixHelixRestEndpoint(prepareUrl(
-                                                    'gidd/disaggregations/disaggregation-export/',
-                                                    {
-                                                        cause: displacementCause, // conflict
-
-                                                        iso3__in: countries,
-                                                        // disaster_type__in: not applicable
-                                                        // category: not implemented
-                                                        start_year: timeRange[0],
-                                                        end_year: timeRange[1],
-                                                    },
-                                                ), clientCode)}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                {`Conflict disaggregated data ${timeRange[1]} (.xlsx)`}
-                                            </ButtonLikeLink>
-                                            <ButtonLikeLink
-                                                transparent
-                                                compact
-                                                disabled={!disaggregationAvailable}
-                                                actions={(
-                                                    <IoInformationCircleOutline
-                                                        title={disaggregationAvailable
-                                                            ? `${timeRange[1]} Conflict disaggregated caseloads (geojson) formatted for GIS applications.\nIMPORTANT: Please read the metadata in the geojson`
-                                                            : undefined}
-                                                    />
-                                                )}
-                                                href={suffixHelixRestEndpoint(prepareUrl(
-                                                    'gidd/disaggregations/disaggregation-geojson/',
-                                                    {
-                                                        cause: displacementCause, // conflict
-
-                                                        iso3__in: countries,
-                                                        // disaster_type__in: not applicable
-                                                        // category: not implemented
-                                                        start_year: timeRange[0],
-                                                        end_year: timeRange[1],
-                                                    },
-                                                ), clientCode)}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                {`Conflict disaggregated data ${timeRange[1]} (.geojson)`}
-
-                                            </ButtonLikeLink>
-                                        </>
-                                    )}
-
-                                    {displacementCause === 'disaster' && (
-                                        <>
-                                            <ButtonLikeLink
-                                                transparent
-                                                compact
-                                                actions={(
-                                                    <IoInformationCircleOutline
-                                                        title="Annual updates of internal displacement data related to disasters"
-                                                    />
-                                                )}
-                                                href={suffixHelixRestEndpoint(prepareUrl(
-                                                    'gidd/disasters/disaster-export/',
-                                                    {
-                                                        // cause: not applicable
-
-                                                        iso3__in: countries,
-                                                        hazard_type__in: hazardTypes,
-                                                        start_year: timeRange[0],
-                                                        end_year: timeRange[1],
-                                                        // category: not implemented
-                                                    },
-                                                ), clientCode)}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                Disaster events aggregated data (.xlsx)
-                                            </ButtonLikeLink>
-                                            <ButtonLikeLink
-                                                transparent
-                                                compact
-                                                disabled={!disaggregationAvailable}
-                                                actions={(
-                                                    <IoInformationCircleOutline
-                                                        title={disaggregationAvailable
-                                                            ? `${timeRange[1]} Disaster disaggregated caseloads`
-                                                            : undefined}
-                                                    />
-                                                )}
-                                                href={suffixHelixRestEndpoint(prepareUrl(
-                                                    'gidd/disaggregations/disaggregation-export/',
-                                                    {
-                                                        cause: displacementCause, // Disaster
-
-                                                        iso3__in: countries,
-                                                        disaster_type__in: hazardTypes,
-                                                        // category: not implemented
-                                                        start_year: timeRange[0],
-                                                        end_year: timeRange[1],
-                                                    },
-                                                ), clientCode)}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                {`Disaster events disaggregated data ${timeRange[1]} (.xlsx)`}
-                                            </ButtonLikeLink>
-                                            <ButtonLikeLink
-                                                transparent
-                                                compact
-                                                disabled={!disaggregationAvailable}
-                                                actions={(
-                                                    <IoInformationCircleOutline
-                                                        title={disaggregationAvailable
-                                                            ? `${timeRange[1]} Disaster events disaggregated caseloads (geojson) formatted for GIS applications.\nIMPORTANT: Please read the metadata in the geojson`
-                                                            : undefined}
-                                                    />
-                                                )}
-                                                href={suffixHelixRestEndpoint(prepareUrl(
-                                                    'gidd/disaggregations/disaggregation-geojson/',
-                                                    {
-                                                        cause: displacementCause, // Disaster
-
-                                                        iso3__in: countries,
-                                                        disaster_type__in: hazardTypes,
-                                                        // category: not implemented
-                                                        start_year: timeRange[0],
-                                                        end_year: timeRange[1],
-                                                    },
-                                                ), clientCode)}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                {`Disaster events disaggregated data ${timeRange[1]} (.geojson)`}
-                                            </ButtonLikeLink>
-                                        </>
-                                    )}
-
-                                    {!disaggregationAvailable && (
-                                        <p className={styles.exportMessage}>
-                                            Note: Disaggregated data can only be downloaded one
-                                            year at a time, and is only available for 2023 onwards.
-                                        </p>
-                                    )}
-                                </PopupButton>
-                            </div>
-                        </div>
-                        <div className={styles.right}>
-                            <div className={styles.top}>
-                                <div className={_cs(styles.filterSection)}>
-                                    <GridFilterInputContainer
-                                        className={styles.filterInput}
-                                        label="Internal Displacements or Internally displaced people (IDPs)"
-                                        input={(
-                                            <SelectInput
-                                                name="category"
-                                                className={styles.selectInput}
-                                                inputSectionClassName={styles.inputSection}
-                                                keySelector={categoryKeySelector}
-                                                labelSelector={categoryLabelSelector}
-                                                value={displacementCategory}
-                                                onChange={setDisplacementCategory}
-                                                options={displacementCategoryOptions}
-                                            />
-                                        )}
-                                    />
-                                    <GridFilterInputContainer
-                                        className={styles.filterInput}
-                                        label="Conflict and Violence or Disasters"
-                                        input={(
-                                            <SelectInput
-                                                name="cause"
-                                                className={styles.selectInput}
-                                                inputSectionClassName={styles.inputSection}
-                                                keySelector={causeKeySelector}
-                                                labelSelector={causeLabelSelector}
-                                                value={displacementCause}
-                                                onChange={handleCauseChange}
-                                                options={displacementCauseOptions}
-                                            />
-                                        )}
-                                    />
-                                </div>
-                                <div className={_cs(styles.filterSection)}>
-                                    <GridFilterInputContainer
-                                        className={styles.filterInput}
-                                        label="Countries, and/or Territories"
-                                        labelDescription="*In compared view, up to 3 countries or territories can be selected"
-                                        input={(
-                                            <MultiSelectInput
-                                                name="country"
-                                                className={styles.selectInput}
-                                                value={countries}
-                                                options={countriesOptions}
-                                                keySelector={countryKeySelector}
-                                                labelSelector={nameSelector}
-                                                onChange={handleCountriesChange}
-                                                inputSectionClassName={styles.inputSection}
-                                            />
-                                        )}
-                                    />
-                                    <GridFilterInputContainer
-                                        className={styles.filterInput}
-                                        label={`Timescale ${`${timeRange[0]} - ${timeRange[1]}`}`}
-                                        input={(
-                                            <SliderInput
-                                                className={_cs(styles.sliderInput, styles.input)}
-                                                hideValues
-                                                min={START_YEAR}
-                                                max={endYear}
-                                                step={1}
-                                                minDistance={0}
-                                                value={timeRange}
-                                                onChange={handleTimeRangeChange}
-                                            />
-                                        )}
-                                    />
-                                </div>
-                            </div>
-                            <Switch
-                                className={styles.switch}
-                                labelClassName={styles.switchLabel}
-                                name="additionalFilters"
-                                value={displacementCause === 'disaster' && disasterFiltersShown}
-                                onChange={handleAdditionalFiltersChange}
-                                label="Additional Disaster Filters"
+                        {filtersExpanded ? (
+                            <IoChevronUpOutline className={styles.chevron} />
+                        ) : (
+                            <IoChevronDownOutline className={styles.chevron} />
+                        )}
+                    </RawButton>
+                    <div className={_cs(
+                        styles.filterBar,
+                        filtersExpanded && styles.filterBarExpanded,
+                    )}
+                    >
+                        <div className={styles.filterBarLeft}>
+                            <SelectInput
+                                name="category"
+                                className={_cs(styles.filterItem, styles.filterInput)}
+                                placeholder="Internal Displacements or IDPs"
+                                keySelector={categoryKeySelector}
+                                labelSelector={categoryLabelSelector}
+                                value={displacementCategory}
+                                onChange={setDisplacementCategory}
+                                options={displacementCategoryOptions}
                             />
-                            {disasterFiltersShown && displacementCause === 'disaster' && (
-                                <div className={styles.disasterFilters}>
-                                    <GridFilterInputContainer
-                                        label="Disaster Hazard Type"
-                                        input={(
-                                            <MultiSelectInput
-                                                name="disasterHazard"
-                                                className={styles.selectInput}
-                                                value={hazardTypes}
-                                                options={hazardOptions}
-                                                keySelector={idSelector}
-                                                labelSelector={hazardLabelSelector}
-                                                onChange={setHazardTypes}
-                                                inputSectionClassName={styles.inputSection}
-                                            />
-                                        )}
+                            <SegmentInput
+                                name="cause"
+                                className={_cs(
+                                    styles.filterCause,
+                                    styles.filterInput,
+                                    styles.filterSegment,
+                                )}
+                                keySelector={causeSegmentKeySelector}
+                                labelSelector={causeSegmentLabelSelector}
+                                value={displacementCause ?? 'all'}
+                                onChange={handleCauseSegmentChange}
+                                options={causeSegmentOptions}
+                            />
+                            <MultiSelectInput
+                                name="triggerType"
+                                className={_cs(styles.filterItem, styles.filterInput)}
+                                placeholder="All trigger types"
+                                hint={displacementCause === 'conflict'
+                                    ? 'Not available for conflict and violence yet'
+                                    : undefined}
+                                value={triggerTypes}
+                                options={triggerTypeOptions}
+                                keySelector={idSelector}
+                                labelSelector={triggerTypeLabelSelector}
+                                onChange={setTriggerTypes}
+                                disabled={displacementCause === 'conflict'}
+                            />
+                            <MultiSelectInput
+                                name="regions"
+                                className={_cs(styles.filterItem, styles.filterInput)}
+                                placeholder="All regions"
+                                value={regions}
+                                options={regionOptions}
+                                keySelector={regionKeySelector}
+                                labelSelector={regionLabelSelector}
+                                onChange={applyRegions}
+                            />
+                            <MultiSelectInput
+                                name="country"
+                                className={_cs(styles.filterItem, styles.filterInput)}
+                                placeholder="All countries and territories"
+                                value={countries}
+                                options={countriesOptions}
+                                keySelector={countryKeySelector}
+                                labelSelector={nameSelector}
+                                onChange={handleCountriesChange}
+                            />
+                        </div>
+                        <div className={styles.filterBarRight}>
+                            <div className={styles.filterYear}>
+                                <div className={styles.yearField}>
+                                    <span className={styles.yearLabel}>From</span>
+                                    <SelectInput
+                                        name="startYear"
+                                        className={_cs(styles.yearSelect, styles.filterInput)}
+                                        keySelector={yearKeySelector}
+                                        labelSelector={yearLabelSelector}
+                                        value={timeRange[0]}
+                                        onChange={handleStartYearChange}
+                                        options={yearFilterOptions}
+                                        nonClearable
                                     />
                                 </div>
-                            )}
+                                <div className={styles.yearField}>
+                                    <span className={styles.yearLabel}>To</span>
+                                    <SelectInput
+                                        name="endYear"
+                                        className={_cs(styles.yearSelect, styles.filterInput)}
+                                        keySelector={yearKeySelector}
+                                        labelSelector={yearLabelSelector}
+                                        value={timeRange[1]}
+                                        onChange={handleEndYearChange}
+                                        options={yearFilterOptions}
+                                        nonClearable
+                                    />
+                                </div>
+                            </div>
+                            <SegmentInput
+                                name="precision"
+                                className={_cs(
+                                    styles.filterCause,
+                                    styles.filterInput,
+                                    styles.filterSegment,
+                                )}
+                                keySelector={precisionKeySelector}
+                                labelSelector={precisionLabelSelector}
+                                options={precisionOptions}
+                                value={precision}
+                                onChange={setPrecision}
+                            />
                         </div>
                     </div>
                 </div>
-                <div className={styles.statsContainer}>
-                    {displacementCategory !== 'stock' && (
-                        <div
-                            className={_cs(
-                                styles.statBox,
-                                !isConflictDataShown && styles.disasterStatBox,
-                                isDefined(displacementCategory) && styles.onlyOneSelected,
-                            )}
-                        >
-                            <div className={styles.topStats}>
-                                <Header
-                                    heading="Internal Displacements"
-                                    headingSize="medium"
-                                    headingTooltip={flowDetails}
-                                />
-                                {!displacementCause && (
-                                    <NumberBlock
-                                        label="Total"
-                                        size="large"
-                                        subLabel={getCountryCountSubLabel(
-                                            combinedStats?.internalDisplacementCountries,
-                                        )}
-                                        value={combinedStats?.internalDisplacementsRounded}
-                                    />
-                                )}
-                                <div className={styles.causesBlock}>
-                                    {isConflictDataShown && (
-                                        <NumberBlock
-                                            label="Total by conflict and violence"
-                                            size={displacementCause ? 'large' : 'medium'}
-                                            variant="conflict"
-                                            subLabel={getCountryCountSubLabel(
-                                                conflictStats?.internalDisplacementCountries,
-                                            )}
-                                            value={conflictStats?.newDisplacementsRounded}
-                                        />
-                                    )}
-                                    {isDisasterDataShown && (
-                                        <NumberBlock
-                                            label="Total by disasters"
-                                            size={displacementCause ? 'large' : 'medium'}
-                                            variant="disaster"
-                                            subLabel={getCountryCountSubLabel(
-                                                disasterStats?.internalDisplacementCountries,
-                                            )}
-                                            value={disasterStats?.newDisplacementsRounded}
-                                        />
-                                    )}
-                                </div>
-                                <div className={styles.chartContainer}>
-                                    <ErrorBoundary>
-                                        <ResponsiveContainer>
-                                            <BarChart
-                                                data={flowTimeseries}
-                                                margin={chartMargins}
-                                            >
-                                                <CartesianGrid
-                                                    vertical={false}
-                                                    strokeDasharray="3 3"
-                                                />
-                                                <XAxis
-                                                    dataKey="year"
-                                                    axisLine={false}
-                                                    allowDecimals={false}
-                                                    type="number"
-                                                    domain={domainForCharts}
-                                                    padding={{ left: 20, right: 20 }}
-                                                />
-                                                <YAxis
-                                                    axisLine={false}
-                                                    tickFormatter={formatNumber}
-                                                />
-                                                <Tooltip
-                                                    formatter={formatNumber}
-                                                />
-                                                <Legend />
-                                                {barConfigs.map((barConfig) => (
-                                                    <Bar
-                                                        maxBarSize={6}
-                                                        dataKey={barConfig.dataKey}
-                                                        stackId={barConfig.stackId}
-                                                        key={barConfig.key}
-                                                        fill={barConfig.fill}
-                                                        name={barConfig.name}
-                                                    />
-                                                ))}
-                                            </BarChart>
-                                        </ResponsiveContainer>
-                                    </ErrorBoundary>
-                                </div>
-                                {chartTypeSelection}
-                            </div>
-                            {displacementCause === 'disaster' && (
-                                <div className={styles.disasterStats}>
-                                    <NumberBlock
-                                        label=""
-                                        size="medium"
-                                        variant="disaster"
-                                        subLabel="Disaster Events Reported"
-                                        value={disasterStats?.totalEvents}
-                                    />
-                                    <List
-                                        rendererParams={hazardRendererParams}
-                                        renderer={ProgressLine}
-                                        keySelector={hazardKeySelector}
-                                        data={sortedHazards}
-                                    />
-                                </div>
-                            )}
-                        </div>
-                    )}
-                    {displacementCategory !== 'flow' && (
-                        <div
-                            className={_cs(
-                                styles.statBox,
-                                isDefined(displacementCategory) && styles.onlyOneSelected,
-                            )}
-                        >
-                            <Header
-                                heading="Internally displaced people (IDPs)"
-                                headingTooltip={stockDetails}
-                                headingSize="medium"
+                {!filtersExpanded && activeFilters.length > 0 && (
+                    <div className={styles.activeFilters}>
+                        {activeFilters.map((filter) => (
+                            <FilterPill
+                                key={filter.key}
+                                label={filter.label}
+                                onRemove={filter.onRemove}
                             />
-                            {!displacementCause && (
-                                <NumberBlock
-                                    label="Total"
-                                    size="large"
-                                    subLabel={getCountryStockCountSubLabel(
-                                        combinedStats?.totalDisplacementCountries,
-                                        timeRange[1],
-                                    )}
-                                    value={combinedStats?.totalDisplacementsRounded}
+                        ))}
+                    </div>
+                )}
+
+                <div className={styles.mainRow}>
+                    <div className={styles.mainPanel}>
+                        <div className={styles.viewSelector}>
+                            <SegmentInput
+                                name="activeView"
+                                className={_cs(styles.filterInput, styles.filterSegment)}
+                                keySelector={viewKeySelector}
+                                labelSelector={viewLabelSelector}
+                                options={viewOptions}
+                                value={activeView}
+                                onChange={setActiveView}
+                            />
+                            {activeView === 'events' && (
+                                <TextInput
+                                    className={_cs(styles.eventSearch, styles.filterInput)}
+                                    name="eventSearch"
+                                    placeholder="Search events..."
+                                    value={eventSearchText}
+                                    onChange={setEventSearchText}
+                                    icons={<IoSearchOutline />}
                                 />
                             )}
-                            <div className={styles.causesBlock}>
-                                {isConflictDataShown && (
-                                    <NumberBlock
-                                        label="Total by conflict and violence"
-                                        variant="conflict"
-                                        size={displacementCause ? 'large' : 'medium'}
-                                        subLabel={getCountryStockCountSubLabel(
-                                            conflictStats?.totalDisplacementCountries,
-                                            timeRange[1],
-                                        )}
-                                        value={conflictStats?.totalDisplacementsRounded}
-                                    />
-                                )}
-                                {isDisasterDataShown && (
-                                    <NumberBlock
-                                        label="Total by disasters"
-                                        size={displacementCause ? 'large' : 'medium'}
-                                        variant="disaster"
-                                        subLabel={getCountryStockCountSubLabel(
-                                            disasterStats?.totalDisplacementCountries,
-                                            timeRange[1],
-                                        )}
-                                        value={disasterStats?.totalDisplacementsRounded}
-                                    />
-                                )}
-                            </div>
-                            <div className={styles.chartContainer}>
-                                <ErrorBoundary>
-                                    <ResponsiveContainer>
-                                        <LineChart
-                                            data={stockTimeseries}
-                                            margin={chartMargins}
-                                        >
-                                            <CartesianGrid
-                                                vertical={false}
-                                                strokeDasharray="3 3"
-                                            />
-                                            <XAxis
-                                                dataKey="year"
-                                                axisLine={false}
-                                                type="number"
-                                                padding={{ left: 20, right: 20 }}
-                                                allowDecimals={false}
-                                                domain={domainForCharts}
-                                            />
-                                            <YAxis
-                                                axisLine={false}
-                                                tickFormatter={formatNumber}
-                                            />
-                                            <Tooltip
-                                                formatter={formatNumber}
-                                            />
-                                            <Legend />
-                                            {lineConfigs.map((lineConfig) => (
-                                                <Line
-                                                    dataKey={lineConfig.dataKey}
-                                                    key={lineConfig.key}
-                                                    stroke={lineConfig.fill}
-                                                    name={lineConfig.name}
-                                                    strokeWidth={2}
-                                                    connectNulls
-                                                    dot
-                                                />
-                                            ))}
-                                        </LineChart>
-                                    </ResponsiveContainer>
-                                </ErrorBoundary>
-                            </div>
-                            {chartTypeSelection}
                         </div>
-                    )}
-                </div>
-                <div className={styles.tableContainer}>
-                    <Tabs
-                        value={displacementCause === 'disaster' ? selectedTable : 'data'}
-                        onChange={setSelectedTable}
-                        variant="primary"
-                    >
-                        <Header
-                            className={styles.header}
-                            headingSize="small"
-                            heading={(
-                                <TabList
-                                    position="left"
-                                    gap
-                                >
-                                    <Tab name="data">
-                                        Data Table
-                                    </Tab>
-                                    {displacementCause === 'disaster' && (
-                                        <Tab name="events">
-                                            Events Table
-                                        </Tab>
-                                    )}
-                                </TabList>
+                        <div className={styles.viewPanels}>
+                            {activeView === 'map' && (
+                                <GiddMap
+                                    cause={displacementCause}
+                                    category={displacementCategory}
+                                    countriesIso3={effectiveCountries}
+                                    startYear={timeRange[0]}
+                                    endYear={timeRange[1]}
+                                    clientCode={clientCode}
+                                    onCountryFocus={handleCountryFocus}
+                                />
                             )}
-                        />
-                        <div className={styles.tabPanels}>
-                            <TabPanel name="data">
+                            {activeView === 'table' && (
                                 <DataTable
                                     isConflictDataShown={isConflictDataShown}
                                     isDisasterDataShown={isDisasterDataShown}
-                                    countriesIso3={countries}
+                                    countriesIso3={effectiveCountries}
                                     cause={displacementCause}
                                     startYear={timeRange[0]}
                                     endYear={timeRange[1]}
                                     activePage={dataActivePage}
                                     onActivePageChange={setDataActivePage}
                                     clientCode={clientCode}
+                                    abbreviate={precision === 'rounded'}
                                 />
-                            </TabPanel>
-                            {displacementCause === 'disaster' && (
-                                <TabPanel name="events">
-                                    <EventsTable
-                                        activePage={eventsActivePage}
-                                        onActivePageChange={setEventsActivePage}
-                                        countriesIso3={countries}
-                                        hazardTypes={hazardTypes}
-                                        startYear={timeRange[0]}
-                                        endYear={timeRange[1]}
-                                        clientCode={clientCode}
-                                    />
-                                </TabPanel>
+                            )}
+                            {activeView === 'charts' && (
+                                <>
+                                    {chartTypeSelection}
+                                    <div className={styles.chartsStack}>
+                                        {flowChartBlock}
+                                        {stockChartBlock}
+                                    </div>
+                                </>
+                            )}
+                            {activeView === 'events' && (
+                                <EventsTable
+                                    activePage={eventsActivePage}
+                                    onActivePageChange={setEventsActivePage}
+                                    countriesIso3={effectiveCountries}
+                                    hazardTypes={triggerTypes}
+                                    startYear={timeRange[0]}
+                                    endYear={timeRange[1]}
+                                    clientCode={clientCode}
+                                    searchText={eventSearchText}
+                                />
                             )}
                         </div>
-                    </Tabs>
+                    </div>
+
+                    <div className={styles.sidebar}>
+                        <div className={styles.sidebarHeading}>
+                            At a glance
+                        </div>
+                        <SlideCarousel slides={glanceSlides} />
+
+                        <div className={styles.todoPlaceholder}>
+                            TODO — remaining insight pages (Most internal
+                            displacements / Largest displaced populations,
+                            Emerging increases, Figure analysis) and their
+                            pagination
+                        </div>
+
+                        <div className={styles.downloadFooter}>
+                            <p className={styles.downloadDescription}>
+                                {downloadText}
+                            </p>
+                            <DownloadMenu
+                                cause={displacementCause}
+                                countriesIso3={effectiveCountries}
+                                hazardTypes={triggerTypes}
+                                startYear={timeRange[0]}
+                                endYear={timeRange[1]}
+                                clientCode={clientCode}
+                                disaggregationAvailable={disaggregationAvailable}
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

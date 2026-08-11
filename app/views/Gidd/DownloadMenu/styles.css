@@ -1,0 +1,8 @@
+.popup {
+    .export-message {
+        padding: var(--tui-spacing-small) var(--tui-spacing-large);
+        max-width: 26rem;
+        font-size: var(--tui-font-size-small);
+        font-style: italic;
+    }
+}

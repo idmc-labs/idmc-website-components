@@ -1,0 +1,7 @@
+.hazard-breakdown-card {
+    .list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tui-spacing-small);
+    }
+}

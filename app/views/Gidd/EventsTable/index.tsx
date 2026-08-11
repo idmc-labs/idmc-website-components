@@ -1,9 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import {
     _cs,
 } from '@togglecorp/fujs';
 import {
-    TextInput,
     Table,
     TableHeaderCell,
     TableHeaderCellProps,
@@ -13,7 +12,6 @@ import {
     useSortState,
     createDateColumn,
 } from '@togglecorp/toggle-ui';
-import { IoSearchOutline } from 'react-icons/io5';
 import {
     getHazardTypeLabel,
     DATA_RELEASE,
@@ -23,10 +21,8 @@ import {
     useQuery,
 } from '@apollo/client';
 
-import {
-    createTextColumn,
-    createNumberColumn,
-} from '#components/tableHelpers';
+import Numeral from '#components/Numeral';
+import HazardType, { Props as HazardTypeProps } from '#components/IduMap/IduTable/HazardType';
 import {
     GiddEventsQuery,
     GiddEventsQueryVariables,
@@ -37,16 +33,15 @@ import EventTitle, { Props as EventTitleProps } from '../EventTitle';
 
 import styles from './styles.css';
 
-const smallNumberWidth = 80;
-const largeNumberWidth = 200;
+const mediumNumberWidth = 100;
 
 const dateWidth = 120;
 
 const smallTextWidth = 200;
-const mediumTextWidth = 220;
 const largeTextWidth = 320;
 
 type EventData = NonNullable<NonNullable<GiddEventsQuery['giddPublicDisasters']>['results']>[number];
+type NumeralProps = React.ComponentProps<typeof Numeral>;
 const eventKeySelector = (item: { id: string }) => item.id;
 
 const description = 'The events table displays a summary of internal displacement data aggregated by events. An event is defined as any natural hazard phenomena that triggered forced movements before, during or after a disaster hit.';
@@ -91,7 +86,6 @@ query GiddEvents(
             hazardTypeName
             iso3
             newDisplacementRounded
-            eventCodes
             startDate
             year
         }
@@ -113,6 +107,7 @@ interface Props {
     countriesIso3: string[] | undefined;
     hazardTypes: string[] | undefined;
     clientCode: string;
+    searchText: string | undefined;
 }
 
 function EventsTable(props: Props) {
@@ -125,14 +120,18 @@ function EventsTable(props: Props) {
         countriesIso3,
         hazardTypes,
         clientCode,
+        searchText,
     } = props;
 
-    const eventDataSortState = useSortState({ name: 'year', direction: 'dsc' });
+    const eventDataSortState = useSortState({ name: 'startDate', direction: 'dsc' });
     const { sorting: eventSorting } = eventDataSortState;
-    const [eventSearchText, setEventSearchText] = useState<string | undefined>();
+
+    const sortedHeaderClassName = useCallback((columnId: string) => (
+        eventSorting?.name === columnId ? styles.sortedHeader : undefined
+    ), [eventSorting]);
 
     const giddEventsVariables = useMemo(() => ({
-        eventName: eventSearchText,
+        eventName: searchText,
         ordering: `${eventSorting?.direction === 'asc' ? '' : '-'}${eventSorting?.name}`,
         page: activePage,
         countriesIso3,
@@ -146,7 +145,7 @@ function EventsTable(props: Props) {
         countriesIso3,
         startYear,
         endYear,
-        eventSearchText,
+        searchText,
         hazardTypes,
         eventSorting,
         activePage,
@@ -175,6 +174,24 @@ function EventsTable(props: Props) {
 
     const eventColumns = useMemo(
         () => {
+            const countryColumn: TableColumn<
+                EventData, string, HazardTypeProps, TableHeaderCellProps
+            > = {
+                id: 'countryName',
+                title: 'Country',
+                headerCellRenderer: TableHeaderCell,
+                headerCellRendererParams: {
+                    sortable: true,
+                },
+                headerCellRendererClassName: sortedHeaderClassName('countryName'),
+                cellRenderer: HazardType,
+                cellRendererParams: (_, data) => ({
+                    value: data.countryName,
+                    category: String(data.year),
+                }),
+                columnWidth: smallTextWidth,
+            };
+
             const eventTitle: TableColumn<
                 EventData, string, EventTitleProps, TableHeaderCellProps
             > = {
@@ -184,6 +201,7 @@ function EventsTable(props: Props) {
                 headerCellRendererParams: {
                     sortable: true,
                 },
+                headerCellRendererClassName: sortedHeaderClassName('eventName'),
                 cellRenderer: EventTitle,
                 cellRendererParams: (_, data) => ({
                     title: data.eventName,
@@ -195,97 +213,88 @@ function EventsTable(props: Props) {
                 columnStretch: true,
             };
 
+            const displacementsColumn: TableColumn<
+                EventData, string, NumeralProps, TableHeaderCellProps
+            > = {
+                id: 'newDisplacementRounded',
+                title: 'Internal Displacements',
+                headerCellRenderer: TableHeaderCell,
+                headerCellRendererParams: {
+                    sortable: true,
+                },
+                headerCellRendererClassName: _cs(
+                    styles.numberHeader,
+                    sortedHeaderClassName('newDisplacementRounded'),
+                ),
+                cellRenderer: Numeral,
+                cellRendererClassName: styles.number,
+                cellRendererParams: (_, data) => ({
+                    value: data.newDisplacementRounded,
+                    placeholder: '',
+                    separator: ',',
+                    valueClassName: styles.figure,
+                    abbrClassName: styles.figure,
+                }),
+                columnWidth: mediumNumberWidth,
+            };
+
+            const eventTypeColumn: TableColumn<
+                EventData, string, HazardTypeProps, TableHeaderCellProps
+            > = {
+                id: 'hazardTypeName',
+                title: 'Event Type',
+                headerCellRenderer: TableHeaderCell,
+                headerCellRendererParams: {
+                    sortable: true,
+                },
+                headerCellRendererClassName: sortedHeaderClassName('hazardTypeName'),
+                cellRenderer: HazardType,
+                cellRendererParams: (_, data) => ({
+                    value: (data.hazardTypeId && data.hazardTypeName)
+                        ? getHazardTypeLabel({
+                            id: data.hazardTypeId,
+                            label: data.hazardTypeName,
+                        })
+                        : data.hazardTypeName,
+                    category: data.hazardCategoryName,
+                }),
+                columnWidth: smallTextWidth,
+            };
+
             return ([
-                createTextColumn<EventData, string>(
-                    'countryName',
-                    'Country / Territory',
-                    (item) => item.countryName,
-                    {
-                        sortable: true,
-                        columnWidth: mediumTextWidth,
-                    },
-                ),
-                createNumberColumn<EventData, string>(
-                    'year',
-                    'Year',
-                    (item) => Number(item.year),
-                    {
-                        sortable: true,
-                        separator: '',
-                        columnWidth: smallNumberWidth,
-                    },
-                ),
+                countryColumn,
                 eventTitle,
-                createTextColumn<EventData, string>(
-                    'eventCodes',
-                    'Event Codes',
-                    (item) => item.eventCodes?.join('; '),
-                    {
-                        sortable: true,
-                        columnWidth: mediumTextWidth,
-                    },
-                ),
                 createDateColumn<EventData, string>(
                     'startDate',
-                    'Date of event (start)',
+                    'Start Date',
                     (item) => item.startDate,
                     {
                         sortable: true,
                         columnWidth: dateWidth,
+                        headerCellRendererClassName: sortedHeaderClassName('startDate'),
                     },
                 ),
-                createNumberColumn<EventData, string>(
-                    'newDisplacementRounded',
-                    'Disaster Internal Displacements',
-                    (item) => item.newDisplacementRounded,
-                    {
-                        sortable: true,
-                        columnWidth: largeNumberWidth,
-                    },
-                ),
-                createTextColumn<EventData, string>(
-                    'hazardCategoryName',
-                    'Hazard Category',
-                    (item) => item.hazardCategoryName,
-                    {
-                        sortable: true,
-                        columnWidth: smallTextWidth,
-                    },
-                ),
-                createTextColumn<EventData, string>(
-                    'hazardTypeName',
-                    'Hazard Type',
-                    (item) => ((item.hazardTypeId && item.hazardTypeName)
-                        ? getHazardTypeLabel({
-                            id: item.hazardTypeId,
-                            label: item.hazardTypeName,
-                        })
-                        : item.hazardTypeName),
-                    {
-                        sortable: true,
-                        columnWidth: smallTextWidth,
-                    },
-                ),
+                displacementsColumn,
+                eventTypeColumn,
             ]);
         },
-        [clientCode],
+        [
+            clientCode,
+            sortedHeaderClassName,
+        ],
     );
 
     return (
         <div className={_cs(className, styles.eventsTable)}>
             {description}
-            <TextInput
-                icons={(
-                    <IoSearchOutline />
-                )}
-                className={styles.input}
-                inputSectionClassName={styles.inputSection}
-                name="eventTitle"
-                label="Search Events"
-                value={eventSearchText}
-                onChange={setEventSearchText}
-            />
             <SortContext.Provider value={eventDataSortState}>
+                <Table
+                    containerClassName={styles.table}
+                    data={eventsResponse?.giddPublicDisasters?.results}
+                    keySelector={eventKeySelector}
+                    columns={eventColumns}
+                    resizableColumn
+                />
                 <Pager
                     className={styles.pager}
                     activePage={activePage}
@@ -293,13 +302,6 @@ function EventsTable(props: Props) {
                     maxItemsPerPage={EVENTS_TABLE_PAGE_SIZE}
                     onActivePageChange={onActivePageChange}
                     itemsPerPageControlHidden
-                />
-                <Table
-                    containerClassName={styles.table}
-                    data={eventsResponse?.giddPublicDisasters?.results}
-                    keySelector={eventKeySelector}
-                    columns={eventColumns}
-                    resizableColumn
                 />
             </SortContext.Provider>
         </div>

@@ -4,16 +4,6 @@
         font-size: var(--tui-font-size-medium)!important;
     }
 
-    /* NOTE: conflict is being used dynamically */
-    &.conflict {
-        color: var(--color-conflict);
-    }
-
-    /* NOTE: disaster is being used dynamically */
-    &.disaster {
-        color: var(--color-disaster);
-    }
-
     &.number-header {
         * {
             justify-content: flex-end;
@@ -25,4 +15,18 @@
 .number {
     display: block;
     text-align: right;
+}
+
+.figure {
+    font-weight: 600;
+}
+
+/* NOTE: conflict is being used dynamically, for both header and value cells */
+.conflict {
+    color: var(--color-conflict);
+}
+
+/* NOTE: disaster is being used dynamically, for both header and value cells */
+.disaster {
+    color: var(--color-disaster);
 }
