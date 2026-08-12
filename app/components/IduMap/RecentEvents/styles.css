@@ -19,7 +19,19 @@
         flex-direction: column;
         flex-grow: 1;
         min-height: 0;
-        gap: var(--tui-spacing-super-small);
-        overflow: auto;
+        gap: var(--tui-spacing-small);
+        overflow-y: auto;
+
+        .show-more {
+            align-self: center;
+            flex-shrink: 0;
+            padding: var(--tui-spacing-small) var(--tui-spacing-small-medium);
+            color: var(--tui-color-brand, #193256);
+            font-weight: var(--tui-font-weight-bold);
+        }
+
+        .show-more:hover {
+            text-decoration: underline;
+        }
     }
 }

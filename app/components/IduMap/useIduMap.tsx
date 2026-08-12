@@ -11,7 +11,6 @@ import {
     LngLatBounds,
 } from 'mapbox-gl';
 import {
-    IoDownloadOutline,
     IoSearchOutline,
     IoRefreshOutline,
     IoFilterOutline,
@@ -187,6 +186,37 @@ const defaultStartDateObj = new Date(TODAY);
 defaultStartDateObj.setDate(defaultStartDateObj.getDate() - 180);
 const defaultStartDate = toDateInputValue(defaultStartDateObj);
 
+function triggerDownload(content: string, filename: string, mimeType: string) {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+function escapeCsvValue(value: unknown) {
+    if (isNotDefined(value)) {
+        return '';
+    }
+    const str = typeof value === 'object' ? JSON.stringify(value) : String(value);
+    return /["\r\n,]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+}
+
+function toCsv(rows: Record<string, unknown>[]) {
+    if (rows.length === 0) {
+        return '';
+    }
+    const keys = Object.keys(rows[0]).filter((key) => key !== '__typename');
+    const lines = rows.map(
+        (row) => keys.map((key) => escapeCsvValue(row[key])).join(','),
+    );
+    return [keys.map(escapeCsvValue).join(','), ...lines].join('\n');
+}
+
 function useIduMap(
     clientCode: string,
     boundingBox?: LngLatBounds | undefined,
@@ -356,30 +386,40 @@ function useIduMap(
         endDate,
     ]);
 
-    const handleDownload = useCallback(() => {
+    const handleDownloadGeojson = useCallback(() => {
         if (isNotDefined(idusForMap)) {
             return;
         }
-        const onlyData = idusForMap.map((item) => {
-            const {
-                __typename,
-                ...remaining
-            } = item as (typeof item & { __typename: string });
-            return remaining;
-        });
+        const features = idusForMap
+            .filter((item) => isDefined(item.longitude) && isDefined(item.latitude))
+            .map((item) => {
+                const {
+                    __typename,
+                    ...properties
+                } = item as (typeof item & { __typename: string });
+                return {
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [item.longitude, item.latitude],
+                    },
+                    properties,
+                };
+            });
+        const geojson = { type: 'FeatureCollection', features };
+        triggerDownload(
+            JSON.stringify(geojson),
+            'idu-data.geojson',
+            'application/geo+json',
+        );
+    }, [idusForMap]);
 
-        const jsonStr = JSON.stringify(onlyData);
-        const blob = new Blob([jsonStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'idu-data.json';
-        document.body.appendChild(link);
-        link.click();
-
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+    const handleDownloadCsv = useCallback(() => {
+        if (isNotDefined(idusForMap)) {
+            return;
+        }
+        const csv = toCsv(idusForMap as unknown as Record<string, unknown>[]);
+        triggerDownload(csv, 'idu-data.csv', 'text/csv;charset=utf-8');
     }, [idusForMap]);
 
     const handleReset = useCallback(() => {
@@ -395,6 +435,10 @@ function useIduMap(
     const handleCountrySelect = useCallback((countryIso3: string) => {
         const key = `c:${countryIso3}`;
         setLocations((prev) => (prev.length === 1 && prev[0] === key ? [] : [key]));
+    }, []);
+
+    const handleCountryFocus = useCallback((countryIso3: string) => {
+        setLocations([`c:${countryIso3}`]);
     }, []);
 
     const handleTriggerSelect = useCallback((triggerType: string) => {
@@ -595,48 +639,50 @@ function useIduMap(
                     )}
                 </RawButton>
                 <div className={_cs(styles.filterBar, filtersExpanded && styles.filterBarExpanded)}>
-                    <TextInput
-                        className={styles.search}
-                        name="search"
-                        placeholder="Search events..."
-                        value={searchText}
-                        onChange={setSearchText}
-                        icons={<IoSearchOutline />}
-                    />
-                    <SegmentInput
-                        className={styles.cause}
-                        name="cause"
-                        options={causeOptions}
-                        keySelector={causeKeySelector}
-                        labelSelector={causeLabelSelector}
-                        value={cause}
-                        onChange={setCause}
-                    />
-                    <MultiSelectInput
-                        className={styles.triggerTypes}
-                        name="triggerTypes"
-                        placeholder="All trigger types"
-                        options={hazardOptions}
-                        keySelector={optionKeySelector}
-                        labelSelector={optionLabelSelector}
-                        value={triggerTypes}
-                        onChange={setTriggerTypes}
-                    />
-                    {isNotDefined(iso3) && (
-                        <MultiSelectInput
-                            className={styles.countries}
-                            name="locations"
-                            placeholder="All countries and regions"
-                            options={locationOptions}
-                            keySelector={locationKeySelector}
-                            labelSelector={locationLabelSelector}
-                            value={locations}
-                            onChange={setLocations}
-                            grouped
-                            groupKeySelector={locationGroupKeySelector}
-                            groupLabelSelector={locationGroupLabelSelector}
+                    <div className={styles.leftFilters}>
+                        <TextInput
+                            className={styles.search}
+                            name="search"
+                            placeholder="Search events..."
+                            value={searchText}
+                            onChange={setSearchText}
+                            icons={<IoSearchOutline />}
                         />
-                    )}
+                        <SegmentInput
+                            className={styles.cause}
+                            name="cause"
+                            options={causeOptions}
+                            keySelector={causeKeySelector}
+                            labelSelector={causeLabelSelector}
+                            value={cause}
+                            onChange={setCause}
+                        />
+                        <MultiSelectInput
+                            className={styles.triggerTypes}
+                            name="triggerTypes"
+                            placeholder="All trigger types"
+                            options={hazardOptions}
+                            keySelector={optionKeySelector}
+                            labelSelector={optionLabelSelector}
+                            value={triggerTypes}
+                            onChange={setTriggerTypes}
+                        />
+                        {isNotDefined(iso3) && (
+                            <MultiSelectInput
+                                className={styles.countries}
+                                name="locations"
+                                placeholder="All countries and regions"
+                                options={locationOptions}
+                                keySelector={locationKeySelector}
+                                labelSelector={locationLabelSelector}
+                                value={locations}
+                                onChange={setLocations}
+                                grouped
+                                groupKeySelector={locationGroupKeySelector}
+                                groupLabelSelector={locationGroupLabelSelector}
+                            />
+                        )}
+                    </div>
                     <DateRangeDualInput
                         className={styles.dateRange}
                         fromName="startDate"
@@ -665,6 +711,7 @@ function useIduMap(
                         <RawIduMap
                             idus={idusForMap}
                             boundingBox={boundingBox}
+                            onCountryFocus={isNotDefined(iso3) ? handleCountryFocus : undefined}
                         />
                     ) : (
                         <IduTable idus={idusForMap} />
@@ -685,6 +732,7 @@ function useIduMap(
                         className={styles.carousel}
                         slides={slides}
                         fillHeight
+                        expandable={false}
                         pagerExtra={(
                             <RawButton
                                 name={undefined}
@@ -706,15 +754,27 @@ function useIduMap(
                             </a>
                             .
                         </p>
-                        <Button
-                            className={styles.downloadButton}
-                            name={undefined}
-                            onClick={handleDownload}
-                            icons={<IoDownloadOutline />}
-                            disabled={loading || isNotDefined(idusForMap)}
-                        >
-                            Download current selection
-                        </Button>
+                        <div className={styles.downloadRow}>
+                            <span className={styles.downloadLabel}>
+                                Download current selection
+                            </span>
+                            <Button
+                                className={styles.downloadButton}
+                                name={undefined}
+                                onClick={handleDownloadGeojson}
+                                disabled={loading || isNotDefined(idusForMap)}
+                            >
+                                GeoJSON
+                            </Button>
+                            <Button
+                                className={styles.downloadButton}
+                                name={undefined}
+                                onClick={handleDownloadCsv}
+                                disabled={loading || isNotDefined(idusForMap)}
+                            >
+                                Excel
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </div>

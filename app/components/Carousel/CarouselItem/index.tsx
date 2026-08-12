@@ -14,6 +14,8 @@ interface Props {
     className?: string;
     children: React.ReactNode;
     expandedClassName?: string;
+    // Show the "expand to a larger popup" button (default: true).
+    expandable?: boolean;
 }
 
 function CarouselItem(props: Props) {
@@ -22,6 +24,7 @@ function CarouselItem(props: Props) {
         className,
         children,
         expandedClassName,
+        expandable = true,
     } = props;
 
     const {
@@ -54,17 +57,19 @@ function CarouselItem(props: Props) {
     return (
         <>
             <div className={_cs(styles.carouselItem, className)}>
-                <Button
-                    name={undefined}
-                    className={styles.expandButton}
-                    onClick={setIsExpandedTrue}
-                    transparent
-                >
-                    <IoExpand />
-                </Button>
+                {expandable && (
+                    <Button
+                        name={undefined}
+                        className={styles.expandButton}
+                        onClick={setIsExpandedTrue}
+                        transparent
+                    >
+                        <IoExpand />
+                    </Button>
+                )}
                 {children}
             </div>
-            {isExpanded && (
+            {expandable && isExpanded && (
                 <Modal
                     backdropClassName={styles.modalBackdrop}
                     className={styles.expandedModal}

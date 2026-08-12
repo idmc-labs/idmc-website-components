@@ -13,10 +13,19 @@ import {
     LngLatLike,
     LngLatBounds,
 } from 'mapbox-gl';
-import { isDefined, isNotDefined, compareDate, _cs } from '@togglecorp/fujs';
+import {
+    isDefined,
+    isNotDefined,
+    isTruthyString,
+    compareDate,
+    _cs,
+} from '@togglecorp/fujs';
+import { IoClose, IoArrowForward } from 'react-icons/io5';
 
 import { mapboxStyle } from '#base/configs/mapbox';
 import HTMLOutput from '#components/HTMLOutput';
+import RawButton from '#components/RawButton';
+import Numeral from '#components/Numeral';
 import {
     IduDataQuery,
 } from '#generated/types';
@@ -47,16 +56,23 @@ interface PopupProperties {
     type: 'Disaster' | 'Conflict' | 'Other',
     value: number,
     date: string | null | undefined,
-    description: string,
+    description: string | null | undefined,
+    eventName: string | null | undefined,
+    eventCode: string | null | undefined,
+    source: string | null | undefined,
+    country: string,
+    iso3: string,
 }
 
 type IduGeoJSON = GeoJSON.FeatureCollection<
     GeoJSON.Point,
-    { type: 'Disaster' | 'Conflict' | 'Other', value: number, description: string | null | undefined }
+    PopupProperties
 >;
 
 const iduPointColor: mapboxgl.CirclePaint = {
     'circle-opacity': 0.6,
+    'circle-stroke-width': 1,
+    'circle-stroke-color': '#fff',
     'circle-color': {
         property: 'type',
         type: 'categorical',
@@ -91,15 +107,28 @@ const sourceOption: mapboxgl.GeoJSONSourceRaw = {
 
 const lightStyle = mapboxStyle;
 
+function formatDate(date: string | null | undefined) {
+    if (isNotDefined(date)) {
+        return undefined;
+    }
+    return new Date(date).toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+    });
+}
+
 interface Props {
     idus: IduDataQuery['idu'] | undefined;
     boundingBox: LngLatBounds | undefined;
+    onCountryFocus?: (iso3: string) => void;
 }
 
 function RawIduMap(props: Props) {
     const {
         idus,
         boundingBox,
+        onCountryFocus,
     } = props;
 
     const [state, dispatch] = useReducer<Reducer>(
@@ -175,6 +204,11 @@ function RawIduMap(props: Props) {
                             value: idu.figure,
                             date: idu.displacement_date,
                             description: idu.standard_popup_text,
+                            eventName: idu.event_name,
+                            eventCode: idu.event_codes,
+                            source: idu.sources,
+                            country: idu.country,
+                            iso3: idu.iso3,
                         },
                         geometry: {
                             type: 'Point' as const,
@@ -231,24 +265,85 @@ function RawIduMap(props: Props) {
                         onHide={handleMapPopupClose}
                     >
                         <>
-                            {state.properties.map((item) => (
-                                <div
-                                    className={styles.item}
-                                    key={item.id}
-                                >
-                                    <div
-                                        className={_cs(
-                                            styles.icon,
-                                            item.type === 'Disaster' && styles.disaster,
-                                            item.type === 'Conflict' && styles.conflict,
-                                        )}
-                                    />
-                                    <HTMLOutput
-                                        className={styles.description}
-                                        value={item.description}
-                                    />
-                                </div>
-                            ))}
+                            <RawButton
+                                name={undefined}
+                                className={styles.closeButton}
+                                onClick={handleMapPopupClose}
+                                title="Close"
+                            >
+                                <IoClose />
+                            </RawButton>
+                            <div className={styles.list}>
+                                {state.properties.map((item, index) => {
+                                    const isDisaster = item.type === 'Disaster';
+                                    const accentClassName = isDisaster
+                                        ? styles.disaster
+                                        : styles.conflict;
+                                    const typeLabelClassName = _cs(
+                                        styles.typeLabel,
+                                        accentClassName,
+                                    );
+                                    const footerText = [item.source, formatDate(item.date)]
+                                        .filter(isTruthyString)
+                                        .join(' · ');
+                                    const canFocus = isDefined(onCountryFocus)
+                                        && isTruthyString(item.iso3);
+                                    const focusButtonClassName = _cs(
+                                        styles.focusButton,
+                                        accentClassName,
+                                    );
+                                    return (
+                                        <React.Fragment key={item.id}>
+                                            {index > 0 && <div className={styles.separator} />}
+                                            <div className={styles.card}>
+                                                <div className={typeLabelClassName}>
+                                                    <span className={styles.dot} />
+                                                    {isDisaster ? 'Disasters' : 'Conflict'}
+                                                </div>
+                                                {isTruthyString(item.eventCode) && (
+                                                    <div className={styles.code}>
+                                                        {item.eventCode}
+                                                    </div>
+                                                )}
+                                                <div className={styles.figureRow}>
+                                                    <Numeral
+                                                        className={styles.figure}
+                                                        value={item.value}
+                                                        abbreviate
+                                                        valueClassName={accentClassName}
+                                                        abbrClassName={accentClassName}
+                                                    />
+                                                    <span className={styles.figureLabel}>
+                                                        Internal displacements
+                                                    </span>
+                                                </div>
+                                                <HTMLOutput
+                                                    className={styles.description}
+                                                    value={item.description}
+                                                />
+                                                {isTruthyString(footerText) && (
+                                                    <div className={styles.footer}>
+                                                        {footerText}
+                                                    </div>
+                                                )}
+                                                {canFocus && (
+                                                    <RawButton
+                                                        name={undefined}
+                                                        className={focusButtonClassName}
+                                                        onClick={() => {
+                                                            onCountryFocus?.(item.iso3);
+                                                            handleMapPopupClose();
+                                                        }}
+                                                    >
+                                                        {`Focus ${item.country} in all views`}
+                                                        <IoArrowForward />
+                                                    </RawButton>
+                                                )}
+                                            </div>
+                                        </React.Fragment>
+                                    );
+                                })}
+                            </div>
                         </>
                     </MapTooltip>
                 )}

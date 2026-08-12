@@ -66,11 +66,20 @@
             display: flex;
             align-items: center;
             flex-wrap: wrap;
+            justify-content: space-between;
             gap: var(--tui-spacing-small);
 
+            .left-filters {
+                display: flex;
+                align-items: center;
+                flex-grow: 1;
+                flex-wrap: wrap;
+                gap: var(--tui-spacing-small);
+            }
+
             .search {
-                flex: 0 1 10rem;
-                max-width: 10rem;
+                flex: 0 1 16rem;
+                max-width: 16rem;
             }
 
             .cause {
@@ -158,6 +167,20 @@
                     margin: 0;
                     color: var(--tui-color-label, #7a7a7a);
                     font-size: var(--tui-font-size-small);
+                }
+
+                .download-row {
+                    display: flex;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    gap: var(--tui-spacing-small);
+
+                    .download-label {
+                        text-transform: uppercase;
+                        color: var(--tui-color-label, #7a7a7a);
+                        font-size: var(--tui-font-size-small);
+                        font-weight: var(--tui-font-weight-bold);
+                    }
                 }
 
                 .download-button {
