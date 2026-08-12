@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useState } from 'react';
 import {
     _cs,
     isDefined,
@@ -9,6 +9,7 @@ import {
 } from '@togglecorp/fujs';
 
 import ListView from '#components/ListView';
+import RawButton from '#components/RawButton';
 import { IduDataQuery } from '#generated/types';
 
 import EventListItem, { Props as EventListItemProps } from '../EventListItem';
@@ -20,6 +21,7 @@ type IduRow = NonNullable<IduDataQuery['idu']>[number];
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 const RECENT_DAYS = 60;
+const PAGE_SIZE = 10;
 
 interface RecentEvent {
     key: string;
@@ -47,6 +49,8 @@ function RecentEvents(props: Props) {
         onEventSelect,
         selectedEventId,
     } = props;
+
+    const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
     const events = useMemo<RecentEvent[]>(() => {
         const cutoff = new Date().getTime() - (RECENT_DAYS * DAY_IN_MS);
@@ -79,6 +83,7 @@ function RecentEvents(props: Props) {
 
     const rendererParams = useCallback((_: string, item: RecentEvent): EventListItemProps => {
         const { id, title } = item;
+
         return {
             title,
             subtitle: item.code,
@@ -92,26 +97,45 @@ function RecentEvents(props: Props) {
         };
     }, [onEventSelect, selectedEventId]);
 
+    const handleShowMore = useCallback(() => {
+        setVisibleCount((count) => count + PAGE_SIZE);
+    }, []);
+
+    const visibleEvents = useMemo(
+        () => events.slice(0, visibleCount),
+        [events, visibleCount],
+    );
+    const hasMore = visibleCount < events.length;
+
     return (
         <div className={_cs(styles.recentEvents, className)}>
             <div className={styles.heading}>
                 The most recent recorded events
             </div>
             <div className={styles.description}>
-                {/* eslint-disable-next-line max-len */}
                 Preliminary estimates of internal displacement events from the past 60 days.
             </div>
-            <ListView
-                className={styles.list}
-                data={events}
-                keySelector={eventKeySelector}
-                renderer={EventListItem}
-                rendererParams={rendererParams}
-                direction="vertical"
-                errored={false}
-                pending={false}
-                filtered={false}
-            />
+            <div className={styles.list}>
+                <ListView
+                    data={visibleEvents}
+                    keySelector={eventKeySelector}
+                    renderer={EventListItem}
+                    rendererParams={rendererParams}
+                    direction="vertical"
+                    errored={false}
+                    pending={false}
+                    filtered={false}
+                />
+                {hasMore && (
+                    <RawButton
+                        name={undefined}
+                        className={styles.showMore}
+                        onClick={handleShowMore}
+                    >
+                        Show more
+                    </RawButton>
+                )}
+            </div>
         </div>
     );
 }

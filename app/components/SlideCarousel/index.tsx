@@ -22,6 +22,8 @@ export interface Props {
     // Stretch slides to fill the height of a flex parent, for carousels
     // living in a fixed-height pane (e.g. IduMap's side panel).
     fillHeight?: boolean;
+    // Show the per-slide "expand to a larger popup" button (default: true).
+    expandable?: boolean;
 }
 
 function SlideCarousel(props: Props) {
@@ -31,6 +33,7 @@ function SlideCarousel(props: Props) {
         autoPlay = false,
         pagerExtra,
         fillHeight,
+        expandable = true,
     } = props;
 
     return (
@@ -41,6 +44,7 @@ function SlideCarousel(props: Props) {
                         key={slide.key}
                         order={index + 1}
                         className={_cs(styles.slide, fillHeight && styles.slideFill)}
+                        expandable={expandable}
                     >
                         {slide.content}
                     </CarouselItem>
