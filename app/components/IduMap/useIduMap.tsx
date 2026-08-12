@@ -46,9 +46,7 @@ import {
 
 import Message from '#components/Message';
 import RawButton from '#components/RawButton';
-import Carousel from '#components/Carousel';
-import CarouselItem from '#components/Carousel/CarouselItem';
-import CarouselButton from '#components/Carousel/CarouselButton';
+import SlideCarousel from '#components/SlideCarousel';
 import useBooleanState from '#hooks/useBooleanState';
 
 import { suffixDrupalEndpoint } from '#utils/common';
@@ -176,12 +174,6 @@ const locationKeySelector = (option: LocationOption) => option.key;
 const locationLabelSelector = (option: LocationOption) => option.label;
 const locationGroupKeySelector = (option: LocationOption) => option.groupKey;
 const locationGroupLabelSelector = (option: LocationOption) => option.groupLabel;
-
-const CAROUSEL_SLIDE_COUNT = 5;
-const carouselSlides = Array.from(
-    { length: CAROUSEL_SLIDE_COUNT },
-    (_, index) => index + 1,
-);
 
 const TODAY = new Date();
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
@@ -503,39 +495,54 @@ function useIduMap(
         });
     }
 
-    const slideContents: { [order: number]: React.ReactNode } = {
-        1: (
-            <RecentEvents
-                idus={idusForMap}
-                onEventSelect={handleEventSelect}
-                selectedEventId={selectedEvent?.id}
-            />
-        ),
-        2: (
-            <TopCountries
-                idus={idusForMap}
-                onCountrySelect={handleCountrySelect}
-                selectedIso3={selectedIso3}
-            />
-        ),
-        3: (
-            <DisasterBreakdown
-                idus={idusForMap}
-                onTriggerSelect={handleTriggerSelect}
-                selectedTriggerType={selectedTriggerType}
-            />
-        ),
-        4: <ConflictBreakdown idus={idusForMap} />,
-        5: (
-            <LargestEvents
-                idus={idusForMap}
-                startDate={startDate}
-                endDate={endDate}
-                onEventSelect={handleEventSelect}
-                selectedEventId={selectedEvent?.id}
-            />
-        ),
-    };
+    const slides: { key: string; content: React.ReactNode }[] = [
+        {
+            key: 'recent-events',
+            content: (
+                <RecentEvents
+                    idus={idusForMap}
+                    onEventSelect={handleEventSelect}
+                    selectedEventId={selectedEvent?.id}
+                />
+            ),
+        },
+        {
+            key: 'top-countries',
+            content: (
+                <TopCountries
+                    idus={idusForMap}
+                    onCountrySelect={handleCountrySelect}
+                    selectedIso3={selectedIso3}
+                />
+            ),
+        },
+        {
+            key: 'disaster-breakdown',
+            content: (
+                <DisasterBreakdown
+                    idus={idusForMap}
+                    onTriggerSelect={handleTriggerSelect}
+                    selectedTriggerType={selectedTriggerType}
+                />
+            ),
+        },
+        {
+            key: 'conflict-breakdown',
+            content: <ConflictBreakdown idus={idusForMap} />,
+        },
+        {
+            key: 'largest-events',
+            content: (
+                <LargestEvents
+                    idus={idusForMap}
+                    startDate={startDate}
+                    endDate={endDate}
+                    onEventSelect={handleEventSelect}
+                    selectedEventId={selectedEvent?.id}
+                />
+            ),
+        },
+    ];
 
     const widget = (
         <div className={styles.dashboard}>
@@ -674,48 +681,21 @@ function useIduMap(
                 </div>
                 <div className={styles.rightPane}>
                     <StatBar idus={idusForMap} />
-                    <Carousel className={styles.carousel} autoPlay={false}>
-                        <div className={styles.slides}>
-                            {carouselSlides.map((order) => (
-                                <CarouselItem
-                                    key={order}
-                                    order={order}
-                                    className={styles.slide}
-                                >
-                                    {slideContents[order]}
-                                </CarouselItem>
-                            ))}
-                        </div>
-                        <div className={styles.carouselSelector}>
-                            <div className={styles.pager}>
-                                <CarouselButton
-                                    action="prev"
-                                    className={styles.pagerButton}
-                                />
-                                {carouselSlides.map((order) => (
-                                    <CarouselButton
-                                        key={order}
-                                        action="set"
-                                        order={order}
-                                        className={styles.pagerButton}
-                                    />
-                                ))}
-                                <CarouselButton
-                                    action="next"
-                                    className={styles.pagerButton}
-                                />
-                                <div className={styles.pagerDivider} />
-                                <RawButton
-                                    name={undefined}
-                                    className={styles.definitions}
-                                    onClick={showDefinitions}
-                                >
-                                    <IoInformationCircleOutline />
-                                    Definitions
-                                </RawButton>
-                            </div>
-                        </div>
-                    </Carousel>
+                    <SlideCarousel
+                        className={styles.carousel}
+                        slides={slides}
+                        fillHeight
+                        pagerExtra={(
+                            <RawButton
+                                name={undefined}
+                                className={styles.definitions}
+                                onClick={showDefinitions}
+                            >
+                                <IoInformationCircleOutline />
+                                Definitions
+                            </RawButton>
+                        )}
+                    />
                     <div className={styles.rightFooter}>
                         <p className={styles.footerText}>
                             {/* eslint-disable-next-line max-len */}

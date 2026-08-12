@@ -15,6 +15,7 @@ export interface Props {
     variant: 'conflict' | 'disaster';
     onClick?: () => void;
     selected?: boolean;
+    abbreviate?: boolean;
 }
 
 function BreakdownBar(props: Props) {
@@ -27,6 +28,7 @@ function BreakdownBar(props: Props) {
         variant,
         onClick,
         selected,
+        abbreviate = true,
     } = props;
 
     const barWidth = maxValue > 0 ? (value / maxValue) * 100 : 0;
@@ -62,7 +64,7 @@ function BreakdownBar(props: Props) {
             <Numeral
                 className={styles.total}
                 value={value}
-                abbreviate
+                abbreviate={abbreviate}
             />
         </>
     );

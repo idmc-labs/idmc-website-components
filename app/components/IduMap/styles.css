@@ -132,64 +132,17 @@
             gap: var(--tui-spacing-small);
 
             .carousel {
-                display: flex;
-                flex-direction: column;
                 flex-grow: 1;
                 min-height: 0;
-                gap: var(--tui-spacing-small);
+            }
 
-                .slides {
-                    position: relative;
-                    flex-grow: 1;
-                    min-height: 0;
-
-                    .slide {
-                        height: 100%;
-                    }
-                }
-
-                .carousel-selector {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-
-                    .pager {
-                        display: inline-flex;
-                        align-items: center;
-                        border: 1px solid var(--tui-color-separator, #d0d5dd);
-                        border-radius: 2rem;
-                        padding: 0.5rem 0.875rem;
-                        font-size: 0.6rem;
-                        gap: 0.5rem;
-
-                        .pager-button {
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            padding: 0.125rem;
-
-                            svg {
-                                display: block;
-                            }
-                        }
-
-                        .pager-divider {
-                            align-self: stretch;
-                            margin-right: 0.5rem;
-                            margin-left: 0.5rem;
-                            border-left: 1px solid var(--tui-color-separator, #d0d5dd);
-                        }
-
-                        .definitions {
-                            display: inline-flex;
-                            align-items: center;
-                            white-space: nowrap;
-                            color: var(--tui-color-text, #333);
-                            font-size: var(--tui-font-size-small);
-                            gap: var(--tui-spacing-super-small);
-                        }
-                    }
-                }
+            .definitions {
+                display: inline-flex;
+                align-items: center;
+                white-space: nowrap;
+                color: var(--tui-color-text, #333);
+                font-size: var(--tui-font-size-small);
+                gap: var(--tui-spacing-super-small);
             }
 
             .right-footer {
