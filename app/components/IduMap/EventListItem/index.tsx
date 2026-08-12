@@ -15,6 +15,7 @@ export interface Props {
     value: number;
     onClick?: () => void;
     selected?: boolean;
+    abbreviate?: boolean;
 }
 
 function EventListItem(props: Props) {
@@ -27,6 +28,7 @@ function EventListItem(props: Props) {
         value,
         onClick,
         selected,
+        abbreviate = true,
     } = props;
 
     const isConflict = displacementType === 'conflict';
@@ -61,7 +63,7 @@ function EventListItem(props: Props) {
             <Numeral
                 className={styles.value}
                 value={value}
-                abbreviate
+                abbreviate={abbreviate}
                 valueClassName={figureColorClassName}
                 abbrClassName={figureColorClassName}
             />
