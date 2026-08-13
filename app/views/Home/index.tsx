@@ -284,6 +284,9 @@ function Home() {
                     <a href="/embedded/examples/idu-map.html">
                         Global
                     </a>
+                    <a href="/embedded/examples/idu-map-real-global.html">
+                        Real Global
+                    </a>
                 </div>
                 <div className={styles.section}>
                     <h3>
