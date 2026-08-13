@@ -3,11 +3,12 @@ import React, {
     useContext,
     useEffect,
     useMemo,
-    useReducer,
     useRef,
+    useState,
 } from 'react';
 import Map, {
     MapContainer,
+    MapCenter,
     MapSource,
     MapLayer,
     MapTooltip,
@@ -38,26 +39,7 @@ import {
 
 import styles from './styles.css';
 
-interface DeselectAction {
-    type: 'deselect';
-}
-
-interface SelectAction {
-    type: 'select';
-    lngLat: LngLatLike;
-    properties: PopupProperties;
-}
-
-type MapActions = DeselectAction | SelectAction;
-
-interface MapState {
-    lngLat: LngLatLike | undefined;
-    properties: PopupProperties[];
-}
-
-type Reducer = (prevState: MapState, action: MapActions) => MapState;
-
-interface PopupProperties {
+export interface PopupProperties {
     id: number,
     type: 'Disaster' | 'Conflict' | 'Other',
     value: number,
@@ -70,6 +52,33 @@ interface PopupProperties {
     iso3: string,
 }
 
+// A currently-open map popup: its coordinates and the card(s) to show. When the
+// popup was opened from an event row, eventId is set so the pane can highlight it.
+export interface MapSelection {
+    lngLat: LngLatLike;
+    properties: PopupProperties[];
+    eventId?: number;
+}
+
+// Build the popup card data from an IDU record (shared by the map source and by
+// event-row clicks that open the popup).
+export function iduToPopupProperties(
+    idu: NonNullable<IduDataQuery['idu']>[number],
+): PopupProperties {
+    return {
+        id: idu.id,
+        type: (idu.displacement_type ?? 'Other') as PopupProperties['type'],
+        value: idu.figure,
+        date: idu.displacement_date,
+        description: idu.standard_popup_text,
+        eventName: idu.event_name,
+        eventCode: idu.event_codes,
+        source: idu.sources,
+        country: idu.country,
+        iso3: idu.iso3,
+    };
+}
+
 type IduGeoJSON = GeoJSON.FeatureCollection<
     GeoJSON.Point,
     PopupProperties
@@ -77,8 +86,6 @@ type IduGeoJSON = GeoJSON.FeatureCollection<
 
 const iduPointColor: mapboxgl.CirclePaint = {
     'circle-opacity': 0.6,
-    'circle-stroke-width': 1,
-    'circle-stroke-color': '#fff',
     'circle-color': {
         property: 'type',
         type: 'categorical',
@@ -104,6 +111,16 @@ const popupOptions: PopupOptions = {
     closeButton: false,
     offset: 12,
     className: styles.mapPopup,
+    maxWidth: 'unset',
+};
+
+// the hover preview shouldn't capture the pointer (so it doesn't steal hover
+// from the point and flicker) and shouldn't be dismissable by clicking
+const hoverPopupOptions: PopupOptions = {
+    closeOnClick: false,
+    closeButton: false,
+    offset: 12,
+    className: _cs(styles.mapPopup, styles.hoverPopup),
     maxWidth: 'unset',
 };
 
@@ -216,63 +233,140 @@ function formatDate(date: string | null | undefined) {
     });
 }
 
+interface EventPopupCardProps {
+    item: PopupProperties;
+    // the click popup shows the full detail + focus CTA; the hover preview stops
+    // after the headline figure
+    detailed: boolean;
+    onCountryFocus?: (iso3: string) => void;
+    onClose?: () => void;
+}
+
+function EventPopupCard(props: EventPopupCardProps) {
+    const {
+        item,
+        detailed,
+        onCountryFocus,
+        onClose,
+    } = props;
+
+    const isDisaster = item.type === 'Disaster';
+    const accentClassName = isDisaster ? styles.disaster : styles.conflict;
+    const typeLabelClassName = _cs(styles.typeLabel, accentClassName);
+    const footerText = [item.source, formatDate(item.date)]
+        .filter(isTruthyString)
+        .join(' · ');
+    const canFocus = isDefined(onCountryFocus) && isTruthyString(item.iso3);
+    const focusButtonClassName = _cs(styles.focusButton, accentClassName);
+
+    return (
+        <div className={styles.card}>
+            <div className={typeLabelClassName}>
+                <span className={styles.dot} />
+                {isDisaster ? 'Disasters' : 'Conflict'}
+            </div>
+            {isTruthyString(item.eventName) && (
+                <div className={styles.title}>
+                    {item.eventName}
+                </div>
+            )}
+            {isTruthyString(item.eventCode) && (
+                <div className={styles.code}>
+                    {item.eventCode}
+                </div>
+            )}
+            <div className={styles.divider} />
+            <div className={styles.figureRow}>
+                <Numeral
+                    className={styles.figure}
+                    value={item.value}
+                    abbreviate
+                    valueClassName={accentClassName}
+                    abbrClassName={accentClassName}
+                />
+                <span className={styles.figureLabel}>
+                    Internal displacements
+                </span>
+            </div>
+            {detailed && (
+                <>
+                    <HTMLOutput
+                        className={styles.description}
+                        value={item.description}
+                    />
+                    {isTruthyString(footerText) && (
+                        <div className={styles.footer}>
+                            {footerText}
+                        </div>
+                    )}
+                    {canFocus && (
+                        <RawButton
+                            name={undefined}
+                            className={focusButtonClassName}
+                            onClick={() => {
+                                onCountryFocus?.(item.iso3);
+                                onClose?.();
+                            }}
+                        >
+                            {`Focus ${item.country} in all views`}
+                            <IoArrowForward />
+                        </RawButton>
+                    )}
+                </>
+            )}
+        </div>
+    );
+}
+
 interface Props {
     idus: IduDataQuery['idu'] | undefined;
     onCountryFocus?: (iso3: string) => void;
+    // the currently-open popup (owned by the parent, so filters/events can drive it)
+    selection: MapSelection | undefined;
+    // center to ease the map to when a popup is opened from an event row
+    flyTo: LngLatLike | undefined;
+    onPointClick: (lngLat: LngLatLike, properties: PopupProperties) => void;
+    onClose: () => void;
 }
 
 function RawIduMap(props: Props) {
     const {
         idus,
         onCountryFocus,
+        selection,
+        flyTo,
+        onPointClick,
+        onClose,
     } = props;
 
-    const [state, dispatch] = useReducer<Reducer>(
-        (prevState, action) => {
-            if (action.type === 'deselect') {
-                return {
-                    lngLat: undefined,
-                    properties: [],
-                };
-            }
-            if (action.type === 'select') {
-                if (action.lngLat === prevState.lngLat) {
-                    return {
-                        ...prevState,
-                        properties: [
-                            ...prevState.properties,
-                            action.properties,
-                        ],
-                    };
-                }
-                return {
-                    lngLat: action.lngLat,
-                    properties: [action.properties],
-                };
-            }
-            return prevState;
-        },
-        { lngLat: undefined, properties: [] },
-    );
     const handleMapPointClick = useCallback((feature: MapboxGeoJSONFeature, lngLat: LngLat) => {
         if (feature.properties) {
-            dispatch({
-                type: 'select',
-                lngLat,
-                properties: feature.properties as PopupProperties,
-            });
+            onPointClick(lngLat, feature.properties as PopupProperties);
         } else {
-            dispatch({
-                type: 'deselect',
-            });
+            onClose();
         }
         return false;
+    }, [onPointClick, onClose]);
+
+    // the hover preview is transient and map-local, so it stays as local state
+    const [hovered, setHovered] = useState<{
+        lngLat: LngLatLike;
+        properties: PopupProperties;
+    } | undefined>();
+
+    const handleMapPointEnter = useCallback((feature: MapboxGeoJSONFeature, lngLat: LngLat) => {
+        if (isNotDefined(feature.properties)) {
+            return;
+        }
+        // anchor to the point's own coordinates, not the cursor
+        const coordinates = feature.geometry.type === 'Point'
+            ? (feature.geometry.coordinates as [number, number])
+            : [lngLat.lng, lngLat.lat] as [number, number];
+        setHovered({ lngLat: coordinates, properties: feature.properties as PopupProperties });
     }, []);
 
-    const handleMapPopupClose = useCallback(() => {
-        dispatch({
-            type: 'deselect',
-        });
+    const handleMapPointLeave = useCallback(() => {
+        setHovered(undefined);
     }, []);
 
     const iduGeojson: IduGeoJSON = useMemo(
@@ -294,18 +388,7 @@ function RawIduMap(props: Props) {
                     return {
                         id: idu.id,
                         type: 'Feature' as const,
-                        properties: {
-                            id: idu.id,
-                            type: idu.displacement_type,
-                            value: idu.figure,
-                            date: idu.displacement_date,
-                            description: idu.standard_popup_text,
-                            eventName: idu.event_name,
-                            eventCode: idu.event_codes,
-                            source: idu.sources,
-                            country: idu.country,
-                            iso3: idu.iso3,
-                        },
+                        properties: iduToPopupProperties(idu),
                         geometry: {
                             type: 'Point' as const,
                             coordinates: [
@@ -322,11 +405,16 @@ function RawIduMap(props: Props) {
         [idus],
     );
 
+    // don't stack a hover preview on top of the point that's already pinned open
+    const hoverMatchesSelection = isDefined(hovered)
+        && isDefined(selection)
+        && selection.properties.some((item) => item.id === hovered.properties.id);
+
     return (
         <Map
             mapStyle={lightStyle}
             mapOptions={{
-                logoPosition: 'bottom-left',
+                logoPosition: 'bottom-right',
                 scrollZoom: false,
                 zoom: 1,
                 // projection isn't in @types 2.7; applied at construction for globe
@@ -338,7 +426,27 @@ function RawIduMap(props: Props) {
             <MapContainer
                 className={styles.mapContainer}
             />
-            <GlobeSpinner paused={isDefined(state.lngLat)} />
+            <div className={styles.mapOverlay}>
+                <div className={styles.legend}>
+                    <div className={styles.legendItem}>
+                        <span className={_cs(styles.legendDot, styles.conflict)} />
+                        Conflict and violence
+                    </div>
+                    <div className={styles.legendItem}>
+                        <span className={_cs(styles.legendDot, styles.disaster)} />
+                        Disasters
+                    </div>
+                    <div className={styles.legendNote}>
+                        Size relative to the number of internal displacements
+                    </div>
+                </div>
+                <div className={styles.disclaimer}>
+                    {/* eslint-disable-next-line max-len */}
+                    The boundaries and names shown and the designations used on this map do not imply official endorsement or acceptance by IDMC.
+                </div>
+            </div>
+            <GlobeSpinner paused={isDefined(selection)} />
+            <MapCenter center={flyTo} centerOptions={{}} />
             <MapSource
                 sourceKey="idu-points"
                 sourceOptions={sourceOption}
@@ -346,100 +454,54 @@ function RawIduMap(props: Props) {
             >
                 <MapLayer
                     layerKey="idu-point"
-                    // onClick={handlePointClick}
                     layerOptions={{
                         type: 'circle',
                         paint: iduPointColor,
                     }}
                     onClick={handleMapPointClick}
+                    onMouseEnter={handleMapPointEnter}
+                    onMouseLeave={handleMapPointLeave}
                 />
-                {state.lngLat && (
+                {selection && (
                     <MapTooltip
-                        coordinates={state.lngLat}
+                        coordinates={selection.lngLat}
                         tooltipOptions={popupOptions}
-                        onHide={handleMapPopupClose}
+                        onHide={onClose}
                     >
                         <>
                             <RawButton
                                 name={undefined}
                                 className={styles.closeButton}
-                                onClick={handleMapPopupClose}
+                                onClick={onClose}
                                 title="Close"
                             >
                                 <IoClose />
                             </RawButton>
                             <div className={styles.list}>
-                                {state.properties.map((item, index) => {
-                                    const isDisaster = item.type === 'Disaster';
-                                    const accentClassName = isDisaster
-                                        ? styles.disaster
-                                        : styles.conflict;
-                                    const typeLabelClassName = _cs(
-                                        styles.typeLabel,
-                                        accentClassName,
-                                    );
-                                    const footerText = [item.source, formatDate(item.date)]
-                                        .filter(isTruthyString)
-                                        .join(' · ');
-                                    const canFocus = isDefined(onCountryFocus)
-                                        && isTruthyString(item.iso3);
-                                    const focusButtonClassName = _cs(
-                                        styles.focusButton,
-                                        accentClassName,
-                                    );
-                                    return (
-                                        <React.Fragment key={item.id}>
-                                            {index > 0 && <div className={styles.separator} />}
-                                            <div className={styles.card}>
-                                                <div className={typeLabelClassName}>
-                                                    <span className={styles.dot} />
-                                                    {isDisaster ? 'Disasters' : 'Conflict'}
-                                                </div>
-                                                {isTruthyString(item.eventCode) && (
-                                                    <div className={styles.code}>
-                                                        {item.eventCode}
-                                                    </div>
-                                                )}
-                                                <div className={styles.figureRow}>
-                                                    <Numeral
-                                                        className={styles.figure}
-                                                        value={item.value}
-                                                        abbreviate
-                                                        valueClassName={accentClassName}
-                                                        abbrClassName={accentClassName}
-                                                    />
-                                                    <span className={styles.figureLabel}>
-                                                        Internal displacements
-                                                    </span>
-                                                </div>
-                                                <HTMLOutput
-                                                    className={styles.description}
-                                                    value={item.description}
-                                                />
-                                                {isTruthyString(footerText) && (
-                                                    <div className={styles.footer}>
-                                                        {footerText}
-                                                    </div>
-                                                )}
-                                                {canFocus && (
-                                                    <RawButton
-                                                        name={undefined}
-                                                        className={focusButtonClassName}
-                                                        onClick={() => {
-                                                            onCountryFocus?.(item.iso3);
-                                                            handleMapPopupClose();
-                                                        }}
-                                                    >
-                                                        {`Focus ${item.country} in all views`}
-                                                        <IoArrowForward />
-                                                    </RawButton>
-                                                )}
-                                            </div>
-                                        </React.Fragment>
-                                    );
-                                })}
+                                {selection.properties.map((item, index) => (
+                                    <React.Fragment key={item.id}>
+                                        {index > 0 && <div className={styles.separator} />}
+                                        <EventPopupCard
+                                            item={item}
+                                            detailed
+                                            onCountryFocus={onCountryFocus}
+                                            onClose={onClose}
+                                        />
+                                    </React.Fragment>
+                                ))}
                             </div>
                         </>
+                    </MapTooltip>
+                )}
+                {hovered && !hoverMatchesSelection && (
+                    <MapTooltip
+                        coordinates={hovered.lngLat}
+                        tooltipOptions={hoverPopupOptions}
+                    >
+                        <EventPopupCard
+                            item={hovered.properties}
+                            detailed={false}
+                        />
                     </MapTooltip>
                 )}
             </MapSource>

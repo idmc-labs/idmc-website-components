@@ -13,7 +13,6 @@ import RawButton from '#components/RawButton';
 import { IduDataQuery } from '#generated/types';
 
 import EventListItem, { Props as EventListItemProps } from '../EventListItem';
-import { getDisplacementVariant, DisplacementType } from '../utils';
 
 import styles from './styles.css';
 
@@ -28,7 +27,7 @@ interface RecentEvent {
     id: number | undefined | null;
     title: string | undefined | null;
     code: string | undefined | null;
-    displacementType: DisplacementType | null;
+    displacementType: IduRow['displacement_type'];
     total: number;
     latestTime: number;
 }
@@ -72,7 +71,7 @@ function RecentEvents(props: Props) {
                 id: first.event_id,
                 title: first.event_name,
                 code: first.event_codes,
-                displacementType: getDisplacementVariant(first.displacement_type),
+                displacementType: first.displacement_type,
                 total: sum(items.map((item) => item.figure)),
                 latestTime,
             };

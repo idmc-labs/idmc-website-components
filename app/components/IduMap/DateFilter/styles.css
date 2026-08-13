@@ -1,0 +1,49 @@
+.date-filter {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--tui-spacing-small);
+
+    .field {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--tui-spacing-small);
+    }
+
+    .label {
+        text-transform: uppercase;
+        color: var(--tui-color-label, #7a7a7a);
+        font-size: var(--tui-font-size-small);
+        font-weight: var(--tui-font-weight-bold);
+    }
+
+    .input-wrapper {
+        display: inline-flex;
+        position: relative;
+        align-items: center;
+
+        .input {
+            box-sizing: border-box;
+            border: 1px solid var(--tui-color-separator, #d0d5dd);
+            border-radius: 0.5rem;
+            background-color: #fff;
+            cursor: pointer;
+            padding: 0 1.75rem 0 0.5rem;
+            min-height: 1.9rem;
+            color: var(--tui-color-text, #333);
+            font-family: inherit;
+            font-size: var(--tui-font-size-small);
+        }
+
+        .input::-webkit-calendar-picker-indicator {
+            display: none;
+        }
+
+        .icon {
+            position: absolute;
+            right: 0.5rem;
+            color: var(--tui-color-label, #7a7a7a);
+            pointer-events: none;
+        }
+    }
+}

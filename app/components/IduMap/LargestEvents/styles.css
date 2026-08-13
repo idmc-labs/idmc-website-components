@@ -20,6 +20,7 @@
         flex-grow: 1;
         min-height: 0;
         gap: var(--tui-spacing-super-small);
-        overflow: auto;
+        overflow-x: hidden;
+        overflow-y: auto;
     }
 }
