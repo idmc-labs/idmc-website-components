@@ -21,10 +21,6 @@
         justify-content: flex-end;
         gap: var(--tui-spacing-small);
 
-        .event-pill {
-            margin-right: auto;
-        }
-
         .top-actions {
             display: flex;
             align-items: center;
@@ -67,14 +63,14 @@
             align-items: center;
             flex-wrap: wrap;
             justify-content: space-between;
-            gap: var(--tui-spacing-small);
+            gap: 0.5rem;
 
             .left-filters {
                 display: flex;
                 align-items: center;
                 flex-grow: 1;
                 flex-wrap: wrap;
-                gap: var(--tui-spacing-small);
+                gap: 0.5rem;
             }
 
             .search {
@@ -242,6 +238,46 @@
 
         .panes .right-pane {
             height: 72vh;
+        }
+    }
+}
+
+/* Compact filter-input treatment; self-contained so it can be reused elsewhere. */
+.filter-input {
+    --tui-spacing-small: 0.25rem;
+    --tui-spacing-medium: 0.4rem;
+    --tui-radius-border-input-section: 0.5rem;
+    --tui-color-background-input-section-light: transparent;
+    --tui-color-background-input-section-readonly-light: transparent;
+    --tui-color-background-button: transparent;
+    --tui-color-separator-light: transparent;
+
+    box-sizing: border-box;
+    justify-content: center;
+    border: 1px solid var(--tui-color-separator, #d0d5dd);
+    border-radius: 0.5rem;
+    background-color: #fff;
+    min-height: 1.9rem;
+    font-size: var(--tui-font-size-small);
+}
+
+/* SegmentInput modifier (use with .filter-input): match input height, no focus outline. */
+.filter-segment {
+    --tui-spacing-small: 0.4rem;
+    --tui-color-outline-light: transparent;
+}
+
+/* colour the dropdown group headers by cause (targeted via the header title attr) */
+.trigger-popup {
+    :global {
+        [title="Disaster"] {
+            color: var(--color-disaster, #018eca);
+            font-weight: var(--tui-font-weight-bold);
+        }
+
+        [title="Conflict and Violence"] {
+            color: var(--color-conflict, #ef7d00);
+            font-weight: var(--tui-font-weight-bold);
         }
     }
 }

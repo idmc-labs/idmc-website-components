@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import {
     _cs,
     isDefined,
@@ -6,10 +6,10 @@ import {
     compareNumber,
 } from '@togglecorp/fujs';
 
+import ListView from '#components/ListView';
 import { IduDataQuery } from '#generated/types';
 
-import EventListItem from '../EventListItem';
-import { getDisplacementVariant, DisplacementType } from '../utils';
+import EventListItem, { Props as EventListItemProps } from '../EventListItem';
 
 import styles from './styles.css';
 
@@ -23,9 +23,11 @@ interface LargestEvent {
     eventId: number | undefined | null;
     eventName: string | undefined | null;
     subtitle: string;
-    displacementType: DisplacementType | null;
+    displacementType: IduRow['displacement_type'];
     value: number;
 }
+
+const keySelector = (item: LargestEvent) => item.key;
 
 function getSubtitle(datum: IduRow): string {
     const hazard = datum.type ?? datum.category;
@@ -66,10 +68,24 @@ function LargestEvents(props: Props) {
                 eventId: d.event_id,
                 eventName: d.event_name,
                 subtitle: getSubtitle(d),
-                displacementType: getDisplacementVariant(d.displacement_type),
+                displacementType: d.displacement_type,
                 value: d.figure,
             }))
     ), [idus]);
+
+    const rendererParams = useCallback((_: string, event: LargestEvent): EventListItemProps => {
+        const { eventId, eventName } = event;
+        return {
+            title: event.country,
+            subtitle: event.subtitle,
+            displacementType: event.displacementType,
+            value: event.value,
+            onClick: isDefined(eventId) && isDefined(eventName)
+                ? () => onEventSelect(eventId, eventName)
+                : undefined,
+            selected: isDefined(selectedEventId) && eventId === selectedEventId,
+        };
+    }, [onEventSelect, selectedEventId]);
 
     const description = `Preliminary estimates of the largest events reported between ${startDate ?? ''} - ${endDate ?? ''}.`;
 
@@ -82,25 +98,16 @@ function LargestEvents(props: Props) {
                 {description}
             </div>
             <div className={styles.list}>
-                {events.map((event) => {
-                    const { eventId, eventName } = event;
-                    const handleClick = isDefined(eventId) && isDefined(eventName)
-                        ? () => onEventSelect(eventId, eventName)
-                        : undefined;
-                    const selected = isDefined(selectedEventId)
-                        && eventId === selectedEventId;
-                    return (
-                        <EventListItem
-                            key={event.key}
-                            title={event.country}
-                            subtitle={event.subtitle}
-                            displacementType={event.displacementType}
-                            value={event.value}
-                            onClick={handleClick}
-                            selected={selected}
-                        />
-                    );
-                })}
+                <ListView
+                    data={events}
+                    keySelector={keySelector}
+                    renderer={EventListItem}
+                    rendererParams={rendererParams}
+                    direction="vertical"
+                    errored={false}
+                    pending={false}
+                    filtered={false}
+                />
             </div>
         </div>
     );

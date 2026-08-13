@@ -1,4 +1,4 @@
-.disaster-breakdown {
+.breakdown {
     display: flex;
     flex-direction: column;
     gap: var(--tui-spacing-small);

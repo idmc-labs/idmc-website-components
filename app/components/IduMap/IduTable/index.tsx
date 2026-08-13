@@ -64,7 +64,7 @@ function IduTable(props: Props) {
                 value: datum.type,
                 category: datum.category,
             }),
-            columnWidth: 170,
+            columnWidth: 116,
             valueComparator: (a, b) => compareString(a.subtype, b.subtype),
         };
 
@@ -95,7 +95,7 @@ function IduTable(props: Props) {
                     datum.displacement_type === 'Disaster' && styles.disaster,
                 ),
             }),
-            columnWidth: 180,
+            columnWidth: 108,
             valueComparator: (a, b) => compareNumber(a.figure, b.figure),
         };
 
@@ -105,7 +105,7 @@ function IduTable(props: Props) {
                 'Year',
                 (item) => item.year,
                 {
-                    columnWidth: 72,
+                    columnWidth: 48,
                     separator: '',
                 },
             ),
@@ -113,13 +113,13 @@ function IduTable(props: Props) {
                 'event_name',
                 'Event',
                 (item) => item.event_name,
-                { columnWidth: 180, columnStretch: true },
+                { columnWidth: 120, columnStretch: true, cellRendererClassName: styles.ellipsis },
             ),
             createTextColumn<IduRow, number>(
                 'event_codes',
                 'Event Codes',
                 (item) => item.event_codes,
-                { columnWidth: 96 },
+                { columnWidth: 92, cellRendererClassName: styles.ellipsis },
             ),
             createTextColumn<IduRow, number>(
                 'displacement_start_date',
@@ -127,7 +127,7 @@ function IduTable(props: Props) {
                 (item) => item.displacement_start_date,
                 {
                     sortable: true,
-                    columnWidth: 120,
+                    columnWidth: 88,
                     headerCellRendererClassName: sortedHeaderClassName('displacement_start_date'),
                 },
             ),

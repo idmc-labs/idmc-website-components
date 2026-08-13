@@ -1,14 +1,19 @@
 .hazard-type {
     display: flex;
-    align-items: flex-start;
     flex-direction: column;
 
     .name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
         color: var(--tui-color-brand);
         font-weight: var(--tui-font-weight-bold);
     }
 
     .category {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
         color: var(--tui-color-label, #7a7a7a);
         font-size: var(--tui-font-size-extra-small);
     }

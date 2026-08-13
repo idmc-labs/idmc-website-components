@@ -11,7 +11,8 @@ export interface Props {
     title: string | undefined | null;
     subtitle: string | undefined | null;
     subtitleMonospace?: boolean;
-    displacementType: 'conflict' | 'disaster' | null;
+    // the raw IDU displacement type ('Conflict' / 'Disaster' / 'Other')
+    displacementType: string | null | undefined;
     value: number;
     onClick?: () => void;
     selected?: boolean;
@@ -31,8 +32,8 @@ function EventListItem(props: Props) {
         abbreviate = true,
     } = props;
 
-    const isConflict = displacementType === 'conflict';
-    const isDisaster = displacementType === 'disaster';
+    const isConflict = displacementType === 'Conflict';
+    const isDisaster = displacementType === 'Disaster';
     const figureColorClassName = _cs(
         isConflict && styles.figureConflict,
         isDisaster && styles.figureDisaster,

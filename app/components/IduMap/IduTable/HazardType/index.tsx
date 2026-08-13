@@ -18,20 +18,14 @@ function HazardType(props: Props) {
         category,
     } = props;
 
-    if (!value && !category) {
-        return null;
-    }
-
     return (
         <div className={_cs(styles.hazardType, className)}>
             <div className={styles.name}>
-                {value}
+                {value || '-'}
             </div>
-            {category && (
-                <div className={styles.category}>
-                    {category}
-                </div>
-            )}
+            <div className={styles.category}>
+                {category || '-'}
+            </div>
         </div>
     );
 }
