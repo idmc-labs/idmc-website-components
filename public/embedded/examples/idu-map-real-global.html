@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en" translate="no">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Embedded: IDU Map (Real Global)</title>
+        <!--
+            "Real Global" mock: mimics the exact conditions the IDU Map is embedded in
+            on internal-displacement.org. It reuses the SAME embedded-mode mounting as
+            idu-map.html (window.page = 'idu-map' + the shared bundle mounting into
+            #app-container) but wraps it in a non-functional replica of the IDMC site
+            header and footer so people can see how the dashboard looks in context.
+
+            NOTE: Asset references differ between development and production builds.
+            In a production build, component styles are extracted into /css/main.css
+            and the webpack runtime is split into /js/runtime.bundle.js (which must load
+            before main.bundle.js below). In development both are inlined into
+            main.bundle.js (styles injected by style-loader), so /css/main.css and
+            /js/runtime.bundle.js do not exist and will 404 harmlessly.
+        -->
+        <link rel="stylesheet" href="./base.css" />
+        <link rel="stylesheet" href="/css/main.css" />
+        <!-- Same web fonts the bundle uses: Lato (sans) + Lora (serif). -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Lora:wght@400;700&display=swap" rel="stylesheet" />
+        <style>
+            /*
+                Chrome-only styles for this mock. Everything here reproduces the IDMC
+                site look-and-feel; none of it affects the mounted dashboard, which
+                brings its own styles via the bundle. All links are inert (href="#").
+            */
+            :root {
+                --idmc-navy: #1b3a5c;
+                --idmc-navy-dark: #16335a;
+                --idmc-blue: #2e97d4;
+                --idmc-cream: #efece4;
+                --idmc-text: #16335a;
+                --idmc-grey: #6a7280;
+                --chrome-max-width: 1760px;
+                --content-max-width: 1600px;
+            }
+
+            body {
+                font-family: 'Lato', sans-serif;
+                color: var(--idmc-text);
+                background: #fff;
+            }
+
+            .real-global-chrome a {
+                text-decoration: none;
+                color: inherit;
+            }
+
+            /* ---------- Header ---------- */
+            .site-header {
+                border-bottom: 1px solid #e6e6e6;
+                background: #fff;
+            }
+
+            .site-header__inner {
+                max-width: var(--chrome-max-width);
+                margin: 0 auto;
+                padding: 18px 40px 22px;
+            }
+
+            .utility-bar {
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                gap: 28px;
+                font-size: 15px;
+                color: var(--idmc-text);
+            }
+
+            .utility-bar__links {
+                display: flex;
+                gap: 28px;
+            }
+
+            .utility-bar__links a:hover {
+                color: var(--idmc-blue);
+            }
+
+            .utility-bar__divider {
+                width: 1px;
+                align-self: stretch;
+                background: #d9d9d9;
+                margin: -4px 0;
+            }
+
+            .utility-bar__social {
+                display: flex;
+                gap: 16px;
+                align-items: center;
+            }
+
+            .utility-bar__social a {
+                color: var(--idmc-navy);
+                display: inline-flex;
+            }
+
+            .utility-bar__social svg {
+                width: 20px;
+                height: 20px;
+                fill: currentColor;
+            }
+
+            .main-nav {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-top: 6px;
+            }
+
+            /* Recreated iDMC wordmark (no logo asset in repo). */
+            .brand {
+                display: inline-flex;
+                align-items: flex-end;
+                gap: 12px;
+            }
+
+            .brand__mark {
+                font-family: 'Lato', sans-serif;
+                font-weight: 700;
+                font-size: 46px;
+                letter-spacing: -1px;
+                line-height: 1;
+                color: var(--idmc-navy);
+            }
+
+            .brand__mark span {
+                color: var(--idmc-navy);
+            }
+
+            .brand__sub {
+                font-size: 12px;
+                line-height: 1.25;
+                color: var(--idmc-grey);
+                text-transform: lowercase;
+                padding-bottom: 4px;
+            }
+
+            .main-nav__links {
+                display: flex;
+                align-items: center;
+                gap: 44px;
+                font-size: 19px;
+                color: var(--idmc-navy);
+            }
+
+            .main-nav__links a:hover {
+                color: var(--idmc-blue);
+            }
+
+            .main-nav__search {
+                display: inline-flex;
+                color: var(--idmc-navy);
+            }
+
+            .main-nav__search svg {
+                width: 22px;
+                height: 22px;
+                fill: none;
+                stroke: currentColor;
+                stroke-width: 2;
+            }
+
+            /* ---------- Middle content ---------- */
+            .page-body {
+                max-width: var(--content-max-width);
+                margin: 0 auto;
+                padding: 40px 40px 60px;
+            }
+
+            .page-title {
+                font-family: 'Lora', serif;
+                font-weight: 700;
+                text-align: center;
+                color: var(--idmc-navy);
+                font-size: 52px;
+                margin: 24px 0 40px;
+            }
+
+            .page-intro {
+                max-width: 1400px;
+                margin: 0 auto 48px;
+                font-size: 19px;
+                line-height: 1.7;
+                color: #2b2b2b;
+            }
+
+            .map-caption {
+                font-size: 16px;
+                color: #2b2b2b;
+                margin: 12px 0 16px;
+            }
+
+            /* The dashboard mounts here (embedded mode, same as idu-map.html). */
+            #app-container {
+                min-height: var(--embed-min-height, 720px);
+            }
+
+            /* ---------- Footer ---------- */
+            .site-footer__top {
+                background: var(--idmc-cream);
+            }
+
+            .site-footer__top-inner {
+                max-width: var(--chrome-max-width);
+                margin: 0 auto;
+                padding: 60px 40px;
+                display: grid;
+                grid-template-columns: 1fr 1px 1fr 1px 1fr;
+                gap: 48px;
+                align-items: start;
+            }
+
+            .footer-col__vr {
+                width: 1px;
+                background: #cfc9bd;
+                align-self: stretch;
+            }
+
+            .footer-col h2 {
+                font-family: 'Lora', serif;
+                font-weight: 700;
+                color: var(--idmc-navy);
+                font-size: 30px;
+                margin: 0 0 24px;
+            }
+
+            .footer-col p {
+                font-size: 17px;
+                line-height: 1.6;
+                color: #2b2b2b;
+                margin: 0 0 28px;
+                max-width: 360px;
+            }
+
+            .subscribe-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 16px;
+                justify-content: space-between;
+                background: var(--idmc-blue);
+                color: #fff;
+                font-weight: 700;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                font-size: 15px;
+                padding: 16px 26px;
+                border-radius: 999px;
+                min-width: 200px;
+            }
+
+            .footer-social {
+                display: flex;
+                gap: 18px;
+            }
+
+            .footer-social a {
+                width: 46px;
+                height: 46px;
+                border-radius: 50%;
+                background: #fff;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--idmc-blue);
+            }
+
+            .footer-social svg {
+                width: 22px;
+                height: 22px;
+                fill: currentColor;
+            }
+
+            .footer-contact__label {
+                font-size: 17px;
+                color: #2b2b2b;
+                margin: 0 0 6px;
+            }
+
+            .footer-contact__value {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                color: var(--idmc-blue);
+                font-size: 17px;
+                margin-bottom: 22px;
+            }
+
+            .footer-contact__value svg {
+                width: 16px;
+                height: 16px;
+                fill: currentColor;
+            }
+
+            .site-footer__bottom {
+                background: var(--idmc-navy-dark);
+                color: #fff;
+            }
+
+            .site-footer__bottom-inner {
+                max-width: var(--chrome-max-width);
+                margin: 0 auto;
+                padding: 44px 40px 56px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 34px;
+            }
+
+            .brand--footer .brand__mark,
+            .brand--footer .brand__mark span {
+                color: #fff;
+            }
+
+            .brand--footer .brand__sub {
+                color: #cdd6e2;
+            }
+
+            .footer-nav {
+                display: flex;
+                gap: 56px;
+                font-size: 17px;
+                color: #fff;
+            }
+
+            .footer-nav a:hover {
+                color: var(--idmc-blue);
+            }
+
+            /* ---------- Basic mobile handling ---------- */
+            @media (max-width: 1000px) {
+                .site-header__inner,
+                .page-body,
+                .site-footer__top-inner,
+                .site-footer__bottom-inner {
+                    padding-left: 20px;
+                    padding-right: 20px;
+                }
+
+                .utility-bar {
+                    flex-wrap: wrap;
+                    justify-content: center;
+                    gap: 16px;
+                }
+
+                .main-nav {
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 20px;
+                }
+
+                .main-nav__links {
+                    flex-wrap: wrap;
+                    justify-content: center;
+                    gap: 20px;
+                    font-size: 17px;
+                }
+
+                .page-title {
+                    font-size: 36px;
+                }
+
+                .page-intro {
+                    font-size: 17px;
+                }
+
+                .site-footer__top-inner {
+                    grid-template-columns: 1fr;
+                    gap: 32px;
+                }
+
+                .footer-col__vr {
+                    display: none;
+                }
+
+                .footer-nav {
+                    flex-wrap: wrap;
+                    justify-content: center;
+                    gap: 24px;
+                }
+            }
+        </style>
+        <script>
+            window.page = 'idu-map';
+        </script>
+    </head>
+    <body>
+        <div class="real-global-chrome">
+            <!-- ===================== HEADER ===================== -->
+            <header class="site-header">
+                <div class="site-header__inner">
+                    <div class="utility-bar">
+                        <nav class="utility-bar__links">
+                            <a href="#">Press</a>
+                            <a href="#">News</a>
+                            <a href="#">Events</a>
+                            <a href="#">Focus areas</a>
+                            <a href="#">Contact</a>
+                        </nav>
+                        <div class="utility-bar__divider"></div>
+                        <div class="utility-bar__social">
+                            <a href="#" aria-label="LinkedIn">
+                                <svg viewBox="0 0 24 24"><path d="M4.98 3.5A2.5 2.5 0 1 1 5 8.5a2.5 2.5 0 0 1-.02-5zM3 9h4v12H3zM9 9h3.8v1.7h.05c.53-1 1.83-2.05 3.76-2.05 4.02 0 4.76 2.65 4.76 6.1V21h-4v-5.4c0-1.29-.02-2.95-1.8-2.95-1.8 0-2.07 1.4-2.07 2.85V21H9z"/></svg>
+                            </a>
+                            <a href="#" aria-label="X">
+                                <svg viewBox="0 0 24 24"><path d="M18.2 2H21l-6.6 7.5L22 22h-6l-4.7-6.2L5.9 22H3l7-8L2 2h6.2l4.2 5.6zm-1 18h1.7L7.9 3.8H6z"/></svg>
+                            </a>
+                            <a href="#" aria-label="YouTube">
+                                <svg viewBox="0 0 24 24"><path d="M23 12s0-3.2-.4-4.7a2.5 2.5 0 0 0-1.7-1.7C19.4 5.2 12 5.2 12 5.2s-7.4 0-8.9.4A2.5 2.5 0 0 0 1.4 7.3C1 8.8 1 12 1 12s0 3.2.4 4.7a2.5 2.5 0 0 0 1.7 1.7c1.5.4 8.9.4 8.9.4s7.4 0 8.9-.4a2.5 2.5 0 0 0 1.7-1.7C23 15.2 23 12 23 12zM9.8 15.3V8.7l5.7 3.3z"/></svg>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="main-nav">
+                        <a href="#" class="brand" aria-label="IDMC home">
+                            <span class="brand__mark">i<span>DMC</span></span>
+                            <span class="brand__sub">internal<br />displacement<br />monitoring<br />centre</span>
+                        </a>
+                        <nav class="main-nav__links">
+                            <a href="#">Understanding internal displacement</a>
+                            <a href="#">Data and analysis</a>
+                            <a href="#">About us</a>
+                            <a href="#" class="main-nav__search" aria-label="Search">
+                                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            </a>
+                        </nav>
+                    </div>
+                </div>
+            </header>
+
+            <!-- ===================== MIDDLE ===================== -->
+            <main class="page-body">
+                <h1 class="page-title">Internal displacement updates</h1>
+                <p class="page-intro">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+                    tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+                    quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+                    consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
+                    cillum dolore eu fugiat nulla pariatur.
+                </p>
+                <p class="map-caption">
+                    Hover over and click on the coloured bubbles to see near real-time snapshots
+                    of situations of internal displacement.
+                </p>
+                <!-- The IDU dashboard mounts here, exactly as in idu-map.html. -->
+                <div id="app-container">
+                    <div class="embed-loading">Loading...</div>
+                </div>
+            </main>
+
+            <!-- ===================== FOOTER ===================== -->
+            <footer class="site-footer">
+                <div class="site-footer__top">
+                    <div class="site-footer__top-inner">
+                        <div class="footer-col">
+                            <h2>Subscribe</h2>
+                            <p>
+                                Don't miss out on the latest updates, analysis, and insights
+                                from the world of internal displacement monitoring.
+                            </p>
+                            <a href="#" class="subscribe-btn">
+                                <span>Subscribe</span>
+                                <span>&rarr;</span>
+                            </a>
+                        </div>
+                        <div class="footer-col__vr"></div>
+                        <div class="footer-col">
+                            <h2>Follow IDMC</h2>
+                            <div class="footer-social">
+                                <a href="#" aria-label="LinkedIn">
+                                    <svg viewBox="0 0 24 24"><path d="M4.98 3.5A2.5 2.5 0 1 1 5 8.5a2.5 2.5 0 0 1-.02-5zM3 9h4v12H3zM9 9h3.8v1.7h.05c.53-1 1.83-2.05 3.76-2.05 4.02 0 4.76 2.65 4.76 6.1V21h-4v-5.4c0-1.29-.02-2.95-1.8-2.95-1.8 0-2.07 1.4-2.07 2.85V21H9z"/></svg>
+                                </a>
+                                <a href="#" aria-label="X">
+                                    <svg viewBox="0 0 24 24"><path d="M18.2 2H21l-6.6 7.5L22 22h-6l-4.7-6.2L5.9 22H3l7-8L2 2h6.2l4.2 5.6zm-1 18h1.7L7.9 3.8H6z"/></svg>
+                                </a>
+                                <a href="#" aria-label="YouTube">
+                                    <svg viewBox="0 0 24 24"><path d="M23 12s0-3.2-.4-4.7a2.5 2.5 0 0 0-1.7-1.7C19.4 5.2 12 5.2 12 5.2s-7.4 0-8.9.4A2.5 2.5 0 0 0 1.4 7.3C1 8.8 1 12 1 12s0 3.2.4 4.7a2.5 2.5 0 0 0 1.7 1.7c1.5.4 8.9.4 8.9.4s7.4 0 8.9-.4a2.5 2.5 0 0 0 1.7-1.7C23 15.2 23 12 23 12zM9.8 15.3V8.7l5.7 3.3z"/></svg>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="footer-col__vr"></div>
+                        <div class="footer-col">
+                            <h2>Get in touch</h2>
+                            <p class="footer-contact__label">General Inquiries:</p>
+                            <a href="#" class="footer-contact__value">
+                                <svg viewBox="0 0 24 24"><path d="M2 4h20v16H2zm2 2v.5l8 5 8-5V6l-8 5z"/></svg>
+                                info@idmc.ch
+                            </a>
+                            <p class="footer-contact__label">For media Inquiries:</p>
+                            <a href="#" class="footer-contact__value">
+                                <svg viewBox="0 0 24 24"><path d="M2 4h20v16H2zm2 2v.5l8 5 8-5V6l-8 5z"/></svg>
+                                media@idmc.ch
+                            </a>
+                            <a href="#" class="footer-contact__value">
+                                <svg viewBox="0 0 24 24"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11 11 0 0 0 3.4.55 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11 11 0 0 0 .55 3.4 1 1 0 0 1-.25 1z"/></svg>
+                                +41 22 552 3600
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="site-footer__bottom">
+                    <div class="site-footer__bottom-inner">
+                        <a href="#" class="brand brand--footer" aria-label="IDMC home">
+                            <span class="brand__mark">i<span>DMC</span></span>
+                            <span class="brand__sub">internal<br />displacement<br />monitoring<br />centre</span>
+                        </a>
+                        <nav class="footer-nav">
+                            <a href="#">Press</a>
+                            <a href="#">News</a>
+                            <a href="#">Events</a>
+                            <a href="#">Focus areas</a>
+                            <a href="#">Contact</a>
+                        </nav>
+                    </div>
+                </div>
+            </footer>
+        </div>
+
+        <script type="text/javascript" src="/js/runtime.bundle.js"></script>
+        <script type="text/javascript" src="/js/main.bundle.js"></script>
+    </body>
+</html>

@@ -8,9 +8,6 @@ import {
     useQuery,
 } from '@apollo/client';
 import {
-    LngLatBounds,
-} from 'mapbox-gl';
-import {
     IoSearchOutline,
     IoRefreshOutline,
     IoFilterOutline,
@@ -219,7 +216,6 @@ function toCsv(rows: Record<string, unknown>[]) {
 
 function useIduMap(
     clientCode: string,
-    boundingBox?: LngLatBounds | undefined,
     iso3?: string,
 ) {
     const [searchText, setSearchText] = useState<string | undefined>();
@@ -710,7 +706,6 @@ function useIduMap(
                     {mapOrTable === 'map' ? (
                         <RawIduMap
                             idus={idusForMap}
-                            boundingBox={boundingBox}
                             onCountryFocus={isNotDefined(iso3) ? handleCountryFocus : undefined}
                         />
                     ) : (
