@@ -37,6 +37,8 @@ import {
 import {
     IduDataQuery,
     IduDataQueryVariables,
+    GiddFilterOptionsQuery,
+    GiddFilterOptionsQueryVariables,
 } from '#generated/types';
 
 import Message from '#components/Message';
@@ -113,6 +115,21 @@ const IDU_DATA = gql`
             violence_type
             violence_subtype
             context_of_violence
+        }
+    }
+`;
+
+// country -> region mapping (the IDU data itself carries no region field)
+const IDU_REGIONS = gql`
+    query IduRegions($clientId: String!) {
+        giddPublicCountries(clientId: $clientId) {
+            id
+            idmcShortName
+            iso3
+            region {
+                id
+                name
+            }
         }
     }
 `;
@@ -223,6 +240,7 @@ function useIduMap(
     const searchText = useDebouncedValue(searchInput, 300);
     const [cause, setCause] = useState<CauseKey>('all');
     const [triggerTypes, setTriggerTypes] = useState<string[]>([]);
+    const [regions, setRegions] = useState<string[]>([]);
     const [locations, setLocations] = useState<string[]>([]);
     const [startDate, setStartDate] = useState<string | undefined>(defaultStartDate);
     const [endDate, setEndDate] = useState<string | undefined>(defaultEndDate);
@@ -247,11 +265,56 @@ function useIduMap(
         },
     );
 
+    const {
+        data: regionsData,
+    } = useQuery<GiddFilterOptionsQuery, GiddFilterOptionsQueryVariables>(
+        IDU_REGIONS,
+        {
+            variables: {
+                clientId: clientCode,
+            },
+            context: {
+                clientName: 'helix',
+            },
+        },
+    );
+
     const idus = useMemo(() => (
         iso3
             ? iduData?.idu?.filter((item) => item.iso3 === iso3)
             : iduData?.idu
     ), [iso3, iduData]);
+
+    const {
+        regionToIso3,
+        regionOptions,
+    } = useMemo(() => {
+        const countriesData = regionsData?.giddPublicCountries ?? [];
+        const regionNames = new Map<string, string>();
+        const regionIso3Map = new Map<string, string[]>();
+        countriesData.forEach((country) => {
+            if (country.region && isTruthyString(country.iso3)) {
+                regionNames.set(country.region.id, country.region.name ?? country.region.id);
+                const existing = regionIso3Map.get(country.region.id) ?? [];
+                existing.push(country.iso3);
+                regionIso3Map.set(country.region.id, existing);
+            }
+        });
+
+        // only offer regions that have a country present in the current data
+        const dataIso3 = new Set<string>();
+        (idus ?? []).forEach((d) => {
+            if (isTruthyString(d.iso3)) {
+                dataIso3.add(d.iso3);
+            }
+        });
+        const options: Option[] = [...regionNames.entries()]
+            .filter(([id]) => (regionIso3Map.get(id) ?? []).some((iso) => dataIso3.has(iso)))
+            .map(([id, name]) => ({ key: id, label: name }))
+            .sort((a, b) => compareString(a.label, b.label));
+
+        return { regionToIso3: regionIso3Map, regionOptions: options };
+    }, [regionsData, idus]);
 
     // built from the data: hazard types (Disaster) + violence names (Conflict),
     // limited to the groups matching the cause selection
@@ -293,21 +356,28 @@ function useIduMap(
         return [...disasterOpts, ...conflictOpts];
     }, [idus, cause]);
 
-    // Country options are built from the data itself (keyed 'c:<iso3>').
+    // Country options are built from the data itself (keyed 'c:<iso3>'), and are
+    // narrowed to the selected region(s) when the region filter is active.
     const countryOptions = useMemo<Option[]>(() => {
+        const allowedIso3 = regions.length > 0
+            ? new Set<string>(regions.flatMap((id) => regionToIso3.get(id) ?? []))
+            : undefined;
         const byIso3 = new Map<string, string>();
         (idus ?? []).forEach((d) => {
-            if (isTruthyString(d.iso3)) {
+            if (isTruthyString(d.iso3) && (!allowedIso3 || allowedIso3.has(d.iso3))) {
                 byIso3.set(d.iso3, isTruthyString(d.country) ? d.country : d.iso3);
             }
         });
         return [...byIso3.entries()]
             .map(([code, name]) => ({ key: `c:${code}`, label: name }))
             .sort((a, b) => compareString(a.label, b.label));
-    }, [idus]);
+    }, [idus, regions, regionToIso3]);
 
     const idusForMap = useMemo(() => {
-        const allowedIso3 = locations.length > 0
+        const regionIso3 = regions.length > 0
+            ? new Set<string>(regions.flatMap((id) => regionToIso3.get(id) ?? []))
+            : undefined;
+        const countryIso3 = locations.length > 0
             ? new Set<string>(locations.map((key) => key.slice(2)))
             : undefined;
 
@@ -332,7 +402,11 @@ function useIduMap(
                 return false;
             }
 
-            if (allowedIso3 && (isNotDefined(d.iso3) || !allowedIso3.has(d.iso3))) {
+            if (regionIso3 && (isNotDefined(d.iso3) || !regionIso3.has(d.iso3))) {
+                return false;
+            }
+
+            if (countryIso3 && (isNotDefined(d.iso3) || !countryIso3.has(d.iso3))) {
                 return false;
             }
 
@@ -358,6 +432,8 @@ function useIduMap(
         idus,
         cause,
         triggerTypes,
+        regions,
+        regionToIso3,
         locations,
         searchText,
         startDate,
@@ -413,10 +489,21 @@ function useIduMap(
         setSearchInput(undefined);
         setCause('all');
         setTriggerTypes([]);
+        setRegions([]);
         setLocations([]);
         setStartDate(defaultStartDate);
         setEndDate(defaultEndDate);
     }, []);
+
+    // selecting a region narrows the country options, so drop any selected
+    // country that no longer falls within the chosen region(s)
+    const applyRegions = useCallback((nextRegions: string[]) => {
+        setRegions(nextRegions);
+        if (nextRegions.length > 0) {
+            const allowed = new Set(nextRegions.flatMap((id) => regionToIso3.get(id) ?? []));
+            setLocations((prev) => prev.filter((key) => allowed.has(key.slice(2))));
+        }
+    }, [regionToIso3]);
 
     const handleDateRangeChange = useCallback((
         start: string | undefined,
@@ -507,6 +594,7 @@ function useIduMap(
         (searchText && searchText.trim() ? 1 : 0)
         + (cause !== 'all' ? 1 : 0)
         + (triggerTypes.length > 0 ? 1 : 0)
+        + (regions.length > 0 ? 1 : 0)
         + (locations.length > 0 ? 1 : 0)
         + (startDate !== defaultStartDate || endDate !== defaultEndDate ? 1 : 0)
     );
@@ -543,6 +631,14 @@ function useIduMap(
                 ),
             });
         });
+        regions.forEach((regionId) => {
+            const option = regionOptions.find((item) => item.key === regionId);
+            filters.push({
+                key: `region:${regionId}`,
+                label: option?.label ?? regionId,
+                onRemove: () => applyRegions(regions.filter((item) => item !== regionId)),
+            });
+        });
         locations.forEach((location) => {
             const option = countryOptions.find((item) => item.key === location);
             filters.push({
@@ -562,7 +658,18 @@ function useIduMap(
             });
         }
         return filters;
-    }, [searchText, cause, triggerTypes, locations, startDate, endDate, countryOptions]);
+    }, [
+        searchText,
+        cause,
+        triggerTypes,
+        regions,
+        regionOptions,
+        applyRegions,
+        locations,
+        startDate,
+        endDate,
+        countryOptions,
+    ]);
 
     if (error) {
         return {
@@ -707,16 +814,28 @@ function useIduMap(
                             groupLabelSelector={triggerGroupLabelSelector}
                         />
                         {isNotDefined(iso3) && (
-                            <MultiSelectInput
-                                className={_cs(styles.countries, styles.filterInput)}
-                                name="locations"
-                                placeholder="All countries"
-                                options={countryOptions}
-                                keySelector={optionKeySelector}
-                                labelSelector={optionLabelSelector}
-                                value={locations}
-                                onChange={setLocations}
-                            />
+                            <>
+                                <MultiSelectInput
+                                    className={_cs(styles.regions, styles.filterInput)}
+                                    name="regions"
+                                    placeholder="All regions"
+                                    options={regionOptions}
+                                    keySelector={optionKeySelector}
+                                    labelSelector={optionLabelSelector}
+                                    value={regions}
+                                    onChange={applyRegions}
+                                />
+                                <MultiSelectInput
+                                    className={_cs(styles.countries, styles.filterInput)}
+                                    name="locations"
+                                    placeholder="All countries"
+                                    options={countryOptions}
+                                    keySelector={optionKeySelector}
+                                    labelSelector={optionLabelSelector}
+                                    value={locations}
+                                    onChange={setLocations}
+                                />
+                            </>
                         )}
                     </div>
                     <DateFilter
@@ -829,12 +948,10 @@ function useIduMap(
                 >
                     <p>
                         <strong>Internal displacements</strong>
-                        {/* eslint-disable-next-line max-len */}
                         {' — the number of times people are forced to move inside their country during a specific time period.'}
                     </p>
                     <p>
                         <strong>Internally displaced persons (IDPs)</strong>
-                        {/* eslint-disable-next-line max-len */}
                         {' — the number of people living in internal displacement at a specific point in time.'}
                     </p>
                     <p>
