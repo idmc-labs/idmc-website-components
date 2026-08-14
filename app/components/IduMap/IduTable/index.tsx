@@ -19,6 +19,7 @@ import {
     createNumberColumn,
 } from '#components/tableHelpers';
 import Numeral from '#components/Numeral';
+import RawButton from '#components/RawButton';
 import { IduDataQuery } from '#generated/types';
 
 import HazardType, { Props as HazardTypeProps } from './HazardType';
@@ -32,15 +33,51 @@ const keySelector = (item: IduRow) => item.id;
 
 const PAGE_SIZE = 10;
 
+interface EventNameCellProps {
+    className?: string;
+    // NOTE: the Table injects its own `name` (the column id), so the event name
+    // value is passed under a different prop
+    eventTitle: string | undefined | null;
+    recordId: number;
+    // when set, the event name becomes a button that opens the record on the map
+    onSelect?: (recordId: number) => void;
+}
+
+function EventNameCell(props: EventNameCellProps) {
+    const {
+        className,
+        eventTitle,
+        recordId,
+        onSelect,
+    } = props;
+
+    if (!onSelect) {
+        return <span className={className}>{eventTitle}</span>;
+    }
+
+    return (
+        <RawButton
+            name={recordId}
+            className={_cs(className, styles.eventNameButton)}
+            onClick={onSelect}
+            title={eventTitle ?? undefined}
+        >
+            {eventTitle}
+        </RawButton>
+    );
+}
+
 interface Props {
     className?: string;
     idus: IduRow[] | undefined;
+    onRecordSelect?: (recordId: number) => void;
 }
 
 function IduTable(props: Props) {
     const {
         className,
         idus,
+        onRecordSelect,
     } = props;
 
     const [activePage, setActivePage] = useState(1);
@@ -95,8 +132,31 @@ function IduTable(props: Props) {
                     datum.displacement_type === 'Disaster' && styles.disaster,
                 ),
             }),
-            columnWidth: 108,
+            columnWidth: 116,
             valueComparator: (a, b) => compareNumber(a.figure, b.figure),
+        };
+
+        const eventColumn: TableColumn<
+            IduRow,
+            number,
+            EventNameCellProps,
+            TableHeaderCellProps> & {
+            valueComparator: (a: IduRow, b: IduRow) => number,
+        } = {
+            id: 'event_name',
+            title: 'Event',
+            headerCellRenderer: TableHeaderCell,
+            headerCellRendererParams: { sortable: false },
+            cellRenderer: EventNameCell,
+            cellRendererParams: (_, datum) => ({
+                eventTitle: datum.event_name,
+                recordId: datum.id,
+                onSelect: onRecordSelect,
+            }),
+            columnWidth: 120,
+            columnStretch: true,
+            cellRendererClassName: styles.ellipsis,
+            valueComparator: (a, b) => compareString(a.event_name, b.event_name),
         };
 
         return [
@@ -109,17 +169,12 @@ function IduTable(props: Props) {
                     separator: '',
                 },
             ),
-            createTextColumn<IduRow, number>(
-                'event_name',
-                'Event',
-                (item) => item.event_name,
-                { columnWidth: 120, columnStretch: true, cellRendererClassName: styles.ellipsis },
-            ),
+            eventColumn,
             createTextColumn<IduRow, number>(
                 'event_codes',
                 'Event Codes',
                 (item) => item.event_codes,
-                { columnWidth: 92, cellRendererClassName: styles.ellipsis },
+                { columnWidth: 112, cellRendererClassName: styles.ellipsis },
             ),
             createTextColumn<IduRow, number>(
                 'displacement_start_date',
@@ -127,14 +182,14 @@ function IduTable(props: Props) {
                 (item) => item.displacement_start_date,
                 {
                     sortable: true,
-                    columnWidth: 88,
+                    columnWidth: 104,
                     headerCellRendererClassName: sortedHeaderClassName('displacement_start_date'),
                 },
             ),
             displacementsColumn,
             hazardColumn,
         ];
-    }, [sorting]);
+    }, [sorting, onRecordSelect]);
 
     const sortedData = useMemo(() => {
         const data = idus ?? [];

@@ -46,8 +46,9 @@ import RawButton from '#components/RawButton';
 import SlideCarousel from '#components/SlideCarousel';
 import useBooleanState from '#hooks/useBooleanState';
 import useDebouncedValue from '#hooks/useDebouncedValue';
+import useDocumentSize from '#hooks/useDocumentSize';
 
-import { suffixDrupalEndpoint } from '#utils/common';
+import { suffixDrupalEndpoint, HELIX_REST_ENDPOINT } from '#utils/common';
 
 import RawIduMap, {
     MapSelection,
@@ -65,9 +66,11 @@ import StatBar from './StatBar';
 
 import styles from './styles.css';
 
+const MOBILE_BREAKPOINT = 720;
+
 const giddLink = suffixDrupalEndpoint('/database/displacement-data');
-// TODO: point this at the real IDU API documentation URL
-const documentationLink = suffixDrupalEndpoint('/database/api-documentation');
+// the Helix REST endpoint (…/external-api/) hosts the API docs at /#/
+const documentationLink = `${HELIX_REST_ENDPOINT.replace(/\/+$/, '')}/#/`;
 
 const IDU_DATA = gql`
     query IduData($clientId: String!) {
@@ -112,9 +115,6 @@ const IDU_DATA = gql`
             locations_type
             displacement_occurred
             created_at
-            violence_type
-            violence_subtype
-            context_of_violence
         }
     }
 `;
@@ -250,6 +250,12 @@ function useIduMap(
     const [flyTo, setFlyTo] = useState<LngLatLike | undefined>();
     // the event row highlighted in the pane == the event whose popup is open
     const selectedEventId = mapSelection?.eventId;
+    // record-level highlight for lists whose rows are individual records (Largest)
+    const selectedRecordId = mapSelection?.recordId;
+
+    // the map is hidden on mobile, so event rows that open a map popup are inert
+    const { width: viewportWidth } = useDocumentSize();
+    const isMobile = viewportWidth <= MOBILE_BREAKPOINT;
 
     const {
         previousData: previousIduData,
@@ -325,8 +331,8 @@ function useIduMap(
             if (d.displacement_type === 'Disaster' && isTruthyString(d.type)) {
                 hazardTypes.add(d.type);
             }
-            if (d.displacement_type === 'Conflict' && isTruthyString(d.violence_type)) {
-                violenceNames.add(d.violence_type);
+            if (d.displacement_type === 'Conflict' && isTruthyString(d.type)) {
+                violenceNames.add(d.type);
             }
         });
 
@@ -394,10 +400,7 @@ function useIduMap(
             // conflict violence name of the record
             if (
                 triggerTypes.length > 0
-                && !triggerTypes.some((value) => (
-                    d.type === value
-                    || d.violence_type === value
-                ))
+                && !triggerTypes.some((value) => d.type === value)
             ) {
                 return false;
             }
@@ -493,6 +496,9 @@ function useIduMap(
         setLocations([]);
         setStartDate(defaultStartDate);
         setEndDate(defaultEndDate);
+        // close any open map popup even if the filters were already default
+        setMapSelection(undefined);
+        setFlyTo(undefined);
     }, []);
 
     // selecting a region narrows the country options, so drop any selected
@@ -552,6 +558,29 @@ function useIduMap(
             lngLat,
             properties: [iduToPopupProperties(record)],
             eventId,
+            recordId: record.id,
+        });
+        setFlyTo(lngLat);
+    }, [idusForMap]);
+
+    // open the popup for one specific record (Largest events lists individual
+    // records, so a row maps to a record, not an aggregated event)
+    const handleRecordSelect = useCallback((recordId: number) => {
+        setMapOrTable('map');
+        const record = (idusForMap ?? []).find((d) => (
+            d.id === recordId
+            && isDefined(d.longitude)
+            && isDefined(d.latitude)
+        ));
+        if (isNotDefined(record)) {
+            return;
+        }
+        const lngLat: LngLatLike = [record.longitude as number, record.latitude as number];
+        setMapSelection({
+            lngLat,
+            properties: [iduToPopupProperties(record)],
+            eventId: record.event_id ?? undefined,
+            recordId: record.id,
         });
         setFlyTo(lngLat);
     }, [idusForMap]);
@@ -684,8 +713,9 @@ function useIduMap(
             content: (
                 <RecentEvents
                     idus={idusForMap}
-                    onEventSelect={handleEventSelect}
+                    onEventSelect={isMobile ? undefined : handleEventSelect}
                     selectedEventId={selectedEventId}
+                    expandable={isMobile}
                 />
             ),
         },
@@ -694,6 +724,8 @@ function useIduMap(
             content: (
                 <TopCountries
                     idus={idusForMap}
+                    startDate={startDate}
+                    endDate={endDate}
                     onCountrySelect={handleCountrySelect}
                     selectedIso3={selectedIso3}
                 />
@@ -720,6 +752,8 @@ function useIduMap(
                     variant="conflict"
                     heading="Internal displacements by conflict and violence"
                     description="Breakdown by type of conflict or violence."
+                    onTriggerSelect={handleTriggerSelect}
+                    selectedTriggerType={selectedTriggerType}
                 />
             ),
         },
@@ -730,8 +764,8 @@ function useIduMap(
                     idus={idusForMap}
                     startDate={startDate}
                     endDate={endDate}
-                    onEventSelect={handleEventSelect}
-                    selectedEventId={selectedEventId}
+                    onRecordSelect={isMobile ? undefined : handleRecordSelect}
+                    selectedRecordId={selectedRecordId}
                 />
             ),
         },
@@ -761,7 +795,7 @@ function useIduMap(
                     */}
                 </div>
             </div>
-            <div className={styles.filters}>
+            <div className={_cs(styles.filters, filtersExpanded && styles.filtersExpanded)}>
                 <RawButton
                     name={undefined}
                     className={styles.filtersToggle}
@@ -871,17 +905,22 @@ function useIduMap(
                             onClose={handleMapPopupClose}
                         />
                     ) : (
-                        <IduTable idus={idusForMap} />
+                        <IduTable
+                            idus={idusForMap}
+                            onRecordSelect={handleRecordSelect}
+                        />
                     )}
-                    <SegmentInput
-                        className={_cs(styles.viewToggle, styles.filterInput, styles.filterSegment)}
-                        name="view"
-                        options={viewOptions}
-                        keySelector={viewKeySelector}
-                        labelSelector={viewLabelSelector}
-                        value={mapOrTable}
-                        onChange={setMapOrTable}
-                    />
+                    <div className={styles.viewToggle} title="Switch between map and table">
+                        <SegmentInput
+                            className={_cs(styles.filterInput, styles.filterSegment)}
+                            name="view"
+                            options={viewOptions}
+                            keySelector={viewKeySelector}
+                            labelSelector={viewLabelSelector}
+                            value={mapOrTable}
+                            onChange={setMapOrTable}
+                        />
+                    </div>
                 </div>
                 <div className={styles.rightPane}>
                     <StatBar idus={idusForMap} />
@@ -934,7 +973,7 @@ function useIduMap(
                                 onClick={handleDownloadCsv}
                                 disabled={loading || isNotDefined(idusForMap)}
                             >
-                                Excel
+                                CSV
                             </Button>
                         </div>
                     </div>
@@ -945,6 +984,7 @@ function useIduMap(
                     heading="Definitions"
                     onClose={hideDefinitions}
                     size="small"
+                    freeHeight
                 >
                     <p>
                         <strong>Internal displacements</strong>
