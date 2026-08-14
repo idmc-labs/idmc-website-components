@@ -37,7 +37,7 @@ const variantConfig: {
     },
     conflict: {
         displacementType: 'Conflict',
-        groupSelector: (datum) => datum.violence_type,
+        groupSelector: (datum) => datum.type,
     },
 };
 
@@ -114,6 +114,9 @@ function Breakdown(props: Props) {
                         />
                     );
                 })}
+            </div>
+            <div className={styles.hint}>
+                Preliminary · unvalidated reports from the selected window.
             </div>
         </div>
     );

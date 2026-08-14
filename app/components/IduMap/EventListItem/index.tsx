@@ -1,10 +1,22 @@
 import React from 'react';
-import { _cs, isDefined } from '@togglecorp/fujs';
+import { _cs, isDefined, isTruthyString } from '@togglecorp/fujs';
 
 import Numeral from '#components/Numeral';
 import RawButton from '#components/RawButton';
+import HTMLOutput from '#components/HTMLOutput';
 
 import styles from './styles.css';
+
+function formatDate(date: string | null | undefined) {
+    if (!isTruthyString(date)) {
+        return undefined;
+    }
+    return new Date(date).toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+    });
+}
 
 export interface Props {
     className?: string;
@@ -17,6 +29,11 @@ export interface Props {
     onClick?: () => void;
     selected?: boolean;
     abbreviate?: boolean;
+    // when expanded, the excerpt + source render beneath the row (mobile detail view)
+    expanded?: boolean;
+    excerpt?: string | null;
+    source?: string | null;
+    date?: string | null;
 }
 
 function EventListItem(props: Props) {
@@ -30,6 +47,10 @@ function EventListItem(props: Props) {
         onClick,
         selected,
         abbreviate = true,
+        expanded,
+        excerpt,
+        source,
+        date,
     } = props;
 
     const isConflict = displacementType === 'Conflict';
@@ -71,21 +92,43 @@ function EventListItem(props: Props) {
         </>
     );
 
-    if (clickable) {
-        return (
-            <RawButton
-                name={undefined}
-                className={rootClassName}
-                onClick={onClick}
-            >
-                {content}
-            </RawButton>
-        );
-    }
-
-    return (
+    const row = clickable ? (
+        <RawButton
+            name={undefined}
+            className={rootClassName}
+            onClick={onClick}
+        >
+            {content}
+        </RawButton>
+    ) : (
         <div className={rootClassName}>
             {content}
+        </div>
+    );
+
+    if (!expanded) {
+        return row;
+    }
+
+    const sourceText = [source, formatDate(date)].filter(isTruthyString).join(' — ');
+
+    return (
+        <div className={styles.expandable}>
+            {row}
+            <div className={styles.excerpt}>
+                {isTruthyString(excerpt) && (
+                    <HTMLOutput
+                        className={styles.excerptText}
+                        value={excerpt}
+                    />
+                )}
+                {isTruthyString(sourceText) && (
+                    <div className={styles.excerptSource}>
+                        <span className={styles.sourceLabel}>Source</span>
+                        {` · ${sourceText}`}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

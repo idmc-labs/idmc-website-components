@@ -40,9 +40,6 @@ type IduData {
   created_at: String
   standard_popup_text: String
   standard_info_text: String
-  violence_type: String
-  violence_subtype: String
-  context_of_violence: String
 }
 type Value {
   canonical_url: String!

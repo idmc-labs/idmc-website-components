@@ -30,6 +30,9 @@ interface RecentEvent {
     displacementType: IduRow['displacement_type'];
     total: number;
     latestTime: number;
+    description: string | undefined | null;
+    source: string | undefined | null;
+    date: string | undefined | null;
 }
 
 const eventKeySelector = (item: RecentEvent) => item.key;
@@ -37,8 +40,11 @@ const eventKeySelector = (item: RecentEvent) => item.key;
 interface Props {
     className?: string;
     idus: IduRow[] | undefined;
-    onEventSelect: (eventId: number, eventName: string) => void;
+    // omitted (e.g. on desktop uses the map) to make rows non-clickable
+    onEventSelect?: (eventId: number, eventName: string) => void;
     selectedEventId: number | undefined;
+    // on mobile (no map) a row click expands its excerpt + source inline instead
+    expandable?: boolean;
 }
 
 function RecentEvents(props: Props) {
@@ -47,9 +53,11 @@ function RecentEvents(props: Props) {
         idus,
         onEventSelect,
         selectedEventId,
+        expandable,
     } = props;
 
     const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+    const [expandedKey, setExpandedKey] = useState<string | undefined>();
 
     const events = useMemo<RecentEvent[]>(() => {
         const cutoff = new Date().getTime() - (RECENT_DAYS * DAY_IN_MS);
@@ -74,14 +82,34 @@ function RecentEvents(props: Props) {
                 displacementType: first.displacement_type,
                 total: sum(items.map((item) => item.figure)),
                 latestTime,
+                description: first.standard_popup_text,
+                source: first.sources,
+                date: first.displacement_date,
             };
         });
 
         return [...list].sort((a, b) => compareNumber(a.latestTime, b.latestTime, -1));
     }, [idus]);
 
-    const rendererParams = useCallback((_: string, item: RecentEvent): EventListItemProps => {
+    const rendererParams = useCallback((key: string, item: RecentEvent): EventListItemProps => {
         const { id, title } = item;
+
+        if (expandable) {
+            const isExpanded = expandedKey === key;
+            return {
+                title,
+                subtitle: item.code,
+                subtitleMonospace: true,
+                displacementType: item.displacementType,
+                value: item.total,
+                onClick: () => setExpandedKey((prev) => (prev === key ? undefined : key)),
+                selected: isExpanded,
+                expanded: isExpanded,
+                excerpt: item.description,
+                source: item.source,
+                date: item.date,
+            };
+        }
 
         return {
             title,
@@ -89,12 +117,12 @@ function RecentEvents(props: Props) {
             subtitleMonospace: true,
             displacementType: item.displacementType,
             value: item.total,
-            onClick: isDefined(id) && isDefined(title)
+            onClick: onEventSelect && isDefined(id) && isDefined(title)
                 ? () => onEventSelect(id, title)
                 : undefined,
             selected: isDefined(selectedEventId) && id === selectedEventId,
         };
-    }, [onEventSelect, selectedEventId]);
+    }, [expandable, expandedKey, onEventSelect, selectedEventId]);
 
     const handleShowMore = useCallback(() => {
         setVisibleCount((count) => count + PAGE_SIZE);
@@ -134,6 +162,9 @@ function RecentEvents(props: Props) {
                         Show more
                     </RawButton>
                 )}
+            </div>
+            <div className={styles.hint}>
+                Tap a row to see the event details.
             </div>
         </div>
     );

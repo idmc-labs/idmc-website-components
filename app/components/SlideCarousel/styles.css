@@ -1,7 +1,7 @@
 .carousel {
     display: flex;
     flex-direction: column;
-    gap: var(--tui-spacing-small);
+    gap: 0.75rem;
 }
 
 .slides {

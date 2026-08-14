@@ -1,6 +1,6 @@
 .dashboard {
     --idu-scale: 0.5;
-    --idu-pane-height: 32rem;
+    --idu-pane-height: 40rem;
 
     --tui-spacing-ultra-small: calc(0.1rem * var(--idu-scale));
     --tui-spacing-extra-extra-small: calc(0.3rem * var(--idu-scale));
@@ -13,7 +13,7 @@
     display: flex;
     flex-basis: 100%;
     flex-direction: column;
-    gap: var(--tui-spacing-medium);
+    gap: 1.5rem;
 
     .top-bar {
         display: flex;
@@ -35,6 +35,7 @@
         .filters-toggle {
             display: none;
             align-items: center;
+            align-self: flex-start;
             gap: var(--tui-spacing-small);
             padding: var(--tui-spacing-small) var(--tui-spacing-small-medium);
             color: var(--tui-color-text, #333);
@@ -104,10 +105,13 @@
     .panes {
         display: flex;
         align-items: stretch;
-        gap: var(--tui-spacing-medium);
+        gap: 1.5rem;
 
         .left-pane {
             position: relative;
+            /* own stacking context: the map popup can sit above the legend
+               without escaping above the portaled select dropdown */
+            isolation: isolate;
             flex-basis: 62%;
             flex-grow: 1;
             min-width: 0;
@@ -135,7 +139,7 @@
             flex-direction: column;
             min-width: 0;
             height: var(--idu-pane-height);
-            gap: var(--tui-spacing-small);
+            gap: 0.75rem;
 
             .carousel {
                 flex-grow: 1;
@@ -175,7 +179,7 @@
                     .download-label {
                         text-transform: uppercase;
                         color: var(--tui-color-label, #7a7a7a);
-                        font-size: var(--tui-font-size-small);
+                        font-size: var(--tui-font-size-extra-small);
                         font-weight: var(--tui-font-weight-bold);
                     }
                 }
@@ -184,6 +188,7 @@
                     border: 1px solid var(--tui-color-separator, #d0d5dd);
                     background-color: #fff;
                     color: var(--tui-color-text, #333);
+                    font-size: var(--tui-font-size-small);
                 }
             }
         }
@@ -202,6 +207,8 @@
 
     @media (max-width: 720px) {
         .filters {
+            /* collapsed: keep the Filters button compact, not full width */
+            align-self: flex-start;
             border: 1px solid var(--tui-color-separator, #d0d5dd);
             border-radius: 0.25rem;
 
@@ -215,6 +222,16 @@
                 flex-direction: column;
                 border-top: 1px solid var(--tui-color-separator, #d0d5dd);
                 padding: var(--tui-spacing-small-medium);
+
+                .left-filters {
+                    align-items: stretch;
+                    flex-direction: column;
+
+                    /* the All|Conflict|Disaster segment stays its natural width */
+                    .cause {
+                        align-self: flex-start;
+                    }
+                }
 
                 .search,
                 .trigger-types,
@@ -230,6 +247,11 @@
             }
         }
 
+        /* expanded: stretch full width so the stacked inputs fill the row */
+        .filters.filters-expanded {
+            align-self: stretch;
+        }
+
         .active-filters {
             display: flex;
         }
@@ -238,8 +260,9 @@
             display: none;
         }
 
+        /* only the first viz is height-capped on mobile (see RecentEvents) */
         .panes .right-pane {
-            height: 72vh;
+            height: auto;
         }
     }
 }
@@ -259,13 +282,35 @@
     border: 1px solid var(--tui-color-separator, #d0d5dd);
     border-radius: 0.5rem;
     background-color: #fff;
-    min-height: 1.9rem;
+    min-height: 2rem;
     font-size: var(--tui-font-size-small);
+
+    /* the select's clear/dropdown-arrow are toggle-ui Buttons in an actions area;
+       both the area and the buttons carry vertical padding that makes the input
+       taller than the others, so drop it from both */
+    :global {
+        [class*="actions"] {
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+
+        [class*="actions"] [class*="button"] {
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+    }
 }
 
-/* SegmentInput modifier (use with .filter-input): match input height, no focus outline. */
+/*
+ * SegmentInput modifier (use with .filter-input). The segment buttons take their
+ * padding from `--tui-spacing-small` (vertical) and `calc(medium - extra-small)`
+ * (horizontal), so set those to give the options comfortable, consistent padding
+ * instead of the over-tall / cramped default. Also drops the dashed focus outline.
+ */
 .filter-segment {
-    --tui-spacing-small: 0.4rem;
+    --tui-spacing-small: 0.25rem;
+    --tui-spacing-medium: 0.5rem;
+    --tui-spacing-extra-small: 0.1rem;
     --tui-color-outline-light: transparent;
 }
 

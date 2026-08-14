@@ -58,6 +58,8 @@ export interface MapSelection {
     lngLat: LngLatLike;
     properties: PopupProperties[];
     eventId?: number;
+    // the specific record whose popup is open (for record-level row highlight)
+    recordId?: number;
 }
 
 // Build the popup card data from an IDU record (shared by the map source and by
@@ -83,6 +85,12 @@ type IduGeoJSON = GeoJSON.FeatureCollection<
     GeoJSON.Point,
     PopupProperties
 >;
+
+const typeLabels: Record<PopupProperties['type'], string> = {
+    Disaster: 'Disasters',
+    Conflict: 'Conflict and violence',
+    Other: 'Other',
+};
 
 const iduPointColor: mapboxgl.CirclePaint = {
     'circle-opacity': 0.6,
@@ -263,7 +271,7 @@ function EventPopupCard(props: EventPopupCardProps) {
         <div className={styles.card}>
             <div className={typeLabelClassName}>
                 <span className={styles.dot} />
-                {isDisaster ? 'Disasters' : 'Conflict'}
+                {typeLabels[item.type]}
             </div>
             {isTruthyString(item.eventName) && (
                 <div className={styles.title}>
@@ -405,10 +413,8 @@ function RawIduMap(props: Props) {
         [idus],
     );
 
-    // don't stack a hover preview on top of the point that's already pinned open
-    const hoverMatchesSelection = isDefined(hovered)
-        && isDefined(selection)
-        && selection.properties.some((item) => item.id === hovered.properties.id);
+    // once a marker is pinned, ignore hover entirely (only one popup at a time)
+    const showHoverPreview = isDefined(hovered) && isNotDefined(selection);
 
     return (
         <Map
@@ -493,7 +499,7 @@ function RawIduMap(props: Props) {
                         </>
                     </MapTooltip>
                 )}
-                {hovered && !hoverMatchesSelection && (
+                {showHoverPreview && hovered && (
                     <MapTooltip
                         coordinates={hovered.lngLat}
                         tooltipOptions={hoverPopupOptions}

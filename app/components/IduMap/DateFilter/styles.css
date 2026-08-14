@@ -29,7 +29,7 @@
             background-color: #fff;
             cursor: pointer;
             padding: 0 1.75rem 0 0.5rem;
-            min-height: 1.9rem;
+            min-height: 2rem;
             color: var(--tui-color-text, #333);
             font-family: inherit;
             font-size: var(--tui-font-size-small);

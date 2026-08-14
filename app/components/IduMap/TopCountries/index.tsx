@@ -17,6 +17,17 @@ type IduRow = NonNullable<IduDataQuery['idu']>[number];
 
 const MAX_COUNTRIES = 5;
 
+function formatDate(date: string | undefined) {
+    if (!date) {
+        return '';
+    }
+    return new Date(date).toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+    });
+}
+
 interface CountryDatum {
     key: string;
     countryName: string | undefined | null;
@@ -28,6 +39,8 @@ interface CountryDatum {
 interface Props {
     className?: string;
     idus: IduRow[] | undefined;
+    startDate: string | undefined;
+    endDate: string | undefined;
     onCountrySelect: (iso3: string) => void;
     selectedIso3: string | undefined;
 }
@@ -36,6 +49,8 @@ function TopCountries(props: Props) {
     const {
         className,
         idus,
+        startDate,
+        endDate,
         onCountrySelect,
         selectedIso3,
     } = props;
@@ -71,14 +86,15 @@ function TopCountries(props: Props) {
 
     const maxTotal = countries[0]?.total ?? 0;
 
+    const description = `Between ${formatDate(startDate)} and ${formatDate(endDate)}, IDMC recorded the highest numbers of internal displacements in the following countries.`;
+
     return (
         <div className={_cs(styles.topCountries, className)}>
             <div className={styles.heading}>
-                Five countries reporting the highest internal displacements
+                Countries with the highest numbers of internal displacements
             </div>
             <div className={styles.description}>
-                {/* eslint-disable-next-line max-len */}
-                This preliminary information is likely to change as more information becomes available.
+                {description}
             </div>
             <div className={styles.list}>
                 {countries.map((country, index) => {
@@ -99,6 +115,9 @@ function TopCountries(props: Props) {
                         />
                     );
                 })}
+            </div>
+            <div className={styles.hint}>
+                Bars aggregate all causes per country · click a row to focus it on the map.
             </div>
         </div>
     );

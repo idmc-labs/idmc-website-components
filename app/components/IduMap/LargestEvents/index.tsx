@@ -1,7 +1,6 @@
 import React, { useMemo, useCallback } from 'react';
 import {
     _cs,
-    isDefined,
     isTruthyString,
     compareNumber,
 } from '@togglecorp/fujs';
@@ -20,8 +19,8 @@ const MAX_EVENTS = 5;
 interface LargestEvent {
     key: string;
     country: string | undefined | null;
-    eventId: number | undefined | null;
-    eventName: string | undefined | null;
+    // each row is one specific record, selected by its unique record id
+    recordId: number;
     subtitle: string;
     displacementType: IduRow['displacement_type'];
     value: number;
@@ -43,8 +42,9 @@ interface Props {
     idus: IduRow[] | undefined;
     startDate: string | undefined;
     endDate: string | undefined;
-    onEventSelect: (eventId: number, eventName: string) => void;
-    selectedEventId: number | undefined;
+    // omitted (e.g. on mobile, where the map is hidden) to make rows non-clickable
+    onRecordSelect?: (recordId: number) => void;
+    selectedRecordId: number | undefined;
 }
 
 function LargestEvents(props: Props) {
@@ -53,8 +53,8 @@ function LargestEvents(props: Props) {
         idus,
         startDate,
         endDate,
-        onEventSelect,
-        selectedEventId,
+        onRecordSelect,
+        selectedRecordId,
     } = props;
 
     const events = useMemo<LargestEvent[]>(() => (
@@ -65,27 +65,21 @@ function LargestEvents(props: Props) {
             .map((d) => ({
                 key: String(d.id),
                 country: d.country,
-                eventId: d.event_id,
-                eventName: d.event_name,
+                recordId: d.id,
                 subtitle: getSubtitle(d),
                 displacementType: d.displacement_type,
                 value: d.figure,
             }))
     ), [idus]);
 
-    const rendererParams = useCallback((_: string, event: LargestEvent): EventListItemProps => {
-        const { eventId, eventName } = event;
-        return {
-            title: event.country,
-            subtitle: event.subtitle,
-            displacementType: event.displacementType,
-            value: event.value,
-            onClick: isDefined(eventId) && isDefined(eventName)
-                ? () => onEventSelect(eventId, eventName)
-                : undefined,
-            selected: isDefined(selectedEventId) && eventId === selectedEventId,
-        };
-    }, [onEventSelect, selectedEventId]);
+    const rendererParams = useCallback((_: string, event: LargestEvent): EventListItemProps => ({
+        title: event.country,
+        subtitle: event.subtitle,
+        displacementType: event.displacementType,
+        value: event.value,
+        onClick: onRecordSelect ? () => onRecordSelect(event.recordId) : undefined,
+        selected: event.recordId === selectedRecordId,
+    }), [onRecordSelect, selectedRecordId]);
 
     const description = `Preliminary estimates of the largest events reported between ${startDate ?? ''} - ${endDate ?? ''}.`;
 
@@ -108,6 +102,9 @@ function LargestEvents(props: Props) {
                     pending={false}
                     filtered={false}
                 />
+            </div>
+            <div className={styles.hint}>
+                Click a row to pin the event on the map.
             </div>
         </div>
     );
