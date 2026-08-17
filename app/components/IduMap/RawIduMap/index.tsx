@@ -293,7 +293,7 @@ function EventPopupCard(props: EventPopupCardProps) {
                     abbrClassName={accentClassName}
                 />
                 <span className={styles.figureLabel}>
-                    Internal displacements
+                    internal displacements
                 </span>
             </div>
             {detailed && (

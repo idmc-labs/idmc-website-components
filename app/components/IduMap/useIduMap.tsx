@@ -23,7 +23,6 @@ import {
     TextInput,
     SegmentInput,
     MultiSelectInput,
-    Modal,
 } from '@togglecorp/toggle-ui';
 import {
     _cs,
@@ -44,7 +43,7 @@ import {
 import Message from '#components/Message';
 import RawButton from '#components/RawButton';
 import SlideCarousel from '#components/SlideCarousel';
-import useBooleanState from '#hooks/useBooleanState';
+import TooltipIcon from '#components/TooltipIcon';
 import useDebouncedValue from '#hooks/useDebouncedValue';
 import useDocumentSize from '#hooks/useDocumentSize';
 
@@ -608,12 +607,6 @@ function useIduMap(
     //     }
     // }, []);
 
-    const [
-        definitionsShown,
-        showDefinitions,
-        hideDefinitions,
-    ] = useBooleanState(false);
-
     const [filtersExpanded, setFiltersExpanded] = useState(false);
     const handleFiltersToggle = useCallback(() => {
         setFiltersExpanded((prev) => !prev);
@@ -737,8 +730,8 @@ function useIduMap(
                 <Breakdown
                     idus={idusForMap}
                     variant="disaster"
-                    heading="Internal displacements by disasters"
-                    description="Breakdown by hazard type."
+                    heading="Internal displacements by hazard types"
+                    description=""
                     onTriggerSelect={handleTriggerSelect}
                     selectedTriggerType={selectedTriggerType}
                 />
@@ -930,29 +923,54 @@ function useIduMap(
                         fillHeight
                         expandable={false}
                         pagerExtra={(
-                            <RawButton
-                                name={undefined}
+                            <TooltipIcon
                                 className={styles.definitions}
-                                onClick={showDefinitions}
-                            >
-                                <IoInformationCircleOutline />
-                                Definitions
-                            </RawButton>
+                                tooltipClassName={styles.definitionsTooltip}
+                                trigger="click"
+                                infoLabel={(
+                                    <>
+                                        <IoInformationCircleOutline />
+                                        Definitions
+                                    </>
+                                )}
+                                content={(
+                                    <div className={styles.definitionsContent}>
+                                        <p>
+                                            <strong>Internal displacements</strong>
+                                            {' — the number of times people are forced to move inside their country during a specific time period.'}
+                                        </p>
+                                        <p>
+                                            <strong>Internally displaced persons (IDPs)</strong>
+                                            {' — the number of people living in internal displacement at a specific point in time.'}
+                                        </p>
+                                        <p>
+                                            {'The IDU reports '}
+                                            <strong>internal displacements only</strong>
+                                            {'. IDP figures are included in the '}
+                                            <a href={giddLink} target="_parent">GIDD</a>
+                                            .
+                                        </p>
+                                    </div>
+                                )}
+                            />
                         )}
                     />
                     <div className={styles.rightFooter}>
                         <p className={styles.footerText}>
                             {/* eslint-disable-next-line max-len */}
-                            IDMC&apos;s Internal Displacement Updates (IDU) are preliminary estimates of internal displacement events reported in the last 180 days. This provisional data is updated daily with new available data. Validated, annual estimates are published in the
-                            {' '}
-                            <a href={giddLink} target="_parent">
-                                Global Internal Displacement Database (GIDD)
-                            </a>
-                            . To request an API key, read the
-                            {' '}
-                            <a href={documentationLink} target="_parent">
-                                documentation
-                            </a>
+                            <strong>IDMC&apos;s Internal Displacement Updates (IDU)</strong>
+                            {' are preliminary estimates of internal displacement events reported in the last 180 days. This provisional data is updated daily with new available data. Validated, annual estimates are published in the '}
+                            <strong>
+                                <a href={giddLink} target="_parent">
+                                    Global Internal Displacement Database (GIDD)
+                                </a>
+                            </strong>
+                            {'. To request an API key, read the '}
+                            <strong>
+                                <a href={documentationLink} target="_parent">
+                                    documentation
+                                </a>
+                            </strong>
                             .
                         </p>
                         <div className={styles.downloadRow}>
@@ -979,32 +997,6 @@ function useIduMap(
                     </div>
                 </div>
             </div>
-            {definitionsShown && (
-                <Modal
-                    heading="Definitions"
-                    onClose={hideDefinitions}
-                    size="small"
-                    freeHeight
-                >
-                    <p>
-                        <strong>Internal displacements</strong>
-                        {' — the number of times people are forced to move inside their country during a specific time period.'}
-                    </p>
-                    <p>
-                        <strong>Internally displaced persons (IDPs)</strong>
-                        {' — the number of people living in internal displacement at a specific point in time.'}
-                    </p>
-                    <p>
-                        The IDU reports
-                        {' '}
-                        <strong>internal displacements only</strong>
-                        . IDP figures are included in the
-                        {' '}
-                        <a href={giddLink} target="_parent">GIDD</a>
-                        {' only.'}
-                    </p>
-                </Modal>
-            )}
         </div>
     );
 
