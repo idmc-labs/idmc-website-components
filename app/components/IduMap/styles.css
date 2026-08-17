@@ -168,6 +168,11 @@
                     margin: 0;
                     color: var(--tui-color-label, #7a7a7a);
                     font-size: var(--tui-font-size-small);
+
+                    a {
+                        text-decoration: underline;
+                        color: var(--tui-color-accent, #1a5276);
+                    }
                 }
 
                 .download-row {
@@ -326,6 +331,25 @@
             color: var(--color-conflict, #ef7d00);
             font-weight: var(--tui-font-weight-bold);
         }
+    }
+}
+
+.definitions-tooltip {
+    max-width: 26rem;
+}
+
+.definitions-content {
+    p {
+        margin: 0 0 0.75rem;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    a {
+        text-decoration: underline;
+        color: var(--tui-color-accent, #1a5276);
     }
 }
 
