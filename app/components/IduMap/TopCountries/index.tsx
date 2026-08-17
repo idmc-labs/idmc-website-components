@@ -5,6 +5,8 @@ import {
     mapToList,
     sum,
     compareNumber,
+    formatDateToString,
+    decodeDate,
 } from '@togglecorp/fujs';
 
 import { IduDataQuery } from '#generated/types';
@@ -17,16 +19,9 @@ type IduRow = NonNullable<IduDataQuery['idu']>[number];
 
 const MAX_COUNTRIES = 5;
 
-function formatDate(date: string | undefined) {
-    if (!date) {
-        return '';
-    }
-    return new Date(date).toLocaleDateString('en-GB', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-    });
-}
+const formatDate = (date: string | undefined) => (
+    date ? formatDateToString(decodeDate(date), 'dd MMM yyyy') : ''
+);
 
 interface CountryDatum {
     key: string;
@@ -36,9 +31,16 @@ interface CountryDatum {
     total: number;
 }
 
+function displacementTerm(cause: 'all' | 'Conflict' | 'Disaster'): string {
+    if (cause === 'Disaster') return 'disaster';
+    if (cause === 'Conflict') return 'conflict and violence';
+    return 'internal';
+}
+
 interface Props {
     className?: string;
     idus: IduRow[] | undefined;
+    cause: 'all' | 'Conflict' | 'Disaster';
     startDate: string | undefined;
     endDate: string | undefined;
     onCountrySelect: (iso3: string) => void;
@@ -49,6 +51,7 @@ function TopCountries(props: Props) {
     const {
         className,
         idus,
+        cause,
         startDate,
         endDate,
         onCountrySelect,
@@ -86,7 +89,7 @@ function TopCountries(props: Props) {
 
     const maxTotal = countries[0]?.total ?? 0;
 
-    const description = `Between ${formatDate(startDate)} and ${formatDate(endDate)}, IDMC recorded the highest numbers of internal displacements in the following countries.`;
+    const description = `Between ${formatDate(startDate)} and ${formatDate(endDate)}, IDMC recorded the highest numbers of ${displacementTerm(cause)} displacements in the following countries.`;
 
     return (
         <div className={_cs(styles.topCountries, className)}>

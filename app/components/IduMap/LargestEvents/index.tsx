@@ -3,6 +3,8 @@ import {
     _cs,
     isTruthyString,
     compareNumber,
+    formatDateToString,
+    decodeDate,
 } from '@togglecorp/fujs';
 
 import ListView from '#components/ListView';
@@ -15,6 +17,16 @@ import styles from './styles.css';
 type IduRow = NonNullable<IduDataQuery['idu']>[number];
 
 const MAX_EVENTS = 5;
+
+const formatDate = (date: string | undefined) => (
+    date ? formatDateToString(decodeDate(date), 'dd MMM yyyy') : ''
+);
+
+function displacementTerm(cause: 'all' | 'Conflict' | 'Disaster'): string {
+    if (cause === 'Disaster') return 'disaster';
+    if (cause === 'Conflict') return 'conflict and violence';
+    return 'internal';
+}
 
 interface LargestEvent {
     key: string;
@@ -40,6 +52,7 @@ function getSubtitle(datum: IduRow): string {
 interface Props {
     className?: string;
     idus: IduRow[] | undefined;
+    cause: 'all' | 'Conflict' | 'Disaster';
     startDate: string | undefined;
     endDate: string | undefined;
     // omitted (e.g. on mobile, where the map is hidden) to make rows non-clickable
@@ -51,6 +64,7 @@ function LargestEvents(props: Props) {
     const {
         className,
         idus,
+        cause,
         startDate,
         endDate,
         onRecordSelect,
@@ -81,7 +95,7 @@ function LargestEvents(props: Props) {
         selected: event.recordId === selectedRecordId,
     }), [onRecordSelect, selectedRecordId]);
 
-    const description = `Preliminary estimates of the largest events reported between ${startDate ?? ''} - ${endDate ?? ''}.`;
+    const description = `Preliminary estimates of the largest ${displacementTerm(cause)} displacements reported between ${formatDate(startDate)} and ${formatDate(endDate)}.`;
 
     return (
         <div className={_cs(styles.largestEvents, className)}>

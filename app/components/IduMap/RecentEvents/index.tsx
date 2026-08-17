@@ -6,6 +6,8 @@ import {
     mapToList,
     sum,
     compareNumber,
+    formatDateToString,
+    decodeDate,
 } from '@togglecorp/fujs';
 
 import ListView from '#components/ListView';
@@ -18,9 +20,17 @@ import styles from './styles.css';
 
 type IduRow = NonNullable<IduDataQuery['idu']>[number];
 
-const DAY_IN_MS = 24 * 60 * 60 * 1000;
-const RECENT_DAYS = 60;
 const PAGE_SIZE = 10;
+
+const formatDate = (date: string | undefined) => (
+    date ? formatDateToString(decodeDate(date), 'dd MMM yyyy') : ''
+);
+
+function displacementTerm(cause: 'all' | 'Conflict' | 'Disaster'): string {
+    if (cause === 'Disaster') return 'disaster';
+    if (cause === 'Conflict') return 'conflict and violence';
+    return 'internal';
+}
 
 interface RecentEvent {
     key: string;
@@ -40,6 +50,9 @@ const eventKeySelector = (item: RecentEvent) => item.key;
 interface Props {
     className?: string;
     idus: IduRow[] | undefined;
+    cause: 'all' | 'Conflict' | 'Disaster';
+    startDate: string | undefined;
+    endDate: string | undefined;
     // omitted (e.g. on desktop uses the map) to make rows non-clickable
     onEventSelect?: (eventId: number, eventName: string) => void;
     selectedEventId: number | undefined;
@@ -51,6 +64,9 @@ function RecentEvents(props: Props) {
     const {
         className,
         idus,
+        cause,
+        startDate,
+        endDate,
         onEventSelect,
         selectedEventId,
         expandable,
@@ -60,13 +76,7 @@ function RecentEvents(props: Props) {
     const [expandedKey, setExpandedKey] = useState<string | undefined>();
 
     const events = useMemo<RecentEvent[]>(() => {
-        const cutoff = new Date().getTime() - (RECENT_DAYS * DAY_IN_MS);
-        const recent = (idus ?? []).filter((d) => (
-            isDefined(d.displacement_date)
-            && new Date(d.displacement_date).getTime() >= cutoff
-        ));
-
-        const grouped = listToGroupList(recent, (d) => d.event_id ?? -1);
+        const grouped = listToGroupList(idus ?? [], (d) => d.event_id ?? -1);
         const list = mapToList(grouped, (items) => {
             const first = items[0];
             const latestTime = Math.max(
@@ -140,7 +150,7 @@ function RecentEvents(props: Props) {
                 The most recent recorded events
             </div>
             <div className={styles.description}>
-                Preliminary estimates of internal displacement events from the past 60 days.
+                {`Preliminary estimates of ${displacementTerm(cause)} displacement events from ${formatDate(startDate)} – ${formatDate(endDate)}.`}
             </div>
             <div className={styles.list}>
                 <ListView
