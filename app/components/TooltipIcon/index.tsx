@@ -34,13 +34,11 @@ function TooltipIcon(props: TooltipIconProps) {
         trigger = 'hover',
     } = props;
 
-    const [
-        showTooltip,
-        setShowTooltipTrue,
-        setShowTooltipFalse,
-        _setValue,
-        toggleTooltip,
-    ] = useBooleanState(false);
+    const boolState = useBooleanState(false);
+    const showTooltip = boolState[0];
+    const setShowTooltipTrue = boolState[1];
+    const setShowTooltipFalse = boolState[2];
+    const toggleTooltip = boolState[4];
 
     const labelRef = useRef<HTMLSpanElement>(null);
     const tooltipRef = useRef<HTMLDivElement>(null);

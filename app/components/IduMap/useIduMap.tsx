@@ -31,13 +31,15 @@ import {
     isTruthyString,
     caseInsensitiveSubmatch,
     compareString,
+    formatDateToString,
+    decodeDate,
 } from '@togglecorp/fujs';
 
 import {
     IduDataQuery,
     IduDataQueryVariables,
-    GiddFilterOptionsQuery,
-    GiddFilterOptionsQueryVariables,
+    IduReferencesQuery,
+    IduReferencesQueryVariables,
 } from '#generated/types';
 
 import Message from '#components/Message';
@@ -118,20 +120,27 @@ const IDU_DATA = gql`
     }
 `;
 
-// country -> region mapping (the IDU data itself carries no region field)
-const IDU_REGIONS = gql`
-    query IduRegions($clientId: String!) {
-        giddPublicCountries(clientId: $clientId) {
-            id
-            idmcShortName
-            iso3
-            region {
-                id
-                name
-            }
+const IDU_REFERENCES = gql`
+    query IduReferences($clientId: String!) {
+        iduReferences(clientId: $clientId) @rest(
+            type: "IduReferences",
+            method: "GET",
+            endpoint: "helix",
+            path: "idus/references/?client_id={args.clientId}"
+        ) {
+            disasterTypes { id name }
+            disasterSubTypes { id name type_id }
+            violenceTypes { id name }
+            violenceSubTypes { id name type_id }
+            geographicalGroups { id name }
+            countries { id iso3 geographical_group_id idmcShortName }
         }
     }
 `;
+
+const formatDate = (date: string | undefined) => (
+    date ? formatDateToString(decodeDate(date), 'dd MMM yyyy') : ''
+);
 
 type CauseKey = 'all' | 'Conflict' | 'Disaster';
 interface CauseOption {
@@ -271,15 +280,12 @@ function useIduMap(
     );
 
     const {
-        data: regionsData,
-    } = useQuery<GiddFilterOptionsQuery, GiddFilterOptionsQueryVariables>(
-        IDU_REGIONS,
+        data: referencesData,
+    } = useQuery<IduReferencesQuery, IduReferencesQueryVariables>(
+        IDU_REFERENCES,
         {
             variables: {
                 clientId: clientCode,
-            },
-            context: {
-                clientName: 'helix',
             },
         },
     );
@@ -294,63 +300,44 @@ function useIduMap(
         regionToIso3,
         regionOptions,
     } = useMemo(() => {
-        const countriesData = regionsData?.giddPublicCountries ?? [];
-        const regionNames = new Map<string, string>();
+        const refCountries = referencesData?.iduReferences?.countries ?? [];
+        const refGroups = referencesData?.iduReferences?.geographicalGroups ?? [];
+
         const regionIso3Map = new Map<string, string[]>();
-        countriesData.forEach((country) => {
-            if (country.region && isTruthyString(country.iso3)) {
-                regionNames.set(country.region.id, country.region.name ?? country.region.id);
-                const existing = regionIso3Map.get(country.region.id) ?? [];
-                existing.push(country.iso3);
-                regionIso3Map.set(country.region.id, existing);
+        refCountries.forEach((country) => {
+            if (isDefined(country.geographical_group_id) && isTruthyString(country.iso3)) {
+                const key = String(country.geographical_group_id);
+                const existing = regionIso3Map.get(key) ?? [];
+                existing.push(country.iso3 as string);
+                regionIso3Map.set(key, existing);
             }
         });
 
-        // only offer regions that have a country present in the current data
-        const dataIso3 = new Set<string>();
-        (idus ?? []).forEach((d) => {
-            if (isTruthyString(d.iso3)) {
-                dataIso3.add(d.iso3);
-            }
-        });
-        const options: Option[] = [...regionNames.entries()]
-            .filter(([id]) => (regionIso3Map.get(id) ?? []).some((iso) => dataIso3.has(iso)))
-            .map(([id, name]) => ({ key: id, label: name }))
+        const options: Option[] = refGroups
+            .map((g) => ({ key: String(g.id), label: g.name }))
             .sort((a, b) => compareString(a.label, b.label));
 
         return { regionToIso3: regionIso3Map, regionOptions: options };
-    }, [regionsData, idus]);
+    }, [referencesData]);
 
-    // built from the data: hazard types (Disaster) + violence names (Conflict),
-    // limited to the groups matching the cause selection
+    // Trigger type options come from the references API (not derived from IDU data),
+    // grouped by cause and limited to the groups matching the cause selection.
     const triggerOptions = useMemo<TriggerOption[]>(() => {
-        const hazardTypes = new Set<string>();
-        const violenceNames = new Set<string>();
-        (idus ?? []).forEach((d) => {
-            if (d.displacement_type === 'Disaster' && isTruthyString(d.type)) {
-                hazardTypes.add(d.type);
-            }
-            if (d.displacement_type === 'Conflict' && isTruthyString(d.type)) {
-                violenceNames.add(d.type);
-            }
-        });
+        const disasterTypes = referencesData?.iduReferences?.disasterTypes ?? [];
+        const violenceSubTypes = referencesData?.iduReferences?.violenceSubTypes ?? [];
 
-        const disasterOpts: TriggerOption[] = [...hazardTypes]
-            .sort(compareString)
-            .map((name) => ({
-                key: name,
-                label: name,
-                groupKey: `1-${TRIGGER_GROUP_DISASTER}`,
-                groupLabel: TRIGGER_GROUP_DISASTER,
-            }));
-        const conflictOpts: TriggerOption[] = [...violenceNames]
-            .sort(compareString)
-            .map((name) => ({
-                key: name,
-                label: name,
-                groupKey: `2-${TRIGGER_GROUP_CONFLICT}`,
-                groupLabel: TRIGGER_GROUP_CONFLICT,
-            }));
+        const disasterOpts: TriggerOption[] = disasterTypes.map((t) => ({
+            key: t.name,
+            label: t.name,
+            groupKey: `1-${TRIGGER_GROUP_DISASTER}`,
+            groupLabel: TRIGGER_GROUP_DISASTER,
+        }));
+        const conflictOpts: TriggerOption[] = violenceSubTypes.map((t) => ({
+            key: t.name,
+            label: t.name,
+            groupKey: `2-${TRIGGER_GROUP_CONFLICT}`,
+            groupLabel: TRIGGER_GROUP_CONFLICT,
+        }));
 
         if (cause === 'Disaster') {
             return disasterOpts;
@@ -359,24 +346,22 @@ function useIduMap(
             return conflictOpts;
         }
         return [...disasterOpts, ...conflictOpts];
-    }, [idus, cause]);
+    }, [referencesData, cause]);
 
-    // Country options are built from the data itself (keyed 'c:<iso3>'), and are
-    // narrowed to the selected region(s) when the region filter is active.
+    // Country options come from the references API, narrowed to the selected region(s).
     const countryOptions = useMemo<Option[]>(() => {
+        const refCountries = referencesData?.iduReferences?.countries ?? [];
+
         const allowedIso3 = regions.length > 0
             ? new Set<string>(regions.flatMap((id) => regionToIso3.get(id) ?? []))
             : undefined;
-        const byIso3 = new Map<string, string>();
-        (idus ?? []).forEach((d) => {
-            if (isTruthyString(d.iso3) && (!allowedIso3 || allowedIso3.has(d.iso3))) {
-                byIso3.set(d.iso3, isTruthyString(d.country) ? d.country : d.iso3);
-            }
-        });
-        return [...byIso3.entries()]
-            .map(([code, name]) => ({ key: `c:${code}`, label: name }))
+
+        return refCountries
+            .filter((c) => isTruthyString(c.iso3)
+                && (!allowedIso3 || allowedIso3.has(c.iso3 as string)))
+            .map((c) => ({ key: `c:${c.iso3}`, label: c.idmcShortName ?? (c.iso3 as string) }))
             .sort((a, b) => compareString(a.label, b.label));
-    }, [idus, regions, regionToIso3]);
+    }, [referencesData, regions, regionToIso3]);
 
     const idusForMap = useMemo(() => {
         const regionIso3 = regions.length > 0
@@ -450,7 +435,7 @@ function useIduMap(
             .filter((item) => isDefined(item.longitude) && isDefined(item.latitude))
             .map((item) => {
                 const {
-                    __typename,
+                    __typename: _,
                     ...properties
                 } = item as (typeof item & { __typename: string });
                 return {
@@ -700,12 +685,23 @@ function useIduMap(
         };
     }
 
+    const dateRange = `${formatDate(startDate)} – ${formatDate(endDate)}`;
+    const disasterBreakdownDesc = `Breakdown by hazard type, ${dateRange}.`;
+    // eslint-disable-next-line no-nested-ternary
+    const displacementTerm = cause === 'Conflict'
+        ? 'conflict and violence'
+        : cause === 'Disaster' ? 'disaster' : 'internal';
+    const conflictBreakdownDesc = `Breakdown by type of ${displacementTerm} displacement, ${dateRange}.`;
+
     const slides: { key: string; content: React.ReactNode }[] = [
         {
             key: 'recent-events',
             content: (
                 <RecentEvents
                     idus={idusForMap}
+                    cause={cause}
+                    startDate={startDate}
+                    endDate={endDate}
                     onEventSelect={isMobile ? undefined : handleEventSelect}
                     selectedEventId={selectedEventId}
                     expandable={isMobile}
@@ -717,6 +713,7 @@ function useIduMap(
             content: (
                 <TopCountries
                     idus={idusForMap}
+                    cause={cause}
                     startDate={startDate}
                     endDate={endDate}
                     onCountrySelect={handleCountrySelect}
@@ -731,7 +728,7 @@ function useIduMap(
                     idus={idusForMap}
                     variant="disaster"
                     heading="Internal displacements by hazard types"
-                    description=""
+                    description={disasterBreakdownDesc}
                     onTriggerSelect={handleTriggerSelect}
                     selectedTriggerType={selectedTriggerType}
                 />
@@ -744,7 +741,7 @@ function useIduMap(
                     idus={idusForMap}
                     variant="conflict"
                     heading="Internal displacements by conflict and violence"
-                    description="Breakdown by type of conflict or violence."
+                    description={conflictBreakdownDesc}
                     onTriggerSelect={handleTriggerSelect}
                     selectedTriggerType={selectedTriggerType}
                 />
@@ -755,6 +752,7 @@ function useIduMap(
             content: (
                 <LargestEvents
                     idus={idusForMap}
+                    cause={cause}
                     startDate={startDate}
                     endDate={endDate}
                     onRecordSelect={isMobile ? undefined : handleRecordSelect}
@@ -957,7 +955,6 @@ function useIduMap(
                     />
                     <div className={styles.rightFooter}>
                         <p className={styles.footerText}>
-                            {/* eslint-disable-next-line max-len */}
                             <strong>IDMC&apos;s Internal Displacement Updates (IDU)</strong>
                             {' are preliminary estimates of internal displacement events reported in the last 180 days. This provisional data is updated daily with new available data. Validated, annual estimates are published in the '}
                             <strong>
