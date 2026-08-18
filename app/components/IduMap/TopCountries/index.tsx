@@ -100,7 +100,11 @@ function TopCountries(props: Props) {
                 {description}
             </div>
             <div className={styles.list}>
-                {countries.map((country, index) => {
+                {countries.length === 0 ? (
+                    <div className={styles.noData}>
+                        No data available for the selected filters.
+                    </div>
+                ) : countries.map((country, index) => {
                     const handleClick = country.key
                         ? () => onCountrySelect(country.key)
                         : undefined;

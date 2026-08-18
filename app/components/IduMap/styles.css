@@ -80,7 +80,8 @@
             }
 
             .cause {
-                flex-shrink: 0;
+                flex: 0 1 10rem;
+                max-width: 10rem;
             }
 
             .trigger-types,
@@ -117,9 +118,18 @@
             min-width: 0;
 
             .view-toggle {
+                display: flex;
                 position: absolute;
                 top: var(--tui-spacing-small);
                 left: var(--tui-spacing-small);
+                align-items: center;
+                gap: var(--tui-spacing-small);
+            }
+
+            .focus-pill {
+                border-radius: 1rem;
+                padding: 0 var(--tui-spacing-small);
+                font-size: var(--tui-font-size-small);
             }
 
             :global {
@@ -231,14 +241,10 @@
                 .left-filters {
                     align-items: stretch;
                     flex-direction: column;
-
-                    /* the All|Conflict|Disaster segment stays its natural width */
-                    .cause {
-                        align-self: flex-start;
-                    }
                 }
 
                 .search,
+                .cause,
                 .trigger-types,
                 .regions,
                 .countries {
@@ -317,6 +323,27 @@
     --tui-spacing-medium: 0.5rem;
     --tui-spacing-extra-small: 0.1rem;
     --tui-color-outline-light: transparent;
+
+    /* definite height (not min-height) so children can use height: 100% */
+    height: 2rem;
+    min-height: 0;
+    overflow: hidden;
+
+    :global {
+        [class*="radio-list"] {
+            align-items: stretch;
+            height: 100%;
+        }
+
+        [class*="segment"] {
+            display: flex;
+            align-items: stretch;
+        }
+
+        [class*="segment"] > [class*="button"] {
+            height: 100%;
+        }
+    }
 }
 
 /* colour the dropdown group headers by cause (targeted via the header title attr) */
@@ -337,6 +364,7 @@
 .definitions-tooltip {
     max-width: 26rem;
 }
+
 
 .definitions-content {
     p {

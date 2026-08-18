@@ -18,8 +18,14 @@
 
 .close-row {
     display: flex;
-    justify-content: flex-end;
+    align-items: center;
+    justify-content: space-between;
     margin-bottom: var(--tui-spacing-small);
+
+    .close-row-title {
+        font-size: var(--tui-font-size-medium);
+        font-weight: var(--tui-font-weight-bold);
+    }
 }
 
 .close-button {

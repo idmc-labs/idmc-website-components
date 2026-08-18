@@ -1,8 +1,10 @@
 import React, { useMemo, useCallback } from 'react';
 import {
     _cs,
-    isTruthyString,
     compareNumber,
+    sum,
+    listToGroupList,
+    mapToList,
     formatDateToString,
     decodeDate,
 } from '@togglecorp/fujs';
@@ -30,24 +32,14 @@ function displacementTerm(cause: 'all' | 'Conflict' | 'Disaster'): string {
 
 interface LargestEvent {
     key: string;
+    eventId: number;
+    eventName: string | undefined | null;
     country: string | undefined | null;
-    // each row is one specific record, selected by its unique record id
-    recordId: number;
-    subtitle: string;
     displacementType: IduRow['displacement_type'];
     value: number;
 }
 
 const keySelector = (item: LargestEvent) => item.key;
-
-function getSubtitle(datum: IduRow): string {
-    const hazard = datum.type ?? datum.category;
-    const main = [hazard, datum.locations_name].filter(isTruthyString).join(', ');
-    if (isTruthyString(datum.displacement_start_date)) {
-        return main ? `${main} · ${datum.displacement_start_date}` : datum.displacement_start_date;
-    }
-    return main;
-}
 
 interface Props {
     className?: string;
@@ -55,9 +47,8 @@ interface Props {
     cause: 'all' | 'Conflict' | 'Disaster';
     startDate: string | undefined;
     endDate: string | undefined;
-    // omitted (e.g. on mobile, where the map is hidden) to make rows non-clickable
-    onRecordSelect?: (recordId: number) => void;
-    selectedRecordId: number | undefined;
+    onEventSelect?: (eventId: number) => void;
+    selectedEventId: number | undefined;
 }
 
 function LargestEvents(props: Props) {
@@ -67,33 +58,40 @@ function LargestEvents(props: Props) {
         cause,
         startDate,
         endDate,
-        onRecordSelect,
-        selectedRecordId,
+        onEventSelect,
+        selectedEventId,
     } = props;
 
-    const events = useMemo<LargestEvent[]>(() => (
-        [...(idus ?? [])]
-            .filter((d) => d.figure > 0)
-            .sort((a, b) => compareNumber(a.figure, b.figure, -1))
-            .slice(0, MAX_EVENTS)
-            .map((d) => ({
-                key: String(d.id),
-                country: d.country,
-                recordId: d.id,
-                subtitle: getSubtitle(d),
-                displacementType: d.displacement_type,
-                value: d.figure,
-            }))
-    ), [idus]);
+    const events = useMemo<LargestEvent[]>(() => {
+        const grouped = listToGroupList(idus ?? [], (d) => d.event_id ?? -1);
+        const list = mapToList(grouped, (items) => {
+            const first = items[0];
+            return {
+                key: String(first.event_id),
+                eventId: first.event_id ?? -1,
+                eventName: first.event_name,
+                country: first.country,
+                displacementType: first.displacement_type,
+                value: sum(items.map((d) => d.figure)),
+            };
+        });
+        return [...list]
+            .filter((e) => e.value > 0)
+            .sort((a, b) => compareNumber(a.value, b.value, -1))
+            .slice(0, MAX_EVENTS);
+    }, [idus]);
 
-    const rendererParams = useCallback((_: string, event: LargestEvent): EventListItemProps => ({
-        title: event.country,
-        subtitle: event.subtitle,
+    const rendererParams = useCallback((
+        _: string,
+        event: LargestEvent,
+    ): EventListItemProps => ({
+        title: event.eventName ?? event.country,
+        subtitle: undefined,
         displacementType: event.displacementType,
         value: event.value,
-        onClick: onRecordSelect ? () => onRecordSelect(event.recordId) : undefined,
-        selected: event.recordId === selectedRecordId,
-    }), [onRecordSelect, selectedRecordId]);
+        onClick: onEventSelect ? () => onEventSelect(event.eventId) : undefined,
+        selected: event.eventId === selectedEventId,
+    }), [onEventSelect, selectedEventId]);
 
     const description = `Preliminary estimates of the largest ${displacementTerm(cause)} displacements reported between ${formatDate(startDate)} and ${formatDate(endDate)}.`;
 
@@ -106,16 +104,22 @@ function LargestEvents(props: Props) {
                 {description}
             </div>
             <div className={styles.list}>
-                <ListView
-                    data={events}
-                    keySelector={keySelector}
-                    renderer={EventListItem}
-                    rendererParams={rendererParams}
-                    direction="vertical"
-                    errored={false}
-                    pending={false}
-                    filtered={false}
-                />
+                {events.length === 0 ? (
+                    <div className={styles.noData}>
+                        No data available for the selected filters.
+                    </div>
+                ) : (
+                    <ListView
+                        data={events}
+                        keySelector={keySelector}
+                        renderer={EventListItem}
+                        rendererParams={rendererParams}
+                        direction="vertical"
+                        errored={false}
+                        pending={false}
+                        filtered={false}
+                    />
+                )}
             </div>
             <div className={styles.hint}>
                 Click a row to pin the event on the map.

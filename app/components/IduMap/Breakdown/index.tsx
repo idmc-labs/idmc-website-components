@@ -97,7 +97,11 @@ function Breakdown(props: Props) {
                 {description}
             </div>
             <div className={styles.list}>
-                {items.map((item) => {
+                {items.length === 0 ? (
+                    <div className={styles.noData}>
+                        No data available for the selected filters.
+                    </div>
+                ) : items.map((item) => {
                     const handleClick = onTriggerSelect && item.key
                         ? () => onTriggerSelect(item.key)
                         : undefined;
