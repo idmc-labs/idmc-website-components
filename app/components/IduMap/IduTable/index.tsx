@@ -173,7 +173,7 @@ function IduTable(props: Props) {
             createTextColumn<IduRow, number>(
                 'event_codes',
                 'Event Codes',
-                (item) => item.event_codes,
+                (item) => item.event_codes ?? '-',
                 { columnWidth: 112, cellRendererClassName: styles.ellipsis },
             ),
             createTextColumn<IduRow, number>(

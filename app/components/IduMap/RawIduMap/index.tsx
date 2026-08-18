@@ -9,6 +9,7 @@ import React, {
 import Map, {
     MapContainer,
     MapCenter,
+    MapBounds,
     MapSource,
     MapLayer,
     MapTooltip,
@@ -17,6 +18,7 @@ import Map, {
 import {
     MapboxGeoJSONFeature,
     LngLat,
+    LngLatBoundsLike,
     PopupOptions,
     LngLatLike,
 } from 'mapbox-gl';
@@ -41,6 +43,7 @@ import styles from './styles.css';
 
 export interface PopupProperties {
     id: number,
+    eventId: number | null | undefined,
     type: 'Disaster' | 'Conflict' | 'Other',
     value: number,
     date: string | null | undefined,
@@ -69,6 +72,7 @@ export function iduToPopupProperties(
 ): PopupProperties {
     return {
         id: idu.id,
+        eventId: idu.event_id,
         type: (idu.displacement_type ?? 'Other') as PopupProperties['type'],
         value: idu.figure,
         date: idu.displacement_date,
@@ -92,27 +96,53 @@ const typeLabels: Record<PopupProperties['type'], string> = {
     Other: 'Other',
 };
 
-const iduPointColor: mapboxgl.CirclePaint = {
-    'circle-opacity': 0.6,
-    'circle-color': {
-        property: 'type',
-        type: 'categorical',
-        stops: [
-            ['Conflict', 'rgb(239, 125, 0)'],
-            ['Disaster', 'rgb(1, 142, 202)'],
-            ['Other', 'rgb(51, 149, 62)'],
-        ],
-    },
-    'circle-radius': {
-        property: 'value',
-        base: 1.75,
-        stops: [
-            [0, 5],
-            [100, 9],
-            [1000, 13],
-        ],
-    },
+const CONFLICT_COLOR = 'rgb(239, 125, 0)';
+const DISASTER_COLOR = 'rgb(1, 142, 202)';
+const OTHER_COLOR = 'rgb(51, 149, 62)';
+const GREY_COLOR = 'rgba(180, 180, 180, 0.4)';
+
+const TYPE_COLOR_EXPR = [
+    'match', ['get', 'type'],
+    'Conflict', CONFLICT_COLOR,
+    'Disaster', DISASTER_COLOR,
+    OTHER_COLOR,
+];
+
+const circleRadius: mapboxgl.CirclePaint['circle-radius'] = {
+    property: 'value',
+    base: 1.75,
+    stops: [
+        [0, 5],
+        [100, 9],
+        [1000, 13],
+    ],
 };
+
+export type MapFocus =
+    | { type: 'country'; iso3: string }
+    | { type: 'event'; eventId: number };
+
+function buildCircleColor(focus: MapFocus | undefined): mapboxgl.CirclePaint['circle-color'] {
+    if (!focus) {
+        return TYPE_COLOR_EXPR as mapboxgl.CirclePaint['circle-color'];
+    }
+    const condition = focus.type === 'country'
+        ? ['==', ['get', 'iso3'], focus.iso3]
+        : ['==', ['get', 'eventId'], focus.eventId];
+    return [
+        'case', condition, TYPE_COLOR_EXPR, GREY_COLOR,
+    ] as mapboxgl.CirclePaint['circle-color'];
+}
+
+function buildCircleOpacity(focus: MapFocus | undefined): mapboxgl.CirclePaint['circle-opacity'] {
+    if (!focus) {
+        return 0.6;
+    }
+    const condition = focus.type === 'country'
+        ? ['==', ['get', 'iso3'], focus.iso3]
+        : ['==', ['get', 'eventId'], focus.eventId];
+    return ['case', condition, 0.8, 0.25] as mapboxgl.CirclePaint['circle-opacity'];
+}
 
 const popupOptions: PopupOptions = {
     closeOnClick: true,
@@ -333,6 +363,10 @@ interface Props {
     selection: MapSelection | undefined;
     // center to ease the map to when a popup is opened from an event row
     flyTo: LngLatLike | undefined;
+    // fit the map to a country bounding box
+    fitBounds: LngLatBoundsLike | undefined;
+    // grey out all dots except those matching this focus
+    focus: MapFocus | undefined;
     onPointClick: (lngLat: LngLatLike, properties: PopupProperties) => void;
     onClose: () => void;
 }
@@ -343,9 +377,17 @@ function RawIduMap(props: Props) {
         onCountryFocus,
         selection,
         flyTo,
+        fitBounds,
+        focus,
         onPointClick,
         onClose,
     } = props;
+
+    const iduPointPaint = useMemo<mapboxgl.CirclePaint>(() => ({
+        'circle-opacity': buildCircleOpacity(focus),
+        'circle-color': buildCircleColor(focus),
+        'circle-radius': circleRadius,
+    }), [focus]);
 
     const handleMapPointClick = useCallback((feature: MapboxGeoJSONFeature, lngLat: LngLat) => {
         if (feature.properties) {
@@ -453,6 +495,7 @@ function RawIduMap(props: Props) {
             </div>
             <GlobeSpinner paused={isDefined(selection)} />
             <MapCenter center={flyTo} centerOptions={{}} />
+            <MapBounds bounds={fitBounds} padding={40} duration={1000} />
             <MapSource
                 sourceKey="idu-points"
                 sourceOptions={sourceOption}
@@ -462,7 +505,7 @@ function RawIduMap(props: Props) {
                     layerKey="idu-point"
                     layerOptions={{
                         type: 'circle',
-                        paint: iduPointColor,
+                        paint: iduPointPaint,
                     }}
                     onClick={handleMapPointClick}
                     onMouseEnter={handleMapPointEnter}

@@ -22,6 +22,8 @@ interface TooltipIconProps {
     // rich JSX content rendered directly
     content?: React.ReactNode;
     trigger?: 'hover' | 'click';
+    // shown on the left of the close button row (click-trigger only)
+    title?: React.ReactNode;
 }
 
 function TooltipIcon(props: TooltipIconProps) {
@@ -32,6 +34,7 @@ function TooltipIcon(props: TooltipIconProps) {
         children,
         content,
         trigger = 'hover',
+        title,
     } = props;
 
     const boolState = useBooleanState(false);
@@ -101,6 +104,11 @@ function TooltipIcon(props: TooltipIconProps) {
                     >
                         {trigger === 'click' && (
                             <div className={styles.closeRow}>
+                                {title && (
+                                    <div className={styles.closeRowTitle}>
+                                        {title}
+                                    </div>
+                                )}
                                 <button
                                     type="button"
                                     className={styles.closeButton}

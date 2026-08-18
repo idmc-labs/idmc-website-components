@@ -4,7 +4,7 @@ import React, {
     useMemo,
     useRef,
 } from 'react';
-import { LngLatLike } from 'mapbox-gl';
+import { LngLatLike, LngLatBoundsLike } from 'mapbox-gl';
 import {
     gql,
     useQuery,
@@ -22,6 +22,7 @@ import {
     Button,
     TextInput,
     SegmentInput,
+    SelectInput,
     MultiSelectInput,
 } from '@togglecorp/toggle-ui';
 import {
@@ -52,6 +53,7 @@ import useDocumentSize from '#hooks/useDocumentSize';
 import { suffixDrupalEndpoint, HELIX_REST_ENDPOINT } from '#utils/common';
 
 import RawIduMap, {
+    MapFocus,
     MapSelection,
     PopupProperties,
     iduToPopupProperties,
@@ -133,7 +135,7 @@ const IDU_REFERENCES = gql`
             violenceTypes { id name }
             violenceSubTypes { id name type_id }
             geographicalGroups { id name }
-            countries { id iso3 geographical_group_id idmcShortName }
+            countries { id iso3 geographical_group_id idmcShortName bbox }
         }
     }
 `;
@@ -256,10 +258,10 @@ function useIduMap(
     // the open map popup lives here so events and filter changes can drive it
     const [mapSelection, setMapSelection] = useState<MapSelection | undefined>();
     const [flyTo, setFlyTo] = useState<LngLatLike | undefined>();
+    const [fitBounds, setFitBounds] = useState<LngLatBoundsLike | undefined>();
+    const [mapFocus, setMapFocus] = useState<MapFocus | undefined>();
     // the event row highlighted in the pane == the event whose popup is open
     const selectedEventId = mapSelection?.eventId;
-    // record-level highlight for lists whose rows are individual records (Largest)
-    const selectedRecordId = mapSelection?.recordId;
 
     // the map is hidden on mobile, so event rows that open a map popup are inert
     const { width: viewportWidth } = useDocumentSize();
@@ -290,26 +292,38 @@ function useIduMap(
         },
     );
 
-    const idus = useMemo(() => (
+    const idusAll = useMemo(() => (
         iso3
             ? iduData?.idu?.filter((item) => item.iso3 === iso3)
             : iduData?.idu
     ), [iso3, iduData]);
 
+    const idus = useMemo(
+        () => idusAll?.filter((item) => item.role === 'Recommended figure'),
+        [idusAll],
+    );
+
     const {
         regionToIso3,
         regionOptions,
+        countryBboxMap,
     } = useMemo(() => {
         const refCountries = referencesData?.iduReferences?.countries ?? [];
         const refGroups = referencesData?.iduReferences?.geographicalGroups ?? [];
 
         const regionIso3Map = new Map<string, string[]>();
+        const bboxMap = new Map<string, number[]>();
         refCountries.forEach((country) => {
-            if (isDefined(country.geographical_group_id) && isTruthyString(country.iso3)) {
-                const key = String(country.geographical_group_id);
-                const existing = regionIso3Map.get(key) ?? [];
-                existing.push(country.iso3 as string);
-                regionIso3Map.set(key, existing);
+            if (isTruthyString(country.iso3)) {
+                if (isDefined(country.geographical_group_id)) {
+                    const key = String(country.geographical_group_id);
+                    const existing = regionIso3Map.get(key) ?? [];
+                    existing.push(country.iso3 as string);
+                    regionIso3Map.set(key, existing);
+                }
+                if (isDefined(country.bbox) && country.bbox.length === 4) {
+                    bboxMap.set(country.iso3 as string, country.bbox as number[]);
+                }
             }
         });
 
@@ -317,7 +331,11 @@ function useIduMap(
             .map((g) => ({ key: String(g.id), label: g.name }))
             .sort((a, b) => compareString(a.label, b.label));
 
-        return { regionToIso3: regionIso3Map, regionOptions: options };
+        return {
+            regionToIso3: regionIso3Map,
+            regionOptions: options,
+            countryBboxMap: bboxMap,
+        };
     }, [referencesData]);
 
     // Trigger type options come from the references API (not derived from IDU data),
@@ -363,7 +381,7 @@ function useIduMap(
             .sort((a, b) => compareString(a.label, b.label));
     }, [referencesData, regions, regionToIso3]);
 
-    const idusForMap = useMemo(() => {
+    const buildIduFilter = useCallback((source: typeof idus) => {
         const regionIso3 = regions.length > 0
             ? new Set<string>(regions.flatMap((id) => regionToIso3.get(id) ?? []))
             : undefined;
@@ -371,32 +389,25 @@ function useIduMap(
             ? new Set<string>(locations.map((key) => key.slice(2)))
             : undefined;
 
-        return idus?.filter((d) => {
+        return source?.filter((d) => {
             if (isNotDefined(d.displacement_date)) {
                 return false;
             }
-
             if (cause !== 'all' && d.displacement_type !== cause) {
                 return false;
             }
-
-            // a selected trigger matches the disaster hazard type or the
-            // conflict violence name of the record
             if (
                 triggerTypes.length > 0
                 && !triggerTypes.some((value) => d.type === value)
             ) {
                 return false;
             }
-
             if (regionIso3 && (isNotDefined(d.iso3) || !regionIso3.has(d.iso3))) {
                 return false;
             }
-
             if (countryIso3 && (isNotDefined(d.iso3) || !countryIso3.has(d.iso3))) {
                 return false;
             }
-
             const search = searchText?.trim();
             if (search) {
                 const haystack = `${d.event_name ?? ''} ${d.country ?? ''} ${d.locations_name ?? ''}`;
@@ -404,7 +415,6 @@ function useIduMap(
                     return false;
                 }
             }
-
             const displacementTime = new Date(d.displacement_date).getTime();
             if (startDate && displacementTime < new Date(startDate).getTime()) {
                 return false;
@@ -412,26 +422,22 @@ function useIduMap(
             if (endDate && displacementTime > (new Date(endDate).getTime() + DAY_IN_MS - 1)) {
                 return false;
             }
-
             return true;
         });
-    }, [
-        idus,
-        cause,
-        triggerTypes,
-        regions,
-        regionToIso3,
-        locations,
-        searchText,
-        startDate,
-        endDate,
-    ]);
+    }, [cause, triggerTypes, regions, regionToIso3, locations, searchText, startDate, endDate]);
+
+    const idusForMap = useMemo(() => buildIduFilter(idus), [idus, buildIduFilter]);
+
+    const idusForExport = useMemo(
+        () => buildIduFilter(idusAll),
+        [idusAll, buildIduFilter],
+    );
 
     const handleDownloadGeojson = useCallback(() => {
-        if (isNotDefined(idusForMap)) {
+        if (isNotDefined(idusForExport)) {
             return;
         }
-        const features = idusForMap
+        const features = idusForExport
             .filter((item) => isDefined(item.longitude) && isDefined(item.latitude))
             .map((item) => {
                 const {
@@ -453,15 +459,15 @@ function useIduMap(
             'idu-data.geojson',
             'application/geo+json',
         );
-    }, [idusForMap]);
+    }, [idusForExport]);
 
     const handleDownloadCsv = useCallback(() => {
-        if (isNotDefined(idusForMap)) {
+        if (isNotDefined(idusForExport)) {
             return;
         }
-        const csv = toCsv(idusForMap as unknown as Record<string, unknown>[]);
+        const csv = toCsv(idusForExport as unknown as Record<string, unknown>[]);
         triggerDownload(csv, 'idu-data.csv', 'text/csv;charset=utf-8');
-    }, [idusForMap]);
+    }, [idusForExport]);
 
     const prevIdusForMap = useRef(idusForMap);
     if (prevIdusForMap.current !== idusForMap) {
@@ -469,6 +475,8 @@ function useIduMap(
         if (isDefined(mapSelection)) {
             setMapSelection(undefined);
             setFlyTo(undefined);
+            setFitBounds(undefined);
+            setMapFocus(undefined);
         }
     }
 
@@ -483,6 +491,8 @@ function useIduMap(
         // close any open map popup even if the filters were already default
         setMapSelection(undefined);
         setFlyTo(undefined);
+        setFitBounds(undefined);
+        setMapFocus(undefined);
     }, []);
 
     // selecting a region narrows the country options, so drop any selected
@@ -511,9 +521,14 @@ function useIduMap(
     }, []);
 
     const handleCountrySelect = useCallback((countryIso3: string) => {
-        const key = `c:${countryIso3}`;
-        setLocations((prev) => (prev.length === 1 && prev[0] === key ? [] : [key]));
-    }, []);
+        const bbox = countryBboxMap.get(countryIso3);
+        if (isDefined(bbox) && bbox.length === 4) {
+            setFitBounds([[bbox[0], bbox[1]], [bbox[2], bbox[3]]]);
+            setFlyTo(undefined);
+        }
+        setMapFocus({ type: 'country', iso3: countryIso3 });
+        setMapOrTable('map');
+    }, [countryBboxMap]);
 
     const handleCountryFocus = useCallback((countryIso3: string) => {
         setLocations([`c:${countryIso3}`]);
@@ -535,8 +550,10 @@ function useIduMap(
         if (records.length === 0) {
             return;
         }
-        // open the popup on the event's largest record, and ease the map there
-        const record = records.reduce((a, b) => (b.figure > a.figure ? b : a));
+        // open the popup on the event's first (earliest) displacement
+        const record = records.reduce((a, b) => (
+            (a.displacement_date ?? '') <= (b.displacement_date ?? '') ? a : b
+        ));
         const lngLat: LngLatLike = [record.longitude as number, record.latitude as number];
         setMapSelection({
             lngLat,
@@ -544,11 +561,37 @@ function useIduMap(
             eventId,
             recordId: record.id,
         });
+        setFitBounds(undefined);
+        setFlyTo(lngLat);
+        setMapFocus({ type: 'event', eventId });
+    }, [idusForMap]);
+
+    // same as handleEventSelect but without setting focus (no grey-out)
+    const handleRecentEventSelect = useCallback((eventId: number) => {
+        setMapOrTable('map');
+        const records = (idusForMap ?? []).filter((d) => (
+            d.event_id === eventId
+            && isDefined(d.longitude)
+            && isDefined(d.latitude)
+        ));
+        if (records.length === 0) {
+            return;
+        }
+        const record = records.reduce((a, b) => (
+            (a.displacement_date ?? '') <= (b.displacement_date ?? '') ? a : b
+        ));
+        const lngLat: LngLatLike = [record.longitude as number, record.latitude as number];
+        setMapSelection({
+            lngLat,
+            properties: [iduToPopupProperties(record)],
+            eventId,
+            recordId: record.id,
+        });
+        setFitBounds(undefined);
         setFlyTo(lngLat);
     }, [idusForMap]);
 
-    // open the popup for one specific record (Largest events lists individual
-    // records, so a row maps to a record, not an aggregated event)
+    // open the popup for one specific record (IduTable rows are individual records)
     const handleRecordSelect = useCallback((recordId: number) => {
         setMapOrTable('map');
         const record = (idusForMap ?? []).find((d) => (
@@ -566,6 +609,7 @@ function useIduMap(
             eventId: record.event_id ?? undefined,
             recordId: record.id,
         });
+        setFitBounds(undefined);
         setFlyTo(lngLat);
     }, [idusForMap]);
 
@@ -702,7 +746,7 @@ function useIduMap(
                     cause={cause}
                     startDate={startDate}
                     endDate={endDate}
-                    onEventSelect={isMobile ? undefined : handleEventSelect}
+                    onEventSelect={isMobile ? undefined : handleRecentEventSelect}
                     selectedEventId={selectedEventId}
                     expandable={isMobile}
                 />
@@ -755,8 +799,8 @@ function useIduMap(
                     cause={cause}
                     startDate={startDate}
                     endDate={endDate}
-                    onRecordSelect={isMobile ? undefined : handleRecordSelect}
-                    selectedRecordId={selectedRecordId}
+                    onEventSelect={isMobile ? undefined : handleEventSelect}
+                    selectedEventId={selectedEventId}
                 />
             ),
         },
@@ -815,14 +859,15 @@ function useIduMap(
                             onChange={setSearchInput}
                             icons={<IoSearchOutline />}
                         />
-                        <SegmentInput
-                            className={_cs(styles.cause, styles.filterInput, styles.filterSegment)}
+                        <SelectInput
+                            className={_cs(styles.cause, styles.filterInput)}
                             name="cause"
                             options={causeOptions}
                             keySelector={causeKeySelector}
                             labelSelector={causeLabelSelector}
                             value={cause}
-                            onChange={handleCauseChange}
+                            onChange={(v) => handleCauseChange(v ?? 'all')}
+                            nonClearable
                         />
                         <MultiSelectInput
                             className={_cs(styles.triggerTypes, styles.filterInput)}
@@ -892,6 +937,8 @@ function useIduMap(
                             onCountryFocus={isNotDefined(iso3) ? handleCountryFocus : undefined}
                             selection={mapSelection}
                             flyTo={flyTo}
+                            fitBounds={fitBounds}
+                            focus={mapFocus}
                             onPointClick={handleMapPointClick}
                             onClose={handleMapPopupClose}
                         />
@@ -909,8 +956,23 @@ function useIduMap(
                             keySelector={viewKeySelector}
                             labelSelector={viewLabelSelector}
                             value={mapOrTable}
-                            onChange={setMapOrTable}
+                            onChange={(v) => {
+                                setMapOrTable(v);
+                                if (v === 'table') {
+                                    setMapFocus(undefined);
+                                }
+                            }}
                         />
+                        {isDefined(mapFocus) && (
+                            <Button
+                                name={undefined}
+                                className={styles.focusPill}
+                                onClick={() => setMapFocus(undefined)}
+                                variant="default"
+                            >
+                                Remove focus
+                            </Button>
+                        )}
                     </div>
                 </div>
                 <div className={styles.rightPane}>
@@ -925,6 +987,7 @@ function useIduMap(
                                 className={styles.definitions}
                                 tooltipClassName={styles.definitionsTooltip}
                                 trigger="click"
+                                title="Definitions"
                                 infoLabel={(
                                     <>
                                         <IoInformationCircleOutline />

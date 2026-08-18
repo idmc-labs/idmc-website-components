@@ -113,7 +113,13 @@ function EventListItem(props: Props) {
     const sourceText = [source, formatDate(date)].filter(isTruthyString).join(' — ');
 
     return (
-        <div className={styles.expandable}>
+        <div
+            className={_cs(
+                styles.expandable,
+                isConflict && styles.conflict,
+                isDisaster && styles.disaster,
+            )}
+        >
             {row}
             <div className={styles.excerpt}>
                 {isTruthyString(excerpt) && (

@@ -59,6 +59,7 @@ type IduReferenceCountry {
   iso3: String
   geographical_group_id: Int
   idmcShortName: String
+  bbox: [Float!]
 }
 
 type IduReferences {

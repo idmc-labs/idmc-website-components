@@ -153,16 +153,22 @@ function RecentEvents(props: Props) {
                 {`Preliminary estimates of ${displacementTerm(cause)} displacement events from ${formatDate(startDate)} – ${formatDate(endDate)}.`}
             </div>
             <div className={styles.list}>
-                <ListView
-                    data={visibleEvents}
-                    keySelector={eventKeySelector}
-                    renderer={EventListItem}
-                    rendererParams={rendererParams}
-                    direction="vertical"
-                    errored={false}
-                    pending={false}
-                    filtered={false}
-                />
+                {events.length === 0 ? (
+                    <div className={styles.noData}>
+                        No data available for the selected filters.
+                    </div>
+                ) : (
+                    <ListView
+                        data={visibleEvents}
+                        keySelector={eventKeySelector}
+                        renderer={EventListItem}
+                        rendererParams={rendererParams}
+                        direction="vertical"
+                        errored={false}
+                        pending={false}
+                        filtered={false}
+                    />
+                )}
                 {hasMore && (
                     <RawButton
                         name={undefined}
@@ -173,9 +179,18 @@ function RecentEvents(props: Props) {
                     </RawButton>
                 )}
             </div>
-            <div className={styles.hint}>
-                Tap a row to see the event details.
-            </div>
+            {expandable && (
+                <div className={styles.legend}>
+                    <div className={styles.legendItem}>
+                        <span className={_cs(styles.legendDot, styles.legendConflict)} />
+                        Conflict and violence
+                    </div>
+                    <div className={styles.legendItem}>
+                        <span className={_cs(styles.legendDot, styles.legendDisaster)} />
+                        Disasters
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

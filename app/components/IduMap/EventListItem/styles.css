@@ -72,6 +72,20 @@
 .expandable {
     display: flex;
     flex-direction: column;
+    border-left: 0.1875rem solid var(--tui-color-separator, #d0d5dd);
+
+    /* suppress the row's own border-left so only the expandable border shows */
+    > :first-child {
+        border-left: none;
+    }
+}
+
+.expandable.conflict {
+    border-left-color: var(--color-conflict);
+}
+
+.expandable.disaster {
+    border-left-color: var(--color-disaster);
 }
 
 .excerpt {
