@@ -52,6 +52,7 @@ import useDocumentSize from '#hooks/useDocumentSize';
 
 import { suffixDrupalEndpoint, HELIX_REST_ENDPOINT } from '#utils/common';
 
+import { toSentenceCase } from './EventListItem';
 import RawIduMap, {
     MapFocus,
     MapSelection,
@@ -144,7 +145,7 @@ const formatDate = (date: string | undefined) => (
     date ? formatDateToString(decodeDate(date), 'dd MMM yyyy') : ''
 );
 
-type CauseKey = 'all' | 'Conflict' | 'Disaster';
+type CauseKey = 'Conflict' | 'Disaster';
 interface CauseOption {
     key: CauseKey;
     label: string;
@@ -152,7 +153,6 @@ interface CauseOption {
 const causeKeySelector = (option: CauseOption) => option.key;
 const causeLabelSelector = (option: CauseOption) => option.label;
 const causeOptions: CauseOption[] = [
-    { key: 'all', label: 'All' },
     { key: 'Conflict', label: 'Conflict' },
     { key: 'Disaster', label: 'Disasters' },
 ];
@@ -248,7 +248,7 @@ function useIduMap(
     // searchInput drives the text field; the debounced value drives filtering
     const [searchInput, setSearchInput] = useState<string | undefined>();
     const searchText = useDebouncedValue(searchInput, 300);
-    const [cause, setCause] = useState<CauseKey>('all');
+    const [cause, setCause] = useState<CauseKey | undefined>();
     const [triggerTypes, setTriggerTypes] = useState<string[]>([]);
     const [regions, setRegions] = useState<string[]>([]);
     const [locations, setLocations] = useState<string[]>([]);
@@ -260,6 +260,7 @@ function useIduMap(
     const [flyTo, setFlyTo] = useState<LngLatLike | undefined>();
     const [fitBounds, setFitBounds] = useState<LngLatBoundsLike | undefined>();
     const [mapFocus, setMapFocus] = useState<MapFocus | undefined>();
+    const [resetTrigger, setResetTrigger] = useState(0);
     // the event row highlighted in the pane == the event whose popup is open
     const selectedEventId = mapSelection?.eventId;
 
@@ -346,13 +347,13 @@ function useIduMap(
 
         const disasterOpts: TriggerOption[] = disasterTypes.map((t) => ({
             key: t.name,
-            label: t.name,
+            label: toSentenceCase(t.name) ?? t.name,
             groupKey: `1-${TRIGGER_GROUP_DISASTER}`,
             groupLabel: TRIGGER_GROUP_DISASTER,
         }));
         const conflictOpts: TriggerOption[] = violenceSubTypes.map((t) => ({
             key: t.name,
-            label: t.name,
+            label: toSentenceCase(t.name) ?? t.name,
             groupKey: `2-${TRIGGER_GROUP_CONFLICT}`,
             groupLabel: TRIGGER_GROUP_CONFLICT,
         }));
@@ -393,7 +394,7 @@ function useIduMap(
             if (isNotDefined(d.displacement_date)) {
                 return false;
             }
-            if (cause !== 'all' && d.displacement_type !== cause) {
+            if (isDefined(cause) && d.displacement_type !== cause) {
                 return false;
             }
             if (
@@ -476,23 +477,27 @@ function useIduMap(
             setMapSelection(undefined);
             setFlyTo(undefined);
             setFitBounds(undefined);
-            setMapFocus(undefined);
         }
     }
 
+    // clear focus and zoom out on any filter change
+    React.useEffect(() => {
+        setMapFocus(undefined);
+        setResetTrigger((n) => n + 1);
+    }, [cause, triggerTypes, regions, locations, searchText, startDate, endDate]);
+
     const handleReset = useCallback(() => {
         setSearchInput(undefined);
-        setCause('all');
+        setCause(undefined);
         setTriggerTypes([]);
         setRegions([]);
         setLocations([]);
         setStartDate(defaultStartDate);
         setEndDate(defaultEndDate);
-        // close any open map popup even if the filters were already default
+        // close any open map popup even if the filters were already at default
         setMapSelection(undefined);
         setFlyTo(undefined);
         setFitBounds(undefined);
-        setMapFocus(undefined);
     }, []);
 
     // selecting a region narrows the country options, so drop any selected
@@ -515,7 +520,7 @@ function useIduMap(
 
     // changing the cause changes which trigger groups are available, so drop the
     // current trigger selection to avoid a now-hidden filter lingering
-    const handleCauseChange = useCallback((value: CauseKey) => {
+    const handleCauseChange = useCallback((value: CauseKey | undefined) => {
         setCause(value);
         setTriggerTypes([]);
     }, []);
@@ -530,13 +535,11 @@ function useIduMap(
         setMapOrTable('map');
     }, [countryBboxMap]);
 
-    const handleCountryFocus = useCallback((countryIso3: string) => {
-        setLocations([`c:${countryIso3}`]);
-    }, []);
-
     const handleTriggerSelect = useCallback((triggerType: string) => {
-        setTriggerTypes((prev) => (
-            prev.length === 1 && prev[0] === triggerType ? [] : [triggerType]
+        setMapFocus((prev) => (
+            prev?.type === 'trigger' && prev.triggerType === triggerType
+                ? undefined
+                : { type: 'trigger', triggerType }
         ));
     }, []);
 
@@ -566,32 +569,7 @@ function useIduMap(
         setMapFocus({ type: 'event', eventId });
     }, [idusForMap]);
 
-    // same as handleEventSelect but without setting focus (no grey-out)
-    const handleRecentEventSelect = useCallback((eventId: number) => {
-        setMapOrTable('map');
-        const records = (idusForMap ?? []).filter((d) => (
-            d.event_id === eventId
-            && isDefined(d.longitude)
-            && isDefined(d.latitude)
-        ));
-        if (records.length === 0) {
-            return;
-        }
-        const record = records.reduce((a, b) => (
-            (a.displacement_date ?? '') <= (b.displacement_date ?? '') ? a : b
-        ));
-        const lngLat: LngLatLike = [record.longitude as number, record.latitude as number];
-        setMapSelection({
-            lngLat,
-            properties: [iduToPopupProperties(record)],
-            eventId,
-            recordId: record.id,
-        });
-        setFitBounds(undefined);
-        setFlyTo(lngLat);
-    }, [idusForMap]);
-
-    // open the popup for one specific record (IduTable rows are individual records)
+    // open the popup for one specific record (IduTable rows and RecentEvents IDUs)
     const handleRecordSelect = useCallback((recordId: number) => {
         setMapOrTable('map');
         const record = (idusForMap ?? []).find((d) => (
@@ -611,6 +589,13 @@ function useIduMap(
         });
         setFitBounds(undefined);
         setFlyTo(lngLat);
+        // clear focus unless the selected record belongs to the focused entity
+        setMapFocus((prev) => {
+            if (!prev) return prev;
+            if (prev.type === 'event' && record.event_id === prev.eventId) return prev;
+            if (prev.type === 'country' && record.iso3 === prev.iso3) return prev;
+            return undefined;
+        });
     }, [idusForMap]);
 
     const handleMapPointClick = useCallback((lngLat: LngLatLike, properties: PopupProperties) => {
@@ -622,6 +607,13 @@ function useIduMap(
                 ? { lngLat, properties: [...prev.properties, properties] }
                 : { lngLat, properties: [properties] }
         ));
+        // clear focus unless the clicked point belongs to the focused entity
+        setMapFocus((prev) => {
+            if (!prev) return prev;
+            if (prev.type === 'event' && properties.eventId === prev.eventId) return prev;
+            if (prev.type === 'country' && properties.iso3 === prev.iso3) return prev;
+            return undefined;
+        });
     }, []);
 
     const handleMapPopupClose = useCallback(() => {
@@ -643,17 +635,15 @@ function useIduMap(
 
     const appliedFilterCount = (
         (searchText && searchText.trim() ? 1 : 0)
-        + (cause !== 'all' ? 1 : 0)
+        + (isDefined(cause) ? 1 : 0)
         + (triggerTypes.length > 0 ? 1 : 0)
         + (regions.length > 0 ? 1 : 0)
         + (locations.length > 0 ? 1 : 0)
         + (startDate !== defaultStartDate || endDate !== defaultEndDate ? 1 : 0)
     );
 
-    const selectedIso3 = locations.length === 1 && locations[0].startsWith('c:')
-        ? locations[0].slice(2)
-        : undefined;
-    const selectedTriggerType = triggerTypes.length === 1 ? triggerTypes[0] : undefined;
+    const selectedIso3 = mapFocus?.type === 'country' ? mapFocus.iso3 : undefined;
+    const selectedTriggerType = mapFocus?.type === 'trigger' ? mapFocus.triggerType : undefined;
 
     const activeFilters = useMemo<ActiveFilter[]>(() => {
         const filters: ActiveFilter[] = [];
@@ -665,12 +655,12 @@ function useIduMap(
                 onRemove: () => setSearchInput(undefined),
             });
         }
-        if (cause !== 'all') {
+        if (isDefined(cause)) {
             const causeOption = causeOptions.find((option) => option.key === cause);
             filters.push({
                 key: 'cause',
                 label: causeOption?.label ?? cause,
-                onRemove: () => setCause('all'),
+                onRemove: () => handleCauseChange(undefined),
             });
         }
         triggerTypes.forEach((triggerType) => {
@@ -730,12 +720,9 @@ function useIduMap(
     }
 
     const dateRange = `${formatDate(startDate)} – ${formatDate(endDate)}`;
+    const effectiveCause = cause ?? 'all';
     const disasterBreakdownDesc = `Breakdown by hazard type, ${dateRange}.`;
-    // eslint-disable-next-line no-nested-ternary
-    const displacementTerm = cause === 'Conflict'
-        ? 'conflict and violence'
-        : cause === 'Disaster' ? 'disaster' : 'internal';
-    const conflictBreakdownDesc = `Breakdown by type of ${displacementTerm} displacement, ${dateRange}.`;
+    const conflictBreakdownDesc = `Breakdown by type of conflict and violence, ${dateRange}.`;
 
     const slides: { key: string; content: React.ReactNode }[] = [
         {
@@ -743,11 +730,10 @@ function useIduMap(
             content: (
                 <RecentEvents
                     idus={idusForMap}
-                    cause={cause}
                     startDate={startDate}
                     endDate={endDate}
-                    onEventSelect={isMobile ? undefined : handleRecentEventSelect}
-                    selectedEventId={selectedEventId}
+                    onRecordSelect={isMobile ? undefined : handleRecordSelect}
+                    selectedRecordId={mapSelection?.recordId}
                     expandable={isMobile}
                 />
             ),
@@ -757,7 +743,7 @@ function useIduMap(
             content: (
                 <TopCountries
                     idus={idusForMap}
-                    cause={cause}
+                    cause={effectiveCause}
                     startDate={startDate}
                     endDate={endDate}
                     onCountrySelect={handleCountrySelect}
@@ -771,7 +757,7 @@ function useIduMap(
                 <Breakdown
                     idus={idusForMap}
                     variant="disaster"
-                    heading="Internal displacements by hazard types"
+                    heading="Internal displacements by disasters"
                     description={disasterBreakdownDesc}
                     onTriggerSelect={handleTriggerSelect}
                     selectedTriggerType={selectedTriggerType}
@@ -796,7 +782,7 @@ function useIduMap(
             content: (
                 <LargestEvents
                     idus={idusForMap}
-                    cause={cause}
+                    cause={effectiveCause}
                     startDate={startDate}
                     endDate={endDate}
                     onEventSelect={isMobile ? undefined : handleEventSelect}
@@ -861,13 +847,14 @@ function useIduMap(
                         />
                         <SelectInput
                             className={_cs(styles.cause, styles.filterInput)}
+                            optionsPopupClassName={styles.selectPopup}
                             name="cause"
+                            placeholder="All causes"
                             options={causeOptions}
                             keySelector={causeKeySelector}
                             labelSelector={causeLabelSelector}
                             value={cause}
-                            onChange={(v) => handleCauseChange(v ?? 'all')}
-                            nonClearable
+                            onChange={handleCauseChange}
                         />
                         <MultiSelectInput
                             className={_cs(styles.triggerTypes, styles.filterInput)}
@@ -887,6 +874,7 @@ function useIduMap(
                             <>
                                 <MultiSelectInput
                                     className={_cs(styles.regions, styles.filterInput)}
+                                    optionsPopupClassName={styles.selectPopup}
                                     name="regions"
                                     placeholder="All regions"
                                     options={regionOptions}
@@ -897,6 +885,7 @@ function useIduMap(
                                 />
                                 <MultiSelectInput
                                     className={_cs(styles.countries, styles.filterInput)}
+                                    optionsPopupClassName={styles.selectPopup}
                                     name="locations"
                                     placeholder="All countries"
                                     options={countryOptions}
@@ -931,18 +920,20 @@ function useIduMap(
             )}
             <div className={styles.panes}>
                 <div className={styles.leftPane}>
-                    {mapOrTable === 'map' ? (
+                    <div className={mapOrTable !== 'map' ? styles.viewHidden : undefined}>
                         <RawIduMap
                             idus={idusForMap}
-                            onCountryFocus={isNotDefined(iso3) ? handleCountryFocus : undefined}
+                            onCountryFocus={isNotDefined(iso3) ? handleCountrySelect : undefined}
                             selection={mapSelection}
                             flyTo={flyTo}
                             fitBounds={fitBounds}
                             focus={mapFocus}
+                            resetTrigger={resetTrigger}
                             onPointClick={handleMapPointClick}
                             onClose={handleMapPopupClose}
                         />
-                    ) : (
+                    </div>
+                    {mapOrTable === 'table' && (
                         <IduTable
                             idus={idusForMap}
                             onRecordSelect={handleRecordSelect}

@@ -89,20 +89,22 @@ function IduTable(props: Props) {
             sorting?.name === columnId ? styles.sortedHeader : undefined
         );
 
-        const hazardColumn: TableColumn<IduRow, number, HazardTypeProps, TableHeaderCellProps> & {
+        const triggerTypeColumn: TableColumn<
+            IduRow, number, HazardTypeProps, TableHeaderCellProps> & {
             valueComparator: (a: IduRow, b: IduRow) => number,
         } = {
-            id: 'category',
-            title: 'Hazard type',
+            id: 'type',
+            title: 'Trigger Type',
             headerCellRenderer: TableHeaderCell,
-            headerCellRendererParams: { sortable: false },
+            headerCellRendererParams: { sortable: true },
+            headerCellRendererClassName: sortedHeaderClassName('type'),
             cellRenderer: HazardType,
             cellRendererParams: (_, datum) => ({
                 value: datum.type,
-                category: datum.category,
+                category: datum.subtype,
             }),
-            columnWidth: 116,
-            valueComparator: (a, b) => compareString(a.subtype, b.subtype),
+            columnWidth: 148,
+            valueComparator: (a, b) => compareString(a.type, b.type),
         };
 
         const displacementsColumn: TableColumn<
@@ -132,7 +134,7 @@ function IduTable(props: Props) {
                     datum.displacement_type === 'Disaster' && styles.disaster,
                 ),
             }),
-            columnWidth: 116,
+            columnWidth: 148,
             valueComparator: (a, b) => compareNumber(a.figure, b.figure),
         };
 
@@ -146,7 +148,8 @@ function IduTable(props: Props) {
             id: 'event_name',
             title: 'Event',
             headerCellRenderer: TableHeaderCell,
-            headerCellRendererParams: { sortable: false },
+            headerCellRendererParams: { sortable: true },
+            headerCellRendererClassName: sortedHeaderClassName('event_name'),
             cellRenderer: EventNameCell,
             cellRendererParams: (_, datum) => ({
                 eventTitle: datum.event_name,
@@ -165,8 +168,10 @@ function IduTable(props: Props) {
                 'Year',
                 (item) => item.year,
                 {
+                    sortable: true,
                     columnWidth: 48,
                     separator: '',
+                    headerCellRendererClassName: sortedHeaderClassName('year'),
                 },
             ),
             eventColumn,
@@ -174,7 +179,12 @@ function IduTable(props: Props) {
                 'event_codes',
                 'Event Codes',
                 (item) => item.event_codes ?? '-',
-                { columnWidth: 112, cellRendererClassName: styles.ellipsis },
+                {
+                    sortable: true,
+                    columnWidth: 112,
+                    cellRendererClassName: styles.ellipsis,
+                    headerCellRendererClassName: sortedHeaderClassName('event_codes'),
+                },
             ),
             createTextColumn<IduRow, number>(
                 'displacement_start_date',
@@ -187,7 +197,7 @@ function IduTable(props: Props) {
                 },
             ),
             displacementsColumn,
-            hazardColumn,
+            triggerTypeColumn,
         ];
     }, [sorting, onRecordSelect]);
 
@@ -209,24 +219,34 @@ function IduTable(props: Props) {
         return sortedData.slice(start, start + PAGE_SIZE);
     }, [sortedData, activePage]);
 
+    const isEmpty = (idus ?? []).length === 0;
+
     return (
         <div className={_cs(styles.iduTable, className)}>
-            <SortContext.Provider value={sortState}>
-                <Table
-                    containerClassName={styles.table}
-                    keySelector={keySelector}
-                    data={paginatedData}
-                    columns={columns}
-                />
-            </SortContext.Provider>
-            <Pager
-                className={styles.pager}
-                activePage={activePage}
-                itemsCount={sortedData.length}
-                maxItemsPerPage={PAGE_SIZE}
-                onActivePageChange={setActivePage}
-                itemsPerPageControlHidden
-            />
+            {isEmpty ? (
+                <div className={styles.noData}>
+                    No data available for the selected filters.
+                </div>
+            ) : (
+                <>
+                    <SortContext.Provider value={sortState}>
+                        <Table
+                            containerClassName={styles.table}
+                            keySelector={keySelector}
+                            data={paginatedData}
+                            columns={columns}
+                        />
+                    </SortContext.Provider>
+                    <Pager
+                        className={styles.pager}
+                        activePage={activePage}
+                        itemsCount={sortedData.length}
+                        maxItemsPerPage={PAGE_SIZE}
+                        onActivePageChange={setActivePage}
+                        itemsPerPageControlHidden
+                    />
+                </>
+            )}
         </div>
     );
 }

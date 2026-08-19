@@ -4,6 +4,8 @@ import { _cs, isDefined } from '@togglecorp/fujs';
 import Numeral from '#components/Numeral';
 import RawButton from '#components/RawButton';
 
+import { toSentenceCase } from '../EventListItem';
+
 import styles from './styles.css';
 
 export interface Props {
@@ -11,7 +13,6 @@ export interface Props {
     label: string | undefined | null;
     value: number;
     maxValue: number;
-    percent: number;
     variant: 'conflict' | 'disaster';
     onClick?: () => void;
     selected?: boolean;
@@ -24,7 +25,6 @@ function BreakdownBar(props: Props) {
         label,
         value,
         maxValue,
-        percent,
         variant,
         onClick,
         selected,
@@ -33,11 +33,6 @@ function BreakdownBar(props: Props) {
 
     const barWidth = maxValue > 0 ? (value / maxValue) * 100 : 0;
     const isConflict = variant === 'conflict';
-    const percentDisplay = percent < 1 ? '<1%' : `${Math.round(percent)}%`;
-    const percentClassName = _cs(
-        styles.percent,
-        isConflict ? styles.conflictText : styles.disasterText,
-    );
     const clickable = isDefined(onClick);
 
     const rootClassName = _cs(
@@ -50,16 +45,13 @@ function BreakdownBar(props: Props) {
     const content = (
         <>
             <div className={styles.label}>
-                {label}
+                {toSentenceCase(label)}
             </div>
             <div className={styles.track}>
                 <div
                     className={isConflict ? styles.conflictFill : styles.disasterFill}
                     style={{ width: `${barWidth}%` }}
                 />
-            </div>
-            <div className={percentClassName}>
-                {percentDisplay}
             </div>
             <Numeral
                 className={styles.total}

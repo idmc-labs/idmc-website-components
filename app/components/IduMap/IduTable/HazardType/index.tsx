@@ -18,8 +18,10 @@ function HazardType(props: Props) {
         category,
     } = props;
 
+    const titleText = [value, category].filter(Boolean).join(' · ') || undefined;
+
     return (
-        <div className={_cs(styles.hazardType, className)}>
+        <div className={_cs(styles.hazardType, className)} title={titleText}>
             <div className={styles.name}>
                 {value || '-'}
             </div>

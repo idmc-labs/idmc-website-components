@@ -31,11 +31,14 @@
 .close-button {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
     justify-content: center;
     border: none;
     background: none;
     cursor: pointer;
-    padding: 0;
+    padding: 0.125rem;
+    width: 1.5rem;
+    height: 1.5rem;
     color: var(--tui-color-label, #7a7a7a);
     font-size: 1.1rem;
 

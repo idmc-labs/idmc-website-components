@@ -29,21 +29,6 @@
         }
     }
 
-    .percent {
-        flex-shrink: 0;
-        min-width: 2.5rem;
-        text-align: right;
-        font-weight: var(--tui-font-weight-bold);
-    }
-
-    .conflict-text {
-        color: var(--color-conflict);
-    }
-
-    .disaster-text {
-        color: var(--color-disaster);
-    }
-
     .total {
         flex-shrink: 0;
         min-width: 3.5rem;
