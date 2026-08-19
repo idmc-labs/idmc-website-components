@@ -37,7 +37,7 @@ const variantConfig: {
     },
     conflict: {
         displacementType: 'Conflict',
-        groupSelector: (datum) => datum.type,
+        groupSelector: (datum) => datum.subtype,
     },
 };
 
@@ -85,7 +85,6 @@ function Breakdown(props: Props) {
             .sort((a, b) => compareNumber(a.total, b.total, -1));
     }, [idus, displacementType, groupSelector]);
 
-    const grandTotal = sum(items.map((item) => item.total));
     const maxTotal = items[0]?.total ?? 0;
 
     return (
@@ -111,7 +110,6 @@ function Breakdown(props: Props) {
                             label={item.label}
                             value={item.total}
                             maxValue={maxTotal}
-                            percent={grandTotal > 0 ? (item.total / grandTotal) * 100 : 0}
                             variant={variant}
                             onClick={handleClick}
                             selected={item.key === selectedTriggerType}

@@ -45,6 +45,8 @@ export interface PopupProperties {
     id: number,
     eventId: number | null | undefined,
     type: 'Disaster' | 'Conflict' | 'Other',
+    // datum.type for disasters, datum.subtype for conflicts (used for trigger focus grey-out)
+    triggerKey: string | null | undefined,
     value: number,
     date: string | null | undefined,
     description: string | null | undefined,
@@ -74,6 +76,7 @@ export function iduToPopupProperties(
         id: idu.id,
         eventId: idu.event_id,
         type: (idu.displacement_type ?? 'Other') as PopupProperties['type'],
+        triggerKey: idu.displacement_type === 'Disaster' ? idu.type : idu.subtype,
         value: idu.figure,
         date: idu.displacement_date,
         description: idu.standard_popup_text,
@@ -120,17 +123,25 @@ const circleRadius: mapboxgl.CirclePaint['circle-radius'] = {
 
 export type MapFocus =
     | { type: 'country'; iso3: string }
-    | { type: 'event'; eventId: number };
+    | { type: 'event'; eventId: number }
+    | { type: 'trigger'; triggerType: string };
+
+function buildFocusCondition(focus: MapFocus): unknown[] {
+    if (focus.type === 'country') {
+        return ['==', ['get', 'iso3'], focus.iso3];
+    }
+    if (focus.type === 'event') {
+        return ['==', ['get', 'eventId'], focus.eventId];
+    }
+    return ['==', ['get', 'triggerKey'], focus.triggerType];
+}
 
 function buildCircleColor(focus: MapFocus | undefined): mapboxgl.CirclePaint['circle-color'] {
     if (!focus) {
         return TYPE_COLOR_EXPR as mapboxgl.CirclePaint['circle-color'];
     }
-    const condition = focus.type === 'country'
-        ? ['==', ['get', 'iso3'], focus.iso3]
-        : ['==', ['get', 'eventId'], focus.eventId];
     return [
-        'case', condition, TYPE_COLOR_EXPR, GREY_COLOR,
+        'case', buildFocusCondition(focus), TYPE_COLOR_EXPR, GREY_COLOR,
     ] as mapboxgl.CirclePaint['circle-color'];
 }
 
@@ -138,10 +149,7 @@ function buildCircleOpacity(focus: MapFocus | undefined): mapboxgl.CirclePaint['
     if (!focus) {
         return 0.6;
     }
-    const condition = focus.type === 'country'
-        ? ['==', ['get', 'iso3'], focus.iso3]
-        : ['==', ['get', 'eventId'], focus.eventId];
-    return ['case', condition, 0.8, 0.25] as mapboxgl.CirclePaint['circle-opacity'];
+    return ['case', buildFocusCondition(focus), 0.8, 0.25] as mapboxgl.CirclePaint['circle-opacity'];
 }
 
 const popupOptions: PopupOptions = {
@@ -260,6 +268,20 @@ function GlobeSpinner(props: GlobeSpinnerProps) {
     return null;
 }
 
+interface MapResetProps {
+    trigger: number;
+}
+
+function MapReset({ trigger }: MapResetProps) {
+    const { map } = useContext(MapChildContext);
+    useEffect(() => {
+        if (!map || trigger === 0) return;
+        map.easeTo({ center: INITIAL_CENTER, zoom: INITIAL_ZOOM, duration: 1000 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [trigger]);
+    return null;
+}
+
 function formatDate(date: string | null | undefined) {
     if (isNotDefined(date)) {
         return undefined;
@@ -346,7 +368,7 @@ function EventPopupCard(props: EventPopupCardProps) {
                                 onClose?.();
                             }}
                         >
-                            {`Focus ${item.country} in all views`}
+                            {`Focus ${item.country} on map`}
                             <IoArrowForward />
                         </RawButton>
                     )}
@@ -355,6 +377,9 @@ function EventPopupCard(props: EventPopupCardProps) {
         </div>
     );
 }
+
+const INITIAL_CENTER: [number, number] = [0, 20];
+const INITIAL_ZOOM = 1;
 
 interface Props {
     idus: IduDataQuery['idu'] | undefined;
@@ -367,6 +392,8 @@ interface Props {
     fitBounds: LngLatBoundsLike | undefined;
     // grey out all dots except those matching this focus
     focus: MapFocus | undefined;
+    // increment to animate back to the initial globe view
+    resetTrigger: number;
     onPointClick: (lngLat: LngLatLike, properties: PopupProperties) => void;
     onClose: () => void;
 }
@@ -379,6 +406,7 @@ function RawIduMap(props: Props) {
         flyTo,
         fitBounds,
         focus,
+        resetTrigger,
         onPointClick,
         onClose,
     } = props;
@@ -493,7 +521,8 @@ function RawIduMap(props: Props) {
                     The boundaries and names shown and the designations used on this map do not imply official endorsement or acceptance by IDMC.
                 </div>
             </div>
-            <GlobeSpinner paused={isDefined(selection)} />
+            <GlobeSpinner paused={isDefined(selection) || isDefined(focus)} />
+            <MapReset trigger={resetTrigger} />
             <MapCenter center={flyTo} centerOptions={{}} />
             <MapBounds bounds={fitBounds} padding={40} duration={1000} />
             <MapSource
@@ -518,14 +547,16 @@ function RawIduMap(props: Props) {
                         onHide={onClose}
                     >
                         <>
-                            <RawButton
-                                name={undefined}
-                                className={styles.closeButton}
-                                onClick={onClose}
-                                title="Close"
-                            >
-                                <IoClose />
-                            </RawButton>
+                            <div className={styles.header}>
+                                <RawButton
+                                    name={undefined}
+                                    className={styles.closeButton}
+                                    onClick={onClose}
+                                    title="Close"
+                                >
+                                    <IoClose />
+                                </RawButton>
+                            </div>
                             <div className={styles.list}>
                                 {selection.properties.map((item, index) => (
                                     <React.Fragment key={item.id}>

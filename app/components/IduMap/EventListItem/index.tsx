@@ -7,6 +7,11 @@ import HTMLOutput from '#components/HTMLOutput';
 
 import styles from './styles.css';
 
+export function toSentenceCase(str: string | null | undefined): string | null | undefined {
+    if (!str) return str;
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
 function formatDate(date: string | null | undefined) {
     if (!isTruthyString(date)) {
         return undefined;
@@ -74,7 +79,7 @@ function EventListItem(props: Props) {
         <>
             <div className={styles.details}>
                 <div className={styles.title}>
-                    {title}
+                    {toSentenceCase(title)}
                 </div>
                 {subtitle && (
                     <div className={_cs(styles.subtitle, subtitleMonospace && styles.monospace)}>

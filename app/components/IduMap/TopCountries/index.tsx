@@ -123,6 +123,16 @@ function TopCountries(props: Props) {
                     );
                 })}
             </div>
+            <div className={styles.legend}>
+                <div className={styles.legendItem}>
+                    <span className={_cs(styles.legendDot, styles.legendConflict)} />
+                    Conflict and violence
+                </div>
+                <div className={styles.legendItem}>
+                    <span className={_cs(styles.legendDot, styles.legendDisaster)} />
+                    Disasters
+                </div>
+            </div>
             <div className={styles.hint}>
                 Bars aggregate all causes per country · click a row to focus it on the map.
             </div>

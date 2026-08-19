@@ -2,10 +2,6 @@ import React, { useMemo, useCallback, useState } from 'react';
 import {
     _cs,
     isDefined,
-    listToGroupList,
-    mapToList,
-    sum,
-    compareNumber,
     formatDateToString,
     decodeDate,
 } from '@togglecorp/fujs';
@@ -22,41 +18,24 @@ type IduRow = NonNullable<IduDataQuery['idu']>[number];
 
 const PAGE_SIZE = 10;
 
-const formatDate = (date: string | undefined) => (
+const formatDate = (date: string | undefined | null) => (
     date ? formatDateToString(decodeDate(date), 'dd MMM yyyy') : ''
 );
 
-function displacementTerm(cause: 'all' | 'Conflict' | 'Disaster'): string {
-    if (cause === 'Disaster') return 'disaster';
-    if (cause === 'Conflict') return 'conflict and violence';
-    return 'internal';
+function getTimestamp(idu: IduRow): number {
+    const d = idu.displacement_end_date ?? idu.displacement_date ?? idu.displacement_start_date;
+    return d ? new Date(d).getTime() : 0;
 }
 
-interface RecentEvent {
-    key: string;
-    id: number | undefined | null;
-    title: string | undefined | null;
-    code: string | undefined | null;
-    displacementType: IduRow['displacement_type'];
-    total: number;
-    latestTime: number;
-    description: string | undefined | null;
-    source: string | undefined | null;
-    date: string | undefined | null;
-}
-
-const eventKeySelector = (item: RecentEvent) => item.key;
+const keySelector = (item: IduRow) => String(item.id);
 
 interface Props {
     className?: string;
     idus: IduRow[] | undefined;
-    cause: 'all' | 'Conflict' | 'Disaster';
     startDate: string | undefined;
     endDate: string | undefined;
-    // omitted (e.g. on desktop uses the map) to make rows non-clickable
-    onEventSelect?: (eventId: number, eventName: string) => void;
-    selectedEventId: number | undefined;
-    // on mobile (no map) a row click expands its excerpt + source inline instead
+    onRecordSelect?: (recordId: number) => void;
+    selectedRecordId: number | undefined;
     expandable?: boolean;
 }
 
@@ -64,103 +43,83 @@ function RecentEvents(props: Props) {
     const {
         className,
         idus,
-        cause,
         startDate,
         endDate,
-        onEventSelect,
-        selectedEventId,
+        onRecordSelect,
+        selectedRecordId,
         expandable,
     } = props;
 
     const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
     const [expandedKey, setExpandedKey] = useState<string | undefined>();
 
-    const events = useMemo<RecentEvent[]>(() => {
-        const grouped = listToGroupList(idus ?? [], (d) => d.event_id ?? -1);
-        const list = mapToList(grouped, (items) => {
-            const first = items[0];
-            const latestTime = Math.max(
-                ...items.map((item) => (
-                    item.displacement_date ? new Date(item.displacement_date).getTime() : 0
-                )),
-            );
-            return {
-                key: String(first.event_id),
-                id: first.event_id,
-                title: first.event_name,
-                code: first.event_codes,
-                displacementType: first.displacement_type,
-                total: sum(items.map((item) => item.figure)),
-                latestTime,
-                description: first.standard_popup_text,
-                source: first.sources,
-                date: first.displacement_date,
-            };
-        });
+    const sorted = useMemo<IduRow[]>(() => (
+        [...(idus ?? [])].sort((a, b) => getTimestamp(b) - getTimestamp(a))
+    ), [idus]);
 
-        return [...list].sort((a, b) => compareNumber(a.latestTime, b.latestTime, -1));
-    }, [idus]);
-
-    const rendererParams = useCallback((key: string, item: RecentEvent): EventListItemProps => {
-        const { id, title } = item;
+    const rendererParams = useCallback((_: string, item: IduRow): EventListItemProps => {
+        const startDateStr = formatDate(item.displacement_start_date);
+        const endDateStr = formatDate(item.displacement_end_date);
+        const dateRange = [startDateStr, endDateStr].filter(Boolean).join(' – ');
+        const key = String(item.id);
 
         if (expandable) {
             const isExpanded = expandedKey === key;
             return {
-                title,
-                subtitle: item.code,
-                subtitleMonospace: true,
-                displacementType: item.displacementType,
-                value: item.total,
+                title: item.event_name ?? item.country,
+                subtitle: dateRange || undefined,
+                displacementType: item.displacement_type,
+                value: item.figure,
                 onClick: () => setExpandedKey((prev) => (prev === key ? undefined : key)),
                 selected: isExpanded,
                 expanded: isExpanded,
-                excerpt: item.description,
-                source: item.source,
-                date: item.date,
+                excerpt: item.standard_popup_text,
+                source: item.sources,
+                date: item.displacement_date,
             };
         }
 
         return {
-            title,
-            subtitle: item.code,
-            subtitleMonospace: true,
-            displacementType: item.displacementType,
-            value: item.total,
-            onClick: onEventSelect && isDefined(id) && isDefined(title)
-                ? () => onEventSelect(id, title)
+            title: item.event_name ?? item.country,
+            subtitle: dateRange || undefined,
+            displacementType: item.displacement_type,
+            value: item.figure,
+            onClick: onRecordSelect && isDefined(item.id)
+                ? () => onRecordSelect(item.id)
                 : undefined,
-            selected: isDefined(selectedEventId) && id === selectedEventId,
+            selected: item.id === selectedRecordId,
         };
-    }, [expandable, expandedKey, onEventSelect, selectedEventId]);
+    }, [expandable, expandedKey, onRecordSelect, selectedRecordId]);
 
     const handleShowMore = useCallback(() => {
         setVisibleCount((count) => count + PAGE_SIZE);
     }, []);
 
-    const visibleEvents = useMemo(
-        () => events.slice(0, visibleCount),
-        [events, visibleCount],
+    const visible = useMemo(
+        () => sorted.slice(0, visibleCount),
+        [sorted, visibleCount],
     );
-    const hasMore = visibleCount < events.length;
+    const hasMore = visibleCount < sorted.length;
+
+    const description = `Preliminary estimates of internal displacements from ${formatDate(startDate)} – ${formatDate(endDate)}.`;
 
     return (
         <div className={_cs(styles.recentEvents, className)}>
             <div className={styles.heading}>
-                The most recent recorded events
+                Most recent recorded movements
             </div>
             <div className={styles.description}>
-                {`Preliminary estimates of ${displacementTerm(cause)} displacement events from ${formatDate(startDate)} – ${formatDate(endDate)}.`}
+                {description}
             </div>
             <div className={styles.list}>
-                {events.length === 0 ? (
+                {sorted.length === 0 ? (
                     <div className={styles.noData}>
                         No data available for the selected filters.
                     </div>
                 ) : (
                     <ListView
-                        data={visibleEvents}
-                        keySelector={eventKeySelector}
+                        data={visible}
+                        keySelector={keySelector}
                         renderer={EventListItem}
                         rendererParams={rendererParams}
                         direction="vertical"
@@ -179,18 +138,11 @@ function RecentEvents(props: Props) {
                     </RawButton>
                 )}
             </div>
-            {expandable && (
-                <div className={styles.legend}>
-                    <div className={styles.legendItem}>
-                        <span className={_cs(styles.legendDot, styles.legendConflict)} />
-                        Conflict and violence
-                    </div>
-                    <div className={styles.legendItem}>
-                        <span className={_cs(styles.legendDot, styles.legendDisaster)} />
-                        Disasters
-                    </div>
-                </div>
-            )}
+            <div className={styles.hint}>
+                {expandable
+                    ? 'Tap a row to see the event details.'
+                    : 'Click a row to pin the event on the map.'}
+            </div>
         </div>
     );
 }
