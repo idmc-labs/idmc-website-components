@@ -123,6 +123,8 @@ export function createNumberColumn<D, K>(
         orderable?: boolean;
         hideable?: boolean;
         variant?: 'conflict' | 'disaster';
+        // bold without a cause colour, for neutral columns like combined totals
+        emphasize?: boolean;
         abbreviate?: boolean;
         separator?: string;
         placeholder?: string;
@@ -132,7 +134,7 @@ export function createNumberColumn<D, K>(
     },
 ) {
     const valueClassName = _cs(
-        options?.variant && styles.figure,
+        (options?.variant || options?.emphasize) && styles.figure,
         options?.variant && styles[options.variant],
     );
     const item: TableColumn<D, K, NumeralProps, TableHeaderCellProps> & {

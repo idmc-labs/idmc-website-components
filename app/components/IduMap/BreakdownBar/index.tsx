@@ -14,6 +14,7 @@ export interface Props {
     label: string | undefined | null;
     value: number;
     maxValue: number;
+    percent?: number;
     variant: 'conflict' | 'disaster';
     onClick?: (name: string) => void;
     selected?: boolean;
@@ -27,6 +28,7 @@ function BreakdownBar(props: Props) {
         label,
         value,
         maxValue,
+        percent,
         variant,
         onClick,
         selected,
@@ -35,6 +37,13 @@ function BreakdownBar(props: Props) {
 
     const barWidth = maxValue > 0 ? (value / maxValue) * 100 : 0;
     const isConflict = variant === 'conflict';
+    const percentDisplay = isDefined(percent) && percent < 1
+        ? '<1%'
+        : `${Math.round(percent ?? 0)}%`;
+    const percentClassName = _cs(
+        styles.percent,
+        isConflict ? styles.conflictText : styles.disasterText,
+    );
     const clickable = isDefined(onClick);
 
     const rootClassName = _cs(
@@ -55,6 +64,11 @@ function BreakdownBar(props: Props) {
                     style={{ width: `${barWidth}%` }}
                 />
             </div>
+            {isDefined(percent) && (
+                <div className={percentClassName}>
+                    {percentDisplay}
+                </div>
+            )}
             <Numeral
                 className={styles.total}
                 value={value}

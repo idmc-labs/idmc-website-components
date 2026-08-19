@@ -1,0 +1,16 @@
+.top-countries-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tui-spacing-medium);
+
+    .list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tui-spacing-small);
+    }
+
+    .footer {
+        color: var(--tui-color-text-light);
+        font-size: var(--tui-font-size-extra-small);
+    }
+}

@@ -57,7 +57,15 @@
     }
 
     .figure {
-        color: var(--color-disaster);
         font-weight: var(--tui-font-weight-bold);
+    }
+
+    /* NOTE: conflict/disaster are applied dynamically per-row based on cause */
+    .conflict {
+        color: var(--color-conflict);
+    }
+
+    .disaster {
+        color: var(--color-disaster);
     }
 }

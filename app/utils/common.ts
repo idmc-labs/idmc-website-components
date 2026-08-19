@@ -271,8 +271,5 @@ export function isDisaggregationAvailable(args: {
         filterStartYear,
         filterEndYear,
     } = args;
-    return (
-        filterStartYear === filterEndYear
-        && filterStartYear >= 2023
-    );
+    return filterStartYear === filterEndYear;
 }

@@ -37,6 +37,8 @@ import {
     DATA_RELEASE,
     getHazardTypeLabel,
     isDisaggregationAvailable,
+    suffixDrupalEndpoint,
+    HELIX_REST_ENDPOINT,
 } from '#utils/common';
 import {
     gql,
@@ -79,6 +81,9 @@ import GiddMap from './GiddMap';
 import HazardBreakdownCard from './HazardBreakdownCard';
 import LargestEventsCard from './LargestEventsCard';
 import FigureAnalysisCard from './FigureAnalysisCard';
+import TopCountriesCard from './TopCountriesCard';
+import TypeBreakdownCard from './TypeBreakdownCard';
+import { bucketSmallValues } from './utils';
 
 import styles from './styles.css';
 
@@ -118,9 +123,11 @@ function getCountryStockCountSubLabel(count = 0, year: number) {
 
 const headingText = 'Global Internal Displacement Database (GIDD)';
 const mainText = 'Explore the GIDD, IDMC’s global repository of internal displacement data, covering 2008 to the present.';
-const downloadText = 'Downloadable data files include metadata, copyright details, and methodological notes.';
-const flowDetails = 'The internal displacements figure refers to the number of forced movements of people within the borders of their country recorded during the year. Figures may include individuals who have been displaced more than once.';
-const stockDetails = 'The total number of Internally Displaced People (IDPs) is a snapshot of all the people living in internal displacements at the end of the year.';
+const flowDetails = 'The number of times people are forced to move inside their country during a specific time period.';
+const stockDetails = 'The number of people living in internal displacement at a specific point in time.';
+
+const iduDashboardLink = suffixDrupalEndpoint('/internal-displacement-updates/');
+const documentationLink = `${HELIX_REST_ENDPOINT.replace(/\/+$/, '')}/#/`;
 
 const GIDD_FILTER_OPTIONS = gql`
     query GiddFilterOptions(
@@ -143,6 +150,12 @@ const GIDD_FILTER_OPTIONS = gql`
             id
             name
         }
+        giddPublicViolenceSubTypes(
+            clientId: $clientId,
+        ) {
+            id
+            name
+        }
     }
 `;
 
@@ -150,6 +163,7 @@ const GIDD_STATISTICS = gql`
     query GiddStatistics(
         $countriesIso3: [String!],
         $hazardTypes: [ID!],
+        $violenceSubTypes: [ID!],
         $endYear: Float,
         $startYear: Float,
         $endYearForTimeseries: Float,
@@ -167,7 +181,9 @@ const GIDD_STATISTICS = gql`
             clientId: $clientId,
         ) {
             internalDisplacementsRounded
+            internalDisplacements
             totalDisplacementsRounded
+            totalDisplacements
             internalDisplacementCountries
             totalDisplacementCountries
         }
@@ -176,10 +192,13 @@ const GIDD_STATISTICS = gql`
             endYear: $endYear,
             startYear: $startYear,
             releaseEnvironment: $releaseEnvironment,
+            violenceSubTypes: $violenceSubTypes,
             clientId: $clientId,
         ) {
+            totalDisplacements
             totalDisplacementsRounded
             totalDisplacementCountries
+            newDisplacements
             newDisplacementsRounded
             internalDisplacementCountries
         }
@@ -191,13 +210,16 @@ const GIDD_STATISTICS = gql`
             releaseEnvironment: $releaseEnvironment,
             clientId: $clientId,
         ){
+            newDisplacements
             newDisplacementsRounded
+            totalDisplacements
             totalDisplacementsRounded
             totalDisplacementCountries
             internalDisplacementCountries
             displacementsByHazardType {
                 id
                 label
+                newDisplacements
                 newDisplacementsRounded
             }
             totalEvents
@@ -207,6 +229,7 @@ const GIDD_STATISTICS = gql`
             endYear: $endYearForTimeseries,
             startYear: $startYearForTimeseries,
             releaseEnvironment: $releaseEnvironment,
+            violenceSubTypes: $violenceSubTypes,
             clientId: $clientId,
         ) {
             totalDisplacementTimeseriesByYear @include(if: $combineCountries) {
@@ -274,10 +297,6 @@ const GIDD_STATISTICS = gql`
     }
 `;
 
-function idSelector(d: { id: string }) {
-    return d.id;
-}
-
 function countryKeySelector(d: { iso3: string }) {
     return d.iso3;
 }
@@ -290,6 +309,10 @@ function triggerTypeLabelSelector(d: { id: string, name: string }) {
     return getHazardTypeLabel({ id: d.id, label: d.name });
 }
 
+function violenceSubTypeLabelSelector(d: { name: string }) {
+    return d.name;
+}
+
 function yearKeySelector(d: { key: number }) {
     return d.key;
 }
@@ -299,28 +322,66 @@ function yearLabelSelector(d: { label: string }) {
 }
 
 type Cause = 'conflict' | 'disaster';
-type CauseSegmentKey = Cause | 'all';
-type CauseSegmentOption = {
-    key: CauseSegmentKey;
+type CauseOption = {
+    key: Cause;
     label: string;
 };
-const causeSegmentKeySelector = (option: CauseSegmentOption) => option.key;
-const causeSegmentLabelSelector = (option: CauseSegmentOption) => option.label;
+const causeKeySelector = (option: CauseOption) => option.key;
+const causeLabelSelector = (option: CauseOption) => option.label;
 
-const causeSegmentOptions: CauseSegmentOption[] = [
-    {
-        key: 'all',
-        label: 'All',
-    },
+const causeOptions: CauseOption[] = [
     {
         key: 'conflict',
-        label: 'Conflict',
+        label: 'Conflict and violence',
     },
     {
         key: 'disaster',
         label: 'Disasters',
     },
 ];
+
+function makeTriggerKey(group: Cause, id: string): string {
+    return `${group}:${id}`;
+}
+
+function parseTriggerKey(key: string): { group: Cause; id: string } | undefined {
+    const sepIndex = key.indexOf(':');
+    if (sepIndex === -1) {
+        return undefined;
+    }
+    const group = key.slice(0, sepIndex);
+    const id = key.slice(sepIndex + 1);
+    if (group !== 'disaster' && group !== 'conflict') {
+        return undefined;
+    }
+    return { group, id };
+}
+
+const TRIGGER_GROUP_LABELS: Record<Cause, string> = {
+    disaster: 'Disasters',
+    conflict: 'Conflict and violence',
+};
+
+interface TriggerTypeOption {
+    key: string;
+    id: string;
+    label: string;
+    group: Cause;
+    groupLabel: string;
+}
+
+function triggerTypeOptionKeySelector(option: TriggerTypeOption) {
+    return option.key;
+}
+function triggerTypeOptionLabelSelector(option: TriggerTypeOption) {
+    return option.label;
+}
+function triggerTypeOptionGroupKeySelector(option: TriggerTypeOption) {
+    return option.group;
+}
+function triggerTypeOptionGroupLabelSelector(option: TriggerTypeOption) {
+    return option.groupLabel;
+}
 
 type Category = 'flow' | 'stock';
 type CategoryOption = {
@@ -366,10 +427,10 @@ type ViewOption = {
 const viewKeySelector = (option: ViewOption) => option.key;
 const viewLabelSelector = (option: ViewOption) => option.label;
 const allViewOptions: ViewOption[] = [
-    { key: 'map', label: 'Map' },
-    { key: 'table', label: 'Table' },
     { key: 'charts', label: 'Charts' },
+    { key: 'table', label: 'Table' },
     { key: 'events', label: 'Events' },
+    { key: 'map', label: 'Map' },
 ];
 
 // matches IduMap's mobile breakpoint — the map is hidden on mobile there too
@@ -397,7 +458,7 @@ function Gidd(props: Props) {
     const [displacementCause, setDisplacementCause] = useState<Cause | undefined>();
     const [combineCauseCharts, setCombineCauseCharts] = useState(false);
     const [displacementCategory, setDisplacementCategory] = useState<Category | undefined>();
-    const [activeView, setActiveView] = useState<View>('map');
+    const [activeView, setActiveView] = useState<View>('charts');
     const [combineCountriesChart, setCombineCountriesChart] = useState(false);
     const [dataActivePage, setDataActivePage] = useState<number>(1);
     const [eventsActivePage, setEventsActivePage] = useState<number>(1);
@@ -418,14 +479,16 @@ function Gidd(props: Props) {
     const isMobile = viewportWidth <= MOBILE_BREAKPOINT;
 
     const viewOptions = useMemo(() => (
-        isMobile ? allViewOptions.filter((option) => option.key !== 'map') : allViewOptions
-    ), [isMobile]);
+        allViewOptions.filter((option) => (
+            option.key !== 'map' || (!isMobile && isDefined(displacementCategory))
+        ))
+    ), [isMobile, displacementCategory]);
 
     useEffect(() => {
-        if (isMobile) {
-            setActiveView((prevView) => (prevView === 'map' ? 'table' : prevView));
+        if (activeView === 'map' && (isMobile || isNotDefined(displacementCategory))) {
+            setActiveView('charts');
         }
-    }, [isMobile]);
+    }, [isMobile, displacementCategory, activeView]);
 
     const handleFiltersToggle = useCallback(() => {
         setFiltersExpanded((prev) => !prev);
@@ -434,21 +497,30 @@ function Gidd(props: Props) {
     const handleCauseChange = useCallback((newVal: Cause | undefined) => {
         setDisplacementCause(newVal);
 
-        if (newVal === 'conflict' || newVal === undefined) {
-            setTriggerTypes([]);
+        if (newVal === 'disaster' || newVal === 'conflict') {
+            setTriggerTypes((prev) => prev.filter((key) => key.startsWith(`${newVal}:`)));
         }
         if (newVal) {
             setCombineCauseCharts(false);
         }
         setDataActivePage(1);
         setEventsActivePage(1);
-    }, [
-        setTriggerTypes,
-    ]);
+    }, [setTriggerTypes]);
 
-    const handleCauseSegmentChange = useCallback((newVal: CauseSegmentKey) => {
-        handleCauseChange(newVal === 'all' ? undefined : newVal);
-    }, [handleCauseChange]);
+    const handleTriggerTypesChange = useCallback((newVal: string[]) => {
+        const addedKeys = newVal.filter((key) => !triggerTypes.includes(key));
+
+        if (isNotDefined(displacementCause) && addedKeys.length > 0) {
+            const addedGroup = parseTriggerKey(addedKeys[0])?.group;
+            if (isDefined(addedGroup)) {
+                setDisplacementCause(addedGroup);
+                setCombineCauseCharts(false);
+                setTriggerTypes(newVal.filter((key) => key.startsWith(`${addedGroup}:`)));
+                return;
+            }
+        }
+        setTriggerTypes(newVal);
+    }, [triggerTypes, displacementCause]);
 
     const handleCountriesChange = useCallback((newVal: string[]) => {
         setCountries(newVal);
@@ -492,14 +564,13 @@ function Gidd(props: Props) {
         handleCauseChange(undefined);
         setTimeRange([endYear, endYear]);
         setDisplacementCategory(undefined);
-        setActiveView(isMobile ? 'table' : 'map');
+        setActiveView('charts');
         setDataActivePage(1);
         setEventsActivePage(1);
     }, [
         handleCauseChange,
         handleCountriesChange,
         setTriggerTypes,
-        isMobile,
         endYear,
     ]);
 
@@ -521,7 +592,7 @@ function Gidd(props: Props) {
         Array.from(
             { length: (endYear - START_YEAR) + 1 },
             (_, index) => {
-                const year = START_YEAR + index;
+                const year = endYear - index;
                 return { key: year, label: String(year) };
             },
         )
@@ -608,10 +679,26 @@ function Gidd(props: Props) {
     const showCombinedCountries = combineCountriesChart
         || countries.length > 3 || countries.length === 0;
 
+    // triggerTypes is compound-keyed (`disaster:<id>` / `conflict:<id>`) so
+    // both groups can coexist in one selection; split back into raw ids here
+    const { selectedHazardTypeIds, selectedViolenceSubTypeIds } = useMemo(() => {
+        const hazardIds: string[] = [];
+        const violenceIds: string[] = [];
+        triggerTypes.forEach((key) => {
+            const parsed = parseTriggerKey(key);
+            if (!parsed) {
+                return;
+            }
+            (parsed.group === 'disaster' ? hazardIds : violenceIds).push(parsed.id);
+        });
+        return { selectedHazardTypeIds: hazardIds, selectedViolenceSubTypeIds: violenceIds };
+    }, [triggerTypes]);
+
     const statisticsVariables = useMemo(() => ({
         countriesIso3: effectiveCountries,
         combineCountries: showCombinedCountries,
-        hazardTypes: isDisasterDataShown ? triggerTypes : undefined,
+        hazardTypes: isDisasterDataShown ? selectedHazardTypeIds : undefined,
+        violenceSubTypes: isConflictDataShown ? selectedViolenceSubTypeIds : undefined,
         startYear: timeRange[0],
         endYear: timeRange[1],
         startYearForTimeseries: timeRange[0] === timeRange[1] ? START_YEAR : timeRange[0],
@@ -620,7 +707,9 @@ function Gidd(props: Props) {
         clientId: clientCode,
     }), [
         isDisasterDataShown,
-        triggerTypes,
+        isConflictDataShown,
+        selectedHazardTypeIds,
+        selectedViolenceSubTypeIds,
         showCombinedCountries,
         timeRange,
         effectiveCountries,
@@ -1032,14 +1121,76 @@ function Gidd(props: Props) {
         [countryFilterResponse],
     );
 
+    // drives the conflict-by-type breakdown card and the trigger-type filter
+    // when a specific cause is 'conflict'
+    const violenceSubTypeOptions = useMemo(
+        () => {
+            const options = removeNull(
+                countryFilterResponse?.giddPublicViolenceSubTypes,
+            )?.filter(isDefined) ?? [];
+
+            return [...options].sort((a, b) => compareString(a?.name, b?.name));
+        },
+        [countryFilterResponse],
+    );
+
+    // hazard-type and violence-sub-type ids are independent id spaces with no
+    // guaranteed disjointness, so each option is wrapped with a compound
+    // `group:id` key before the two lists can safely coexist in one selection
+    const hazardTriggerOptions = useMemo<TriggerTypeOption[]>(() => (
+        triggerTypeOptions.map((option) => ({
+            key: makeTriggerKey('disaster', option.id),
+            id: option.id,
+            label: triggerTypeLabelSelector(option),
+            group: 'disaster' as const,
+            groupLabel: TRIGGER_GROUP_LABELS.disaster,
+        }))
+    ), [triggerTypeOptions]);
+
+    const violenceTriggerOptions = useMemo<TriggerTypeOption[]>(() => (
+        violenceSubTypeOptions.map((option) => ({
+            key: makeTriggerKey('conflict', option.id),
+            id: option.id,
+            label: violenceSubTypeLabelSelector(option),
+            group: 'conflict' as const,
+            groupLabel: TRIGGER_GROUP_LABELS.conflict,
+        }))
+    ), [violenceSubTypeOptions]);
+
+    const triggerTypeOptionsByKey = useMemo(() => {
+        const map = new Map<string, TriggerTypeOption>();
+        violenceTriggerOptions.forEach((option) => map.set(option.key, option));
+        hazardTriggerOptions.forEach((option) => map.set(option.key, option));
+        return map;
+    }, [hazardTriggerOptions, violenceTriggerOptions]);
+
+    // cause unselected shows both groups (grouped); a specific cause narrows
+    // the list to that group's options alone (ungrouped, as before)
+    const triggerTypeGrouped = isNotDefined(displacementCause);
+    let triggerTypeWidgetOptions: TriggerTypeOption[];
+    if (displacementCause === 'disaster') {
+        triggerTypeWidgetOptions = hazardTriggerOptions;
+    } else if (displacementCause === 'conflict') {
+        triggerTypeWidgetOptions = violenceTriggerOptions;
+    } else {
+        triggerTypeWidgetOptions = [...violenceTriggerOptions, ...hazardTriggerOptions];
+    }
+
+    // normalised to {id, name, value} so the sub-1% tail can collapse into a
+    // single "Other" row, consistent with the typology breakdown cards
     const sortedHazards = useMemo(
-        () => ([...(disasterStats?.displacementsByHazardType ?? [])].sort(
-            (foo, bar) => compareNumber(
-                foo.newDisplacementsRounded,
-                bar.newDisplacementsRounded,
-                -1,
-            ),
-        )),
+        () => {
+            const values = [...(disasterStats?.displacementsByHazardType ?? [])]
+                .map((hazard) => ({
+                    id: hazard.id,
+                    name: getHazardTypeLabel(hazard),
+                    value: hazard.newDisplacements ?? 0,
+                }))
+                .filter((hazard) => hazard.value > 0)
+                .sort((foo, bar) => compareNumber(foo.value, bar.value, -1));
+
+            return bucketSmallValues(values);
+        },
         [disasterStats?.displacementsByHazardType],
     );
 
@@ -1048,22 +1199,34 @@ function Gidd(props: Props) {
         filterEndYear: timeRange[1],
     });
 
-    const maxDisplacementValue = sortedHazards[0]?.newDisplacementsRounded ?? undefined;
+    // computed after bucketing — "Other" can outrank the row above it
+    const maxDisplacementValue = Math.max(0, ...sortedHazards.map((hazard) => hazard.value));
 
     const hazardGrandTotal = useMemo(
-        () => sum(sortedHazards.map((hazard) => hazard.newDisplacementsRounded ?? 0)),
+        () => sum(sortedHazards.map((hazard) => hazard.value)),
         [sortedHazards],
     );
 
-    const selectedTriggerType = triggerTypes.length === 1 ? triggerTypes[0] : undefined;
+    const selectedTriggerType = useMemo(() => {
+        if (triggerTypes.length !== 1) {
+            return undefined;
+        }
+        const parsed = parseTriggerKey(triggerTypes[0]);
+        return parsed?.group === 'disaster' ? parsed.id : undefined;
+    }, [triggerTypes]);
 
-    const handleHazardSelect = useCallback((triggerType: string) => {
+    const handleHazardSelect = useCallback((rawId: string) => {
+        const key = makeTriggerKey('disaster', rawId);
         setTriggerTypes((prev) => (
-            prev.length === 1 && prev[0] === triggerType ? [] : [triggerType]
+            prev.length === 1 && prev[0] === key ? [] : [key]
         ));
+        if (isNotDefined(displacementCause)) {
+            setDisplacementCause('disaster');
+            setCombineCauseCharts(false);
+        }
         setDataActivePage(1);
         setEventsActivePage(1);
-    }, []);
+    }, [displacementCause]);
 
     const handleViewEvents = useCallback(() => {
         setActiveView('events');
@@ -1102,6 +1265,7 @@ function Gidd(props: Props) {
                 heading="Internal Displacements"
                 headingSize="medium"
                 headingTooltip={flowDetails}
+                headingTooltipTitle="Internal Displacements"
                 headingDescription={`New displacements per year globally, ${domainForCharts[0]}–${domainForCharts[1]}`}
             />
             <div className={styles.chartPanel}>
@@ -1153,6 +1317,7 @@ function Gidd(props: Props) {
             <Header
                 heading="Internally displaced people (IDPs)"
                 headingTooltip={stockDetails}
+                headingTooltipTitle="Internally displaced people (IDPs)"
                 headingSize="medium"
                 headingDescription={`People living in displacement at year end globally, as of ${domainForCharts[1]}`}
             />
@@ -1229,13 +1394,66 @@ function Gidd(props: Props) {
         </RawButton>
     );
 
+    // keeps the insight subtitles honest about the active geography filters
+    const scopeLabel = useMemo(() => {
+        if (countries.length === 1) {
+            const option = countriesOptions?.find((item) => item.iso3 === countries[0]);
+            return `in ${option?.idmcShortName ?? countries[0]}`;
+        }
+        if (countries.length > 1) {
+            return `in ${countries.length} selected countries and territories`;
+        }
+        if (regions.length > 0) {
+            return regions.length === 1
+                ? 'in the selected region'
+                : `in ${regions.length} selected regions`;
+        }
+        return 'globally';
+    }, [countries, countriesOptions, regions]);
+
+    const glanceDescription = useMemo(() => {
+        const yearLabel = timeRange[0] === timeRange[1]
+            ? `${timeRange[0]}`
+            : `${timeRange[0]}-${timeRange[1]}`;
+
+        const causeOption = displacementCause
+            ? causeOptions.find((item) => item.key === displacementCause)
+            : undefined;
+        const causeClause = causeOption
+            ? ` associated with ${causeOption.label.toLowerCase()}`
+            : '';
+
+        let description = `Validated figures${causeClause} for ${yearLabel} ${scopeLabel}.`;
+
+        if (triggerTypes.length > 0 && displacementCause) {
+            const labels = triggerTypes
+                .map((key) => triggerTypeOptionsByKey.get(key)?.label)
+                .filter(isDefined);
+            if (labels.length > 0) {
+                const figureLabel = displacementCause === 'conflict' ? 'Conflict' : 'Disaster';
+                description += ` ${figureLabel} figures are filtered to the category ${labels.join(', ')}.`;
+            }
+        }
+
+        return description;
+    }, [timeRange, displacementCause, scopeLabel, triggerTypes, triggerTypeOptionsByKey]);
+
     const glanceCard = (
         <div className={styles.glanceCard}>
+            <div className={styles.sidebarHeadingBlock}>
+                <div className={styles.sidebarHeading}>
+                    At a glance
+                </div>
+                <p className={styles.glanceDescription}>
+                    {glanceDescription}
+                </p>
+            </div>
             <div className={_cs(styles.glanceSection, isFlowSelected && styles.selected)}>
                 <Header
                     heading="Internal Displacements"
                     headingSize="medium"
                     headingTooltip={flowDetails}
+                    headingTooltipTitle="Internal Displacements"
                     actions={isFlowSelected ? shownOnMap : showOnMapFlow}
                 />
                 {!displacementCause && (
@@ -1245,7 +1463,7 @@ function Gidd(props: Props) {
                         subLabel={getCountryCountSubLabel(
                             combinedStats?.internalDisplacementCountries,
                         )}
-                        value={combinedStats?.internalDisplacementsRounded}
+                        value={combinedStats?.internalDisplacements}
                         abbreviated={precision === 'rounded'}
                     />
                 )}
@@ -1258,7 +1476,7 @@ function Gidd(props: Props) {
                             subLabel={getCountryCountSubLabel(
                                 conflictStats?.internalDisplacementCountries,
                             )}
-                            value={conflictStats?.newDisplacementsRounded}
+                            value={conflictStats?.newDisplacements}
                             abbreviated={precision === 'rounded'}
                         />
                     )}
@@ -1270,7 +1488,7 @@ function Gidd(props: Props) {
                             subLabel={getCountryCountSubLabel(
                                 disasterStats?.internalDisplacementCountries,
                             )}
-                            value={disasterStats?.newDisplacementsRounded}
+                            value={disasterStats?.newDisplacements}
                             abbreviated={precision === 'rounded'}
                         />
                     )}
@@ -1280,6 +1498,7 @@ function Gidd(props: Props) {
                 <Header
                     heading="Internally displaced people (IDPs)"
                     headingTooltip={stockDetails}
+                    headingTooltipTitle="Internally displaced people (IDPs)"
                     headingSize="medium"
                     actions={isStockSelected ? shownOnMap : showOnMapStock}
                 />
@@ -1291,7 +1510,7 @@ function Gidd(props: Props) {
                             combinedStats?.totalDisplacementCountries,
                             timeRange[1],
                         )}
-                        value={combinedStats?.totalDisplacementsRounded}
+                        value={combinedStats?.totalDisplacements}
                         abbreviated={precision === 'rounded'}
                     />
                 )}
@@ -1305,7 +1524,7 @@ function Gidd(props: Props) {
                                 conflictStats?.totalDisplacementCountries,
                                 timeRange[1],
                             )}
-                            value={conflictStats?.totalDisplacementsRounded}
+                            value={conflictStats?.totalDisplacements}
                             abbreviated={precision === 'rounded'}
                         />
                     )}
@@ -1318,7 +1537,7 @@ function Gidd(props: Props) {
                                 disasterStats?.totalDisplacementCountries,
                                 timeRange[1],
                             )}
-                            value={disasterStats?.totalDisplacementsRounded}
+                            value={disasterStats?.totalDisplacements}
                             abbreviated={precision === 'rounded'}
                         />
                     )}
@@ -1352,11 +1571,68 @@ function Gidd(props: Props) {
                 <LargestEventsCard
                     className={styles.glanceCard}
                     countriesIso3={effectiveCountries}
-                    hazardTypes={triggerTypes}
+                    hazardTypes={selectedHazardTypeIds}
                     startYear={timeRange[0]}
                     endYear={timeRange[1]}
                     clientCode={clientCode}
                     onViewEvents={handleViewEvents}
+                    abbreviate={precision === 'rounded'}
+                />
+            ),
+        });
+    }
+    glanceSlides.push({
+        key: 'top-countries',
+        content: (
+            <TopCountriesCard
+                className={styles.glanceCard}
+                category={displacementCategory}
+                cause={displacementCause}
+                countriesIso3={effectiveCountries}
+                startYear={timeRange[0]}
+                endYear={timeRange[1]}
+                clientCode={clientCode}
+                scopeLabel={scopeLabel}
+                abbreviate={precision === 'rounded'}
+                onCountrySelect={handleCountryFocus}
+            />
+        ),
+    });
+    if (isDisasterDataShown) {
+        glanceSlides.push({
+            key: 'hazard-breakdown',
+            content: (
+                <TypeBreakdownCard
+                    className={styles.glanceCard}
+                    variant="disaster"
+                    category={displacementCategory}
+                    types={triggerTypeOptions}
+                    countriesIso3={effectiveCountries}
+                    startYear={timeRange[0]}
+                    endYear={timeRange[1]}
+                    clientCode={clientCode}
+                    scopeLabel={scopeLabel}
+                    abbreviate={precision === 'rounded'}
+                    selectedTypeId={selectedTriggerType}
+                    onTypeSelect={handleHazardSelect}
+                />
+            ),
+        });
+    }
+    if (isConflictDataShown) {
+        glanceSlides.push({
+            key: 'violence-breakdown',
+            content: (
+                <TypeBreakdownCard
+                    className={styles.glanceCard}
+                    variant="conflict"
+                    category={displacementCategory}
+                    types={violenceSubTypeOptions}
+                    countriesIso3={effectiveCountries}
+                    startYear={timeRange[0]}
+                    endYear={timeRange[1]}
+                    clientCode={clientCode}
+                    scopeLabel={scopeLabel}
                     abbreviate={precision === 'rounded'}
                 />
             ),
@@ -1370,6 +1646,7 @@ function Gidd(props: Props) {
                 countries={figureAnalysisCountries}
                 year={timeRange[1]}
                 clientCode={clientCode}
+                abbreviate={precision === 'rounded'}
             />
         ),
     });
@@ -1396,18 +1673,18 @@ function Gidd(props: Props) {
             });
         }
         if (displacementCause) {
-            const option = causeSegmentOptions.find((item) => item.key === displacementCause);
+            const option = causeOptions.find((item) => item.key === displacementCause);
             filters.push({
                 key: 'cause',
                 label: option?.label ?? displacementCause,
-                onRemove: () => handleCauseSegmentChange('all'),
+                onRemove: () => handleCauseChange(undefined),
             });
         }
         triggerTypes.forEach((triggerType) => {
-            const option = triggerTypeOptions.find((item) => item.id === triggerType);
+            const option = triggerTypeOptionsByKey.get(triggerType);
             filters.push({
                 key: `trigger:${triggerType}`,
-                label: option ? triggerTypeLabelSelector(option) : triggerType,
+                label: option ? option.label : triggerType,
                 onRemove: () => setTriggerTypes(
                     (prev) => prev.filter((item) => item !== triggerType),
                 ),
@@ -1441,14 +1718,14 @@ function Gidd(props: Props) {
         displacementCategory,
         displacementCause,
         triggerTypes,
-        triggerTypeOptions,
+        triggerTypeOptionsByKey,
         regions,
         regionOptions,
         applyRegions,
         countries,
         countriesOptions,
         handleCountriesChange,
-        handleCauseSegmentChange,
+        handleCauseChange,
         timeRange,
         endYear,
     ]);
@@ -1508,33 +1785,46 @@ function Gidd(props: Props) {
                                 onChange={setDisplacementCategory}
                                 options={displacementCategoryOptions}
                             />
-                            <SegmentInput
+                            <SelectInput
                                 name="cause"
-                                className={_cs(
-                                    styles.filterCause,
-                                    styles.filterInput,
-                                    styles.filterSegment,
-                                )}
-                                keySelector={causeSegmentKeySelector}
-                                labelSelector={causeSegmentLabelSelector}
-                                value={displacementCause ?? 'all'}
-                                onChange={handleCauseSegmentChange}
-                                options={causeSegmentOptions}
+                                className={_cs(styles.filterCause, styles.filterInput)}
+                                placeholder="All causes"
+                                keySelector={causeKeySelector}
+                                labelSelector={causeLabelSelector}
+                                value={displacementCause}
+                                onChange={handleCauseChange}
+                                options={causeOptions}
                             />
-                            <MultiSelectInput
-                                name="triggerType"
-                                className={_cs(styles.filterItem, styles.filterInput)}
-                                placeholder="All trigger types"
-                                hint={displacementCause === 'conflict'
-                                    ? 'Not available for conflict and violence yet'
-                                    : undefined}
-                                value={triggerTypes}
-                                options={triggerTypeOptions}
-                                keySelector={idSelector}
-                                labelSelector={triggerTypeLabelSelector}
-                                onChange={setTriggerTypes}
-                                disabled={displacementCause === 'conflict'}
-                            />
+                            {triggerTypeGrouped ? (
+                                <MultiSelectInput
+                                    name="triggerType"
+                                    className={_cs(styles.filterItem, styles.filterInput)}
+                                    placeholder="All trigger types"
+                                    value={triggerTypes}
+                                    options={triggerTypeWidgetOptions}
+                                    keySelector={triggerTypeOptionKeySelector}
+                                    labelSelector={triggerTypeOptionLabelSelector}
+                                    onChange={handleTriggerTypesChange}
+                                    grouped
+                                    groupKeySelector={triggerTypeOptionGroupKeySelector}
+                                    groupLabelSelector={triggerTypeOptionGroupLabelSelector}
+                                />
+                            ) : (
+                                <MultiSelectInput
+                                    name="triggerType"
+                                    className={_cs(styles.filterItem, styles.filterInput)}
+                                    placeholder={
+                                        displacementCause === 'conflict'
+                                            ? 'All violence types'
+                                            : 'All trigger types'
+                                    }
+                                    value={triggerTypes}
+                                    options={triggerTypeWidgetOptions}
+                                    keySelector={triggerTypeOptionKeySelector}
+                                    labelSelector={triggerTypeOptionLabelSelector}
+                                    onChange={handleTriggerTypesChange}
+                                />
+                            )}
                             <MultiSelectInput
                                 name="regions"
                                 className={_cs(styles.filterItem, styles.filterInput)}
@@ -1645,6 +1935,8 @@ function Gidd(props: Props) {
                                     startYear={timeRange[0]}
                                     endYear={timeRange[1]}
                                     clientCode={clientCode}
+                                    abbreviate={precision === 'rounded'}
+                                    violenceSubTypeOptions={violenceSubTypeOptions}
                                     onCountryFocus={handleCountryFocus}
                                 />
                             )}
@@ -1652,8 +1944,8 @@ function Gidd(props: Props) {
                                 <DataTable
                                     isConflictDataShown={isConflictDataShown}
                                     isDisasterDataShown={isDisasterDataShown}
+                                    category={displacementCategory}
                                     countriesIso3={effectiveCountries}
-                                    cause={displacementCause}
                                     startYear={timeRange[0]}
                                     endYear={timeRange[1]}
                                     activePage={dataActivePage}
@@ -1676,42 +1968,52 @@ function Gidd(props: Props) {
                                     activePage={eventsActivePage}
                                     onActivePageChange={setEventsActivePage}
                                     countriesIso3={effectiveCountries}
-                                    hazardTypes={triggerTypes}
+                                    hazardTypes={selectedHazardTypeIds}
                                     startYear={timeRange[0]}
+                                    cause={displacementCause}
+                                    category={displacementCategory}
                                     endYear={timeRange[1]}
                                     clientCode={clientCode}
                                     searchText={eventSearchText}
+                                    abbreviate={precision === 'rounded'}
                                 />
                             )}
                         </div>
                     </div>
 
                     <div className={styles.sidebar}>
-                        <div className={styles.sidebarHeading}>
-                            At a glance
-                        </div>
-                        <SlideCarousel slides={glanceSlides} />
-
-                        <div className={styles.todoPlaceholder}>
-                            TODO — remaining insight pages (Most internal
-                            displacements / Largest displaced populations,
-                            Emerging increases, Figure analysis) and their
-                            pagination
-                        </div>
+                        <SlideCarousel
+                            slides={glanceSlides}
+                            expandable={false}
+                        />
 
                         <div className={styles.downloadFooter}>
                             <p className={styles.downloadDescription}>
-                                {downloadText}
+                                <strong>GIDD figures are validated annual estimates.</strong>
+                                {' For provisional updates from the past 180 days, see the '}
+                                <strong>
+                                    <a href={iduDashboardLink} target="_parent">IDU dashboard</a>
+                                </strong>
+                                {'. To request an API key, read the '}
+                                <strong>
+                                    <a href={documentationLink} target="_parent">documentation</a>
+                                </strong>
+                                .
                             </p>
-                            <DownloadMenu
-                                cause={displacementCause}
-                                countriesIso3={effectiveCountries}
-                                hazardTypes={triggerTypes}
-                                startYear={timeRange[0]}
-                                endYear={timeRange[1]}
-                                clientCode={clientCode}
-                                disaggregationAvailable={disaggregationAvailable}
-                            />
+                            <div className={styles.downloadRow}>
+                                <span className={styles.downloadLabel}>
+                                    Download current selection
+                                </span>
+                                <DownloadMenu
+                                    cause={displacementCause}
+                                    countriesIso3={effectiveCountries}
+                                    hazardTypes={selectedHazardTypeIds}
+                                    startYear={timeRange[0]}
+                                    endYear={timeRange[1]}
+                                    clientCode={clientCode}
+                                    disaggregationAvailable={disaggregationAvailable}
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
