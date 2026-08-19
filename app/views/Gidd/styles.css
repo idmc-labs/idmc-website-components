@@ -1,5 +1,6 @@
 .body-container {
     --gidd-scale: 0.5;
+    --gidd-sidebar-height: 40rem;
 
     --tui-spacing-ultra-small: calc(0.1rem * var(--gidd-scale));
     --tui-spacing-extra-extra-small: calc(0.3rem * var(--gidd-scale));
@@ -7,6 +8,7 @@
     --tui-spacing-small: calc(0.8rem * var(--gidd-scale));
     --tui-spacing-medium: calc(1rem * var(--gidd-scale));
     --tui-spacing-large: calc(1.26rem * var(--gidd-scale));
+    --tui-radius-border-input-section: 0.25rem;
 
     display: flex;
     align-items: center;
@@ -84,29 +86,19 @@
         .filter-bar {
             display: flex;
             align-items: center;
-            flex-wrap: nowrap;
+            flex-wrap: wrap;
             justify-content: space-between;
             gap: var(--tui-spacing-small);
-            background-color: var(--tui-color-foreground);
-            padding: var(--tui-spacing-medium);
-            overflow-x: auto;
 
             .filter-bar-left,
             .filter-bar-right {
                 display: flex;
                 align-items: center;
                 flex-grow: 1;
-                flex-shrink: 0;
-                flex-wrap: nowrap;
                 gap: var(--tui-spacing-small);
             }
             .filter-bar-right {
                 justify-content: flex-end;
-            }
-
-            .filter-item {
-                flex: 0 0 12rem;
-                max-width: 12rem;
             }
 
             .filter-cause {
@@ -115,10 +107,8 @@
 
             .filter-year {
                 display: flex;
-                flex: 0 0 16rem;
-                flex-wrap: nowrap;
+                align-items: center;
                 gap: var(--tui-spacing-small);
-                max-width: 22rem;
 
                 .year-field {
                     display: inline-flex;
@@ -134,7 +124,11 @@
                 }
 
                 .year-select {
+                    /* definite height, matching IduMap's DateFilter inputs —
+                       .filter-input only supplies a min-height */
                     width: 6rem;
+                    height: 2rem;
+                    min-height: 0;
                 }
             }
         }
@@ -162,7 +156,6 @@
                 align-items: stretch;
                 flex-direction: column;
                 border-top: 1px solid var(--tui-color-separator, #d0d5dd);
-                background-color: transparent;
                 padding: var(--tui-spacing-small-medium);
 
                 .filter-bar-left,
@@ -238,13 +231,8 @@
             flex-direction: column;
             flex-grow: 1;
             min-width: 18rem;
+            min-height: var(--gidd-sidebar-height);
             gap: var(--tui-spacing-medium);
-
-            .sidebar-heading {
-                color: var(--tui-color-text-light);
-                font-size: var(--tui-font-size-small);
-                font-weight: var(--tui-font-weight-bold);
-            }
 
             .glance-card {
                 --tui-font-size-massive-large: 1.75rem;
@@ -255,6 +243,25 @@
                 gap: var(--tui-spacing-large);
                 background-color: var(--tui-color-foreground);
                 padding: var(--tui-spacing-medium);
+
+                .sidebar-heading-block {
+                    display: flex;
+                    flex-direction: column;
+                    gap: var(--tui-spacing-extra-small);
+                }
+
+                .sidebar-heading {
+                    color: var(--tui-color-text-light);
+                    font-size: var(--tui-font-size-small);
+                    font-weight: var(--tui-font-weight-bold);
+                }
+
+                .glance-description {
+                    margin: 0;
+                    color: var(--tui-color-text-light);
+                    font-size: var(--tui-font-size-small);
+                    font-weight: var(--tui-font-weight-normal);
+                }
 
                 .glance-section {
                     display: flex;
@@ -314,8 +321,28 @@
                 padding: var(--tui-spacing-medium);
 
                 .download-description {
+                    margin: 0;
                     color: var(--tui-color-text-light);
                     font-size: var(--tui-font-size-extra-small);
+
+                    a {
+                        text-decoration: underline;
+                        color: var(--tui-color-accent, #1a5276);
+                    }
+                }
+
+                .download-row {
+                    display: flex;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    gap: var(--tui-spacing-small);
+
+                    .download-label {
+                        text-transform: uppercase;
+                        color: var(--tui-color-label, #7a7a7a);
+                        font-size: var(--tui-font-size-extra-small);
+                        font-weight: var(--tui-font-weight-bold);
+                    }
                 }
             }
         }
@@ -380,15 +407,6 @@
         gap: var(--tui-spacing-medium);
     }
 
-    .todo-placeholder {
-        border: var(--tui-width-separator-thin) dashed var(--tui-color-separator);
-        border-radius: var(--tui-radius-border-large);
-        padding: var(--tui-spacing-extra-large);
-        text-align: center;
-        color: var(--tui-color-text-light);
-        font-size: var(--tui-font-size-small);
-    }
-
 }
 
 .filter-input {
@@ -426,6 +444,27 @@
     --tui-spacing-medium: 0.5rem;
     --tui-spacing-extra-small: 0.1rem;
     --tui-color-outline-light: transparent;
+
+    /* definite height (not min-height) so children can use height: 100% */
+    height: 2rem;
+    min-height: 0;
+    overflow: hidden;
+
+    :global {
+        [class*="radio-list"] {
+            align-items: stretch;
+            height: 100%;
+        }
+
+        [class*="segment"] {
+            display: flex;
+            align-items: stretch;
+        }
+
+        [class*="segment"] > [class*="button"] {
+            height: 100%;
+        }
+    }
 }
 
 :global {

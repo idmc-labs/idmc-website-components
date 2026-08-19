@@ -5,18 +5,14 @@ import { gql, useQuery } from '@apollo/client';
 import Header from '#components/Header';
 import EventListItem from '#components/IduMap/EventListItem';
 import useDebouncedValue from '#hooks/useDebouncedValue';
-import { DATA_RELEASE } from '#utils/common';
 import {
-    GiddEventsQuery,
-    GiddEventsQueryVariables,
+    GiddTopDisasterEventsQuery,
+    GiddTopDisasterEventsQueryVariables,
 } from '#generated/types';
+import { DATA_RELEASE } from '#utils/common';
 
 import styles from './styles.css';
 
-// Reuses GiddEventsQuery/GiddEventsQueryVariables (generated for
-// EventsTable's GiddEvents operation) since the field selection here is a
-// subset of that operation's — no codegen access from this environment to
-// generate a dedicated type for a differently-named operation.
 const GIDD_TOP_DISASTER_EVENTS = gql`
     query GiddTopDisasterEvents(
         $page: Int,
@@ -29,7 +25,7 @@ const GIDD_TOP_DISASTER_EVENTS = gql`
         $releaseEnvironment: String!,
         $clientId: String!,
     ){
-        giddPublicDisasters(
+        giddPublicEvents(
             ordering: $ordering,
             pageSize: $pageSize,
             page: $page,
@@ -54,6 +50,7 @@ const GIDD_TOP_DISASTER_EVENTS = gql`
                 hazardTypeId
                 hazardTypeName
                 iso3
+                newDisplacement
                 newDisplacementRounded
                 eventCodes
                 startDate
@@ -114,14 +111,17 @@ function LargestEventsCard(props: Props) {
     const {
         previousData,
         data = previousData,
-    } = useQuery<GiddEventsQuery, GiddEventsQueryVariables>(
+    } = useQuery<GiddTopDisasterEventsQuery, GiddTopDisasterEventsQueryVariables>(
         GIDD_TOP_DISASTER_EVENTS,
         {
             variables: debouncedVariables,
+            context: {
+                clientName: 'helix',
+            },
         },
     );
 
-    const events = data?.giddPublicDisasters?.results ?? [];
+    const events = data?.giddPublicEvents?.results ?? [];
 
     return (
         <div className={_cs(styles.largestEventsCard, className)}>
@@ -137,7 +137,7 @@ function LargestEventsCard(props: Props) {
                         subtitle={[event.countryName, event.startDate]
                             .filter(isDefined).join(' · ')}
                         displacementType="disaster"
-                        value={event.newDisplacementRounded ?? 0}
+                        value={event.newDisplacement ?? 0}
                         abbreviate={abbreviate}
                         onClick={onViewEvents}
                     />

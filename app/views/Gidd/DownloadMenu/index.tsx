@@ -272,7 +272,7 @@ function DownloadMenu(props: Props) {
             {!disaggregationAvailable && (
                 <p className={styles.exportMessage}>
                     Note: Disaggregated data can only be downloaded one
-                    year at a time, and is only available for 2023 onwards.
+                    year at a time.
                 </p>
             )}
         </PopupButton>

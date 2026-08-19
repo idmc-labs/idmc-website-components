@@ -13,16 +13,12 @@ import RawButton from '#components/RawButton';
 import MarkdownViewer from '#components/MarkdownViewer';
 import { DATA_RELEASE } from '#utils/common';
 import {
-    GiddCountryPfaQuery,
-    GiddCountryPfaQueryVariables,
+    GiddDashboardFigureAnalysisQuery,
+    GiddDashboardFigureAnalysisQueryVariables,
 } from '#generated/types';
 
 import styles from './styles.css';
 
-// Reuses GiddCountryPfaQuery/GiddCountryPfaQueryVariables (generated for
-// FigureAnalysis's own GiddCountryPfa operation) since the field selection
-// here is identical — no codegen access from this environment to generate a
-// dedicated type for a differently-named operation.
 const GIDD_COUNTRY_FIGURE_ANALYSIS = gql`
     query GiddDashboardFigureAnalysis(
         $iso3: String!,
@@ -45,6 +41,7 @@ const GIDD_COUNTRY_FIGURE_ANALYSIS = gql`
                 figureCategoryDisplay
                 figureCause
                 figureCauseDisplay
+                figures
                 figuresRounded
                 iso3
                 year
@@ -54,7 +51,7 @@ const GIDD_COUNTRY_FIGURE_ANALYSIS = gql`
 `;
 
 type FigureAnalysisEntry = NonNullable<
-    NonNullable<GiddCountryPfaQuery['giddPublicFigureAnalysisList']>['results']
+    NonNullable<GiddDashboardFigureAnalysisQuery['giddPublicFigureAnalysisList']>['results']
 >[number];
 
 interface FetcherProps {
@@ -85,7 +82,7 @@ function FigureAnalysisFetcher(props: FetcherProps) {
     const {
         previousData,
         data = previousData,
-    } = useQuery<GiddCountryPfaQuery, GiddCountryPfaQueryVariables>(
+    } = useQuery<GiddDashboardFigureAnalysisQuery, GiddDashboardFigureAnalysisQueryVariables>(
         GIDD_COUNTRY_FIGURE_ANALYSIS,
         {
             variables,
@@ -107,10 +104,11 @@ function FigureAnalysisFetcher(props: FetcherProps) {
 interface EntryCardProps {
     entry: FigureAnalysisEntry & { countryName: string };
     showCountryName: boolean;
+    abbreviate: boolean;
 }
 
 function FigureAnalysisEntryCard(props: EntryCardProps) {
-    const { entry, showCountryName } = props;
+    const { entry, showCountryName, abbreviate } = props;
 
     const [expanded, setExpanded] = useState(false);
 
@@ -138,8 +136,8 @@ function FigureAnalysisEntryCard(props: EntryCardProps) {
                         styles.entryValue,
                         isConflict ? styles.conflict : styles.disaster,
                     )}
-                    value={entry.figuresRounded}
-                    abbreviate
+                    value={entry.figures}
+                    abbreviate={abbreviate}
                 />
             </div>
             {isTruthyString(entry.description) && (
@@ -170,6 +168,7 @@ export interface Props {
     countries: FigureAnalysisCountry[];
     year: number;
     clientCode: string;
+    abbreviate: boolean;
 }
 
 function FigureAnalysisCard(props: Props) {
@@ -178,6 +177,7 @@ function FigureAnalysisCard(props: Props) {
         countries,
         year,
         clientCode,
+        abbreviate,
     } = props;
 
     const [resultsByIso3, setResultsByIso3] = useState<Record<string, FigureAnalysisEntry[]>>({});
@@ -249,6 +249,7 @@ function FigureAnalysisCard(props: Props) {
                             key={entry.id}
                             entry={entry}
                             showCountryName={showCountryName}
+                            abbreviate={abbreviate}
                         />
                     ))}
                 </div>

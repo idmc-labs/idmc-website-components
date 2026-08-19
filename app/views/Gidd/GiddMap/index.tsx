@@ -3,7 +3,6 @@ import {
     _cs,
     isDefined,
     isNotDefined,
-    isTruthyString,
 } from '@togglecorp/fujs';
 import { gql, useQuery } from '@apollo/client';
 import ReMap, {
@@ -26,74 +25,72 @@ import {
 } from 'react-icons/io5';
 
 import { mapboxStyle } from '#base/configs/mapbox';
-import Header from '#components/Header';
 import Numeral from '#components/Numeral';
 import RawButton from '#components/RawButton';
 import TooltipIcon from '#components/TooltipIcon';
 import { DATA_RELEASE, getHazardTypeLabel } from '#utils/common';
 import useDebouncedValue from '#hooks/useDebouncedValue';
 import {
-    GoodPracticeMapQuery,
-    GoodPracticeMapQueryVariables,
-    GiddDisplacementsQuery,
-    GiddDisplacementsQueryVariables,
-    GiddCountryPfaQuery,
-    GiddCountryPfaQueryVariables,
+    GiddMapCountryPointsQuery,
+    GiddMapCountryPointsQueryVariables,
+    GiddMapDisplacementsQuery,
+    GiddMapDisplacementsQueryVariables,
+    GiddMapPopupHazardBreakdownQuery,
+    GiddMapPopupHazardBreakdownQueryVariables,
 } from '#generated/types';
+
+import {
+    buildBreakdownQuery,
+    BreakdownQueryResult,
+    BreakdownQueryVariables,
+    TypeOption,
+} from '../utils';
 
 import styles from './styles.css';
 
+// Country centroids now come from helix (giddPublicCountries.centroid) rather
+// than the gidd-server's countryProfiles. `centroid` is [lon, lat], already in
+// mapbox order.
 const COUNTRY_POINTS = gql`
-    query GiddMapCountryPoints {
-        countryProfiles {
+    query GiddMapCountryPoints($clientId: String!) {
+        giddPublicCountries(clientId: $clientId) {
             id
             iso3
-            name
-            centerPoint
-            goodPracticesCount
+            idmcShortName
+            centroid
         }
     }
 `;
 
-// TODO: To be changed after the pageSize cap is removed from server
-const MAP_DISPLACEMENTS_PAGE_SIZE = 100;
-
+// giddPublicCountryDisplacements collapses the year range server-side and
+// returns one row per country (no pagination wrapper, no cause arg — both
+// causes come back as separate columns on every row).
 const MAP_DISPLACEMENTS = gql`
     query GiddMapDisplacements(
-        $page: Int!,
-        $pageSize: Int!,
         $endYear: Float,
         $startYear: Float,
         $countriesIso3: [String!],
         $releaseEnvironment: String!,
-        $cause: String,
         $clientId: String!,
     ){
-        giddPublicDisplacements(
-            page: $page,
-            pageSize: $pageSize,
-            filters: {
-                countriesIso3: $countriesIso3,
-                endYear: $endYear,
-                startYear: $startYear,
-                releaseEnvironment: $releaseEnvironment,
-                cause: $cause,
-            },
+        giddPublicCountryDisplacements(
+            countriesIso3: $countriesIso3,
+            endYear: $endYear,
+            startYear: $startYear,
+            releaseEnvironment: $releaseEnvironment,
             clientId: $clientId,
         ){
-            results {
-                conflictNewDisplacementRounded
-                conflictTotalDisplacementRounded
-                countryName
-                disasterNewDisplacementRounded
-                disasterTotalDisplacementRounded
-                id
-                iso3
-                year
-            }
-            totalCount
-            page
-            pageSize
+            iso3
+            countryName
+            countryId
+            conflictNewDisplacement
+            conflictNewDisplacementRounded
+            conflictTotalDisplacement
+            conflictTotalDisplacementRounded
+            disasterNewDisplacement
+            disasterNewDisplacementRounded
+            disasterTotalDisplacement
+            disasterTotalDisplacementRounded
         }
     }
 `;
@@ -116,78 +113,48 @@ const POPUP_HAZARD_BREAKDOWN = gql`
             displacementsByHazardType {
                 id
                 label
+                newDisplacements
                 newDisplacementsRounded
             }
         }
     }
 `;
 
-interface HazardBreakdownItem {
+type HazardBreakdownItem = NonNullable<
+    GiddMapPopupHazardBreakdownQuery['giddPublicDisasterStatistics']['displacementsByHazardType']
+>[number];
+
+interface ViolenceBreakdownItem {
     id: string;
-    label: string;
-    newDisplacementsRounded?: number | null;
-}
-
-interface PopupHazardBreakdownQueryResult {
-    giddPublicDisasterStatistics?: {
-        displacementsByHazardType?: HazardBreakdownItem[] | null;
-    } | null;
-}
-
-interface PopupHazardBreakdownQueryVariables {
-    countriesIso3: string[];
-    startYear: number;
-    endYear: number;
-    releaseEnvironment: string;
-    clientId: string;
-}
-
-const POPUP_FIGURE_ANALYSIS = gql`
-    query GiddMapPopupFigureAnalysis(
-        $iso3: String!,
-        $year: Int!,
-        $releaseEnvironment: String!,
-        $clientId: String!,
-    ){
-        giddPublicFigureAnalysisList(
-            filters: {
-                iso3: $iso3,
-                year: $year,
-                releaseEnvironment: $releaseEnvironment,
-            },
-            clientId: $clientId,
-        ) {
-            results {
-                id
-                description
-                figureCategory
-                figureCategoryDisplay
-                figureCause
-                figureCauseDisplay
-                figuresRounded
-                iso3
-                year
-            }
-        }
-    }
-`;
-
-function truncateDescription(text: string, maxLength = 280): string {
-    const cleaned = text.replace(/^Methodology and Sources\s*/i, '').replace(/\s+/g, ' ').trim();
-    if (cleaned.length <= maxLength) {
-        return cleaned;
-    }
-    return `${cleaned.slice(0, maxLength).replace(/\s\S*$/, '')}…`;
+    name: string;
+    newDisplacements: number;
 }
 
 const CONFLICT_COLOR = 'rgb(239, 125, 0)';
 const DISASTER_COLOR = 'rgb(1, 142, 202)';
 
-const RADIUS_MIN = 4;
-const RADIUS_MAX = 32;
-const RADIUS_SCALE_FACTOR = 0.05;
+const RADIUS_MIN = 2;
+const RADIUS_MAX = 18;
+const RADIUS_SCALE_FACTOR = 0.028;
 
-const MIN_PIE_RADIUS = 10;
+const MIN_PIE_RADIUS = 6;
+
+const MARKER_BORDER_WIDTH = 1.5;
+
+// giddPublicCountries.centroid comes back as Maybe<number>[]; narrow it to a
+// concrete [lon, lat] pair (already mapbox order) before handing it to GeoJSON.
+function getCoordinates(
+    centroid: (number | null | undefined)[] | null | undefined,
+): [number, number] | undefined {
+    if (isNotDefined(centroid) || centroid.length < 2) {
+        return undefined;
+    }
+    const [lon, lat] = centroid;
+    if (isNotDefined(lon) || isNotDefined(lat)) {
+        return undefined;
+    }
+    return [lon, lat];
+}
 
 function getRadiusForValue(value: number) {
     if (value <= 0) {
@@ -198,7 +165,7 @@ function getRadiusForValue(value: number) {
 }
 
 function createPieIcon(radius: number, conflictValue: number, disasterValue: number): ImageData {
-    const size = Math.ceil(radius * 2) + 2;
+    const size = Math.ceil((radius + MARKER_BORDER_WIDTH) * 2);
     const canvas = document.createElement('canvas');
     canvas.width = size;
     canvas.height = size;
@@ -214,8 +181,6 @@ function createPieIcon(radius: number, conflictValue: number, disasterValue: num
     const startAngle = -Math.PI / 2;
     const conflictEndAngle = startAngle + (Math.PI * 2 * conflictShare);
 
-    ctx.globalAlpha = 0.75;
-
     ctx.beginPath();
     ctx.moveTo(center, center);
     ctx.arc(center, center, radius, startAngle, conflictEndAngle);
@@ -229,6 +194,12 @@ function createPieIcon(radius: number, conflictValue: number, disasterValue: num
     ctx.closePath();
     ctx.fillStyle = DISASTER_COLOR;
     ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(center, center, radius, 0, Math.PI * 2);
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = MARKER_BORDER_WIDTH;
+    ctx.stroke();
 
     return ctx.getImageData(0, 0, size, size);
 }
@@ -306,7 +277,7 @@ interface PointProperties {
 type CountryPointGeoJSON = GeoJSON.FeatureCollection<GeoJSON.Point, PointProperties>;
 
 const countryPointPaint: mapboxgl.CirclePaint = {
-    'circle-opacity': 0.6,
+    'circle-opacity': 1,
     'circle-color': {
         property: 'cause',
         type: 'categorical',
@@ -316,6 +287,8 @@ const countryPointPaint: mapboxgl.CirclePaint = {
         ],
     },
     'circle-radius': ['get', 'radius'],
+    'circle-stroke-width': MARKER_BORDER_WIDTH,
+    'circle-stroke-color': '#ffffff',
 };
 
 const iconLayerLayout: mapboxgl.SymbolLayout = {
@@ -353,9 +326,9 @@ interface CountryPopupCardProps {
     category: Category | undefined;
     endYear: number;
     detailed: boolean;
+    abbreviate: boolean;
     hazardEntries?: HazardBreakdownItem[];
-    conflictDescription?: string;
-    disasterDescription?: string;
+    violenceEntries?: ViolenceBreakdownItem[];
     onCountryFocus?: (iso3: string) => void;
     onClose?: () => void;
 }
@@ -367,14 +340,15 @@ function CountryPopupCard(cardProps: CountryPopupCardProps) {
         category,
         endYear,
         detailed,
+        abbreviate,
         hazardEntries = [],
-        conflictDescription,
-        disasterDescription,
+        violenceEntries = [],
         onCountryFocus,
         onClose,
     } = cardProps;
 
     const canFocus = isDefined(onCountryFocus);
+    const canClose = isDefined(onClose);
     const isStock = category === 'stock';
     const cOn = cause !== 'disaster';
     const dOn = cause !== 'conflict';
@@ -392,19 +366,37 @@ function CountryPopupCard(cardProps: CountryPopupCardProps) {
     const otherDisaster = isStock ? disasterNew : disasterTotal;
     const otherTotal = (cOn ? otherConflict : 0) + (dOn ? otherDisaster : 0);
     const otherLabel = isStock ? `Internal displacements in ${endYear}` : 'Total IDPs at year end';
-
-    const hasSources = (cOn && conflictDescription) || (dOn && disasterDescription);
+    const subtitle = isStock
+        ? `IDPs at the end of ${endYear}`
+        : `internal displacements in ${endYear}`;
 
     return (
         <div className={styles.card}>
-            <div className={styles.title}>
-                {properties.name}
+            <div className={styles.header}>
+                <div className={styles.title}>
+                    {properties.name}
+                </div>
+                <div className={styles.headerEnd}>
+                    <Numeral
+                        className={styles.headline}
+                        value={currentTotal}
+                        abbreviate={abbreviate}
+                    />
+                    {canClose && (
+                        <RawButton
+                            name={undefined}
+                            className={styles.closeButton}
+                            onClick={onClose}
+                            title="Close"
+                        >
+                            <IoClose />
+                        </RawButton>
+                    )}
+                </div>
             </div>
-            <Numeral
-                className={styles.headline}
-                value={currentTotal}
-                abbreviate
-            />
+            <div className={styles.subheading}>
+                {subtitle}
+            </div>
             <div className={styles.breakdown}>
                 {cOn && (
                     <div className={_cs(styles.breakdownItem, styles.conflict)}>
@@ -413,7 +405,7 @@ function CountryPopupCard(cardProps: CountryPopupCardProps) {
                         <Numeral
                             className={styles.breakdownValue}
                             value={currentConflict}
-                            abbreviate
+                            abbreviate={abbreviate}
                         />
                     </div>
                 )}
@@ -424,14 +416,18 @@ function CountryPopupCard(cardProps: CountryPopupCardProps) {
                         <Numeral
                             className={styles.breakdownValue}
                             value={currentDisaster}
-                            abbreviate
+                            abbreviate={abbreviate}
                         />
                     </div>
                 )}
                 <div className={_cs(styles.breakdownItem, styles.neutral)}>
                     <span className={styles.dot} />
                     <span className={styles.breakdownLabel}>{otherLabel}</span>
-                    <Numeral className={styles.breakdownValue} value={otherTotal} abbreviate />
+                    <Numeral
+                        className={styles.breakdownValue}
+                        value={otherTotal}
+                        abbreviate={abbreviate}
+                    />
                 </div>
             </div>
             {detailed && (
@@ -447,29 +443,31 @@ function CountryPopupCard(cardProps: CountryPopupCardProps) {
                                         <span>{getHazardTypeLabel(hazard)}</span>
                                         <Numeral
                                             className={styles.disaster}
-                                            value={hazard.newDisplacementsRounded}
-                                            abbreviate
+                                            value={hazard.newDisplacements}
+                                            abbreviate={abbreviate}
                                         />
                                     </div>
                                 ))}
                             </div>
                         </div>
                     )}
-                    {hasSources && (
+                    {cOn && violenceEntries.length > 0 && (
                         <div className={styles.section}>
                             <div className={styles.sectionTitle}>
-                                Sources and methodology
+                                {`Violence sub types · ${endYear}`}
                             </div>
-                            {cOn && conflictDescription && (
-                                <p className={styles.sectionText}>
-                                    {conflictDescription}
-                                </p>
-                            )}
-                            {dOn && disasterDescription && (
-                                <p className={styles.sectionText}>
-                                    {disasterDescription}
-                                </p>
-                            )}
+                            <div className={styles.sectionList}>
+                                {violenceEntries.map((violence) => (
+                                    <div key={violence.id} className={styles.sectionRow}>
+                                        <span>{violence.name}</span>
+                                        <Numeral
+                                            className={styles.conflict}
+                                            value={violence.newDisplacements}
+                                            abbreviate={abbreviate}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
                     {canFocus && (
@@ -501,6 +499,8 @@ export interface Props {
     startYear: number;
     endYear: number;
     clientCode: string;
+    abbreviate: boolean;
+    violenceSubTypeOptions: TypeOption[];
     onCountryFocus?: (iso3: string) => void;
 }
 
@@ -513,6 +513,8 @@ function GiddMap(props: Props) {
         startYear,
         endYear,
         clientCode,
+        abbreviate,
+        violenceSubTypeOptions,
         onCountryFocus,
     } = props;
 
@@ -534,8 +536,8 @@ function GiddMap(props: Props) {
     }), [selectedIso3, startYear, endYear, clientCode]);
 
     const { data: hazardData } = useQuery<
-        PopupHazardBreakdownQueryResult,
-        PopupHazardBreakdownQueryVariables
+        GiddMapPopupHazardBreakdownQuery,
+        GiddMapPopupHazardBreakdownQueryVariables
     >(
         POPUP_HAZARD_BREAKDOWN,
         {
@@ -549,67 +551,62 @@ function GiddMap(props: Props) {
 
     const hazardEntries = useMemo(() => (
         (hazardData?.giddPublicDisasterStatistics?.displacementsByHazardType ?? [])
-            .filter((item) => (item.newDisplacementsRounded ?? 0) > 0)
-            .sort((a, b) => (b.newDisplacementsRounded ?? 0) - (a.newDisplacementsRounded ?? 0))
+            .filter((item) => (item.newDisplacements ?? 0) > 0)
+            .sort((a, b) => (b.newDisplacements ?? 0) - (a.newDisplacements ?? 0))
             .slice(0, 6)
     ), [hazardData]);
 
-    const figureAnalysisVariables = useMemo(() => ({
-        iso3: selectedIso3 ?? '',
-        year: endYear,
-        releaseEnvironment: DATA_RELEASE,
-        clientId: clientCode,
-    }), [selectedIso3, endYear, clientCode]);
+    const violenceQuery = useMemo(
+        () => buildBreakdownQuery('conflict', violenceSubTypeOptions),
+        [violenceSubTypeOptions],
+    );
 
-    const { data: figureAnalysisData } = useQuery<
-        GiddCountryPfaQuery,
-        GiddCountryPfaQueryVariables
-    >(
-        POPUP_FIGURE_ANALYSIS,
+    const { data: violenceData } = useQuery<BreakdownQueryResult, BreakdownQueryVariables>(
+        violenceQuery,
         {
-            variables: figureAnalysisVariables,
-            skip: !selectedIso3,
+            variables: hazardVariables,
+            skip: !selectedIso3 || cause === 'disaster' || violenceSubTypeOptions.length === 0,
             context: {
                 clientName: 'helix',
             },
         },
     );
 
-    const { conflictDescription, disasterDescription } = useMemo(() => {
-        const results = figureAnalysisData?.giddPublicFigureAnalysisList?.results ?? [];
-        const conflictEntry = results.find(
-            (item) => item.figureCause === 'CONFLICT' && isTruthyString(item.description),
-        );
-        const disasterEntry = results.find(
-            (item) => item.figureCause === 'DISASTER' && isTruthyString(item.description),
-        );
-        return {
-            conflictDescription: conflictEntry
-                ? truncateDescription(conflictEntry.description as string)
-                : undefined,
-            disasterDescription: disasterEntry
-                ? truncateDescription(disasterEntry.description as string)
-                : undefined,
-        };
-    }, [figureAnalysisData]);
+    const violenceEntries = useMemo(() => (
+        violenceSubTypeOptions
+            .map((type) => ({
+                id: type.id,
+                name: type.name,
+                newDisplacements: violenceData?.[`t${type.id}`]?.newDisplacements ?? 0,
+            }))
+            .filter((item) => item.newDisplacements > 0)
+            .sort((a, b) => b.newDisplacements - a.newDisplacements)
+            .slice(0, 6)
+    ), [violenceData, violenceSubTypeOptions]);
 
     const {
         previousData: previousCountryPointsData,
         data: countryPointsData = previousCountryPointsData,
-    } = useQuery<GoodPracticeMapQuery, GoodPracticeMapQueryVariables>(COUNTRY_POINTS);
+    } = useQuery<GiddMapCountryPointsQuery, GiddMapCountryPointsQueryVariables>(
+        COUNTRY_POINTS,
+        {
+            variables: { clientId: clientCode },
+            context: {
+                clientName: 'helix',
+            },
+        },
+    );
 
     const displacementsVariables = useMemo(() => ({
         countriesIso3,
         startYear,
         endYear,
-        cause,
         releaseEnvironment: DATA_RELEASE,
         clientId: clientCode,
     }), [
         countriesIso3,
         startYear,
         endYear,
-        cause,
         clientCode,
     ]);
 
@@ -618,22 +615,21 @@ function GiddMap(props: Props) {
     const {
         previousData: previousDisplacementsData,
         data: displacementsData = previousDisplacementsData,
-    } = useQuery<GiddDisplacementsQuery, GiddDisplacementsQueryVariables>(
+    } = useQuery<GiddMapDisplacementsQuery, GiddMapDisplacementsQueryVariables>(
         MAP_DISPLACEMENTS,
         {
-            variables: {
-                ...debouncedDisplacementsVariables,
-                page: 1,
-                pageSize: MAP_DISPLACEMENTS_PAGE_SIZE,
-            },
+            variables: debouncedDisplacementsVariables,
             context: {
                 clientName: 'helix',
             },
         },
     );
 
+    // Rows are already aggregated per country server-side (the year range is
+    // collapsed by giddPublicCountryDisplacements), so this is a plain lookup
+    // rather than the client-side summing the old paginated query needed.
     const statsByIso3 = useMemo(() => {
-        const rows = displacementsData?.giddPublicDisplacements?.results ?? [];
+        const rows = displacementsData?.giddPublicCountryDisplacements ?? [];
         const map = new Map<string, {
             conflictNew: number;
             conflictTotal: number;
@@ -641,17 +637,12 @@ function GiddMap(props: Props) {
             disasterTotal: number;
         }>();
         rows.forEach((row) => {
-            const existing = map.get(row.iso3) ?? {
-                conflictNew: 0,
-                conflictTotal: 0,
-                disasterNew: 0,
-                disasterTotal: 0,
-            };
-            existing.conflictNew += row.conflictNewDisplacementRounded ?? 0;
-            existing.conflictTotal += row.conflictTotalDisplacementRounded ?? 0;
-            existing.disasterNew += row.disasterNewDisplacementRounded ?? 0;
-            existing.disasterTotal += row.disasterTotalDisplacementRounded ?? 0;
-            map.set(row.iso3, existing);
+            map.set(row.iso3, {
+                conflictNew: row.conflictNewDisplacement ?? 0,
+                conflictTotal: row.conflictTotalDisplacement ?? 0,
+                disasterNew: row.disasterNewDisplacement ?? 0,
+                disasterTotal: row.disasterTotalDisplacement ?? 0,
+            });
         });
         return map;
     }, [displacementsData]);
@@ -666,9 +657,10 @@ function GiddMap(props: Props) {
     }
 
     const countryPoints = useMemo(() => (
-        (countryPointsData?.countryProfiles ?? [])
+        (countryPointsData?.giddPublicCountries ?? [])
             .map((country) => {
-                if (isNotDefined(country.centerPoint) || isNotDefined(country.iso3)) {
+                const coordinates = getCoordinates(country.centroid);
+                if (isNotDefined(coordinates) || isNotDefined(country.iso3)) {
                     return undefined;
                 }
                 const stats = statsByIso3.get(country.iso3);
@@ -703,8 +695,8 @@ function GiddMap(props: Props) {
                 return {
                     id: country.id,
                     iso3: country.iso3,
-                    name: country.name,
-                    coordinates: country.centerPoint,
+                    name: country.idmcShortName ?? country.iso3,
+                    coordinates,
                     value,
                     radius: getRadiusForValue(value),
                     markerCause,
@@ -850,18 +842,8 @@ function GiddMap(props: Props) {
         && isDefined(hoverProperties)
         && isNotDefined(selection);
 
-    const flowTooltip = 'The internal displacements figure refers to the number of forced '
-        + 'movements of people within the borders of their country recorded during the year.';
-
     return (
         <div className={_cs(styles.giddMap, className)}>
-            {!isStockView && (
-                <Header
-                    heading={`Internal displacements reported in ${endYear}`}
-                    headingSize="small"
-                    headingTooltip={flowTooltip}
-                />
-            )}
             <div className={styles.mapWrapper}>
                 {isStockView && (
                     <TooltipIcon
@@ -962,28 +944,18 @@ function GiddMap(props: Props) {
                             tooltipOptions={popupOptions}
                             onHide={handleCloseSelection}
                         >
-                            <>
-                                <RawButton
-                                    name={undefined}
-                                    className={styles.closeButton}
-                                    onClick={handleCloseSelection}
-                                    title="Close"
-                                >
-                                    <IoClose />
-                                </RawButton>
-                                <CountryPopupCard
-                                    properties={selection.properties}
-                                    cause={cause}
-                                    category={category}
-                                    endYear={endYear}
-                                    detailed
-                                    hazardEntries={hazardEntries}
-                                    conflictDescription={conflictDescription}
-                                    disasterDescription={disasterDescription}
-                                    onCountryFocus={onCountryFocus}
-                                    onClose={handleCloseSelection}
-                                />
-                            </>
+                            <CountryPopupCard
+                                properties={selection.properties}
+                                cause={cause}
+                                category={category}
+                                endYear={endYear}
+                                detailed
+                                abbreviate={abbreviate}
+                                hazardEntries={hazardEntries}
+                                violenceEntries={violenceEntries}
+                                onCountryFocus={onCountryFocus}
+                                onClose={handleCloseSelection}
+                            />
                         </MapTooltip>
                     )}
                     {showHoverPreview && hoverLngLat && hoverProperties && (
@@ -997,6 +969,7 @@ function GiddMap(props: Props) {
                                 category={category}
                                 endYear={endYear}
                                 detailed={false}
+                                abbreviate={abbreviate}
                             />
                         </MapTooltip>
                     )}
@@ -1012,8 +985,8 @@ function GiddMap(props: Props) {
                             }}
                         />
                         <div className={styles.choroplethLabels}>
-                            <Numeral value={minValue} abbreviate />
-                            <Numeral value={maxValue} abbreviate />
+                            <Numeral value={minValue} abbreviate={abbreviate} />
+                            <Numeral value={maxValue} abbreviate={abbreviate} />
                         </div>
                     </div>
                 )}
