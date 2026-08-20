@@ -117,14 +117,25 @@
         display: flex;
         flex-direction: column;
         gap: var(--tui-spacing-small);
+        width: 22rem;
         max-height: 24rem;
-        overflow-y: auto;
 
         .header {
             display: flex;
             align-items: flex-start;
+            flex-shrink: 0;
             justify-content: space-between;
             gap: var(--tui-spacing-small);
+        }
+
+        .card-body {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            gap: var(--tui-spacing-small);
+            min-height: 0;
+            overflow-y: auto;
+            scrollbar-gutter: stable;
         }
 
         .header-end {
@@ -145,7 +156,6 @@
         }
 
         .subheading {
-            margin-top: calc(-1 * var(--tui-spacing-extra-small));
             color: var(--tui-color-text-light);
             font-size: var(--tui-font-size-extra-small);
         }

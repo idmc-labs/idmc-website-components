@@ -1,19 +1,23 @@
 .body-container {
-    --gidd-scale: 0.5;
-    --gidd-sidebar-height: 40rem;
-
-    --tui-spacing-ultra-small: calc(0.1rem * var(--gidd-scale));
-    --tui-spacing-extra-extra-small: calc(0.3rem * var(--gidd-scale));
-    --tui-spacing-extra-small: calc(0.7rem * var(--gidd-scale));
-    --tui-spacing-small: calc(0.8rem * var(--gidd-scale));
-    --tui-spacing-medium: calc(1rem * var(--gidd-scale));
-    --tui-spacing-large: calc(1.26rem * var(--gidd-scale));
-    --tui-radius-border-input-section: 0.25rem;
+    --gidd-sidebar-height: 45rem;
+    --tui-font-family-heading: var(--tui-font-family-sans-serif);
 
     display: flex;
     align-items: center;
     flex-direction: column;
     background-color: transparent;
+
+    h3,
+    h4 {
+        color: var(--tui-color-text, #333);
+        font-size: var(--tui-font-size-medium);
+        font-weight: var(--tui-font-weight-bold);
+    }
+
+    .card-description {
+        color: var(--tui-color-label, #7a7a7a);
+        font-size: var(--tui-font-size-small);
+    }
 
     .gidd {
         display: flex;
@@ -48,6 +52,8 @@
         .header-actions {
             display: flex;
             align-items: center;
+            --tui-spacing-small: 0.4rem;
+            --tui-spacing-medium: 0.5rem;
             gap: var(--tui-spacing-medium);
         }
     }
@@ -55,6 +61,9 @@
     .filters {
         display: flex;
         flex-direction: column;
+        --tui-spacing-extra-small: 0.35rem;
+        --tui-spacing-small: 0.4rem;
+        --tui-spacing-medium: 0.5rem;
 
         .filters-toggle {
             display: none;
@@ -94,11 +103,13 @@
             .filter-bar-right {
                 display: flex;
                 align-items: center;
-                flex-grow: 1;
                 gap: var(--tui-spacing-small);
             }
+            .filter-bar-left {
+                flex-grow: 1;
+            }
             .filter-bar-right {
-                justify-content: flex-end;
+                justify-content: flex-start;
             }
 
             .filter-cause {
@@ -111,7 +122,7 @@
                 gap: var(--tui-spacing-small);
 
                 .year-field {
-                    display: inline-flex;
+                    display: flex;
                     align-items: center;
                     gap: var(--tui-spacing-small);
                 }
@@ -124,10 +135,7 @@
                 }
 
                 .year-select {
-                    /* definite height, matching IduMap's DateFilter inputs —
-                       .filter-input only supplies a min-height */
-                    width: 6rem;
-                    height: 2rem;
+                    width: 7.5rem;
                     min-height: 0;
                 }
             }
@@ -141,6 +149,10 @@
     }
 
     @media screen and (max-width: 720px) {
+        .gidd {
+            padding: 0 var(--tui-spacing-medium);
+        }
+
         .filters {
             /* collapsed: keep the Filters button compact, not full width */
             align-self: flex-start;
@@ -231,8 +243,14 @@
             flex-direction: column;
             flex-grow: 1;
             min-width: 18rem;
-            min-height: var(--gidd-sidebar-height);
-            gap: var(--tui-spacing-medium);
+            height: var(--gidd-sidebar-height);
+            gap: 1rem;
+
+            .carousel {
+                flex-grow: 1;
+                gap: 0.75rem;
+                min-height: 0;
+            }
 
             .glance-card {
                 --tui-font-size-massive-large: 1.75rem;
@@ -263,15 +281,26 @@
                     font-weight: var(--tui-font-weight-normal);
                 }
 
+                .total-stat {
+                    display: flex;
+                    align-items: baseline;
+                    gap: var(--tui-spacing-small);
+                }
+
+                .total-value {
+                    font-size: var(--tui-font-size-massive-large);
+                    font-weight: var(--tui-font-weight-bold);
+                }
+
+                .total-sub-label {
+                    color: var(--tui-color-text-label);
+                    font-size: var(--tui-font-size-small);
+                }
+
                 .glance-section {
                     display: flex;
                     flex-direction: column;
                     gap: var(--tui-spacing-medium);
-
-                    &:not(:first-child) {
-                        border-top: var(--tui-width-separator-thin) solid var(--tui-color-separator);
-                        padding-top: var(--tui-spacing-large);
-                    }
 
                     &.selected {
                         margin: calc(-1 * var(--tui-spacing-medium));
@@ -307,6 +336,13 @@
                     &:hover {
                         text-decoration: underline;
                         color: var(--tui-color-brand);
+                    }
+                }
+
+                @media screen and (max-width: 720px) {
+                    .shown-on-map,
+                    .show-on-map-button {
+                        display: none;
                     }
                 }
             }
@@ -353,6 +389,12 @@
                 flex-basis: 100%;
             }
         }
+
+        @media screen and (max-width: 720px) {
+            .main-panel {
+                display: none;
+            }
+        }
     }
 
     .chart-type-container {
@@ -394,12 +436,6 @@
             width: 100%;
             height: 16rem;
         }
-
-        @media screen and (max-width: 720px) {
-            .chart-block {
-                flex-basis: 100%;
-            }
-        }
     }
 
     .number-row {
@@ -421,7 +457,7 @@
     box-sizing: border-box;
     justify-content: center;
     border: 1px solid var(--tui-color-separator, #d0d5dd);
-    border-radius: 0.5rem;
+    border-radius: var(--tui-radius-border-input-section);
     background-color: #fff;
     min-height: 2rem;
     font-size: var(--tui-font-size-small);

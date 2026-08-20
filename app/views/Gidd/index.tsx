@@ -60,9 +60,11 @@ import {
 import ErrorBoundary from '#components/ErrorBoundary';
 import Header from '#components/Header';
 import NumberBlock from '#components/NumberBlock';
+import Numeral from '#components/Numeral';
 import RawButton from '#components/RawButton';
 import SlideCarousel from '#components/SlideCarousel';
 import FilterPill from '#components/IduMap/FilterPill';
+import { toSentenceCase } from '#components/IduMap/EventListItem';
 import useDebouncedValue from '#hooks/useDebouncedValue';
 import useDocumentSize from '#hooks/useDocumentSize';
 import Message from '#components/Message';
@@ -122,7 +124,7 @@ function getCountryStockCountSubLabel(count = 0, year: number) {
 }
 
 const headingText = 'Global Internal Displacement Database (GIDD)';
-const mainText = 'Explore the GIDD, IDMC’s global repository of internal displacement data, covering 2008 to the present.';
+const mainText = 'Explore the GIDD, IDMC’s global repository of internal displacement data, covering since 2008';
 const flowDetails = 'The number of times people are forced to move inside their country during a specific time period.';
 const stockDetails = 'The number of people living in internal displacement at a specific point in time.';
 
@@ -139,7 +141,7 @@ const GIDD_FILTER_OPTIONS = gql`
             id
             idmcShortName
             iso3
-            region {
+            geographicalGroup {
                 id
                 name
             }
@@ -306,11 +308,11 @@ function nameSelector(d: { idmcShortName: string }) {
 }
 
 function triggerTypeLabelSelector(d: { id: string, name: string }) {
-    return getHazardTypeLabel({ id: d.id, label: d.name });
+    return toSentenceCase(getHazardTypeLabel({ id: d.id, label: d.name })) ?? d.name;
 }
 
 function violenceSubTypeLabelSelector(d: { name: string }) {
-    return d.name;
+    return toSentenceCase(d.name) ?? d.name;
 }
 
 function yearKeySelector(d: { key: number }) {
@@ -393,7 +395,7 @@ const categoryLabelSelector = (option: CategoryOption) => option.label;
 const displacementCategoryOptions: CategoryOption[] = [
     {
         key: 'flow',
-        label: 'Internal Displacements',
+        label: 'Internal displacements',
     },
     {
         key: 'stock',
@@ -623,11 +625,14 @@ function Gidd(props: Props) {
         const regionNames = new Map<string, string>();
         const regionIso3Map = new Map<string, string[]>();
         (countryFilterResponse?.giddPublicCountries ?? []).forEach((country) => {
-            if (country?.region && isDefined(country.iso3)) {
-                regionNames.set(country.region.id, country.region.name ?? country.region.id);
-                const existing = regionIso3Map.get(country.region.id) ?? [];
+            if (country?.geographicalGroup && isDefined(country.iso3)) {
+                regionNames.set(
+                    country.geographicalGroup.id,
+                    country.geographicalGroup.name ?? country.geographicalGroup.id,
+                );
+                const existing = regionIso3Map.get(country.geographicalGroup.id) ?? [];
                 existing.push(country.iso3);
-                regionIso3Map.set(country.region.id, existing);
+                regionIso3Map.set(country.geographicalGroup.id, existing);
             }
         });
         const options: RegionOption[] = [...regionNames.entries()]
@@ -721,6 +726,7 @@ function Gidd(props: Props) {
     const {
         previousData: previousStatisticsData,
         data: statisticsResponse = previousStatisticsData,
+        loading: statisticsLoading,
     } = useQuery<GiddStatisticsQuery, GiddStatisticsQueryVariables>(
         GIDD_STATISTICS,
         {
@@ -730,6 +736,8 @@ function Gidd(props: Props) {
             },
         },
     );
+
+    const statisticsPending = statisticsLoading && !statisticsResponse;
 
     const conflictStats = removeNull(statisticsResponse?.giddPublicConflictStatistics);
     const disasterStats = removeNull(statisticsResponse?.giddPublicDisasterStatistics);
@@ -798,7 +806,7 @@ function Gidd(props: Props) {
                         key: 'conflict',
                         stackId: 'total',
                         fill: 'var(--color-conflict)',
-                        name: 'Conflict',
+                        name: 'Conflict and violence',
                     } : undefined,
                 ].filter(isDefined),
             ];
@@ -974,7 +982,7 @@ function Gidd(props: Props) {
                         key: 'conflict',
                         stackId: 'total',
                         fill: 'var(--color-conflict)',
-                        name: 'Conflict',
+                        name: 'Conflict and violence',
                     } : undefined,
                 ].filter(isDefined),
             ];
@@ -1228,6 +1236,27 @@ function Gidd(props: Props) {
         setEventsActivePage(1);
     }, [displacementCause]);
 
+    const selectedViolenceType = useMemo(() => {
+        if (triggerTypes.length !== 1) {
+            return undefined;
+        }
+        const parsed = parseTriggerKey(triggerTypes[0]);
+        return parsed?.group === 'conflict' ? parsed.id : undefined;
+    }, [triggerTypes]);
+
+    const handleViolenceSelect = useCallback((rawId: string) => {
+        const key = makeTriggerKey('conflict', rawId);
+        setTriggerTypes((prev) => (
+            prev.length === 1 && prev[0] === key ? [] : [key]
+        ));
+        if (isNotDefined(displacementCause)) {
+            setDisplacementCause('conflict');
+            setCombineCauseCharts(false);
+        }
+        setDataActivePage(1);
+        setEventsActivePage(1);
+    }, [displacementCause]);
+
     const handleViewEvents = useCallback(() => {
         setActiveView('events');
     }, []);
@@ -1262,11 +1291,12 @@ function Gidd(props: Props) {
     const flowChartBlock = displacementCategory !== 'stock' && (
         <div className={styles.chartBlock}>
             <Header
-                heading="Internal Displacements"
+                heading="Internal displacements"
                 headingSize="medium"
                 headingTooltip={flowDetails}
-                headingTooltipTitle="Internal Displacements"
+                headingTooltipTitle="Internal displacements"
                 headingDescription={`New displacements per year globally, ${domainForCharts[0]}–${domainForCharts[1]}`}
+                headingDescriptionClassName={styles.cardDescription}
             />
             <div className={styles.chartPanel}>
                 <ErrorBoundary>
@@ -1320,6 +1350,7 @@ function Gidd(props: Props) {
                 headingTooltipTitle="Internally displaced people (IDPs)"
                 headingSize="medium"
                 headingDescription={`People living in displacement at year end globally, as of ${domainForCharts[1]}`}
+                headingDescriptionClassName={styles.cardDescription}
             />
             <div className={styles.chartPanel}>
                 <ErrorBoundary>
@@ -1450,22 +1481,25 @@ function Gidd(props: Props) {
             </div>
             <div className={_cs(styles.glanceSection, isFlowSelected && styles.selected)}>
                 <Header
-                    heading="Internal Displacements"
-                    headingSize="medium"
+                    heading="Internal displacements"
+                    headingSize="small"
                     headingTooltip={flowDetails}
-                    headingTooltipTitle="Internal Displacements"
+                    headingTooltipTitle="Internal displacements"
                     actions={isFlowSelected ? shownOnMap : showOnMapFlow}
                 />
                 {!displacementCause && (
-                    <NumberBlock
-                        label="Total"
-                        size="large"
-                        subLabel={getCountryCountSubLabel(
-                            combinedStats?.internalDisplacementCountries,
-                        )}
-                        value={combinedStats?.internalDisplacements}
-                        abbreviated={precision === 'rounded'}
-                    />
+                    <div className={styles.totalStat}>
+                        <Numeral
+                            className={styles.totalValue}
+                            value={combinedStats?.internalDisplacements}
+                            abbreviate={precision === 'rounded'}
+                        />
+                        <span className={styles.totalSubLabel}>
+                            {getCountryCountSubLabel(
+                                combinedStats?.internalDisplacementCountries,
+                            )}
+                        </span>
+                    </div>
                 )}
                 <div className={styles.numberRow}>
                     {isConflictDataShown && (
@@ -1499,20 +1533,23 @@ function Gidd(props: Props) {
                     heading="Internally displaced people (IDPs)"
                     headingTooltip={stockDetails}
                     headingTooltipTitle="Internally displaced people (IDPs)"
-                    headingSize="medium"
+                    headingSize="small"
                     actions={isStockSelected ? shownOnMap : showOnMapStock}
                 />
                 {!displacementCause && (
-                    <NumberBlock
-                        label="Total"
-                        size="large"
-                        subLabel={getCountryStockCountSubLabel(
-                            combinedStats?.totalDisplacementCountries,
-                            timeRange[1],
-                        )}
-                        value={combinedStats?.totalDisplacements}
-                        abbreviated={precision === 'rounded'}
-                    />
+                    <div className={styles.totalStat}>
+                        <Numeral
+                            className={styles.totalValue}
+                            value={combinedStats?.totalDisplacements}
+                            abbreviate={precision === 'rounded'}
+                        />
+                        <span className={styles.totalSubLabel}>
+                            {getCountryStockCountSubLabel(
+                                combinedStats?.totalDisplacementCountries,
+                                timeRange[1],
+                            )}
+                        </span>
+                    </div>
                 )}
                 <div className={styles.numberRow}>
                     {isConflictDataShown && (
@@ -1562,6 +1599,9 @@ function Gidd(props: Props) {
                     selectedTriggerType={selectedTriggerType}
                     onHazardSelect={handleHazardSelect}
                     abbreviate={precision === 'rounded'}
+                    pending={statisticsPending}
+                    endYear={timeRange[1]}
+                    scopeLabel={scopeLabel}
                 />
             ),
         });
@@ -1577,6 +1617,7 @@ function Gidd(props: Props) {
                     clientCode={clientCode}
                     onViewEvents={handleViewEvents}
                     abbreviate={precision === 'rounded'}
+                    scopeLabel={scopeLabel}
                 />
             ),
         });
@@ -1606,7 +1647,6 @@ function Gidd(props: Props) {
                     className={styles.glanceCard}
                     variant="disaster"
                     category={displacementCategory}
-                    types={triggerTypeOptions}
                     countriesIso3={effectiveCountries}
                     startYear={timeRange[0]}
                     endYear={timeRange[1]}
@@ -1627,13 +1667,14 @@ function Gidd(props: Props) {
                     className={styles.glanceCard}
                     variant="conflict"
                     category={displacementCategory}
-                    types={violenceSubTypeOptions}
                     countriesIso3={effectiveCountries}
                     startYear={timeRange[0]}
                     endYear={timeRange[1]}
                     clientCode={clientCode}
                     scopeLabel={scopeLabel}
                     abbreviate={precision === 'rounded'}
+                    selectedTypeId={selectedViolenceType}
+                    onTypeSelect={handleViolenceSelect}
                 />
             ),
         });
@@ -1778,7 +1819,7 @@ function Gidd(props: Props) {
                             <SelectInput
                                 name="category"
                                 className={_cs(styles.filterItem, styles.filterInput)}
-                                placeholder="Internal Displacements or IDPs"
+                                placeholder="Internal displacements or IDPs"
                                 keySelector={categoryKeySelector}
                                 labelSelector={categoryLabelSelector}
                                 value={displacementCategory}
@@ -1904,87 +1945,90 @@ function Gidd(props: Props) {
                 )}
 
                 <div className={styles.mainRow}>
-                    <div className={styles.mainPanel}>
-                        <div className={styles.viewSelector}>
-                            <SegmentInput
-                                name="activeView"
-                                className={_cs(styles.filterInput, styles.filterSegment)}
-                                keySelector={viewKeySelector}
-                                labelSelector={viewLabelSelector}
-                                options={viewOptions}
-                                value={activeView}
-                                onChange={setActiveView}
-                            />
-                            {activeView === 'events' && (
-                                <TextInput
-                                    className={_cs(styles.eventSearch, styles.filterInput)}
-                                    name="eventSearch"
-                                    placeholder="Search events..."
-                                    value={eventSearchText}
-                                    onChange={setEventSearchText}
-                                    icons={<IoSearchOutline />}
+                    {!isMobile && (
+                        <div className={styles.mainPanel}>
+                            <div className={styles.viewSelector}>
+                                <SegmentInput
+                                    name="activeView"
+                                    className={_cs(styles.filterInput, styles.filterSegment)}
+                                    keySelector={viewKeySelector}
+                                    labelSelector={viewLabelSelector}
+                                    options={viewOptions}
+                                    value={activeView}
+                                    onChange={setActiveView}
                                 />
-                            )}
+                                {activeView === 'events' && (
+                                    <TextInput
+                                        className={_cs(styles.eventSearch, styles.filterInput)}
+                                        name="eventSearch"
+                                        placeholder="Search events..."
+                                        value={eventSearchText}
+                                        onChange={setEventSearchText}
+                                        icons={<IoSearchOutline />}
+                                    />
+                                )}
+                            </div>
+                            <div className={styles.viewPanels}>
+                                {activeView === 'map' && (
+                                    <GiddMap
+                                        cause={displacementCause}
+                                        category={displacementCategory}
+                                        countriesIso3={effectiveCountries}
+                                        startYear={timeRange[0]}
+                                        endYear={timeRange[1]}
+                                        clientCode={clientCode}
+                                        abbreviate={precision === 'rounded'}
+                                        onCountryFocus={handleCountryFocus}
+                                    />
+                                )}
+                                {activeView === 'table' && (
+                                    <DataTable
+                                        isConflictDataShown={isConflictDataShown}
+                                        isDisasterDataShown={isDisasterDataShown}
+                                        category={displacementCategory}
+                                        countriesIso3={effectiveCountries}
+                                        startYear={timeRange[0]}
+                                        endYear={timeRange[1]}
+                                        activePage={dataActivePage}
+                                        onActivePageChange={setDataActivePage}
+                                        clientCode={clientCode}
+                                        abbreviate={precision === 'rounded'}
+                                    />
+                                )}
+                                {activeView === 'charts' && (
+                                    <>
+                                        {chartTypeSelection}
+                                        <div className={styles.chartsStack}>
+                                            {flowChartBlock}
+                                            {stockChartBlock}
+                                        </div>
+                                    </>
+                                )}
+                                {activeView === 'events' && (
+                                    <EventsTable
+                                        activePage={eventsActivePage}
+                                        onActivePageChange={setEventsActivePage}
+                                        countriesIso3={effectiveCountries}
+                                        hazardTypes={selectedHazardTypeIds}
+                                        startYear={timeRange[0]}
+                                        cause={displacementCause}
+                                        category={displacementCategory}
+                                        endYear={timeRange[1]}
+                                        clientCode={clientCode}
+                                        searchText={eventSearchText}
+                                        abbreviate={precision === 'rounded'}
+                                    />
+                                )}
+                            </div>
                         </div>
-                        <div className={styles.viewPanels}>
-                            {activeView === 'map' && (
-                                <GiddMap
-                                    cause={displacementCause}
-                                    category={displacementCategory}
-                                    countriesIso3={effectiveCountries}
-                                    startYear={timeRange[0]}
-                                    endYear={timeRange[1]}
-                                    clientCode={clientCode}
-                                    abbreviate={precision === 'rounded'}
-                                    violenceSubTypeOptions={violenceSubTypeOptions}
-                                    onCountryFocus={handleCountryFocus}
-                                />
-                            )}
-                            {activeView === 'table' && (
-                                <DataTable
-                                    isConflictDataShown={isConflictDataShown}
-                                    isDisasterDataShown={isDisasterDataShown}
-                                    category={displacementCategory}
-                                    countriesIso3={effectiveCountries}
-                                    startYear={timeRange[0]}
-                                    endYear={timeRange[1]}
-                                    activePage={dataActivePage}
-                                    onActivePageChange={setDataActivePage}
-                                    clientCode={clientCode}
-                                    abbreviate={precision === 'rounded'}
-                                />
-                            )}
-                            {activeView === 'charts' && (
-                                <>
-                                    {chartTypeSelection}
-                                    <div className={styles.chartsStack}>
-                                        {flowChartBlock}
-                                        {stockChartBlock}
-                                    </div>
-                                </>
-                            )}
-                            {activeView === 'events' && (
-                                <EventsTable
-                                    activePage={eventsActivePage}
-                                    onActivePageChange={setEventsActivePage}
-                                    countriesIso3={effectiveCountries}
-                                    hazardTypes={selectedHazardTypeIds}
-                                    startYear={timeRange[0]}
-                                    cause={displacementCause}
-                                    category={displacementCategory}
-                                    endYear={timeRange[1]}
-                                    clientCode={clientCode}
-                                    searchText={eventSearchText}
-                                    abbreviate={precision === 'rounded'}
-                                />
-                            )}
-                        </div>
-                    </div>
+                    )}
 
                     <div className={styles.sidebar}>
                         <SlideCarousel
+                            className={styles.carousel}
                             slides={glanceSlides}
                             expandable={false}
+                            fillHeight
                         />
 
                         <div className={styles.downloadFooter}>

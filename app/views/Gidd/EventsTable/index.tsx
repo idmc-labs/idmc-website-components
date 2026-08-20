@@ -47,8 +47,6 @@ type EventData = NonNullable<
 type NumeralProps = React.ComponentProps<typeof Numeral>;
 const eventKeySelector = (item: { id: string }) => item.id;
 
-const description = 'The events table displays a summary of internal displacement data aggregated by events. An event is defined as any natural hazard phenomena that triggered forced movements before, during or after a disaster hit.';
-
 function getCauseVariantClassName(eventCause: EventData['cause']) {
     if (eventCause === 'CONFLICT') {
         return styles.conflict;
@@ -249,7 +247,7 @@ function EventsTable(props: Props) {
             const displacementsColumn: TableColumn<
                 EventData, string, NumeralProps, TableHeaderCellProps
             > | undefined = isFlowShown ? {
-                id: 'internalDisplacements',
+                id: 'newDisplacement',
                 title: 'Internal Displacements',
                 headerCellRenderer: TableHeaderCell,
                 headerCellRendererParams: {
@@ -257,7 +255,7 @@ function EventsTable(props: Props) {
                 },
                 headerCellRendererClassName: _cs(
                     styles.numberHeader,
-                    sortedHeaderClassName('internalDisplacements'),
+                    sortedHeaderClassName('newDisplacement'),
                 ),
                 cellRenderer: Numeral,
                 cellRendererClassName: styles.number,
@@ -281,7 +279,7 @@ function EventsTable(props: Props) {
             const idpsColumn: TableColumn<
                 EventData, string, NumeralProps, TableHeaderCellProps
             > | undefined = isStockShown ? {
-                id: 'totalIDPs',
+                id: 'totalDisplacement',
                 title: 'Internally Displaced People (IDPs)',
                 headerCellRenderer: TableHeaderCell,
                 headerCellRendererParams: {
@@ -289,7 +287,7 @@ function EventsTable(props: Props) {
                 },
                 headerCellRendererClassName: _cs(
                     styles.numberHeader,
-                    sortedHeaderClassName('totalIDPs'),
+                    sortedHeaderClassName('totalDisplacement'),
                 ),
                 cellRenderer: Numeral,
                 cellRendererClassName: styles.number,
@@ -370,7 +368,6 @@ function EventsTable(props: Props) {
 
     return (
         <div className={_cs(className, styles.eventsTable)}>
-            {description}
             <SortContext.Provider value={eventDataSortState}>
                 <Table
                     // using dynamic key to reset the column width caching
