@@ -2,6 +2,7 @@ import React from 'react';
 import { _cs } from '@togglecorp/fujs';
 
 import Header from '#components/Header';
+import Message from '#components/Message';
 import NumberBlock from '#components/NumberBlock';
 import BreakdownBar from '#components/IduMap/BreakdownBar';
 
@@ -18,6 +19,9 @@ export interface Props {
     selectedTriggerType: string | undefined;
     onHazardSelect: (triggerType: string) => void;
     abbreviate: boolean;
+    pending?: boolean;
+    endYear: number;
+    scopeLabel: string;
 }
 
 function HazardBreakdownCard(props: Props) {
@@ -30,43 +34,56 @@ function HazardBreakdownCard(props: Props) {
         selectedTriggerType,
         onHazardSelect,
         abbreviate,
+        pending,
+        endYear,
+        scopeLabel,
     } = props;
 
     return (
         <div className={_cs(styles.hazardBreakdownCard, className)}>
             <Header
                 heading="Breakdown by hazard type"
-                headingSize="medium"
+                headingSize="small"
+                headingDescription={
+                    `Internal displacements by disasters, breakdown by hazard type · in ${endYear} ${scopeLabel}.`
+                }
+                headingDescriptionClassName={styles.description}
             />
-            <NumberBlock
-                label=""
-                size="medium"
-                variant="disaster"
-                subLabel="Disaster Events Reported"
-                value={totalEvents}
-                abbreviated={abbreviate}
-            />
-            <div className={styles.list}>
-                {sortedHazards.map((hazard) => (
-                    <BreakdownBar
-                        key={hazard.id}
-                        label={hazard.name}
-                        value={hazard.value}
-                        maxValue={maxDisplacementValue ?? 0}
-                        percent={grandTotal > 0
-                            ? (hazard.value / grandTotal) * 100
-                            : 0}
+            {pending ? (
+                <Message pending compact />
+            ) : (
+                <>
+                    <NumberBlock
+                        label=""
+                        size="medium"
                         variant="disaster"
-                        abbreviate={abbreviate}
-                        selected={hazard.id === selectedTriggerType}
-                        // "Other" aggregates several hazard types, so there is
-                        // no single trigger type to filter by
-                        onClick={hazard.isOther
-                            ? undefined
-                            : () => onHazardSelect(hazard.id)}
+                        subLabel="Disaster Events Reported"
+                        value={totalEvents}
+                        abbreviated={abbreviate}
                     />
-                ))}
-            </div>
+                    <div className={styles.list}>
+                        {sortedHazards.map((hazard) => (
+                            <BreakdownBar
+                                key={hazard.id}
+                                label={hazard.name}
+                                value={hazard.value}
+                                maxValue={maxDisplacementValue ?? 0}
+                                percent={grandTotal > 0
+                                    ? (hazard.value / grandTotal) * 100
+                                    : 0}
+                                variant="disaster"
+                                abbreviate={abbreviate}
+                                selected={hazard.id === selectedTriggerType}
+                                // "Other" aggregates several hazard types, so there is
+                                // no single trigger type to filter by
+                                onClick={hazard.isOther
+                                    ? undefined
+                                    : () => onHazardSelect(hazard.id)}
+                            />
+                        ))}
+                    </div>
+                </>
+            )}
         </div>
     );
 }

@@ -3,6 +3,7 @@ import { _cs, isDefined } from '@togglecorp/fujs';
 import { gql, useQuery } from '@apollo/client';
 
 import Header from '#components/Header';
+import Message from '#components/Message';
 import EventListItem from '#components/IduMap/EventListItem';
 import useDebouncedValue from '#hooks/useDebouncedValue';
 import {
@@ -74,6 +75,7 @@ export interface Props {
     clientCode: string;
     onViewEvents: () => void;
     abbreviate: boolean;
+    scopeLabel: string;
 }
 
 function LargestEventsCard(props: Props) {
@@ -86,6 +88,7 @@ function LargestEventsCard(props: Props) {
         clientCode,
         onViewEvents,
         abbreviate,
+        scopeLabel,
     } = props;
 
     const variables = useMemo(() => ({
@@ -111,6 +114,7 @@ function LargestEventsCard(props: Props) {
     const {
         previousData,
         data = previousData,
+        loading,
     } = useQuery<GiddTopDisasterEventsQuery, GiddTopDisasterEventsQueryVariables>(
         GIDD_TOP_DISASTER_EVENTS,
         {
@@ -121,28 +125,37 @@ function LargestEventsCard(props: Props) {
         },
     );
 
+    const pending = loading && !data;
     const events = data?.giddPublicEvents?.results ?? [];
 
     return (
         <div className={_cs(styles.largestEventsCard, className)}>
             <Header
                 heading="Largest disaster events"
-                headingSize="medium"
+                headingSize="small"
+                headingDescription={
+                    `Top 5 disaster events by internal displacements recorded in ${endYear}, ${scopeLabel}.`
+                }
+                headingDescriptionClassName={styles.description}
             />
-            <div className={styles.list}>
-                {events.map((event) => (
-                    <EventListItem
-                        key={event.id}
-                        title={event.eventName}
-                        subtitle={[event.countryName, event.startDate]
-                            .filter(isDefined).join(' · ')}
-                        displacementType="disaster"
-                        value={event.newDisplacement ?? 0}
-                        abbreviate={abbreviate}
-                        onClick={onViewEvents}
-                    />
-                ))}
-            </div>
+            {pending ? (
+                <Message pending compact />
+            ) : (
+                <div className={styles.list}>
+                    {events.map((event) => (
+                        <EventListItem
+                            key={event.id}
+                            title={event.eventName}
+                            subtitle={[event.countryName, event.startDate]
+                                .filter(isDefined).join(' · ')}
+                            displacementType="disaster"
+                            value={event.newDisplacement ?? 0}
+                            abbreviate={abbreviate}
+                            onClick={onViewEvents}
+                        />
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

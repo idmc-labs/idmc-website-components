@@ -3,6 +3,7 @@ import { _cs } from '@togglecorp/fujs';
 import { gql, useQuery } from '@apollo/client';
 
 import Header from '#components/Header';
+import Message from '#components/Message';
 import CountryBar from '#components/IduMap/TopCountries/CountryBar';
 import { DATA_RELEASE } from '#utils/common';
 import useDebouncedValue from '#hooks/useDebouncedValue';
@@ -76,17 +77,18 @@ function TopCountriesCard(props: Props) {
 
     const variables = useMemo(() => ({
         countriesIso3,
-        startYear,
+        startYear: isStock ? endYear : startYear,
         endYear,
         releaseEnvironment: DATA_RELEASE,
         clientId: clientCode,
-    }), [countriesIso3, startYear, endYear, clientCode]);
+    }), [countriesIso3, isStock, startYear, endYear, clientCode]);
 
     const debouncedVariables = useDebouncedValue(variables);
 
     const {
         previousData,
         data = previousData,
+        loading,
     } = useQuery<GiddTopCountriesQuery, GiddTopCountriesQueryVariables>(
         TOP_COUNTRIES,
         {
@@ -96,6 +98,8 @@ function TopCountriesCard(props: Props) {
             },
         },
     );
+
+    const pending = loading && !data;
 
     const topCountries = useMemo(() => {
         const rows = data?.giddPublicCountryDisplacements ?? [];
@@ -128,7 +132,7 @@ function TopCountriesCard(props: Props) {
 
     const heading = isStock
         ? 'Largest displaced populations'
-        : 'Five countries reporting the highest internal displacements';
+        : 'Five countries reporting the highest number of internal displacements';
 
     const description = isStock
         ? 'Top 5 countries and territories by people living in displacement '
@@ -145,29 +149,36 @@ function TopCountriesCard(props: Props) {
         <div className={_cs(styles.topCountriesCard, className)}>
             <Header
                 heading={heading}
-                headingSize="medium"
+                headingSize="small"
                 headingDescription={description}
+                headingDescriptionClassName={styles.description}
             />
-            <div className={styles.list}>
-                {topCountries.map((country, index) => (
-                    <CountryBar
-                        key={country.iso3}
-                        rank={index + 1}
-                        countryName={country.countryName}
-                        conflict={country.conflict}
-                        disaster={country.disaster}
-                        total={country.total}
-                        maxTotal={maxTotal}
-                        abbreviate={abbreviate}
-                        onClick={onCountrySelect
-                            ? () => onCountrySelect(country.iso3)
-                            : undefined}
-                    />
-                ))}
-            </div>
-            <div className={styles.footer}>
-                {footer}
-            </div>
+            {pending ? (
+                <Message pending compact />
+            ) : (
+                <>
+                    <div className={styles.list}>
+                        {topCountries.map((country, index) => (
+                            <CountryBar
+                                key={country.iso3}
+                                rank={index + 1}
+                                countryName={country.countryName}
+                                conflict={country.conflict}
+                                disaster={country.disaster}
+                                total={country.total}
+                                maxTotal={maxTotal}
+                                abbreviate={abbreviate}
+                                onClick={onCountrySelect
+                                    ? () => onCountrySelect(country.iso3)
+                                    : undefined}
+                            />
+                        ))}
+                    </div>
+                    <div className={styles.footer}>
+                        {footer}
+                    </div>
+                </>
+            )}
         </div>
     );
 }

@@ -282,7 +282,7 @@ function DataTable(props: Props) {
             return data;
         }
         const sorted = [...data].sort(column.valueComparator);
-        return sorting.direction === 'dsc' ? sorted.reverse() : sorted;
+        return sorting.direction === 'asc' ? sorted.reverse() : sorted;
     }, [allRows, sorting, columns]);
 
     const paginatedRows = useMemo(() => {

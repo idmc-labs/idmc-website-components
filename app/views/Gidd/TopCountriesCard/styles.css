@@ -3,6 +3,11 @@
     flex-direction: column;
     gap: var(--tui-spacing-medium);
 
+    .description {
+        color: var(--tui-color-label, #7a7a7a);
+        font-size: var(--tui-font-size-small);
+    }
+
     .list {
         display: flex;
         flex-direction: column;
