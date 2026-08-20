@@ -118,7 +118,7 @@ function Breakdown(props: Props) {
                 })}
             </div>
             <div className={styles.hint}>
-                Preliminary · unvalidated reports from the selected window.
+                Preliminary · unvalidated reports from the selected timeframe.
             </div>
         </div>
     );

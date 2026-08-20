@@ -134,7 +134,7 @@ function TopCountries(props: Props) {
                 </div>
             </div>
             <div className={styles.hint}>
-                Bars aggregate all causes per country · click a row to focus it on the map.
+                Bars aggregate all causes per country · click a row to zoom in on map.
             </div>
         </div>
     );
