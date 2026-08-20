@@ -47,7 +47,7 @@ function CountryBar(props: Props) {
             <div className={styles.rank}>
                 {rank}
             </div>
-            <div className={styles.name}>
+            <div className={styles.name} title={countryName ?? undefined}>
                 {countryName}
             </div>
             <div className={styles.track}>

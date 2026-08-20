@@ -275,6 +275,7 @@ function useIduMap(
     const [startDate, setStartDate] = useState<string | undefined>(defaultStartDate);
     const [endDate, setEndDate] = useState<string | undefined>(defaultEndDate);
     const [mapOrTable, setMapOrTable] = useState<ViewKey>('map');
+    const [mountedViews, setMountedViews] = useState<Set<ViewKey>>(() => new Set<ViewKey>(['map']));
     // the open map popup lives here so events and filter changes can drive it
     const [mapSelection, setMapSelection] = useState<MapSelection | undefined>();
     const [flyTo, setFlyTo] = useState<LngLatLike | undefined>();
@@ -420,7 +421,10 @@ function useIduMap(
             }
             if (
                 triggerTypes.length > 0
-                && !triggerTypes.some((value) => d.type === value)
+                && !triggerTypes.some(
+                    // NOTE: disasters filter by type, conflicts by subtype
+                    (value) => (d.displacement_type === 'Disaster' ? d.type : d.subtype) === value,
+                )
             ) {
                 return false;
             }
@@ -543,6 +547,18 @@ function useIduMap(
             setFitBounds(undefined);
         }
     }
+
+    // keep a view mounted once it has been opened, so its state survives toggles
+    React.useEffect(() => {
+        setMountedViews((prev) => {
+            if (prev.has(mapOrTable)) {
+                return prev;
+            }
+            const next = new Set(prev);
+            next.add(mapOrTable);
+            return next;
+        });
+    }, [mapOrTable]);
 
     // clear focus and zoom out on any filter change
     React.useEffect(() => {
@@ -793,8 +809,8 @@ function useIduMap(
 
     const dateRange = `${formatDate(startDate)} – ${formatDate(endDate)}`;
     const effectiveCause = cause ?? 'all';
-    const disasterBreakdownDesc = `Breakdown by hazard type, ${dateRange}.`;
-    const conflictBreakdownDesc = `Breakdown by type of conflict and violence, ${dateRange}.`;
+    const disasterBreakdownDesc = `Breakdown by trigger, ${dateRange}.`;
+    const conflictBreakdownDesc = `Breakdown by trigger, ${dateRange}.`;
 
     const slides: { key: string; content: React.ReactNode }[] = [
         {
@@ -818,7 +834,7 @@ function useIduMap(
                     cause={effectiveCause}
                     startDate={startDate}
                     endDate={endDate}
-                    onCountrySelect={handleCountrySelect}
+                    onCountrySelect={isMobile ? undefined : handleCountrySelect}
                     selectedIso3={selectedIso3}
                 />
             ),
@@ -831,7 +847,7 @@ function useIduMap(
                     variant="disaster"
                     heading="Internal displacements by disasters"
                     description={disasterBreakdownDesc}
-                    onTriggerSelect={handleTriggerSelect}
+                    onTriggerSelect={isMobile ? undefined : handleTriggerSelect}
                     selectedTriggerType={selectedTriggerType}
                 />
             ),
@@ -844,7 +860,7 @@ function useIduMap(
                     variant="conflict"
                     heading="Internal displacements by conflict and violence"
                     description={conflictBreakdownDesc}
-                    onTriggerSelect={handleTriggerSelect}
+                    onTriggerSelect={isMobile ? undefined : handleTriggerSelect}
                     selectedTriggerType={selectedTriggerType}
                 />
             ),
@@ -992,24 +1008,40 @@ function useIduMap(
             )}
             <div className={styles.panes}>
                 <div className={styles.leftPane}>
-                    <div className={mapOrTable !== 'map' ? styles.viewHidden : undefined}>
-                        <RawIduMap
-                            idus={idusForMap}
-                            onCountryFocus={isNotDefined(iso3) ? handleCountrySelect : undefined}
-                            selection={mapSelection}
-                            flyTo={flyTo}
-                            fitBounds={fitBounds}
-                            focus={mapFocus}
-                            resetTrigger={resetTrigger}
-                            onPointClick={handleMapPointClick}
-                            onClose={handleMapPopupClose}
-                        />
-                    </div>
-                    {mapOrTable === 'table' && (
-                        <IduTable
-                            idus={idusForMap}
-                            onRecordSelect={handleRecordSelect}
-                        />
+                    {mountedViews.has('map') && (
+                        <div
+                            className={_cs(
+                                styles.viewPane,
+                                mapOrTable !== 'map' && styles.viewHidden,
+                            )}
+                        >
+                            <RawIduMap
+                                idus={idusForMap}
+                                onCountryFocus={
+                                    isNotDefined(iso3) ? handleCountrySelect : undefined
+                                }
+                                selection={mapSelection}
+                                flyTo={flyTo}
+                                fitBounds={fitBounds}
+                                focus={mapFocus}
+                                resetTrigger={resetTrigger}
+                                onPointClick={handleMapPointClick}
+                                onClose={handleMapPopupClose}
+                            />
+                        </div>
+                    )}
+                    {mountedViews.has('table') && (
+                        <div
+                            className={_cs(
+                                styles.viewPane,
+                                mapOrTable !== 'table' && styles.viewHidden,
+                            )}
+                        >
+                            <IduTable
+                                idus={idusForMap}
+                                onRecordSelect={handleRecordSelect}
+                            />
+                        </div>
                     )}
                     <div className={styles.viewToggle} title="Switch between map and table">
                         <SegmentInput

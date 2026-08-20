@@ -116,6 +116,12 @@
             flex-basis: 62%;
             flex-grow: 1;
             min-width: 0;
+            height: var(--idu-pane-height);
+
+            .view-pane {
+                position: absolute;
+                inset: 0;
+            }
 
             .view-toggle {
                 display: flex;
@@ -279,7 +285,8 @@
 }
 
 .view-hidden {
-    display: none;
+    visibility: hidden;
+    pointer-events: none;
 }
 
 /* Compact filter-input treatment; self-contained so it can be reused elsewhere. */

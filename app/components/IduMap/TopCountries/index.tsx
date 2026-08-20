@@ -43,7 +43,7 @@ interface Props {
     cause: 'all' | 'Conflict' | 'Disaster';
     startDate: string | undefined;
     endDate: string | undefined;
-    onCountrySelect: (iso3: string) => void;
+    onCountrySelect?: (iso3: string) => void;
     selectedIso3: string | undefined;
 }
 
@@ -105,7 +105,7 @@ function TopCountries(props: Props) {
                         No data available for the selected filters.
                     </div>
                 ) : countries.map((country, index) => {
-                    const handleClick = country.key
+                    const handleClick = onCountrySelect && country.key
                         ? () => onCountrySelect(country.key)
                         : undefined;
                     return (
