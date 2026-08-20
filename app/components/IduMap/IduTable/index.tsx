@@ -169,7 +169,7 @@ function IduTable(props: Props) {
                 (item) => item.year,
                 {
                     sortable: true,
-                    columnWidth: 48,
+                    columnWidth: 80,
                     separator: '',
                     headerCellRendererClassName: sortedHeaderClassName('year'),
                 },

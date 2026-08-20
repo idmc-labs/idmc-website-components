@@ -44,7 +44,7 @@ function BreakdownBar(props: Props) {
 
     const content = (
         <>
-            <div className={styles.label}>
+            <div className={styles.label} title={toSentenceCase(label) ?? undefined}>
                 {toSentenceCase(label)}
             </div>
             <div className={styles.track}>

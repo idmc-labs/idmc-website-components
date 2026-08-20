@@ -78,7 +78,7 @@ function EventListItem(props: Props) {
     const content = (
         <>
             <div className={styles.details}>
-                <div className={styles.title}>
+                <div className={styles.title} title={title ?? undefined}>
                     {title}
                 </div>
                 {subtitle && (
