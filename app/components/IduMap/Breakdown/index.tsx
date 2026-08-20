@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import {
     _cs,
     isTruthyString,
@@ -8,9 +8,10 @@ import {
     compareNumber,
 } from '@togglecorp/fujs';
 
+import ListView from '#components/ListView';
 import { IduDataQuery } from '#generated/types';
 
-import BreakdownBar from '../BreakdownBar';
+import BreakdownBar, { Props as BreakdownBarProps } from '../BreakdownBar';
 
 import styles from './styles.css';
 
@@ -23,6 +24,8 @@ interface BreakdownDatum {
     label: string | undefined | null;
     total: number;
 }
+
+const keySelector = (item: BreakdownDatum) => item.key;
 
 // disaster rows group by hazard type, conflict rows by violence name
 const variantConfig: {
@@ -87,6 +90,19 @@ function Breakdown(props: Props) {
 
     const maxTotal = items[0]?.total ?? 0;
 
+    const rendererParams = useCallback((
+        _: string,
+        item: BreakdownDatum,
+    ): BreakdownBarProps => ({
+        name: item.key,
+        label: item.label,
+        value: item.total,
+        maxValue: maxTotal,
+        variant,
+        onClick: item.key ? onTriggerSelect : undefined,
+        selected: item.key === selectedTriggerType,
+    }), [maxTotal, variant, onTriggerSelect, selectedTriggerType]);
+
     return (
         <div className={_cs(styles.breakdown, className)}>
             <div className={styles.heading}>
@@ -96,26 +112,18 @@ function Breakdown(props: Props) {
                 {description}
             </div>
             <div className={styles.list}>
-                {items.length === 0 ? (
-                    <div className={styles.noData}>
-                        No data available for the selected filters.
-                    </div>
-                ) : items.map((item) => {
-                    const handleClick = onTriggerSelect && item.key
-                        ? () => onTriggerSelect(item.key)
-                        : undefined;
-                    return (
-                        <BreakdownBar
-                            key={item.key}
-                            label={item.label}
-                            value={item.total}
-                            maxValue={maxTotal}
-                            variant={variant}
-                            onClick={handleClick}
-                            selected={item.key === selectedTriggerType}
-                        />
-                    );
-                })}
+                <ListView
+                    data={items}
+                    keySelector={keySelector}
+                    renderer={BreakdownBar}
+                    rendererParams={rendererParams}
+                    direction="vertical"
+                    errored={false}
+                    pending={false}
+                    filtered={false}
+                    messageShown
+                    emptyMessage="No data available for the selected filters."
+                />
             </div>
             <div className={styles.hint}>
                 Preliminary · unvalidated reports from the selected timeframe.

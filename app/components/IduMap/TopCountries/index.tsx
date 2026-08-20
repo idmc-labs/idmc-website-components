@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import {
     _cs,
     listToGroupList,
@@ -9,9 +9,10 @@ import {
     decodeDate,
 } from '@togglecorp/fujs';
 
+import ListView from '#components/ListView';
 import { IduDataQuery } from '#generated/types';
 
-import CountryBar from './CountryBar';
+import CountryBar, { Props as CountryBarProps } from './CountryBar';
 
 import styles from './styles.css';
 
@@ -30,6 +31,8 @@ interface CountryDatum {
     disaster: number;
     total: number;
 }
+
+const keySelector = (item: CountryDatum) => item.key;
 
 function displacementTerm(cause: 'all' | 'Conflict' | 'Disaster'): string {
     if (cause === 'Disaster') return 'disaster';
@@ -89,6 +92,22 @@ function TopCountries(props: Props) {
 
     const maxTotal = countries[0]?.total ?? 0;
 
+    const rendererParams = useCallback((
+        _: string,
+        country: CountryDatum,
+        index: number,
+    ): CountryBarProps => ({
+        name: country.key,
+        rank: index + 1,
+        countryName: country.countryName,
+        conflict: country.conflict,
+        disaster: country.disaster,
+        total: country.total,
+        maxTotal,
+        onClick: country.key ? onCountrySelect : undefined,
+        selected: country.key === selectedIso3,
+    }), [maxTotal, onCountrySelect, selectedIso3]);
+
     const description = `Between ${formatDate(startDate)} and ${formatDate(endDate)}, IDMC recorded the highest numbers of ${displacementTerm(cause)} displacements in the following countries.`;
 
     return (
@@ -100,28 +119,18 @@ function TopCountries(props: Props) {
                 {description}
             </div>
             <div className={styles.list}>
-                {countries.length === 0 ? (
-                    <div className={styles.noData}>
-                        No data available for the selected filters.
-                    </div>
-                ) : countries.map((country, index) => {
-                    const handleClick = onCountrySelect && country.key
-                        ? () => onCountrySelect(country.key)
-                        : undefined;
-                    return (
-                        <CountryBar
-                            key={country.key}
-                            rank={index + 1}
-                            countryName={country.countryName}
-                            conflict={country.conflict}
-                            disaster={country.disaster}
-                            total={country.total}
-                            maxTotal={maxTotal}
-                            onClick={handleClick}
-                            selected={country.key === selectedIso3}
-                        />
-                    );
-                })}
+                <ListView
+                    data={countries}
+                    keySelector={keySelector}
+                    renderer={CountryBar}
+                    rendererParams={rendererParams}
+                    direction="vertical"
+                    errored={false}
+                    pending={false}
+                    filtered={false}
+                    messageShown
+                    emptyMessage="No data available for the selected filters."
+                />
             </div>
             <div className={styles.legend}>
                 <div className={styles.legendItem}>
