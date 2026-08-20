@@ -222,24 +222,44 @@ function triggerDownload(content: string, filename: string, mimeType: string) {
     URL.revokeObjectURL(url);
 }
 
-function escapeCsvValue(value: unknown) {
-    if (isNotDefined(value)) {
-        return '';
-    }
-    const str = typeof value === 'object' ? JSON.stringify(value) : String(value);
-    return /["\r\n,]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
-}
-
-function toCsv(rows: Record<string, unknown>[]) {
-    if (rows.length === 0) {
-        return '';
-    }
-    const keys = Object.keys(rows[0]).filter((key) => key !== '__typename');
-    const lines = rows.map(
-        (row) => keys.map((key) => escapeCsvValue(row[key])).join(','),
-    );
-    return [keys.map(escapeCsvValue).join(','), ...lines].join('\n');
-}
+// Ordered column definitions matching the API Excel export format
+const EXCEL_COLUMNS: { header: string; key: string }[] = [
+    { header: 'Id', key: 'id' },
+    { header: 'Country', key: 'country' },
+    { header: 'Iso3', key: 'iso3' },
+    { header: 'Latitude', key: 'latitude' },
+    { header: 'Longitude', key: 'longitude' },
+    { header: 'Centroid', key: 'centroid' },
+    { header: 'Role', key: 'role' },
+    { header: 'DisplacementType', key: 'displacement_type' },
+    { header: 'Qualifier', key: 'qualifier' },
+    { header: 'Figure', key: 'figure' },
+    { header: 'DisplacementDate', key: 'displacement_date' },
+    { header: 'DisplacementStartDate', key: 'displacement_start_date' },
+    { header: 'DisplacementEndDate', key: 'displacement_end_date' },
+    { header: 'Year', key: 'year' },
+    { header: 'EventId', key: 'event_id' },
+    { header: 'EventName', key: 'event_name' },
+    { header: 'EventCodes', key: 'event_codes' },
+    { header: 'EventCodeTypes', key: 'event_code_types' },
+    { header: 'EventStartDate', key: 'event_start_date' },
+    { header: 'EventEndDate', key: 'event_end_date' },
+    { header: 'Category', key: 'category' },
+    { header: 'Subcategory', key: 'subcategory' },
+    { header: 'Type', key: 'type' },
+    { header: 'Subtype', key: 'subtype' },
+    { header: 'StandardPopupText', key: 'standard_popup_text' },
+    { header: 'StandardInfoText', key: 'standard_info_text' },
+    { header: 'OldId', key: 'old_id' },
+    { header: 'Sources', key: 'sources' },
+    { header: 'SourceUrl', key: 'source_url' },
+    { header: 'LocationsName', key: 'locations_name' },
+    { header: 'LocationsCoordinates', key: 'locations_coordinates' },
+    { header: 'LocationsAccuracy', key: 'locations_accuracy' },
+    { header: 'LocationsType', key: 'locations_type' },
+    { header: 'DisplacementOccurred', key: 'displacement_occurred' },
+    { header: 'CreatedAt', key: 'created_at' },
+];
 
 function useIduMap(
     clientCode: string,
@@ -439,23 +459,30 @@ function useIduMap(
         if (isNotDefined(idusForExport)) {
             return;
         }
-        const features = idusForExport
-            .filter((item) => isDefined(item.longitude) && isDefined(item.latitude))
-            .map((item) => {
-                const {
-                    __typename: _,
-                    ...properties
-                } = item as (typeof item & { __typename: string });
-                return {
-                    type: 'Feature',
-                    geometry: {
-                        type: 'Point',
-                        coordinates: [item.longitude, item.latitude],
-                    },
-                    properties,
-                };
-            });
-        const geojson = { type: 'FeatureCollection', features };
+        const features = idusForExport.map((item) => {
+            const {
+                __typename: _,
+                ...properties
+            } = item as (typeof item & { __typename: string });
+            return {
+                type: 'Feature',
+                geometry: {
+                    type: 'MultiPoint',
+                    coordinates: (
+                        isDefined(item.longitude) && isDefined(item.latitude)
+                            ? [[item.longitude, item.latitude]]
+                            : []
+                    ),
+                },
+                properties,
+            };
+        });
+        const geojson = {
+            type: 'FeatureCollection',
+            readme: 'IDMC Internal Displacement Updates (IDU) — preliminary estimates of internal displacement events reported in the last 180 days. Data is updated daily.',
+            lastUpdated: new Date().toISOString(),
+            features,
+        };
         triggerDownload(
             JSON.stringify(geojson),
             'idu-data.geojson',
@@ -463,12 +490,48 @@ function useIduMap(
         );
     }, [idusForExport]);
 
-    const handleDownloadCsv = useCallback(() => {
+    const handleDownloadExcel = useCallback(async () => {
         if (isNotDefined(idusForExport)) {
             return;
         }
-        const csv = toCsv(idusForExport as unknown as Record<string, unknown>[]);
-        triggerDownload(csv, 'idu-data.csv', 'text/csv;charset=utf-8');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, import/no-unresolved
+        const ExcelJS = await import('exceljs') as any;
+        const Workbook = ExcelJS.default?.Workbook ?? ExcelJS.Workbook;
+        const workbook = new Workbook();
+
+        const dataSheet = workbook.addWorksheet('sheet1');
+        dataSheet.columns = EXCEL_COLUMNS.map((col) => ({
+            header: col.header,
+            key: col.key,
+            width: 22,
+        }));
+        idusForExport.forEach((item) => {
+            const row: Record<string, unknown> = {};
+            EXCEL_COLUMNS.forEach((col) => {
+                row[col.key] = (item as Record<string, unknown>)[col.key] ?? null;
+            });
+            dataSheet.addRow(row);
+        });
+
+        const readmeSheet = workbook.addWorksheet('sheet2');
+        readmeSheet.addRow(['IDMC Internal Displacement Updates (IDU)']);
+        readmeSheet.addRow(['Preliminary estimates of internal displacement events reported in the last 180 days.']);
+        readmeSheet.addRow(['This provisional data is updated daily with new available data.']);
+        readmeSheet.addRow(['Validated annual estimates are published in the Global Internal Displacement Database (GIDD).']);
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob(
+            [buffer],
+            { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' },
+        );
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'idu-data.xlsx';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
     }, [idusForExport]);
 
     const prevIdusForMap = useRef(idusForMap);
@@ -1048,10 +1111,10 @@ function useIduMap(
                             <Button
                                 className={styles.downloadButton}
                                 name={undefined}
-                                onClick={handleDownloadCsv}
+                                onClick={handleDownloadExcel}
                                 disabled={loading || isNotDefined(idusForMap)}
                             >
-                                CSV
+                                Excel
                             </Button>
                         </div>
                     </div>
