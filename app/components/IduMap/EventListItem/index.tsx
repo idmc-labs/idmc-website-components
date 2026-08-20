@@ -25,13 +25,14 @@ function formatDate(date: string | null | undefined) {
 
 export interface Props {
     className?: string;
+    name: number;
     title: string | undefined | null;
     subtitle: string | undefined | null;
     subtitleMonospace?: boolean;
     // the raw IDU displacement type ('Conflict' / 'Disaster' / 'Other')
     displacementType: string | null | undefined;
     value: number;
-    onClick?: () => void;
+    onClick?: (name: number) => void;
     selected?: boolean;
     abbreviate?: boolean;
     // when expanded, the excerpt + source render beneath the row (mobile detail view)
@@ -44,6 +45,7 @@ export interface Props {
 function EventListItem(props: Props) {
     const {
         className,
+        name,
         title,
         subtitle,
         subtitleMonospace,
@@ -99,7 +101,7 @@ function EventListItem(props: Props) {
 
     const row = clickable ? (
         <RawButton
-            name={undefined}
+            name={name}
             className={rootClassName}
             onClick={onClick}
         >

@@ -1,7 +1,6 @@
 import React, { useMemo, useCallback, useState } from 'react';
 import {
     _cs,
-    isDefined,
     formatDateToString,
     decodeDate,
 } from '@togglecorp/fujs';
@@ -51,7 +50,11 @@ function RecentEvents(props: Props) {
     } = props;
 
     const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-    const [expandedKey, setExpandedKey] = useState<string | undefined>();
+    const [expandedId, setExpandedId] = useState<number | undefined>();
+
+    const handleExpandToggle = useCallback((id: number) => {
+        setExpandedId((prev) => (prev === id ? undefined : id));
+    }, []);
 
     const sorted = useMemo<IduRow[]>(() => (
         [...(idus ?? [])].sort((a, b) => getTimestamp(b) - getTimestamp(a))
@@ -61,16 +64,16 @@ function RecentEvents(props: Props) {
         const startDateStr = formatDate(item.displacement_start_date);
         const endDateStr = formatDate(item.displacement_end_date);
         const dateRange = [startDateStr, endDateStr].filter(Boolean).join(' – ');
-        const key = String(item.id);
 
         if (expandable) {
-            const isExpanded = expandedKey === key;
+            const isExpanded = expandedId === item.id;
             return {
+                name: item.id,
                 title: item.event_name ?? item.country,
                 subtitle: dateRange || undefined,
                 displacementType: item.displacement_type,
                 value: item.figure,
-                onClick: () => setExpandedKey((prev) => (prev === key ? undefined : key)),
+                onClick: handleExpandToggle,
                 selected: isExpanded,
                 expanded: isExpanded,
                 excerpt: item.standard_popup_text,
@@ -80,16 +83,15 @@ function RecentEvents(props: Props) {
         }
 
         return {
+            name: item.id,
             title: item.event_name ?? item.country,
             subtitle: dateRange || undefined,
             displacementType: item.displacement_type,
             value: item.figure,
-            onClick: onRecordSelect && isDefined(item.id)
-                ? () => onRecordSelect(item.id)
-                : undefined,
+            onClick: onRecordSelect,
             selected: item.id === selectedRecordId,
         };
-    }, [expandable, expandedKey, onRecordSelect, selectedRecordId]);
+    }, [expandable, expandedId, handleExpandToggle, onRecordSelect, selectedRecordId]);
 
     const handleShowMore = useCallback(() => {
         setVisibleCount((count) => count + PAGE_SIZE);

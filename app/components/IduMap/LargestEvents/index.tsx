@@ -85,11 +85,12 @@ function LargestEvents(props: Props) {
         _: string,
         event: LargestEvent,
     ): EventListItemProps => ({
+        name: event.eventId,
         title: event.eventName ?? event.country,
         subtitle: undefined,
         displacementType: event.displacementType,
         value: event.value,
-        onClick: onEventSelect ? () => onEventSelect(event.eventId) : undefined,
+        onClick: onEventSelect,
         selected: event.eventId === selectedEventId,
     }), [onEventSelect, selectedEventId]);
 
@@ -104,22 +105,18 @@ function LargestEvents(props: Props) {
                 {description}
             </div>
             <div className={styles.list}>
-                {events.length === 0 ? (
-                    <div className={styles.noData}>
-                        No data available for the selected filters.
-                    </div>
-                ) : (
-                    <ListView
-                        data={events}
-                        keySelector={keySelector}
-                        renderer={EventListItem}
-                        rendererParams={rendererParams}
-                        direction="vertical"
-                        errored={false}
-                        pending={false}
-                        filtered={false}
-                    />
-                )}
+                <ListView
+                    data={events}
+                    keySelector={keySelector}
+                    renderer={EventListItem}
+                    rendererParams={rendererParams}
+                    direction="vertical"
+                    errored={false}
+                    pending={false}
+                    filtered={false}
+                    messageShown
+                    emptyMessage="No data available for the selected filters."
+                />
             </div>
             <div className={styles.hint}>
                 Click a row to pin the event on the map.

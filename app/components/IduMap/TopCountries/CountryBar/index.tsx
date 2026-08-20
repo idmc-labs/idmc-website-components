@@ -8,19 +8,21 @@ import styles from './styles.css';
 
 export interface Props {
     className?: string;
+    name: string;
     rank: number;
     countryName: string | undefined | null;
     conflict: number;
     disaster: number;
     total: number;
     maxTotal: number;
-    onClick?: () => void;
+    onClick?: (name: string) => void;
     selected?: boolean;
 }
 
 function CountryBar(props: Props) {
     const {
         className,
+        name,
         rank,
         countryName,
         conflict,
@@ -71,7 +73,7 @@ function CountryBar(props: Props) {
     if (clickable) {
         return (
             <RawButton
-                name={undefined}
+                name={name}
                 className={rootClassName}
                 onClick={onClick}
             >

@@ -10,11 +10,12 @@ import styles from './styles.css';
 
 export interface Props {
     className?: string;
+    name: string;
     label: string | undefined | null;
     value: number;
     maxValue: number;
     variant: 'conflict' | 'disaster';
-    onClick?: () => void;
+    onClick?: (name: string) => void;
     selected?: boolean;
     abbreviate?: boolean;
 }
@@ -22,6 +23,7 @@ export interface Props {
 function BreakdownBar(props: Props) {
     const {
         className,
+        name,
         label,
         value,
         maxValue,
@@ -64,7 +66,7 @@ function BreakdownBar(props: Props) {
     if (clickable) {
         return (
             <RawButton
-                name={undefined}
+                name={name}
                 className={rootClassName}
                 onClick={onClick}
             >

@@ -20,6 +20,7 @@ import {
 } from '#components/tableHelpers';
 import Numeral from '#components/Numeral';
 import RawButton from '#components/RawButton';
+import Message from '#components/Message';
 import { IduDataQuery } from '#generated/types';
 
 import HazardType, { Props as HazardTypeProps } from './HazardType';
@@ -224,9 +225,11 @@ function IduTable(props: Props) {
     return (
         <div className={_cs(styles.iduTable, className)}>
             {isEmpty ? (
-                <div className={styles.noData}>
-                    No data available for the selected filters.
-                </div>
+                <Message
+                    empty
+                    messageIconHidden
+                    emptyMessage="No data available for the selected filters."
+                />
             ) : (
                 <>
                     <SortContext.Provider value={sortState}>
