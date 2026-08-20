@@ -502,10 +502,9 @@ function useIduMap(
             return;
         }
         const features = idusForExport.map((item) => {
-            const {
-                __typename: _,
-                ...properties
-            } = item as (typeof item & { __typename: string });
+            const properties = Object.fromEntries(
+                Object.entries(item).filter(([key]) => key !== '__typename'),
+            );
             return {
                 type: 'Feature',
                 geometry: {

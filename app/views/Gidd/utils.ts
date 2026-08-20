@@ -1,9 +1,15 @@
+import { useMemo } from 'react';
 import { sum } from '@togglecorp/fujs';
-import { gql } from '@apollo/client';
+import { gql, useQuery } from '@apollo/client';
 
+import { DATA_RELEASE } from '#utils/common';
+import useDebouncedValue from '#hooks/useDebouncedValue';
+import { formatNumberRaw, getAutoPrecision } from '#components/Numeral';
 import {
     GiddHazardBreakdownQuery,
     GiddViolenceBreakdownQuery,
+    GiddTopCountriesQuery,
+    GiddTopCountriesQueryVariables,
 } from '#generated/types';
 
 export const OTHER_BUCKET_ID = '__other__';
@@ -59,6 +65,8 @@ export interface BreakdownQueryVariables {
     endYear: number;
     releaseEnvironment: string;
     clientId: string;
+    hazardTypes?: string[];
+    violenceSubTypes?: string[];
 }
 
 export type HazardBreakdownEntry = NonNullable<
@@ -78,6 +86,7 @@ export const HAZARD_BREAKDOWN_QUERY = gql`
         $countriesIso3: [String!],
         $startYear: Float,
         $endYear: Float,
+        $hazardTypes: [ID!],
         $releaseEnvironment: String!,
         $clientId: String!,
     ) {
@@ -85,6 +94,7 @@ export const HAZARD_BREAKDOWN_QUERY = gql`
             countriesIso3: $countriesIso3,
             startYear: $startYear,
             endYear: $endYear,
+            hazardTypes: $hazardTypes,
             releaseEnvironment: $releaseEnvironment,
             clientId: $clientId,
         ) {
@@ -105,6 +115,7 @@ export const VIOLENCE_BREAKDOWN_QUERY = gql`
         $countriesIso3: [String!],
         $startYear: Float,
         $endYear: Float,
+        $violenceSubTypes: [ID!],
         $releaseEnvironment: String!,
         $clientId: String!,
     ) {
@@ -112,6 +123,7 @@ export const VIOLENCE_BREAKDOWN_QUERY = gql`
             countriesIso3: $countriesIso3,
             startYear: $startYear,
             endYear: $endYear,
+            violenceSubTypes: $violenceSubTypes,
             releaseEnvironment: $releaseEnvironment,
             clientId: $clientId,
         ) {
@@ -126,3 +138,194 @@ export const VIOLENCE_BREAKDOWN_QUERY = gql`
         }
     }
 `;
+
+// ---- sidebar insight description helpers ----
+
+function pluralize(count: number, singular: string, plural: string) {
+    return count === 1 ? singular : plural;
+}
+
+// Plain-string counterpart to <Numeral abbreviate />, for interpolating a
+// figure into description text rather than rendering it as a component.
+export function formatAbbreviatedNumber(value: number, abbreviate: boolean) {
+    const precision = getAutoPrecision(value, 100, 2);
+    const output = formatNumberRaw(value, ',', abbreviate, precision);
+    if (!output) {
+        return '0';
+    }
+    return `${output.value}${output.valueSuffix ?? ''}`;
+}
+
+// " associated with disasters" / " associated with conflict and violence" /
+// "" — the cause clause shared across the sidebar insight descriptions.
+export function buildCausePhrase(cause: 'conflict' | 'disaster' | undefined): string {
+    if (cause === 'disaster') {
+        return ' associated with disasters';
+    }
+    if (cause === 'conflict') {
+        return ' associated with conflict and violence';
+    }
+    return '';
+}
+
+// Joins a list into "A", "A and B", or "A, B and C" (Oxford-style "and"
+// before the final item) for the "filtered to..." sentences and the scope label.
+export function joinWithAnd(items: string[]): string {
+    if (items.length <= 1) {
+        return items[0] ?? '';
+    }
+    if (items.length === 2) {
+        return `${items[0]} and ${items[1]}`;
+    }
+    return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
+}
+
+// The trailing " Disaster/Conflict figures are filtered to the type(s) X, Y
+// and Z." sentence. Empty string when the given cause has no active
+// trigger-type sub-selection. Labels are lowercased mid-sentence.
+export function buildTriggerFilterSuffix(params: {
+    cause: 'conflict' | 'disaster';
+    labels: string[];
+}): string {
+    const { cause, labels } = params;
+    if (labels.length === 0) {
+        return '';
+    }
+    const joined = joinWithAnd(labels.map((label) => label.toLowerCase()));
+    if (cause === 'conflict') {
+        return ` Conflict figures are filtered to the ${pluralize(labels.length, 'type', 'types')} ${joined}.`;
+    }
+    return ` Disaster figures are filtered to the ${pluralize(labels.length, 'hazard type', 'hazard types')} ${joined}.`;
+}
+
+// ---- shared per-country ranking (backs TopCountriesCard) ----
+
+export const TOP_COUNTRIES_QUERY = gql`
+    query GiddTopCountries(
+        $endYear: Float,
+        $startYear: Float,
+        $countriesIso3: [String!],
+        $hazardTypes: [ID!],
+        $violenceSubTypes: [ID!],
+        $releaseEnvironment: String!,
+        $clientId: String!,
+    ){
+        giddPublicCountryDisplacements(
+            countriesIso3: $countriesIso3,
+            endYear: $endYear,
+            startYear: $startYear,
+            hazardTypes: $hazardTypes,
+            violenceSubTypes: $violenceSubTypes,
+            releaseEnvironment: $releaseEnvironment,
+            clientId: $clientId,
+        ){
+            iso3
+            countryName
+            conflictNewDisplacement
+            conflictTotalDisplacement
+            disasterNewDisplacement
+            disasterTotalDisplacement
+        }
+    }
+`;
+
+export interface RankedCountry {
+    iso3: string;
+    countryName: string;
+    conflict: number;
+    disaster: number;
+    total: number;
+}
+
+export interface UseCountryRankingParams {
+    category: 'flow' | 'stock' | undefined;
+    cause: 'conflict' | 'disaster' | undefined;
+    countriesIso3: string[];
+    hazardTypes?: string[];
+    violenceSubTypes?: string[];
+    startYear: number;
+    endYear: number;
+    clientId: string;
+    skip?: boolean;
+}
+
+// Full filtered + sorted (not sliced) list plus its grand total — callers
+// slice the top N themselves so the "N accounts for X%" share is computed
+// against the true total, not just the visible rows.
+export function useCountryRanking(params: UseCountryRankingParams) {
+    const {
+        category,
+        cause,
+        countriesIso3,
+        hazardTypes,
+        violenceSubTypes,
+        startYear,
+        endYear,
+        clientId,
+        skip,
+    } = params;
+
+    const isStock = category === 'stock';
+    const conflictShown = cause !== 'disaster';
+    const disasterShown = cause !== 'conflict';
+
+    const variables = useMemo(() => ({
+        countriesIso3,
+        startYear: isStock ? endYear : startYear,
+        endYear,
+        hazardTypes,
+        violenceSubTypes,
+        releaseEnvironment: DATA_RELEASE,
+        clientId,
+    }), [countriesIso3, isStock, startYear, endYear, hazardTypes, violenceSubTypes, clientId]);
+
+    const debouncedVariables = useDebouncedValue(variables);
+
+    const {
+        previousData,
+        data = previousData,
+        loading,
+    } = useQuery<GiddTopCountriesQuery, GiddTopCountriesQueryVariables>(
+        TOP_COUNTRIES_QUERY,
+        {
+            variables: debouncedVariables,
+            skip,
+            context: {
+                clientName: 'helix',
+            },
+        },
+    );
+
+    const pending = loading && !data;
+
+    const rankedCountries = useMemo<RankedCountry[]>(() => {
+        const rows = data?.giddPublicCountryDisplacements ?? [];
+        return rows
+            .map((row) => {
+                const conflict = (isStock
+                    ? row.conflictTotalDisplacement
+                    : row.conflictNewDisplacement) ?? 0;
+                const disaster = (isStock
+                    ? row.disasterTotalDisplacement
+                    : row.disasterNewDisplacement) ?? 0;
+                const scopedConflict = conflictShown ? conflict : 0;
+                const scopedDisaster = disasterShown ? disaster : 0;
+                return {
+                    iso3: row.iso3,
+                    countryName: row.countryName,
+                    conflict: scopedConflict,
+                    disaster: scopedDisaster,
+                    total: scopedConflict + scopedDisaster,
+                };
+            })
+            .filter((row) => row.total > 0)
+            .sort((a, b) => b.total - a.total);
+    }, [data, isStock, conflictShown, disasterShown]);
+
+    const grandTotal = useMemo(
+        () => sum(rankedCountries.map((row) => row.total)),
+        [rankedCountries],
+    );
+
+    return { pending, rankedCountries, grandTotal };
+}

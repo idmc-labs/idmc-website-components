@@ -7,6 +7,9 @@ import { _cs } from '@togglecorp/fujs';
 
 import Header from '#components/Header';
 import Message from '#components/Message';
+import ListView from '#components/ListView';
+
+import { joinWithAnd } from '../utils';
 
 import FigureAnalysisFetcher, { FigureAnalysisEntry } from './FigureAnalysisFetcher';
 import FigureAnalysisEntryCard from './FigureAnalysisEntryCard';
@@ -18,9 +21,16 @@ export interface FigureAnalysisCountry {
     name: string;
 }
 
+type Category = 'flow' | 'stock';
+
 export interface Props {
     className?: string;
     countries: FigureAnalysisCountry[];
+    // display names for the header only — selected regions then countries,
+    // Oxford-joined; distinct from `countries` (a region expands to its members
+    // for fetching, but the header should name the region, not each member)
+    scopeNames: string[];
+    category: Category | undefined;
     year: number;
     clientCode: string;
     abbreviate: boolean;
@@ -30,6 +40,8 @@ function FigureAnalysisCard(props: Props) {
     const {
         className,
         countries,
+        scopeNames,
+        category,
         year,
         clientCode,
         abbreviate,
@@ -58,6 +70,13 @@ function FigureAnalysisCard(props: Props) {
         ))
     ), [countries, resultsByIso3]);
 
+    const entryKeySelector = useCallback((entry: typeof entries[number]) => entry.id, []);
+    const entryRendererParams = useCallback((_: string, entry: typeof entries[number]) => ({
+        entry,
+        showCountryName,
+        abbreviate,
+    }), [showCountryName, abbreviate]);
+
     // Any selected country still on its first load, before any entries have
     // arrived at all — once at least one comes in, show what we have rather
     // than blocking on the slowest country.
@@ -66,14 +85,12 @@ function FigureAnalysisCard(props: Props) {
         && countries.some((country) => pendingByIso3[country.iso3] !== false);
 
     const headingDescription = useMemo(() => {
-        if (countries.length === 0) {
+        if (scopeNames.length === 0) {
             return "IDMC's methodology and caveat notes behind each published figure.";
         }
-        if (countries.length === 1) {
-            return `IDMC's methodology and caveat notes behind ${countries[0].name}'s published figures.`;
-        }
-        return "IDMC's methodology and caveat notes behind the selected countries' published figures.";
-    }, [countries]);
+        const metricWord = category === 'stock' ? 'IDPs' : 'internal displacements';
+        return `Methodology and caveats behind ${joinWithAnd(scopeNames)}'s figures for ${metricWord}.`;
+    }, [scopeNames, category]);
 
     return (
         <div className={_cs(styles.figureAnalysisCard, className)}>
@@ -88,6 +105,7 @@ function FigureAnalysisCard(props: Props) {
             ))}
             <Header
                 heading="Figure analysis"
+                headingClassName={styles.slideHeading}
                 headingSize="small"
                 headingDescription={headingDescription}
                 headingDescriptionClassName={styles.description}
@@ -116,16 +134,16 @@ function FigureAnalysisCard(props: Props) {
                         </div>
                     )}
                     {entries.length > 0 && (
-                        <div className={styles.list}>
-                            {entries.map((entry) => (
-                                <FigureAnalysisEntryCard
-                                    key={entry.id}
-                                    entry={entry}
-                                    showCountryName={showCountryName}
-                                    abbreviate={abbreviate}
-                                />
-                            ))}
-                        </div>
+                        <ListView
+                            className={styles.list}
+                            data={entries}
+                            keySelector={entryKeySelector}
+                            renderer={FigureAnalysisEntryCard}
+                            rendererParams={entryRendererParams}
+                            pending={false}
+                            errored={false}
+                            filtered={false}
+                        />
                     )}
                 </>
             )}

@@ -4,10 +4,7 @@ import {
     isDefined,
     compareNumber,
 } from '@togglecorp/fujs';
-import {
-    Modal,
-    List,
-} from '@togglecorp/toggle-ui';
+import { Modal } from '@togglecorp/toggle-ui';
 import { removeNull } from '@togglecorp/toggle-form';
 import {
     gql,
@@ -18,6 +15,7 @@ import ProgressLine from '#components/ProgressLine';
 import TextOutput from '#components/TextOutput';
 import NumberBlock from '#components/NumberBlock';
 import Message from '#components/Message';
+import ListView from '#components/ListView';
 import {
     DATA_RELEASE,
 } from '#utils/common';
@@ -174,11 +172,17 @@ function EventModal(props: Props) {
             </div>
             <div className={styles.border} />
             <div className={styles.right}>
-                <List
+                <ListView
                     rendererParams={countryRendererParams}
                     renderer={ProgressLine}
                     keySelector={countryKeySelector}
                     data={sortedCountries}
+                    pending={loading && !data}
+                    errored={false}
+                    filtered={false}
+                    messageShown
+                    compactPendingMessage
+                    emptyMessage="No affected countries recorded for this event."
                 />
             </div>
         </Modal>
