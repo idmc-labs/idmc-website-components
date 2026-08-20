@@ -261,6 +261,7 @@ function useIduMap(
     const [fitBounds, setFitBounds] = useState<LngLatBoundsLike | undefined>();
     const [mapFocus, setMapFocus] = useState<MapFocus | undefined>();
     const [resetTrigger, setResetTrigger] = useState(0);
+    const prevMapFocusRef = useRef<MapFocus | undefined>(undefined);
     // the event row highlighted in the pane == the event whose popup is open
     const selectedEventId = mapSelection?.eventId;
 
@@ -485,6 +486,14 @@ function useIduMap(
         setMapFocus(undefined);
         setResetTrigger((n) => n + 1);
     }, [cause, triggerTypes, regions, locations, searchText, startDate, endDate]);
+
+    // zoom out whenever focus is explicitly removed (pill, trigger toggle, map click, etc.)
+    React.useEffect(() => {
+        if (isDefined(prevMapFocusRef.current) && isNotDefined(mapFocus)) {
+            setResetTrigger((n) => n + 1);
+        }
+        prevMapFocusRef.current = mapFocus;
+    }, [mapFocus]);
 
     const handleReset = useCallback(() => {
         setSearchInput(undefined);

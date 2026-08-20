@@ -79,7 +79,7 @@ function EventListItem(props: Props) {
         <>
             <div className={styles.details}>
                 <div className={styles.title}>
-                    {toSentenceCase(title)}
+                    {title}
                 </div>
                 {subtitle && (
                     <div className={_cs(styles.subtitle, subtitleMonospace && styles.monospace)}>
