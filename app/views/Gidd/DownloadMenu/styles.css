@@ -1,8 +1,35 @@
-.popup {
-    .export-message {
-        padding: var(--tui-spacing-small) var(--tui-spacing-large);
-        max-width: 26rem;
-        font-size: var(--tui-font-size-small);
-        font-style: italic;
+.download-groups {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tui-spacing-extra-small);
+
+    .download-group-row {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: var(--tui-spacing-small);
+
+        .download-group-label {
+            color: var(--tui-color-label, #7a7a7a);
+            font-size: var(--tui-font-size-extra-small);
+        }
+
+        .download-button {
+            border: 1px solid var(--tui-color-separator, #d0d5dd);
+            background-color: #fff;
+            padding: calc(var(--tui-spacing-extra-small) * 0.5);
+            color: var(--tui-color-text, #333);
+            font-size: var(--tui-font-size-small);
+            font-weight: var(--tui-font-weight-bold);
+        }
     }
+}
+.export-message {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    max-width: 26rem;
+    color: var(--tui-color-text-light);
+    font-size: var(--tui-font-size-small);
+    font-style: italic;
 }

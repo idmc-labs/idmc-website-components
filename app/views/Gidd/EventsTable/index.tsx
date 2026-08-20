@@ -23,6 +23,7 @@ import {
 } from '@apollo/client';
 
 import Numeral from '#components/Numeral';
+import Message from '#components/Message';
 import HazardType, { Props as HazardTypeProps } from '#components/IduMap/IduTable/HazardType';
 import useDebouncedValue from '#hooks/useDebouncedValue';
 import {
@@ -34,12 +35,14 @@ import EventTitle, { Props as EventTitleProps } from '../EventTitle';
 
 import styles from './styles.css';
 
-const mediumNumberWidth = 100;
+const mediumNumberWidth = 120;
 
 const dateWidth = 120;
 
 const smallTextWidth = 200;
+const extraSmallTextWidth = 150;
 const largeTextWidth = 320;
+const mediumTextWidth = 280;
 
 type EventData = NonNullable<
     NonNullable<GiddEventsQuery['giddPublicEvents']>['results']
@@ -67,6 +70,7 @@ const GIDD_EVENTS = gql`
         $endYear: Float,
         $startYear: Float,
         $hazardTypes: [ID!],
+        $violenceSubTypes: [ID!],
         $countriesIso3: [String!],
         $releaseEnvironment: String!,
         $clientId: String!,
@@ -81,6 +85,7 @@ const GIDD_EVENTS = gql`
                 endYear: $endYear,
                 startYear: $startYear,
                 hazardTypes: $hazardTypes,
+                violenceSubTypes: $violenceSubTypes,
                 cause: $cause,
                 releaseEnvironment: $releaseEnvironment,
             },
@@ -130,6 +135,7 @@ interface Props {
     category: Category | undefined;
     countriesIso3: string[] | undefined;
     hazardTypes: string[] | undefined;
+    violenceSubTypes: string[] | undefined;
     clientCode: string;
     searchText: string | undefined;
     abbreviate: boolean;
@@ -144,6 +150,7 @@ function EventsTable(props: Props) {
         endYear,
         countriesIso3,
         hazardTypes,
+        violenceSubTypes,
         clientCode,
         searchText,
         cause,
@@ -170,6 +177,7 @@ function EventsTable(props: Props) {
         cause,
         endYear,
         hazardTypes,
+        violenceSubTypes,
         pageSize: EVENTS_TABLE_PAGE_SIZE,
         releaseEnvironment: DATA_RELEASE,
         clientId: clientCode,
@@ -180,6 +188,7 @@ function EventsTable(props: Props) {
         endYear,
         searchText,
         hazardTypes,
+        violenceSubTypes,
         eventSorting,
         activePage,
         clientCode,
@@ -220,7 +229,7 @@ function EventsTable(props: Props) {
                     value: data.countryName,
                     category: String(data.year),
                 }),
-                columnWidth: smallTextWidth,
+                columnWidth: extraSmallTextWidth,
             };
 
             const eventTitle: TableColumn<
@@ -240,7 +249,7 @@ function EventsTable(props: Props) {
                     eventId: data.eventId ?? undefined,
                     clientId: clientCode,
                 }),
-                columnWidth: largeTextWidth,
+                columnWidth: mediumTextWidth,
                 columnStretch: true,
             };
 
@@ -274,6 +283,7 @@ function EventsTable(props: Props) {
                     };
                 },
                 columnWidth: mediumNumberWidth,
+                columnStretch: true,
             } : undefined;
 
             const idpsColumn: TableColumn<
@@ -306,6 +316,7 @@ function EventsTable(props: Props) {
                     };
                 },
                 columnWidth: mediumNumberWidth,
+                columnStretch: true,
             } : undefined;
 
             const eventTypeColumn: TableColumn<
@@ -336,7 +347,7 @@ function EventsTable(props: Props) {
                         category: data.hazardCategoryName,
                     };
                 },
-                columnWidth: smallTextWidth,
+                columnWidth: extraSmallTextWidth,
             };
 
             return ([
@@ -366,27 +377,38 @@ function EventsTable(props: Props) {
         ],
     );
 
+    const eventRows = eventsResponse?.giddPublicEvents?.results;
+    const isEmpty = (eventRows ?? []).length === 0;
+
     return (
         <div className={_cs(className, styles.eventsTable)}>
-            <SortContext.Provider value={eventDataSortState}>
-                <Table
-                    // using dynamic key to reset the column width caching
-                    key={eventColumns.map((column) => column.id).join(',')}
-                    containerClassName={styles.table}
-                    data={eventsResponse?.giddPublicEvents?.results}
-                    keySelector={eventKeySelector}
-                    columns={eventColumns}
-                    resizableColumn
+            {isEmpty ? (
+                <Message
+                    empty
+                    messageIconHidden
+                    emptyMessage="No data available for the selected filters."
                 />
-                <Pager
-                    className={styles.pager}
-                    activePage={activePage}
-                    itemsCount={eventsResponse?.giddPublicEvents?.totalCount ?? 0}
-                    maxItemsPerPage={EVENTS_TABLE_PAGE_SIZE}
-                    onActivePageChange={onActivePageChange}
-                    itemsPerPageControlHidden
-                />
-            </SortContext.Provider>
+            ) : (
+                <SortContext.Provider value={eventDataSortState}>
+                    <Table
+                        // using dynamic key to reset the column width caching
+                        key={eventColumns.map((column) => column.id).join(',')}
+                        containerClassName={styles.table}
+                        data={eventRows}
+                        keySelector={eventKeySelector}
+                        columns={eventColumns}
+                        resizableColumn
+                    />
+                    <Pager
+                        className={styles.pager}
+                        activePage={activePage}
+                        itemsCount={eventsResponse?.giddPublicEvents?.totalCount ?? 0}
+                        maxItemsPerPage={EVENTS_TABLE_PAGE_SIZE}
+                        onActivePageChange={onActivePageChange}
+                        itemsPerPageControlHidden
+                    />
+                </SortContext.Provider>
+            )}
         </div>
     );
 }

@@ -22,6 +22,7 @@ import {
     createTextColumn,
     createNumberColumn,
 } from '#components/tableHelpers';
+import Message from '#components/Message';
 import useDebouncedValue from '#hooks/useDebouncedValue';
 import {
     GiddDisplacementsQuery,
@@ -31,7 +32,7 @@ import {
 import styles from './styles.css';
 
 type DisplacementData = NonNullable<
-    GiddDisplacementsQuery['giddPublicCountryYearDisplacements']
+    NonNullable<GiddDisplacementsQuery['giddPublicCountryYearDisplacements']>['results']
 >[number];
 
 const displacementItemKeySelector = (item: DisplacementData) => `${item.iso3}-${item.year}`;
@@ -54,31 +55,42 @@ const mediumTextWidth = 220;
 
 const GIDD_DISPLACEMENTS = gql`
     query GiddDisplacements(
+        $page: Int,
+        $ordering: String,
+        $pageSize: Int,
         $endYear: Float,
         $startYear: Float,
         $countriesIso3: [String!],
+        $hazardTypes: [ID!],
+        $violenceSubTypes: [ID!],
         $releaseEnvironment: String!,
         $clientId: String!,
     ){
         giddPublicCountryYearDisplacements(
+            ordering: $ordering,
+            pageSize: $pageSize,
+            page: $page,
             countriesIso3: $countriesIso3,
             endYear: $endYear,
             startYear: $startYear,
+            hazardTypes: $hazardTypes,
+            violenceSubTypes: $violenceSubTypes,
             releaseEnvironment: $releaseEnvironment,
             clientId: $clientId,
         ){
-            iso3
-            countryName
-            countryId
-            year
-            conflictNewDisplacement
-            conflictNewDisplacementRounded
-            conflictTotalDisplacement
-            conflictTotalDisplacementRounded
-            disasterNewDisplacement
-            disasterNewDisplacementRounded
-            disasterTotalDisplacement
-            disasterTotalDisplacementRounded
+            results {
+                iso3
+                countryName
+                countryId
+                year
+                conflictNewDisplacement
+                conflictTotalDisplacement
+                disasterNewDisplacement
+                disasterTotalDisplacement
+            }
+            totalCount
+            page
+            pageSize
         }
     }
 `;
@@ -93,6 +105,8 @@ interface Props {
     startYear: number;
     endYear: number;
     countriesIso3: string[] | undefined;
+    hazardTypes?: string[];
+    violenceSubTypes?: string[];
     activePage: number;
     onActivePageChange: (newVal: number) => void;
     clientCode: string;
@@ -108,6 +122,8 @@ function DataTable(props: Props) {
         startYear,
         endYear,
         countriesIso3,
+        hazardTypes,
+        violenceSubTypes,
         activePage,
         onActivePageChange,
         clientCode,
@@ -122,15 +138,24 @@ function DataTable(props: Props) {
     ), [sorting]);
 
     const giddDisplacementsVariables = useMemo(() => ({
+        ordering: `${sorting?.direction === 'asc' ? '' : '-'}${sorting?.name}`,
+        page: activePage,
+        pageSize: DISPLACEMENTS_TABLE_PAGE_SIZE,
         countriesIso3,
         startYear,
         endYear,
+        hazardTypes,
+        violenceSubTypes,
         releaseEnvironment: DATA_RELEASE,
         clientId: clientCode,
     }), [
+        sorting,
+        activePage,
         countriesIso3,
         startYear,
         endYear,
+        hazardTypes,
+        violenceSubTypes,
         clientCode,
     ]);
 
@@ -181,19 +206,19 @@ function DataTable(props: Props) {
                 },
             ),
             isFlowShown && isConflictDataShown ? createNumberColumn<DisplacementData, string>(
-                'conflictNewDisplacementRounded',
-                'Conflict Internal Displacement',
+                'conflictNewDisplacement',
+                'Conflict Displacement',
                 (item) => item.conflictNewDisplacement,
                 {
                     sortable: true,
                     variant: 'conflict',
                     abbreviate,
                     columnWidth: largeNumberWidth,
-                    headerCellRendererClassName: sortedHeaderClassName('conflictNewDisplacementRounded'),
+                    headerCellRendererClassName: sortedHeaderClassName('conflictNewDisplacement'),
                 },
             ) : undefined,
             isFlowShown && isDisasterDataShown ? createNumberColumn<DisplacementData, string>(
-                'disasterNewDisplacementRounded',
+                'disasterNewDisplacement',
                 'Disaster Internal Displacement',
                 (item) => item.disasterNewDisplacement,
                 {
@@ -201,9 +226,13 @@ function DataTable(props: Props) {
                     variant: 'disaster',
                     abbreviate,
                     columnWidth: largeNumberWidth,
-                    headerCellRendererClassName: sortedHeaderClassName('disasterNewDisplacementRounded'),
+                    headerCellRendererClassName: sortedHeaderClassName('disasterNewDisplacement'),
                 },
             ) : undefined,
+            // not sortable: this is a client-side sum of two fields with no
+            // single backing field the server can order by, and the table
+            // is now server-paginated — sorting it would only reorder
+            // whatever happens to be on the current page
             isFlowShown && bothCauses ? createNumberColumn<DisplacementData, string>(
                 'totalNewDisplacement',
                 'Total Internal Displacement',
@@ -212,27 +241,25 @@ function DataTable(props: Props) {
                     item.disasterNewDisplacement,
                 ),
                 {
-                    sortable: true,
                     emphasize: true,
                     abbreviate,
                     columnWidth: largeNumberWidth,
-                    headerCellRendererClassName: sortedHeaderClassName('totalNewDisplacement'),
                 },
             ) : undefined,
             isStockShown && isConflictDataShown ? createNumberColumn<DisplacementData, string>(
-                'conflictTotalDisplacementRounded',
+                'conflictTotalDisplacement',
                 'Conflict IDPs',
-                (item) => item.conflictTotalDisplacementRounded,
+                (item) => item.conflictTotalDisplacement,
                 {
                     sortable: true,
                     variant: 'conflict',
                     abbreviate,
                     columnWidth: largeNumberWidth,
-                    headerCellRendererClassName: sortedHeaderClassName('conflictTotalDisplacementRounded'),
+                    headerCellRendererClassName: sortedHeaderClassName('conflictTotalDisplacement'),
                 },
             ) : undefined,
             isStockShown && isDisasterDataShown ? createNumberColumn<DisplacementData, string>(
-                'disasterTotalDisplacementRounded',
+                'disasterTotalDisplacement',
                 'Disaster IDPs',
                 (item) => item.disasterTotalDisplacement,
                 {
@@ -240,9 +267,10 @@ function DataTable(props: Props) {
                     variant: 'disaster',
                     abbreviate,
                     columnWidth: largeNumberWidth,
-                    headerCellRendererClassName: sortedHeaderClassName('disasterTotalDisplacementRounded'),
+                    headerCellRendererClassName: sortedHeaderClassName('disasterTotalDisplacement'),
                 },
             ) : undefined,
+            // not sortable — see the "Total Internal Displacement" column above
             isStockShown && bothCauses ? createNumberColumn<DisplacementData, string>(
                 'totalIDPs',
                 'Total IDPs',
@@ -251,11 +279,9 @@ function DataTable(props: Props) {
                     item.disasterTotalDisplacement,
                 ),
                 {
-                    sortable: true,
                     emphasize: true,
                     abbreviate,
                     columnWidth: largeNumberWidth,
-                    headerCellRendererClassName: sortedHeaderClassName('totalIDPs'),
                 },
             ) : undefined,
         ]).filter(isDefined),
@@ -270,47 +296,41 @@ function DataTable(props: Props) {
         ],
     );
 
-    const allRows = displacementsResponse?.giddPublicCountryYearDisplacements;
-
-    const sortedRows = useMemo(() => {
-        const data = allRows ?? [];
-        if (!sorting) {
-            return data;
-        }
-        const column = columns.find((col) => col.id === sorting.name);
-        if (!column?.valueComparator) {
-            return data;
-        }
-        const sorted = [...data].sort(column.valueComparator);
-        return sorting.direction === 'asc' ? sorted.reverse() : sorted;
-    }, [allRows, sorting, columns]);
-
-    const paginatedRows = useMemo(() => {
-        const start = (activePage - 1) * DISPLACEMENTS_TABLE_PAGE_SIZE;
-        return sortedRows.slice(start, start + DISPLACEMENTS_TABLE_PAGE_SIZE);
-    }, [sortedRows, activePage]);
+    const rows = displacementsResponse?.giddPublicCountryYearDisplacements?.results;
+    const isEmpty = (rows ?? []).length === 0;
 
     return (
         <div className={_cs(className, styles.dataTable)}>
-            <SortContext.Provider value={overallDataSortState}>
-                <Table
-                    // using dynamic key to reset the column width caching
-                    key={columns.map((column) => column.id).join(',')}
-                    containerClassName={styles.table}
-                    keySelector={displacementItemKeySelector}
-                    data={paginatedRows}
-                    columns={columns}
-                    resizableColumn
+            {isEmpty ? (
+                <Message
+                    empty
+                    messageIconHidden
+                    emptyMessage="No data available for the selected filters."
                 />
-                <Pager
-                    className={styles.pager}
-                    activePage={activePage}
-                    itemsCount={sortedRows.length}
-                    maxItemsPerPage={DISPLACEMENTS_TABLE_PAGE_SIZE}
-                    onActivePageChange={onActivePageChange}
-                    itemsPerPageControlHidden
-                />
-            </SortContext.Provider>
+            ) : (
+                <SortContext.Provider value={overallDataSortState}>
+                    <Table
+                        // using dynamic key to reset the column width caching
+                        key={columns.map((column) => column.id).join(',')}
+                        containerClassName={styles.table}
+                        keySelector={displacementItemKeySelector}
+                        data={rows}
+                        columns={columns}
+                        resizableColumn
+                    />
+                    <Pager
+                        className={styles.pager}
+                        activePage={activePage}
+                        itemsCount={
+                            displacementsResponse
+                                ?.giddPublicCountryYearDisplacements?.totalCount ?? 0
+                        }
+                        maxItemsPerPage={DISPLACEMENTS_TABLE_PAGE_SIZE}
+                        onActivePageChange={onActivePageChange}
+                        itemsPerPageControlHidden
+                    />
+                </SortContext.Provider>
+            )}
         </div>
     );
 }

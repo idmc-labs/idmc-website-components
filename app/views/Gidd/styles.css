@@ -1,5 +1,5 @@
 .body-container {
-    --gidd-sidebar-height: 45rem;
+    --gidd-sidebar-height: 48rem;
     --tui-font-family-heading: var(--tui-font-family-sans-serif);
 
     display: flex;
@@ -17,6 +17,14 @@
     .card-description {
         color: var(--tui-color-label, #7a7a7a);
         font-size: var(--tui-font-size-small);
+    }
+
+    /* IDMC navy "Freight Big Black Pro" (freight-big-pro @ 900) for headings —
+       overrides the sans-serif --tui-font-family-heading set above */
+    .slide-heading {
+        color: var(--tui-color-brand, #193256);
+        font-family: 'freight-big-pro', serif;
+        font-weight: 900;
     }
 
     .gidd {
@@ -41,6 +49,9 @@
 
         .heading {
             margin: 0;
+            color: var(--tui-color-brand, #193256);
+            font-family: 'freight-big-pro', serif;
+            font-weight: 900;
         }
 
         .heading-description {
@@ -262,18 +273,6 @@
                 background-color: var(--tui-color-foreground);
                 padding: var(--tui-spacing-medium);
 
-                .sidebar-heading-block {
-                    display: flex;
-                    flex-direction: column;
-                    gap: var(--tui-spacing-extra-small);
-                }
-
-                .sidebar-heading {
-                    color: var(--tui-color-text-light);
-                    font-size: var(--tui-font-size-small);
-                    font-weight: var(--tui-font-weight-bold);
-                }
-
                 .glance-description {
                     margin: 0;
                     color: var(--tui-color-text-light);
@@ -367,10 +366,9 @@
                     }
                 }
 
-                .download-row {
+                .download-section {
                     display: flex;
-                    align-items: center;
-                    flex-wrap: wrap;
+                    flex-direction: column;
                     gap: var(--tui-spacing-small);
 
                     .download-label {
@@ -504,6 +502,13 @@
 }
 
 :global {
+    /* Recharts' own legend icon is inlined with vertical-align: middle, but
+       the label span next to it gets no vertical-align at all (defaults to
+       baseline) — the two end up sitting at different heights. */
+    .recharts-legend-item-text {
+        vertical-align: middle;
+    }
+
     .recharts-tooltip-wrapper {
         width: 12rem;
 

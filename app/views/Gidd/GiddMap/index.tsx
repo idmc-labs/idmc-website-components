@@ -1,6 +1,7 @@
 import React, {
     useMemo,
     useState,
+    useEffect,
     useCallback,
 } from 'react';
 import {
@@ -15,11 +16,14 @@ import ReMap, {
     MapLayer,
     MapImage,
     MapTooltip,
+    MapCenter,
+    MapBounds,
 } from '@togglecorp/re-map';
 import {
     MapboxGeoJSONFeature,
     LngLat,
     LngLatLike,
+    LngLatBoundsLike,
     PopupOptions,
 } from 'mapbox-gl';
 import { IoInformationCircleOutline } from 'react-icons/io5';
@@ -70,6 +74,8 @@ const MAP_DISPLACEMENTS = gql`
         $endYear: Float,
         $startYear: Float,
         $countriesIso3: [String!],
+        $hazardTypes: [ID!],
+        $violenceSubTypes: [ID!],
         $releaseEnvironment: String!,
         $clientId: String!,
     ){
@@ -77,6 +83,8 @@ const MAP_DISPLACEMENTS = gql`
             countriesIso3: $countriesIso3,
             endYear: $endYear,
             startYear: $startYear,
+            hazardTypes: $hazardTypes,
+            violenceSubTypes: $violenceSubTypes,
             releaseEnvironment: $releaseEnvironment,
             clientId: $clientId,
         ){
@@ -117,6 +125,62 @@ function getCoordinates(
         return undefined;
     }
     return [lng, lat];
+}
+
+// GIDD's country type only exposes a centroid, not a bounding box, so a
+// single country zooms by flying to its point at a fixed zoom rather than
+// fitting its actual shape.
+const SINGLE_COUNTRY_ZOOM = 4;
+const FLY_TO_OPTIONS = { zoom: SINGLE_COUNTRY_ZOOM };
+// Roughly the full populated world extent — used to reset the camera when
+// the country/region filter is cleared, since MapCenter/MapBounds only ever
+// move the camera when given a defined value (clearing to `undefined` would
+// just leave the camera wherever it last was).
+const WORLD_BOUNDS: LngLatBoundsLike = [[-169, -58], [191, 80]];
+
+function computeBounds(points: [number, number][]): LngLatBoundsLike | undefined {
+    if (points.length === 0) {
+        return undefined;
+    }
+    let minLng = points[0][0];
+    let maxLng = points[0][0];
+    let minLat = points[0][1];
+    let maxLat = points[0][1];
+    points.forEach(([lng, lat]) => {
+        minLng = Math.min(minLng, lng);
+        maxLng = Math.max(maxLng, lng);
+        minLat = Math.min(minLat, lat);
+        maxLat = Math.max(maxLat, lat);
+    });
+    return [[minLng, minLat], [maxLng, maxLat]];
+}
+
+interface CameraTarget {
+    flyTo: LngLatLike | undefined;
+    fitBounds: LngLatBoundsLike | undefined;
+}
+
+// Shared by the countriesIso3-driven reset effect and by closing the map
+// popup, so both "return" to the same place: the current filter's implied
+// view, not unconditionally the world view (a country/region filter might
+// still be active when the popup closes).
+function computeCameraForCountries(
+    countriesIso3: string[],
+    countryCentroidByIso3: Map<string, [number, number]>,
+): CameraTarget | undefined {
+    if (countriesIso3.length === 0) {
+        return { flyTo: undefined, fitBounds: WORLD_BOUNDS };
+    }
+    const coordinatesList = countriesIso3
+        .map((iso3) => countryCentroidByIso3.get(iso3))
+        .filter(isDefined);
+    if (coordinatesList.length === 0) {
+        return undefined;
+    }
+    if (coordinatesList.length === 1) {
+        return { flyTo: coordinatesList[0], fitBounds: undefined };
+    }
+    return { flyTo: undefined, fitBounds: computeBounds(coordinatesList) };
 }
 
 function getRadiusForValue(value: number) {
@@ -270,6 +334,8 @@ export interface Props {
     cause: Cause | undefined;
     category: Category | undefined;
     countriesIso3: string[];
+    hazardTypes?: string[];
+    violenceSubTypes?: string[];
     startYear: number;
     endYear: number;
     clientCode: string;
@@ -283,6 +349,8 @@ function GiddMap(props: Props) {
         cause,
         category,
         countriesIso3,
+        hazardTypes,
+        violenceSubTypes,
         startYear,
         endYear,
         clientCode,
@@ -298,6 +366,9 @@ function GiddMap(props: Props) {
         lngLat: LngLatLike;
         properties: PointProperties;
     } | undefined>();
+
+    const [flyTo, setFlyTo] = useState<LngLatLike>();
+    const [fitBounds, setFitBounds] = useState<LngLatBoundsLike>();
 
     const [fetchHazardBreakdown, { data: hazardData }] = useLazyQuery<
         GiddHazardBreakdownQuery,
@@ -362,12 +433,16 @@ function GiddMap(props: Props) {
         countriesIso3,
         startYear,
         endYear,
+        hazardTypes,
+        violenceSubTypes,
         releaseEnvironment: DATA_RELEASE,
         clientId: clientCode,
     }), [
         countriesIso3,
         startYear,
         endYear,
+        hazardTypes,
+        violenceSubTypes,
         clientCode,
     ]);
 
@@ -390,11 +465,15 @@ function GiddMap(props: Props) {
         countriesIso3,
         startYear: endYear,
         endYear,
+        hazardTypes,
+        violenceSubTypes,
         releaseEnvironment: DATA_RELEASE,
         clientId: clientCode,
     }), [
         countriesIso3,
         endYear,
+        hazardTypes,
+        violenceSubTypes,
         clientCode,
     ]);
 
@@ -442,6 +521,29 @@ function GiddMap(props: Props) {
     } else if (cause === 'disaster') {
         choroplethRamp = 'disaster';
     }
+
+    // unfiltered by value (unlike countryPoints below) — a country selected
+    // in the filter with zero displacement this year still needs to be
+    // zoomable to
+    const countryCentroidByIso3 = useMemo(() => {
+        const map = new Map<string, [number, number]>();
+        (countryPointsData?.giddPublicCountries ?? []).forEach((country) => {
+            const coordinates = getCoordinates(country.centroid);
+            if (isDefined(coordinates) && isDefined(country.iso3)) {
+                map.set(country.iso3, coordinates);
+            }
+        });
+        return map;
+    }, [countryPointsData]);
+
+    useEffect(() => {
+        const camera = computeCameraForCountries(countriesIso3, countryCentroidByIso3);
+        if (!camera) {
+            return;
+        }
+        setFlyTo(camera.flyTo);
+        setFitBounds(camera.fitBounds);
+    }, [countriesIso3, countryCentroidByIso3]);
 
     const countryPoints = useMemo(() => (
         (countryPointsData?.giddPublicCountries ?? [])
@@ -543,7 +645,12 @@ function GiddMap(props: Props) {
                 conflictTotal: point.conflictTotal,
                 disasterNew: point.disasterNew,
                 disasterTotal: point.disasterTotal,
-                iconName: `gidd-pie-${point.iso3}`,
+                // encodes what the icon actually looks like (radius is
+                // dropped: it's just getRadiusForValue(conflict + disaster),
+                // fully implied by these two) — MapImage never repaints an
+                // existing name (see pieIcons below), so a stale iso3-only
+                // name would keep showing a previous filter's pie forever
+                iconName: `gidd-pie-${point.iso3}-${Math.round(point.conflictValue)}-${Math.round(point.disasterValue)}`,
             },
             geometry: {
                 type: 'Point' as const,
@@ -552,10 +659,18 @@ function GiddMap(props: Props) {
         })),
     }), [pieCountryPoints]);
 
-    const pieIcons = useMemo(() => pieCountryPoints.map((point) => ({
-        name: `gidd-pie-${point.iso3}`,
-        image: createPieIcon(point.radius, point.conflictValue, point.disasterValue),
-    })), [pieCountryPoints]);
+    // NOTE: @togglecorp/re-map's <MapImage> registers its image once at
+    // mount and never updates it (it snapshots name/image via useState and
+    // console.error+skips if the name already exists) — so this name MUST
+    // change whenever the rendered pie's size/split would change, or the
+    // old icon just keeps showing under a new filter selection.
+    const pieIcons = useMemo(() => pieCountryPoints.map((point) => {
+        const name = `gidd-pie-${point.iso3}-${Math.round(point.conflictValue)}-${Math.round(point.disasterValue)}`;
+        return {
+            name,
+            image: createPieIcon(point.radius, point.conflictValue, point.disasterValue),
+        };
+    }), [pieCountryPoints]);
 
     const maxValue = useMemo(
         () => Math.max(0, ...countryPoints.map((point) => point.value)),
@@ -579,7 +694,10 @@ function GiddMap(props: Props) {
                 name: point.name,
                 cause: point.markerCause,
                 value: point.value,
-                iconName: `gidd-square-${point.iso3}`,
+                // choroplethRamp is included so switching cause (which swaps
+                // the whole ramp) never reuses a stale, wrong-colored icon —
+                // see the NOTE above pieIcons for why this matters
+                iconName: `gidd-square-${point.iso3}-${choroplethRamp}`,
                 conflictNew: point.conflictNew,
                 conflictTotal: point.conflictTotal,
                 disasterNew: point.disasterNew,
@@ -590,7 +708,7 @@ function GiddMap(props: Props) {
                 coordinates: point.coordinates,
             },
         })),
-    }), [isStockView, countryPoints]);
+    }), [isStockView, countryPoints, choroplethRamp]);
 
     const squareIcons = useMemo(() => {
         if (!isStockView) {
@@ -599,7 +717,7 @@ function GiddMap(props: Props) {
         return countryPoints.map((point) => {
             const t = maxValue > 0 ? Math.sqrt(point.value / maxValue) : 0;
             return {
-                name: `gidd-square-${point.iso3}`,
+                name: `gidd-square-${point.iso3}-${choroplethRamp}`,
                 image: createSquareIcon(SQUARE_SIZE, getChoroplethColor(choroplethRamp, t)),
             };
         });
@@ -619,6 +737,12 @@ function GiddMap(props: Props) {
         const properties = feature.properties as PointProperties;
         setSelection({ lngLat, properties });
 
+        const clickedCoordinates = countryCentroidByIso3.get(properties.iso3);
+        if (isDefined(clickedCoordinates)) {
+            setFlyTo(clickedCoordinates);
+            setFitBounds(undefined);
+        }
+
         const breakdownVariables = {
             countriesIso3: [properties.iso3],
             startYear,
@@ -635,11 +759,27 @@ function GiddMap(props: Props) {
         }
 
         return undefined;
-    }, [cause, startYear, endYear, clientCode, fetchHazardBreakdown, fetchViolenceBreakdown]);
+    }, [
+        cause,
+        startYear,
+        endYear,
+        clientCode,
+        countryCentroidByIso3,
+        fetchHazardBreakdown,
+        fetchViolenceBreakdown,
+    ]);
 
     const handleCloseSelection = useCallback(() => {
         setSelection(undefined);
-    }, []);
+        // zoom back out to whatever the active country/region filter implies
+        // (or the world view if none), same as clearing the filter would —
+        // rather than leaving the camera wherever the marker click zoomed to
+        const camera = computeCameraForCountries(countriesIso3, countryCentroidByIso3);
+        if (camera) {
+            setFlyTo(camera.flyTo);
+            setFitBounds(camera.fitBounds);
+        }
+    }, [countriesIso3, countryCentroidByIso3]);
 
     // once a bubble is pinned, ignore hover entirely (only one popup at a time)
     const showHoverPreview = isDefined(hoverLngLat)
@@ -681,6 +821,8 @@ function GiddMap(props: Props) {
                     navControlShown
                 >
                     <MapContainer className={styles.mapContainer} />
+                    <MapCenter center={flyTo} centerOptions={FLY_TO_OPTIONS} />
+                    <MapBounds bounds={fitBounds} padding={40} duration={1000} />
                     {!isStockView && (
                         <>
                             <MapSource

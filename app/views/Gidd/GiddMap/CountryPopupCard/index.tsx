@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { _cs, isDefined } from '@togglecorp/fujs';
 import {
     IoClose,
@@ -7,6 +7,7 @@ import {
 
 import Numeral from '#components/Numeral';
 import RawButton from '#components/RawButton';
+import ListView from '#components/ListView';
 import { getHazardTypeLabel } from '#utils/common';
 
 import {
@@ -17,6 +18,32 @@ import {
 } from '../types';
 
 import styles from '../styles.css';
+
+interface BreakdownRowProps {
+    className?: string;
+    label: string;
+    value: number;
+    abbreviate: boolean;
+}
+
+function BreakdownRow(props: BreakdownRowProps) {
+    const {
+        className,
+        label,
+        value,
+        abbreviate,
+    } = props;
+    return (
+        <div className={styles.sectionRow}>
+            <span>{label}</span>
+            <Numeral
+                className={className}
+                value={value}
+                abbreviate={abbreviate}
+            />
+        </div>
+    );
+}
 
 export interface Props {
     properties: PointProperties;
@@ -47,6 +74,22 @@ function CountryPopupCard(props: Props) {
 
     const canFocus = isDefined(onCountryFocus);
     const canClose = isDefined(onClose);
+
+    const hazardKeySelector = useCallback((hazard: BreakdownDisplayItem) => hazard.id, []);
+    const hazardRendererParams = useCallback((_: string, hazard: BreakdownDisplayItem) => ({
+        className: styles.disaster,
+        label: getHazardTypeLabel(hazard),
+        value: hazard.value,
+        abbreviate,
+    }), [abbreviate]);
+
+    const violenceKeySelector = useCallback((violence: BreakdownDisplayItem) => violence.id, []);
+    const violenceRendererParams = useCallback((_: string, violence: BreakdownDisplayItem) => ({
+        className: styles.conflict,
+        label: violence.label,
+        value: violence.value,
+        abbreviate,
+    }), [abbreviate]);
     const isStock = category === 'stock';
     const cOn = cause !== 'disaster';
     const dOn = cause !== 'conflict';
@@ -136,18 +179,16 @@ function CountryPopupCard(props: Props) {
                                 <div className={styles.sectionTitle}>
                                     {`Disasters by hazard type · ${endYear}`}
                                 </div>
-                                <div className={styles.sectionList}>
-                                    {hazardEntries.map((hazard) => (
-                                        <div key={hazard.id} className={styles.sectionRow}>
-                                            <span>{getHazardTypeLabel(hazard)}</span>
-                                            <Numeral
-                                                className={styles.disaster}
-                                                value={hazard.value}
-                                                abbreviate={abbreviate}
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
+                                <ListView
+                                    className={styles.sectionList}
+                                    data={hazardEntries}
+                                    keySelector={hazardKeySelector}
+                                    renderer={BreakdownRow}
+                                    rendererParams={hazardRendererParams}
+                                    pending={false}
+                                    errored={false}
+                                    filtered={false}
+                                />
                             </div>
                         )}
                         {cOn && violenceEntries.length > 0 && (
@@ -155,18 +196,16 @@ function CountryPopupCard(props: Props) {
                                 <div className={styles.sectionTitle}>
                                     {`Violence sub types · ${endYear}`}
                                 </div>
-                                <div className={styles.sectionList}>
-                                    {violenceEntries.map((violence) => (
-                                        <div key={violence.id} className={styles.sectionRow}>
-                                            <span>{violence.label}</span>
-                                            <Numeral
-                                                className={styles.conflict}
-                                                value={violence.value}
-                                                abbreviate={abbreviate}
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
+                                <ListView
+                                    className={styles.sectionList}
+                                    data={violenceEntries}
+                                    keySelector={violenceKeySelector}
+                                    renderer={BreakdownRow}
+                                    rendererParams={violenceRendererParams}
+                                    pending={false}
+                                    errored={false}
+                                    filtered={false}
+                                />
                             </div>
                         )}
                         {canFocus && (

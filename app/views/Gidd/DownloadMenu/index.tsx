@@ -1,6 +1,4 @@
 import React from 'react';
-import { PopupButton } from '@togglecorp/toggle-ui';
-import { IoInformationCircleOutline } from 'react-icons/io5';
 
 import ButtonLikeLink from '#components/ButtonLikeLink';
 import {
@@ -33,249 +31,114 @@ function DownloadMenu(props: Props) {
         disaggregationAvailable,
     } = props;
 
+    let annualHref: string;
+    let annualTitle: string;
+    if (cause === 'conflict') {
+        annualHref = suffixHelixRestEndpoint(prepareUrl(
+            'gidd/displacements/displacement-export/',
+            { cause, iso3__in: countriesIso3, start_year: startYear, end_year: endYear },
+        ), clientCode);
+        annualTitle = 'Annual updates of internal displacement data related to conflict';
+    } else if (cause === 'disaster') {
+        annualHref = suffixHelixRestEndpoint(prepareUrl(
+            'gidd/disasters/disaster-export/',
+            {
+                iso3__in: countriesIso3,
+                hazard_type__in: hazardTypes,
+                start_year: startYear,
+                end_year: endYear,
+            },
+        ), clientCode);
+        annualTitle = 'Annual updates of internal displacement data related to disasters';
+    } else {
+        annualHref = suffixHelixRestEndpoint(prepareUrl(
+            'gidd/displacements/displacement-export/',
+            { iso3__in: countriesIso3, start_year: startYear, end_year: endYear },
+        ), clientCode);
+        annualTitle = 'Annual updates of internal displacement data by country';
+    }
+
+    const disaggregationParams = cause === 'disaster'
+        ? {
+            cause,
+            iso3__in: countriesIso3,
+            disaster_type__in: hazardTypes,
+            start_year: startYear,
+            end_year: endYear,
+        }
+        : {
+            cause,
+            iso3__in: countriesIso3,
+            start_year: startYear,
+            end_year: endYear,
+        };
+    const xlsxHref = suffixHelixRestEndpoint(prepareUrl(
+        'gidd/disaggregations/disaggregation-export/',
+        disaggregationParams,
+    ), clientCode);
+    const geojsonHref = suffixHelixRestEndpoint(prepareUrl(
+        'gidd/disaggregations/disaggregation-geojson/',
+        disaggregationParams,
+    ), clientCode);
+
+    let causeLabel = '';
+    if (cause === 'conflict') {
+        causeLabel = 'Conflict ';
+    } else if (cause === 'disaster') {
+        causeLabel = 'Disaster ';
+    }
+    const xlsxTitle = disaggregationAvailable
+        ? `${endYear} ${causeLabel}disaggregated caseloads`
+        : undefined;
+    const geojsonTitle = disaggregationAvailable
+        ? `${endYear} ${causeLabel}disaggregated caseloads (geojson) formatted for GIS applications.\nIMPORTANT: Please read the metadata in the geojson`
+        : undefined;
+
     return (
-        <PopupButton
-            popupClassName={styles.popup}
-            label="Download dataset"
-            name="download"
-            variant="primary"
-            persistent={false}
-            compact
-        >
-            {cause !== 'disaster' && cause !== 'conflict' && (
-                <>
-                    <ButtonLikeLink
-                        transparent
-                        compact
-                        actions={(
-                            <IoInformationCircleOutline
-                                title="Annual updates of internal displacement data by country"
-                            />
-                        )}
-                        href={suffixHelixRestEndpoint(prepareUrl(
-                            'gidd/displacements/displacement-export/',
-                            {
-                                iso3__in: countriesIso3,
-                                start_year: startYear,
-                                end_year: endYear,
-                            },
-                        ), clientCode)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        Annual displacement data (.xlsx)
-                    </ButtonLikeLink>
-                    <ButtonLikeLink
-                        transparent
-                        compact
-                        disabled={!disaggregationAvailable}
-                        actions={(
-                            <IoInformationCircleOutline
-                                title={disaggregationAvailable
-                                    ? `${endYear} Disaggregated caseloads`
-                                    : undefined}
-                            />
-                        )}
-                        href={suffixHelixRestEndpoint(prepareUrl(
-                            'gidd/disaggregations/disaggregation-export/',
-                            {
-                                iso3__in: countriesIso3,
-                                start_year: startYear,
-                                end_year: endYear,
-                            },
-                        ), clientCode)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        {`Disaggregated data ${endYear} (.xlsx)`}
-                    </ButtonLikeLink>
-                    <ButtonLikeLink
-                        transparent
-                        compact
-                        disabled={!disaggregationAvailable}
-                        actions={(
-                            <IoInformationCircleOutline
-                                title={disaggregationAvailable
-                                    ? `${endYear} Disaggregated caseloads (geojson) formatted for GIS applications.\nIMPORTANT: Please read the metadata in the geojson`
-                                    : undefined}
-                            />
-                        )}
-                        href={suffixHelixRestEndpoint(prepareUrl(
-                            'gidd/disaggregations/disaggregation-geojson/',
-                            {
-                                iso3__in: countriesIso3,
-                                start_year: startYear,
-                                end_year: endYear,
-                            },
-                        ), clientCode)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        {`Disaggregated data ${endYear} (.geojson)`}
-                    </ButtonLikeLink>
-                </>
-            )}
-            {cause === 'conflict' && (
-                <>
-                    <ButtonLikeLink
-                        transparent
-                        compact
-                        actions={(
-                            <IoInformationCircleOutline
-                                title="Annual updates of internal displacement data related to conflict"
-                            />
-                        )}
-                        href={suffixHelixRestEndpoint(prepareUrl(
-                            'gidd/displacements/displacement-export/',
-                            {
-                                cause,
-                                iso3__in: countriesIso3,
-                                start_year: startYear,
-                                end_year: endYear,
-                            },
-                        ), clientCode)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        Conflict annual aggregated data (.xlsx)
-                    </ButtonLikeLink>
-                    <ButtonLikeLink
-                        transparent
-                        compact
-                        disabled={!disaggregationAvailable}
-                        actions={(
-                            <IoInformationCircleOutline
-                                title={disaggregationAvailable
-                                    ? `${endYear} Conflict disaggregated caseloads`
-                                    : undefined}
-                            />
-                        )}
-                        href={suffixHelixRestEndpoint(prepareUrl(
-                            'gidd/disaggregations/disaggregation-export/',
-                            {
-                                cause,
-                                iso3__in: countriesIso3,
-                                start_year: startYear,
-                                end_year: endYear,
-                            },
-                        ), clientCode)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        {`Conflict disaggregated data ${endYear} (.xlsx)`}
-                    </ButtonLikeLink>
-                    <ButtonLikeLink
-                        transparent
-                        compact
-                        disabled={!disaggregationAvailable}
-                        actions={(
-                            <IoInformationCircleOutline
-                                title={disaggregationAvailable
-                                    ? `${endYear} Conflict disaggregated caseloads (geojson) formatted for GIS applications.\nIMPORTANT: Please read the metadata in the geojson`
-                                    : undefined}
-                            />
-                        )}
-                        href={suffixHelixRestEndpoint(prepareUrl(
-                            'gidd/disaggregations/disaggregation-geojson/',
-                            {
-                                cause,
-                                iso3__in: countriesIso3,
-                                start_year: startYear,
-                                end_year: endYear,
-                            },
-                        ), clientCode)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        {`Conflict disaggregated data ${endYear} (.geojson)`}
-                    </ButtonLikeLink>
-                </>
-            )}
-            {cause === 'disaster' && (
-                <>
-                    <ButtonLikeLink
-                        transparent
-                        compact
-                        actions={(
-                            <IoInformationCircleOutline
-                                title="Annual updates of internal displacement data related to disasters"
-                            />
-                        )}
-                        href={suffixHelixRestEndpoint(prepareUrl(
-                            'gidd/disasters/disaster-export/',
-                            {
-                                iso3__in: countriesIso3,
-                                hazard_type__in: hazardTypes,
-                                start_year: startYear,
-                                end_year: endYear,
-                            },
-                        ), clientCode)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        Disaster events aggregated data (.xlsx)
-                    </ButtonLikeLink>
-                    <ButtonLikeLink
-                        transparent
-                        compact
-                        disabled={!disaggregationAvailable}
-                        actions={(
-                            <IoInformationCircleOutline
-                                title={disaggregationAvailable
-                                    ? `${endYear} Disaster disaggregated caseloads`
-                                    : undefined}
-                            />
-                        )}
-                        href={suffixHelixRestEndpoint(prepareUrl(
-                            'gidd/disaggregations/disaggregation-export/',
-                            {
-                                cause,
-                                iso3__in: countriesIso3,
-                                disaster_type__in: hazardTypes,
-                                start_year: startYear,
-                                end_year: endYear,
-                            },
-                        ), clientCode)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        {`Disaster events disaggregated data ${endYear} (.xlsx)`}
-                    </ButtonLikeLink>
-                    <ButtonLikeLink
-                        transparent
-                        compact
-                        disabled={!disaggregationAvailable}
-                        actions={(
-                            <IoInformationCircleOutline
-                                title={disaggregationAvailable
-                                    ? `${endYear} Disaster events disaggregated caseloads (geojson) formatted for GIS applications.\nIMPORTANT: Please read the metadata in the geojson`
-                                    : undefined}
-                            />
-                        )}
-                        href={suffixHelixRestEndpoint(prepareUrl(
-                            'gidd/disaggregations/disaggregation-geojson/',
-                            {
-                                cause,
-                                iso3__in: countriesIso3,
-                                disaster_type__in: hazardTypes,
-                                start_year: startYear,
-                                end_year: endYear,
-                            },
-                        ), clientCode)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        {`Disaster events disaggregated data ${endYear} (.geojson)`}
-                    </ButtonLikeLink>
-                </>
-            )}
+        <div className={styles.downloadGroups}>
+            <div className={styles.downloadGroupRow}>
+                <span className={styles.downloadGroupLabel}>
+                    {`Disaggregated data for ${endYear}`}
+                </span>
+                <ButtonLikeLink
+                    className={styles.downloadButton}
+                    disabled={!disaggregationAvailable}
+                    title={geojsonTitle}
+                    href={geojsonHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    GeoJSON
+                </ButtonLikeLink>
+                <ButtonLikeLink
+                    className={styles.downloadButton}
+                    disabled={!disaggregationAvailable}
+                    title={xlsxTitle}
+                    href={xlsxHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    Excel
+                </ButtonLikeLink>
+            </div>
             {!disaggregationAvailable && (
                 <p className={styles.exportMessage}>
                     Note: Disaggregated data can only be downloaded one
                     year at a time.
                 </p>
             )}
-        </PopupButton>
+            <div className={styles.downloadGroupRow}>
+                <ButtonLikeLink
+                    className={styles.downloadButton}
+                    title={annualTitle}
+                    href={annualHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    Annual displacement data
+                </ButtonLikeLink>
+            </div>
+        </div>
     );
 }
 

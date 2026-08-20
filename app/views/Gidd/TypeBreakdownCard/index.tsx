@@ -1,9 +1,10 @@
-import React, { useMemo } from 'react';
-import { _cs, isDefined } from '@togglecorp/fujs';
+import React, { useMemo, useCallback } from 'react';
+import { _cs } from '@togglecorp/fujs';
 import { useQuery } from '@apollo/client';
 
 import Header from '#components/Header';
 import Message from '#components/Message';
+import ListView from '#components/ListView';
 import BreakdownBar from '#components/IduMap/BreakdownBar';
 import { DATA_RELEASE } from '#utils/common';
 import useDebouncedValue from '#hooks/useDebouncedValue';
@@ -17,6 +18,7 @@ import {
     HAZARD_BREAKDOWN_QUERY,
     VIOLENCE_BREAKDOWN_QUERY,
     BreakdownQueryVariables,
+    BucketedItem,
 } from '../utils';
 
 import styles from './styles.css';
@@ -32,11 +34,18 @@ export interface Props {
     startYear: number;
     endYear: number;
     clientCode: string;
-    // e.g. "globally" / "in Sudan" — keeps the subtitle honest about the filters
+    // e.g. "globally" / "in Sudan" — kept in sync with the other sidebar slides
     scopeLabel: string;
     abbreviate: boolean;
     selectedTypeId?: string;
+    // every id selected in this variant's group narrows the breakdown list
+    // (selectedTypeId alone only ever holds one id, even when several of this
+    // variant's types are selected together)
+    selectedTypeIds: string[];
     onTypeSelect?: (id: string) => void;
+    // when a cause is selected, the opposite cause's card is treated as
+    // having no data — the query is skipped and the list shows the empty state
+    noData?: boolean;
 }
 
 function TypeBreakdownCard(props: Props) {
@@ -51,7 +60,9 @@ function TypeBreakdownCard(props: Props) {
         scopeLabel,
         abbreviate,
         selectedTypeId,
+        selectedTypeIds,
         onTypeSelect,
+        noData,
     } = props;
 
     const isStock = category === 'stock';
@@ -61,9 +72,11 @@ function TypeBreakdownCard(props: Props) {
         countriesIso3,
         startYear,
         endYear,
+        hazardTypes: isConflict ? undefined : selectedTypeIds,
+        violenceSubTypes: isConflict ? selectedTypeIds : undefined,
         releaseEnvironment: DATA_RELEASE,
         clientId: clientCode,
-    }), [countriesIso3, startYear, endYear, clientCode]);
+    }), [countriesIso3, startYear, endYear, isConflict, selectedTypeIds, clientCode]);
 
     const debouncedVariables = useDebouncedValue(variables);
 
@@ -75,7 +88,7 @@ function TypeBreakdownCard(props: Props) {
         HAZARD_BREAKDOWN_QUERY,
         {
             variables: debouncedVariables,
-            skip: isConflict,
+            skip: isConflict || noData,
             context: {
                 clientName: 'helix',
             },
@@ -90,7 +103,7 @@ function TypeBreakdownCard(props: Props) {
         VIOLENCE_BREAKDOWN_QUERY,
         {
             variables: debouncedVariables,
-            skip: !isConflict,
+            skip: !isConflict || noData,
             context: {
                 clientName: 'helix',
             },
@@ -107,9 +120,20 @@ function TypeBreakdownCard(props: Props) {
     // Types with no displacement for the current filters are dropped rather
     // than shown as empty rows; the long tail below 1% collapses into "Other".
     // Both are recomputed per metric, so the row set legitimately differs
-    // between the flow and stock variants of this card.
+    // between the flow and stock variants of this card. Once one or more
+    // types are selected, the list narrows to just those — selecting a
+    // type is a filter, not just a highlight — enforced client-side too
+    // since it's not guaranteed the API's own hazardTypes/violenceSubTypes
+    // args narrow the breakdown list itself rather than just the totals.
     const rows = useMemo(() => {
-        const values = (entries ?? [])
+        if (noData) {
+            return [];
+        }
+        const selectedIds = new Set(selectedTypeIds);
+        const scopedEntries = selectedIds.size > 0
+            ? (entries ?? []).filter((entry) => selectedIds.has(entry.id))
+            : (entries ?? []);
+        const values = scopedEntries
             .map((entry) => ({
                 id: entry.id,
                 name: entry.label,
@@ -121,7 +145,7 @@ function TypeBreakdownCard(props: Props) {
             .sort((a, b) => b.value - a.value);
 
         return bucketSmallValues(values);
-    }, [entries, isStock]);
+    }, [entries, isStock, selectedTypeIds, noData]);
 
     // after bucketing — "Other" can outrank the row above it
     const maxValue = Math.max(0, ...rows.map((row) => row.value));
@@ -136,18 +160,28 @@ function TypeBreakdownCard(props: Props) {
     const metricLabel = isStock ? 'IDPs' : 'Internal displacements';
     const causeLabel = isConflict ? 'conflict and violence' : 'disasters';
     const breakdownLabel = isConflict ? 'type' : 'hazard';
-    const timeLabel = isStock ? `at the end of ${endYear}` : `in ${endYear}`;
+    const yearRangeLabel = startYear === endYear ? `${endYear}` : `${startYear}-${endYear}`;
+    const timeLabel = isStock ? `at the end of ${endYear}` : `in ${yearRangeLabel}`;
     const description = `${metricLabel} by ${causeLabel}, breakdown by `
         + `${breakdownLabel} · ${timeLabel} ${scopeLabel}.`;
 
-    const footer = isConflict
-        ? "Values follow IDMC's violence sub-type taxonomy."
-        : 'Hazard breakdown from the disaggregated GIDD extract.';
+    const rowKeySelector = useCallback((row: BucketedItem) => row.id, []);
+    const rowRendererParams = useCallback((_: string, row: BucketedItem) => ({
+        name: row.id,
+        label: row.name,
+        value: row.value,
+        maxValue,
+        variant,
+        abbreviate,
+        selected: row.id === selectedTypeId,
+        onClick: onTypeSelect,
+    }), [maxValue, variant, abbreviate, selectedTypeId, onTypeSelect]);
 
     return (
         <div className={_cs(styles.typeBreakdownCard, className)}>
             <Header
                 heading={heading}
+                headingClassName={styles.slideHeading}
                 headingSize="small"
                 headingDescription={description}
                 headingDescriptionClassName={styles.description}
@@ -155,27 +189,19 @@ function TypeBreakdownCard(props: Props) {
             {pending ? (
                 <Message pending compact />
             ) : (
-                <>
-                    <div className={styles.list}>
-                        {rows.map((row) => (
-                            <BreakdownBar
-                                key={row.id}
-                                label={row.name}
-                                value={row.value}
-                                maxValue={maxValue}
-                                variant={variant}
-                                abbreviate={abbreviate}
-                                selected={row.id === selectedTypeId}
-                                onClick={isDefined(onTypeSelect) && !row.isOther
-                                    ? () => onTypeSelect(row.id)
-                                    : undefined}
-                            />
-                        ))}
-                    </div>
-                    <div className={styles.footer}>
-                        {footer}
-                    </div>
-                </>
+                <ListView
+                    className={styles.list}
+                    data={rows}
+                    keySelector={rowKeySelector}
+                    renderer={BreakdownBar}
+                    rendererParams={rowRendererParams}
+                    pending={false}
+                    errored={false}
+                    filtered={false}
+                    messageShown
+                    compactEmptyMessage
+                    emptyMessage="No data available for the selected filters."
+                />
             )}
         </div>
     );

@@ -8,6 +8,7 @@ type Props = {
     target?: string;
     rel?: string;
     href?: string;
+    title?: string;
 } & Parameters<typeof useButtonFeatures>[0]
 
 function ButtonLikeLink(props: Props) {

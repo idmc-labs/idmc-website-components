@@ -38,6 +38,22 @@
             text-transform: uppercase;
             font-size: var(--tui-font-size-medium);
         }
+
+        /* toggle-ui's sortable header renders the sort-direction icon and
+           the column label as separate siblings with no alignment CSS of
+           its own — force them onto one vertically centered row */
+        :global {
+            [class*="_title-container__"] {
+                display: flex;
+                align-items: center;
+            }
+
+            [class*="_title__"] {
+                display: flex;
+                align-items: center;
+                gap: var(--tui-spacing-extra-small);
+            }
+        }
     }
 
     .sorted-header {
