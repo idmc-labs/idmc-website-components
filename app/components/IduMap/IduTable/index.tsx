@@ -98,7 +98,7 @@ function IduTable(props: Props) {
             title: 'Trigger Type',
             headerCellRenderer: TableHeaderCell,
             headerCellRendererParams: { sortable: true },
-            headerCellRendererClassName: sortedHeaderClassName('type'),
+            headerCellRendererClassName: _cs(styles.header, sortedHeaderClassName('type')),
             cellRenderer: HazardType,
             cellRendererParams: (_, datum) => ({
                 value: datum.type,
@@ -119,7 +119,7 @@ function IduTable(props: Props) {
             title: 'Displacements',
             headerCellRenderer: TableHeaderCell,
             headerCellRendererParams: { sortable: true },
-            headerCellRendererClassName: sortedHeaderClassName('figure'),
+            headerCellRendererClassName: _cs(styles.header, sortedHeaderClassName('figure')),
             cellRenderer: Numeral,
             cellRendererParams: (_, datum) => ({
                 value: datum.figure,
@@ -150,7 +150,7 @@ function IduTable(props: Props) {
             title: 'Event',
             headerCellRenderer: TableHeaderCell,
             headerCellRendererParams: { sortable: true },
-            headerCellRendererClassName: sortedHeaderClassName('event_name'),
+            headerCellRendererClassName: _cs(styles.header, sortedHeaderClassName('event_name')),
             cellRenderer: EventNameCell,
             cellRendererParams: (_, datum) => ({
                 eventTitle: datum.event_name,
@@ -182,7 +182,7 @@ function IduTable(props: Props) {
                 (item) => item.event_codes ?? '-',
                 {
                     sortable: true,
-                    columnWidth: 112,
+                    columnWidth: 180,
                     cellRendererClassName: styles.ellipsis,
                     headerCellRendererClassName: sortedHeaderClassName('event_codes'),
                 },

@@ -9,7 +9,14 @@ import styles from './styles.css';
 
 export function toSentenceCase(str: string | null | undefined): string | null | undefined {
     if (!str) return str;
-    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    const sentence = str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    // keep all-caps abbreviations in brackets uppercase, e.g. "storm (TC)" -> "Storm (TC)"
+    return sentence.replace(/\(([^)]*)\)/g, (match, inner: string, offset: number) => {
+        const original = str.slice(offset + 1, offset + 1 + inner.length);
+        const letters = original.replace(/[^a-zA-Z]/g, '');
+        const isAbbreviation = letters.length > 0 && letters === letters.toUpperCase();
+        return `(${isAbbreviation ? original : inner})`;
+    });
 }
 
 function formatDate(date: string | null | undefined) {

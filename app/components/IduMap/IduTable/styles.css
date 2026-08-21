@@ -55,6 +55,13 @@
         text-decoration: underline;
     }
 
+    .header {
+        * {
+            padding: 0 var(--tui-spacing-ultra-small) !important;
+            font-size: var(--tui-font-size-medium) !important;
+        }
+    }
+
     .sorted-header {
         font-weight: 700;
     }
