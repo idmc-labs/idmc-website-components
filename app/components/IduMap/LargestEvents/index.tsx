@@ -47,6 +47,8 @@ interface Props {
     cause: 'all' | 'Conflict' | 'Disaster';
     startDate: string | undefined;
     endDate: string | undefined;
+    scopeLabel: string;
+    filterSuffix: string;
     onEventSelect?: (eventId: number) => void;
     selectedEventId: number | undefined;
 }
@@ -58,6 +60,8 @@ function LargestEvents(props: Props) {
         cause,
         startDate,
         endDate,
+        scopeLabel,
+        filterSuffix,
         onEventSelect,
         selectedEventId,
     } = props;
@@ -94,7 +98,7 @@ function LargestEvents(props: Props) {
         selected: event.eventId === selectedEventId,
     }), [onEventSelect, selectedEventId]);
 
-    const description = `Preliminary estimates of the largest ${displacementTerm(cause)} displacements reported between ${formatDate(startDate)} - ${formatDate(endDate)}.`;
+    const description = `Preliminary estimates of the largest ${displacementTerm(cause)} displacements reported ${scopeLabel} between ${formatDate(startDate)} - ${formatDate(endDate)}.${filterSuffix}`;
 
     return (
         <div className={_cs(styles.largestEvents, className)}>

@@ -46,6 +46,8 @@ interface Props {
     cause: 'all' | 'Conflict' | 'Disaster';
     startDate: string | undefined;
     endDate: string | undefined;
+    scopeLabel: string;
+    filterSuffix: string;
     onCountrySelect?: (iso3: string) => void;
     selectedIso3: string | undefined;
 }
@@ -57,6 +59,8 @@ function TopCountries(props: Props) {
         cause,
         startDate,
         endDate,
+        scopeLabel,
+        filterSuffix,
         onCountrySelect,
         selectedIso3,
     } = props;
@@ -108,7 +112,10 @@ function TopCountries(props: Props) {
         selected: country.key === selectedIso3,
     }), [maxTotal, onCountrySelect, selectedIso3]);
 
-    const description = `Between ${formatDate(startDate)} - ${formatDate(endDate)}, IDMC recorded the highest numbers of ${displacementTerm(cause)} displacements in the following countries.`;
+    // when a country/region filter is active, name it; otherwise keep the
+    // generic "the following countries" phrasing for the global ranking
+    const scopeClause = scopeLabel === 'globally' ? 'in the following countries' : scopeLabel;
+    const description = `Between ${formatDate(startDate)} - ${formatDate(endDate)}, IDMC recorded the highest numbers of ${displacementTerm(cause)} displacements ${scopeClause}.${filterSuffix}`;
 
     return (
         <div className={_cs(styles.topCountries, className)}>

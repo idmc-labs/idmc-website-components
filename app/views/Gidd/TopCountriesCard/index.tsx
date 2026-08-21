@@ -6,11 +6,14 @@ import ListView from '#components/ListView';
 import CountryBar from '#components/IduMap/TopCountries/CountryBar';
 
 import {
-    useCountryRanking,
-    RankedCountry,
     buildCausePhrase,
     buildTriggerFilterSuffix,
     formatAbbreviatedNumber,
+} from '#utils/strings';
+
+import {
+    useCountryRanking,
+    RankedCountry,
 } from '../utils';
 
 import styles from './styles.css';
