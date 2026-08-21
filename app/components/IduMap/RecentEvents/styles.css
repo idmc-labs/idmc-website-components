@@ -5,8 +5,10 @@
     height: 100%;
 
     .heading {
-        color: var(--tui-color-text, #333);
-        font-weight: var(--tui-font-weight-bold);
+        color: var(--tui-color-brand, #193256);
+        font-family: var(--tui-font-family-heading);
+        font-size: var(--tui-font-size-large);
+        font-weight: var(--tui-font-weight-heading);
     }
 
     .description {

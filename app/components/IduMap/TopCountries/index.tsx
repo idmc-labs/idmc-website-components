@@ -108,7 +108,7 @@ function TopCountries(props: Props) {
         selected: country.key === selectedIso3,
     }), [maxTotal, onCountrySelect, selectedIso3]);
 
-    const description = `Between ${formatDate(startDate)} and ${formatDate(endDate)}, IDMC recorded the highest numbers of ${displacementTerm(cause)} displacements in the following countries.`;
+    const description = `Between ${formatDate(startDate)} - ${formatDate(endDate)}, IDMC recorded the highest numbers of ${displacementTerm(cause)} displacements in the following countries.`;
 
     return (
         <div className={_cs(styles.topCountries, className)}>
