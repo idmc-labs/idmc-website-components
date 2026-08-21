@@ -136,6 +136,16 @@ function buildFocusCondition(focus: MapFocus): unknown[] {
     return ['==', ['get', 'triggerKey'], focus.triggerType];
 }
 
+function isFeatureInFocus(properties: PopupProperties, focus: MapFocus): boolean {
+    if (focus.type === 'country') {
+        return properties.iso3 === focus.iso3;
+    }
+    if (focus.type === 'event') {
+        return properties.eventId === focus.eventId;
+    }
+    return properties.triggerKey === focus.triggerType;
+}
+
 function buildCircleColor(focus: MapFocus | undefined): mapboxgl.CirclePaint['circle-color'] {
     if (!focus) {
         return TYPE_COLOR_EXPR as mapboxgl.CirclePaint['circle-color'];
@@ -268,6 +278,9 @@ function GlobeSpinner(props: GlobeSpinnerProps) {
     return null;
 }
 
+const INITIAL_CENTER: [number, number] = [0, 20];
+const INITIAL_ZOOM = 1;
+
 interface MapResetProps {
     trigger: number;
 }
@@ -378,9 +391,6 @@ function EventPopupCard(props: EventPopupCardProps) {
     );
 }
 
-const INITIAL_CENTER: [number, number] = [0, 20];
-const INITIAL_ZOOM = 1;
-
 interface Props {
     idus: IduDataQuery['idu'] | undefined;
     onCountryFocus?: (iso3: string) => void;
@@ -392,10 +402,13 @@ interface Props {
     fitBounds: LngLatBoundsLike | undefined;
     // grey out all dots except those matching this focus
     focus: MapFocus | undefined;
+    // true while any filter is applied (keeps the globe from spinning off the view)
+    filtersActive: boolean;
     // increment to animate back to the initial globe view
     resetTrigger: number;
     onPointClick: (lngLat: LngLatLike, properties: PopupProperties) => void;
     onClose: () => void;
+    onRemoveFocus: () => void;
 }
 
 function RawIduMap(props: Props) {
@@ -406,9 +419,11 @@ function RawIduMap(props: Props) {
         flyTo,
         fitBounds,
         focus,
+        filtersActive,
         resetTrigger,
         onPointClick,
         onClose,
+        onRemoveFocus,
     } = props;
 
     const iduPointPaint = useMemo<mapboxgl.CirclePaint>(() => ({
@@ -418,13 +433,18 @@ function RawIduMap(props: Props) {
     }), [focus]);
 
     const handleMapPointClick = useCallback((feature: MapboxGeoJSONFeature, lngLat: LngLat) => {
-        if (feature.properties) {
-            onPointClick(lngLat, feature.properties as PopupProperties);
-        } else {
+        if (isNotDefined(feature.properties)) {
             onClose();
+            return false;
         }
+        const properties = feature.properties as PopupProperties;
+        // in focus mode, only the focused bubbles are interactive
+        if (isDefined(focus) && !isFeatureInFocus(properties, focus)) {
+            return false;
+        }
+        onPointClick(lngLat, properties);
         return false;
-    }, [onPointClick, onClose]);
+    }, [onPointClick, onClose, focus]);
 
     // the hover preview is transient and map-local, so it stays as local state
     const [hovered, setHovered] = useState<{
@@ -436,12 +456,17 @@ function RawIduMap(props: Props) {
         if (isNotDefined(feature.properties)) {
             return;
         }
+        const properties = feature.properties as PopupProperties;
+        // in focus mode, only the focused bubbles are interactive
+        if (isDefined(focus) && !isFeatureInFocus(properties, focus)) {
+            return;
+        }
         // anchor to the point's own coordinates, not the cursor
         const coordinates = feature.geometry.type === 'Point'
             ? (feature.geometry.coordinates as [number, number])
             : [lngLat.lng, lngLat.lat] as [number, number];
-        setHovered({ lngLat: coordinates, properties: feature.properties as PopupProperties });
-    }, []);
+        setHovered({ lngLat: coordinates, properties });
+    }, [focus]);
 
     const handleMapPointLeave = useCallback(() => {
         setHovered(undefined);
@@ -521,7 +546,18 @@ function RawIduMap(props: Props) {
                     The boundaries and names shown and the designations used on this map do not imply official endorsement or acceptance by IDMC.
                 </div>
             </div>
-            <GlobeSpinner paused={isDefined(selection) || isDefined(focus)} />
+            <GlobeSpinner paused={isDefined(selection) || isDefined(focus) || filtersActive} />
+            {isDefined(focus) && (
+                <RawButton
+                    name={undefined}
+                    className={styles.removeFocusButton}
+                    onClick={onRemoveFocus}
+                    title="Remove focus"
+                >
+                    <IoClose />
+                    Remove focus
+                </RawButton>
+            )}
             <MapReset trigger={resetTrigger} />
             <MapCenter center={flyTo} centerOptions={{}} />
             <MapBounds bounds={fitBounds} padding={40} duration={1000} />

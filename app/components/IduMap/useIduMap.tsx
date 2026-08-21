@@ -282,7 +282,6 @@ function useIduMap(
     const [fitBounds, setFitBounds] = useState<LngLatBoundsLike | undefined>();
     const [mapFocus, setMapFocus] = useState<MapFocus | undefined>();
     const [resetTrigger, setResetTrigger] = useState(0);
-    const prevMapFocusRef = useRef<MapFocus | undefined>(undefined);
     // the event row highlighted in the pane == the event whose popup is open
     const selectedEventId = mapSelection?.eventId;
 
@@ -454,6 +453,45 @@ function useIduMap(
 
     const idusForMap = useMemo(() => buildIduFilter(idus), [idus, buildIduFilter]);
 
+    const appliedFilterCount = (
+        (searchText && searchText.trim() ? 1 : 0)
+        + (isDefined(cause) ? 1 : 0)
+        + (triggerTypes.length > 0 ? 1 : 0)
+        + (regions.length > 0 ? 1 : 0)
+        + (locations.length > 0 ? 1 : 0)
+        + (startDate !== defaultStartDate || endDate !== defaultEndDate ? 1 : 0)
+    );
+
+    // ease/rotate the globe to frame a set of records; returns false when there is
+    // nothing to frame, so the caller can fall back to the default globe view
+    const showItemsOnMap = useCallback((items: typeof idus): boolean => {
+        let minLng = Infinity;
+        let minLat = Infinity;
+        let maxLng = -Infinity;
+        let maxLat = -Infinity;
+        let count = 0;
+        (items ?? []).forEach((d) => {
+            if (isDefined(d.longitude) && isDefined(d.latitude)) {
+                count += 1;
+                minLng = Math.min(minLng, d.longitude);
+                minLat = Math.min(minLat, d.latitude);
+                maxLng = Math.max(maxLng, d.longitude);
+                maxLat = Math.max(maxLat, d.latitude);
+            }
+        });
+        if (count === 0) {
+            return false;
+        }
+        if (minLng === maxLng && minLat === maxLat) {
+            setFlyTo([minLng, minLat]);
+            setFitBounds(undefined);
+        } else {
+            setFlyTo(undefined);
+            setFitBounds([[minLng, minLat], [maxLng, maxLat]]);
+        }
+        return true;
+    }, []);
+
     const idusForExport = useMemo(
         () => buildIduFilter(idusAll),
         [idusAll, buildIduFilter],
@@ -498,7 +536,7 @@ function useIduMap(
         if (isNotDefined(idusForExport)) {
             return;
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, import/no-unresolved
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const ExcelJS = await import('exceljs') as any;
         const Workbook = ExcelJS.default?.Workbook ?? ExcelJS.Workbook;
         const workbook = new Workbook();
@@ -541,10 +579,14 @@ function useIduMap(
     const prevIdusForMap = useRef(idusForMap);
     if (prevIdusForMap.current !== idusForMap) {
         prevIdusForMap.current = idusForMap;
-        if (isDefined(mapSelection)) {
-            setMapSelection(undefined);
+        // a filter change closes any popup, drops focus, and reframes the map to
+        // the new result set (falling back to the globe when nothing matches)
+        setMapSelection(undefined);
+        setMapFocus(undefined);
+        if (!(appliedFilterCount > 0 && showItemsOnMap(idusForMap))) {
             setFlyTo(undefined);
             setFitBounds(undefined);
+            setResetTrigger((n) => n + 1);
         }
     }
 
@@ -559,20 +601,6 @@ function useIduMap(
             return next;
         });
     }, [mapOrTable]);
-
-    // clear focus and zoom out on any filter change
-    React.useEffect(() => {
-        setMapFocus(undefined);
-        setResetTrigger((n) => n + 1);
-    }, [cause, triggerTypes, regions, locations, searchText, startDate, endDate]);
-
-    // zoom out whenever focus is explicitly removed (pill, trigger toggle, map click, etc.)
-    React.useEffect(() => {
-        if (isDefined(prevMapFocusRef.current) && isNotDefined(mapFocus)) {
-            setResetTrigger((n) => n + 1);
-        }
-        prevMapFocusRef.current = mapFocus;
-    }, [mapFocus]);
 
     const handleReset = useCallback(() => {
         setSearchInput(undefined);
@@ -613,23 +641,52 @@ function useIduMap(
         setTriggerTypes([]);
     }, []);
 
+    // return the map to the active-filter frame (or the globe when no filter is set)
+    const fitToFiltered = useCallback(() => {
+        if (appliedFilterCount > 0 && showItemsOnMap(idusForMap)) {
+            return;
+        }
+        setFlyTo(undefined);
+        setFitBounds(undefined);
+        setResetTrigger((n) => n + 1);
+    }, [appliedFilterCount, idusForMap, showItemsOnMap]);
+
+    const handleRemoveFocus = useCallback(() => {
+        setMapFocus(undefined);
+        setMapSelection(undefined);
+        fitToFiltered();
+    }, [fitToFiltered]);
+
     const handleCountrySelect = useCallback((countryIso3: string) => {
-        const bbox = countryBboxMap.get(countryIso3);
-        if (isDefined(bbox) && bbox.length === 4) {
-            setFitBounds([[bbox[0], bbox[1]], [bbox[2], bbox[3]]]);
-            setFlyTo(undefined);
+        // opening a focus closes any pinned popup and reframes to the focus items
+        setMapSelection(undefined);
+        const focusItems = (idusForMap ?? []).filter((d) => d.iso3 === countryIso3);
+        if (!showItemsOnMap(focusItems)) {
+            const bbox = countryBboxMap.get(countryIso3);
+            if (isDefined(bbox) && bbox.length === 4) {
+                setFlyTo(undefined);
+                setFitBounds([[bbox[0], bbox[1]], [bbox[2], bbox[3]]]);
+            }
         }
         setMapFocus({ type: 'country', iso3: countryIso3 });
         setMapOrTable('map');
-    }, [countryBboxMap]);
+    }, [idusForMap, countryBboxMap, showItemsOnMap]);
 
     const handleTriggerSelect = useCallback((triggerType: string) => {
-        setMapFocus((prev) => (
-            prev?.type === 'trigger' && prev.triggerType === triggerType
-                ? undefined
-                : { type: 'trigger', triggerType }
+        const isSame = mapFocus?.type === 'trigger' && mapFocus.triggerType === triggerType;
+        if (isSame) {
+            setMapFocus(undefined);
+            fitToFiltered();
+            return;
+        }
+        setMapSelection(undefined);
+        const focusItems = (idusForMap ?? []).filter((d) => (
+            (d.displacement_type === 'Disaster' ? d.type : d.subtype) === triggerType
         ));
-    }, []);
+        showItemsOnMap(focusItems);
+        setMapFocus({ type: 'trigger', triggerType });
+        setMapOrTable('map');
+    }, [mapFocus, idusForMap, showItemsOnMap, fitToFiltered]);
 
     const handleEventSelect = useCallback((eventId: number) => {
         setMapOrTable('map');
@@ -645,17 +702,16 @@ function useIduMap(
         const record = records.reduce((a, b) => (
             (a.displacement_date ?? '') <= (b.displacement_date ?? '') ? a : b
         ));
-        const lngLat: LngLatLike = [record.longitude as number, record.latitude as number];
         setMapSelection({
-            lngLat,
+            lngLat: [record.longitude as number, record.latitude as number],
             properties: [iduToPopupProperties(record)],
             eventId,
             recordId: record.id,
         });
-        setFitBounds(undefined);
-        setFlyTo(lngLat);
+        // frame all of the event's displacements, not just the pinned one
+        showItemsOnMap(records);
         setMapFocus({ type: 'event', eventId });
-    }, [idusForMap]);
+    }, [idusForMap, showItemsOnMap]);
 
     // open the popup for one specific record (IduTable rows and RecentEvents IDUs)
     const handleRecordSelect = useCallback((recordId: number) => {
@@ -721,15 +777,6 @@ function useIduMap(
         setFiltersExpanded((prev) => !prev);
     }, []);
 
-    const appliedFilterCount = (
-        (searchText && searchText.trim() ? 1 : 0)
-        + (isDefined(cause) ? 1 : 0)
-        + (triggerTypes.length > 0 ? 1 : 0)
-        + (regions.length > 0 ? 1 : 0)
-        + (locations.length > 0 ? 1 : 0)
-        + (startDate !== defaultStartDate || endDate !== defaultEndDate ? 1 : 0)
-    );
-
     const selectedIso3 = mapFocus?.type === 'country' ? mapFocus.iso3 : undefined;
     const selectedTriggerType = mapFocus?.type === 'trigger' ? mapFocus.triggerType : undefined;
 
@@ -790,6 +837,7 @@ function useIduMap(
     }, [
         searchText,
         cause,
+        handleCauseChange,
         triggerTypes,
         regions,
         regionOptions,
@@ -1024,9 +1072,11 @@ function useIduMap(
                                 flyTo={flyTo}
                                 fitBounds={fitBounds}
                                 focus={mapFocus}
+                                filtersActive={appliedFilterCount > 0}
                                 resetTrigger={resetTrigger}
                                 onPointClick={handleMapPointClick}
                                 onClose={handleMapPopupClose}
+                                onRemoveFocus={handleRemoveFocus}
                             />
                         </div>
                     )}
@@ -1054,20 +1104,11 @@ function useIduMap(
                             onChange={(v) => {
                                 setMapOrTable(v);
                                 if (v === 'table') {
+                                    // leaving the map view drops any active focus
                                     setMapFocus(undefined);
                                 }
                             }}
                         />
-                        {isDefined(mapFocus) && (
-                            <Button
-                                name={undefined}
-                                className={styles.focusPill}
-                                onClick={() => setMapFocus(undefined)}
-                                variant="default"
-                            >
-                                Remove focus
-                            </Button>
-                        )}
                     </div>
                 </div>
                 <div className={styles.rightPane}>

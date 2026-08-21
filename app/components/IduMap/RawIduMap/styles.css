@@ -19,6 +19,27 @@
     pointer-events: none;
 }
 
+.remove-focus-button {
+    display: flex;
+    position: absolute;
+    top: 0.625rem;
+    right: 2.75rem;
+    align-items: center;
+    z-index: 1;
+    border-radius: 0.375rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+    background-color: #fff;
+    padding: 0.5rem 0.75rem;
+    color: var(--tui-color-text, #333);
+    font-size: var(--tui-font-size-small);
+    font-weight: var(--tui-font-weight-bold);
+    gap: 0.375rem;
+}
+
+.remove-focus-button:hover {
+    background-color: var(--tui-color-background-hover, #f0f3f7);
+}
+
 .legend {
     display: flex;
     flex-direction: column;

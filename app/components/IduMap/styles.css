@@ -132,12 +132,6 @@
                 gap: var(--tui-spacing-small);
             }
 
-            .focus-pill {
-                border-radius: 1rem;
-                padding: 0 var(--tui-spacing-small);
-                font-size: var(--tui-font-size-small);
-            }
-
             :global {
                 .mapboxgl-ctrl-top-left,
                 .mapboxgl-ctrl-top-right,
@@ -305,6 +299,7 @@
     border-radius: 0.5rem;
     background-color: #fff;
     min-height: 2rem;
+    line-height: 1;
     font-size: var(--tui-font-size-small);
 
     /* the select's clear/dropdown-arrow are toggle-ui Buttons in an actions area;
