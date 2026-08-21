@@ -94,7 +94,7 @@ function LargestEvents(props: Props) {
         selected: event.eventId === selectedEventId,
     }), [onEventSelect, selectedEventId]);
 
-    const description = `Preliminary estimates of the largest ${displacementTerm(cause)} displacements reported between ${formatDate(startDate)} and ${formatDate(endDate)}.`;
+    const description = `Preliminary estimates of the largest ${displacementTerm(cause)} displacements reported between ${formatDate(startDate)} - ${formatDate(endDate)}.`;
 
     return (
         <div className={_cs(styles.largestEvents, className)}>

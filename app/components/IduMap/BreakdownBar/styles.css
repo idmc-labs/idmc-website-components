@@ -2,7 +2,7 @@
     display: flex;
     align-items: center;
     gap: var(--tui-spacing-small);
-    padding: 0.5rem 0.75rem;
+    padding: 0.5rem 0.25rem;
 
     .label {
         flex-shrink: 0;
@@ -38,7 +38,7 @@
 
 .breakdown-bar.clickable {
     cursor: pointer;
-    padding: 0.5rem 0.75rem;
+    padding: 0.5rem 0.25rem;
     width: 100%;
     text-align: left;
 }
