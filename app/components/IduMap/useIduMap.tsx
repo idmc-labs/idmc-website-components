@@ -51,6 +51,7 @@ import useDebouncedValue from '#hooks/useDebouncedValue';
 import useDocumentSize from '#hooks/useDocumentSize';
 
 import { suffixDrupalEndpoint, HELIX_REST_ENDPOINT } from '#utils/common';
+import { buildScopeLabel, buildTriggerFilterSuffix } from '#utils/strings';
 
 import { toSentenceCase } from './EventListItem';
 import RawIduMap, {
@@ -847,6 +848,33 @@ function useIduMap(
         countryOptions,
     ]);
 
+    // selected regions then countries, as display names — same shape as GIDD's
+    // scope, feeds the "globally" / "in A and B" clause on every slide
+    const scopeNames = useMemo(() => {
+        const regionNames = regions.map((id) => (
+            regionOptions.find((item) => item.key === id)?.label ?? id
+        ));
+        const countryNames = locations.map((key) => (
+            countryOptions.find((item) => item.key === key)?.label ?? key
+        ));
+        return [...regionNames, ...countryNames];
+    }, [regions, regionOptions, locations, countryOptions]);
+
+    // selected trigger types split by group, for the cause-adaptive
+    // "... figures are filtered to..." sentence(s)
+    const { disasterTriggerLabels, conflictTriggerLabels } = useMemo(() => {
+        const disaster: string[] = [];
+        const conflict: string[] = [];
+        triggerTypes.forEach((name) => {
+            const option = triggerOptions.find((item) => item.key === name);
+            if (!option) {
+                return;
+            }
+            (option.groupLabel === TRIGGER_GROUP_DISASTER ? disaster : conflict).push(option.label);
+        });
+        return { disasterTriggerLabels: disaster, conflictTriggerLabels: conflict };
+    }, [triggerTypes, triggerOptions]);
+
     if (error) {
         return {
             idus,
@@ -856,8 +884,19 @@ function useIduMap(
 
     const dateRange = `${formatDate(startDate)} – ${formatDate(endDate)}`;
     const effectiveCause = cause ?? 'all';
-    const disasterBreakdownDesc = `Breakdown by trigger, ${dateRange}.`;
-    const conflictBreakdownDesc = `Breakdown by trigger, ${dateRange}.`;
+    const scopeLabel = buildScopeLabel(scopeNames);
+    // cause-adaptive: the opposite cause's figures aren't shown, so its filter
+    // sentence is suppressed even when its trigger types are selected
+    const disasterFilterSuffix = cause === 'Conflict'
+        ? ''
+        : buildTriggerFilterSuffix({ cause: 'disaster', labels: disasterTriggerLabels });
+    const conflictFilterSuffix = cause === 'Disaster'
+        ? ''
+        : buildTriggerFilterSuffix({ cause: 'conflict', labels: conflictTriggerLabels });
+    const combinedFilterSuffix = `${disasterFilterSuffix}${conflictFilterSuffix}`;
+    // breakdown cards each show only their own cause's data → own suffix only
+    const disasterBreakdownDesc = `Breakdown by trigger ${scopeLabel}, ${dateRange}.${disasterFilterSuffix}`;
+    const conflictBreakdownDesc = `Breakdown by trigger ${scopeLabel}, ${dateRange}.${conflictFilterSuffix}`;
 
     const slides: { key: string; content: React.ReactNode }[] = [
         {
@@ -867,6 +906,8 @@ function useIduMap(
                     idus={idusForMap}
                     startDate={startDate}
                     endDate={endDate}
+                    scopeLabel={scopeLabel}
+                    filterSuffix={combinedFilterSuffix}
                     onRecordSelect={isMobile ? undefined : handleRecordSelect}
                     selectedRecordId={mapSelection?.recordId}
                     expandable={isMobile}
@@ -881,6 +922,8 @@ function useIduMap(
                     cause={effectiveCause}
                     startDate={startDate}
                     endDate={endDate}
+                    scopeLabel={scopeLabel}
+                    filterSuffix={combinedFilterSuffix}
                     onCountrySelect={isMobile ? undefined : handleCountrySelect}
                     selectedIso3={selectedIso3}
                 />
@@ -920,6 +963,8 @@ function useIduMap(
                     cause={effectiveCause}
                     startDate={startDate}
                     endDate={endDate}
+                    scopeLabel={scopeLabel}
+                    filterSuffix={combinedFilterSuffix}
                     onEventSelect={isMobile ? undefined : handleEventSelect}
                     selectedEventId={selectedEventId}
                 />

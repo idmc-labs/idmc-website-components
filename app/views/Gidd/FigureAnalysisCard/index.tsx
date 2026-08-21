@@ -8,8 +8,7 @@ import { _cs } from '@togglecorp/fujs';
 import Header from '#components/Header';
 import Message from '#components/Message';
 import ListView from '#components/ListView';
-
-import { joinWithAnd } from '../utils';
+import { joinWithAnd } from '#utils/strings';
 
 import FigureAnalysisFetcher, { FigureAnalysisEntry } from './FigureAnalysisFetcher';
 import FigureAnalysisEntryCard from './FigureAnalysisEntryCard';

@@ -74,6 +74,8 @@ import {
 } from '#generated/types';
 
 import useYear from '#hooks/useYear';
+import { buildCausePhrase, buildScopeLabel, buildTriggerFilterSuffix } from '#utils/strings';
+
 import EventsTable from './EventsTable';
 import DataTable from './DataTable';
 import DownloadMenu from './DownloadMenu';
@@ -81,7 +83,6 @@ import GiddMap from './GiddMap';
 import FigureAnalysisCard from './FigureAnalysisCard';
 import TopCountriesCard from './TopCountriesCard';
 import TypeBreakdownCard from './TypeBreakdownCard';
-import { buildCausePhrase, buildTriggerFilterSuffix, joinWithAnd } from './utils';
 
 import styles from './styles.css';
 
@@ -1411,7 +1412,7 @@ function Gidd(props: Props) {
         return [...regionNames, ...countryNames];
     }, [countries, countriesOptions, regions, regionOptions]);
 
-    const scopeLabel = scopeNames.length === 0 ? 'globally' : `in ${joinWithAnd(scopeNames)}`;
+    const scopeLabel = buildScopeLabel(scopeNames);
 
     // trigger-type selections split by group, independent of the cause filter —
     // each feeds its own "... figures are filtered to..." sentence
