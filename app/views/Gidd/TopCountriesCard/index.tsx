@@ -1,15 +1,11 @@
 import React, { useMemo, useCallback } from 'react';
-import { _cs, sum } from '@togglecorp/fujs';
+import { _cs } from '@togglecorp/fujs';
 
 import Header from '#components/Header';
 import ListView from '#components/ListView';
 import CountryBar from '#components/IduMap/TopCountries/CountryBar';
 
-import {
-    buildCausePhrase,
-    buildTriggerFilterSuffix,
-    formatAbbreviatedNumber,
-} from '#utils/strings';
+import { buildTriggerFilterSuffix } from '#utils/strings';
 
 import {
     useCountryRanking,
@@ -85,9 +81,7 @@ function TopCountriesCard(props: Props) {
         ? 'Five countries reporting the largest displaced populations'
         : 'Five countries reporting the highest number of internal displacements';
 
-    const topN = topCountries.length;
-    const causeClause = buildCausePhrase(cause);
-    const yearLabel = startYear === endYear ? `${endYear}` : `${startYear}-${endYear}`;
+    const yearLabel = startYear === endYear ? `${endYear}` : `${startYear} - ${endYear}`;
     // cause-adaptive: the opposite cause's figures aren't ranked, so its filter
     // sentence is suppressed even when its trigger types are selected
     const disasterSuffix = cause === 'conflict'
@@ -97,25 +91,18 @@ function TopCountriesCard(props: Props) {
         ? ''
         : buildTriggerFilterSuffix({ cause: 'conflict', labels: conflictTriggerLabels });
     const filterSuffix = `${disasterSuffix}${conflictSuffix}`;
-    const countPhrase = topN === 1 ? 'country or territory' : 'countries and territories';
 
-    let description: string;
-    if (topN === 0) {
-        description = isStock
-            ? `No people living in displacement${causeClause} at the end of ${endYear}, ${scopeLabel}.${filterSuffix}`
-            : `No internal displacements${causeClause} recorded ${scopeLabel} in ${yearLabel}.${filterSuffix}`;
-    } else if (isStock) {
-        description = `Top ${topN} ${countPhrase} by people living in displacement${causeClause} `
-            + `at the end of ${endYear}, ${scopeLabel}.${filterSuffix}`;
-    } else {
-        const topSum = sum(topCountries.map((country) => country.total));
-        const verb = topN === 1 ? 'accounts' : 'account';
-        description = `Top ${topN} ${countPhrase} ${verb} for ${formatAbbreviatedNumber(topSum, abbreviate)} `
-            + `internal displacements${causeClause} recorded ${scopeLabel} in ${yearLabel}.${filterSuffix}`;
+    const metricLabel = isStock ? 'IDPs' : 'Internal displacements';
+    let causeParenthetical = '';
+    if (cause === 'conflict') {
+        causeParenthetical = ' (by conflict and violence)';
+    } else if (cause === 'disaster') {
+        causeParenthetical = ' (by disasters)';
     }
-    // avoid flashing the "No ... recorded" empty sentence on the very first
-    // load (refetches keep previous rows, so pending is only bare at startup)
-    const headingDescription = pending && topN === 0 ? heading : description;
+    // the empty case is covered by the list's own emptyMessage, so this
+    // sentence stays the same regardless of how many rows come back
+    const description = `${metricLabel}${causeParenthetical} recorded ${yearLabel}, `
+        + `${scopeLabel}.${filterSuffix}`;
 
     const clickHint = 'Click a row to focus a country or territory.';
     const footer = isStock
@@ -145,7 +132,7 @@ function TopCountriesCard(props: Props) {
                 heading={heading}
                 headingClassName={styles.slideHeading}
                 headingSize="small"
-                headingDescription={headingDescription}
+                headingDescription={description}
                 headingDescriptionClassName={styles.description}
             />
             <ListView

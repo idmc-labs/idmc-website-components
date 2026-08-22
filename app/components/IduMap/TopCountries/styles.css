@@ -30,6 +30,7 @@
         display: none;
         align-items: center;
         flex-shrink: 0;
+        margin-top: var(--tui-spacing-small);
         gap: var(--tui-spacing-medium);
 
         .legend-item {

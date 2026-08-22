@@ -39,9 +39,7 @@ const mediumNumberWidth = 120;
 
 const dateWidth = 120;
 
-const smallTextWidth = 200;
 const extraSmallTextWidth = 150;
-const largeTextWidth = 320;
 const mediumTextWidth = 280;
 
 type EventData = NonNullable<
