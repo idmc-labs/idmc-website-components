@@ -199,7 +199,6 @@ function TypeBreakdownCard(props: Props) {
                     errored={false}
                     filtered={false}
                     messageShown
-                    compactEmptyMessage
                     emptyMessage="No data available for the selected filters."
                 />
             )}

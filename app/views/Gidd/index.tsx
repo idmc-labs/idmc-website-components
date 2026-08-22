@@ -2031,10 +2031,11 @@ function Gidd(props: Props) {
 
                         <div className={styles.downloadFooter}>
                             <p className={styles.downloadDescription}>
-                                <strong>GIDD figures are validated annual estimates.</strong>
-                                {' For provisional updates from the past 180 days, see the '}
+                                <strong>{'IDMC\'s Global Internal Displacement Database (GIDD) '}</strong>
+                                {`features validated, annual estimates of internal displacements and internally displaced
+                                people (IDPs). For provisional data from the past 180 days, consult the`}
                                 <strong>
-                                    <a href={iduDashboardLink} target="_parent">IDU dashboard</a>
+                                    <a href={iduDashboardLink} target="_parent">Internal Displacement Unit (IDU)</a>
                                 </strong>
                                 {'. To request an API key, read the '}
                                 <strong>

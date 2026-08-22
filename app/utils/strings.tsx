@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { formatNumberRaw, getAutoPrecision } from '#components/Numeral';
+import { toSentenceCase } from '#components/IduMap/EventListItem';
 
 // Regex to split the string by the templates
 const splitRegex = /({[^{}]*})/g;
@@ -118,7 +119,9 @@ export function buildScopeLabel(names: string[]): string {
 
 // The trailing " Disaster/Conflict figures are filtered to the type(s) X, Y
 // and Z." sentence. Empty string when the given cause has no active
-// trigger-type sub-selection. Labels are lowercased mid-sentence.
+// trigger-type sub-selection. Hazard types read as common nouns, so they are
+// lowercased mid-sentence; violence sub-types are named categories and are
+// sentence-cased instead.
 export function buildTriggerFilterSuffix(params: {
     cause: 'conflict' | 'disaster';
     labels: string[];
@@ -127,9 +130,10 @@ export function buildTriggerFilterSuffix(params: {
     if (labels.length === 0) {
         return '';
     }
-    const joined = joinWithAnd(labels.map((label) => label.toLowerCase()));
     if (cause === 'conflict') {
+        const joined = joinWithAnd(labels.map((label) => toSentenceCase(label) ?? label));
         return ` Conflict figures are filtered to the ${pluralize(labels.length, 'type', 'types')} ${joined}.`;
     }
+    const joined = joinWithAnd(labels.map((label) => label.toLowerCase()));
     return ` Disaster figures are filtered to the ${pluralize(labels.length, 'hazard type', 'hazard types')} ${joined}.`;
 }
