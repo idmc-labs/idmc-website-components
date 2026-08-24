@@ -108,20 +108,19 @@ function LargestEvents(props: Props) {
             <div className={styles.description}>
                 {description}
             </div>
-            <div className={styles.list}>
-                <ListView
-                    data={events}
-                    keySelector={keySelector}
-                    renderer={EventListItem}
-                    rendererParams={rendererParams}
-                    direction="vertical"
-                    errored={false}
-                    pending={false}
-                    filtered={false}
-                    messageShown
-                    emptyMessage="No data available for the selected filters."
-                />
-            </div>
+            <ListView
+                className={styles.list}
+                data={events}
+                keySelector={keySelector}
+                renderer={EventListItem}
+                rendererParams={rendererParams}
+                direction="vertical"
+                errored={false}
+                pending={false}
+                filtered={false}
+                messageShown
+                emptyMessage="No data available for the selected filters."
+            />
             <div className={styles.hint}>
                 Click a row to pin the event on the map.
             </div>

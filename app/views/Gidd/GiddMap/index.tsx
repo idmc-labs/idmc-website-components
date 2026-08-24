@@ -127,6 +127,23 @@ function getCoordinates(
     return [lng, lat];
 }
 
+// Fallback anchor for a popup when the country has no centroid on record.
+// Prefer countryCentroidByIso3 where possible: queryRenderedFeatures rebuilds
+// geometry from integer vector-tile units, so this coordinate is quantised to
+// the tile grid of whatever zoom the query ran at. That error is invisible at
+// the zoom you clicked from but doubles with every zoom step, detaching the
+// tip from the marker. The cursor lngLat is the last resort.
+function getFeatureCoordinates(
+    feature: MapboxGeoJSONFeature,
+    lngLat: LngLat,
+): [number, number] {
+    if (feature.geometry.type === 'Point') {
+        const [lng, lat] = feature.geometry.coordinates;
+        return [lng, lat];
+    }
+    return [lngLat.lng, lngLat.lat];
+}
+
 // GIDD's country type only exposes a centroid, not a bounding box, so a
 // single country zooms by flying to its point at a fixed zoom rather than
 // fitting its actual shape.
@@ -724,9 +741,13 @@ function GiddMap(props: Props) {
     }, [isStockView, countryPoints, maxValue, choroplethRamp]);
 
     const handleMouseEnter = useCallback((feature: MapboxGeoJSONFeature, lngLat: LngLat) => {
-        setHoverLngLat(lngLat);
-        setHoverProperties(feature.properties as PointProperties);
-    }, []);
+        const properties = feature.properties as PointProperties;
+        setHoverLngLat(
+            countryCentroidByIso3.get(properties.iso3)
+            ?? getFeatureCoordinates(feature, lngLat),
+        );
+        setHoverProperties(properties);
+    }, [countryCentroidByIso3]);
 
     const handleMouseLeave = useCallback(() => {
         setHoverLngLat(undefined);
@@ -735,9 +756,15 @@ function GiddMap(props: Props) {
 
     const handleClick = useCallback((feature: MapboxGeoJSONFeature, lngLat: LngLat) => {
         const properties = feature.properties as PointProperties;
-        setSelection({ lngLat, properties });
-
         const clickedCoordinates = countryCentroidByIso3.get(properties.iso3);
+
+        // the popup and the camera must use the same coordinate, otherwise the
+        // fly-to zoom pulls them apart
+        setSelection({
+            lngLat: clickedCoordinates ?? getFeatureCoordinates(feature, lngLat),
+            properties,
+        });
+
         if (isDefined(clickedCoordinates)) {
             setFlyTo(clickedCoordinates);
             setFitBounds(undefined);

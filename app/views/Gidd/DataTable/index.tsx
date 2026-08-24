@@ -48,10 +48,12 @@ function getCombinedTotal(
     return (a ?? 0) + (b ?? 0);
 }
 
-const smallNumberWidth = 80;
-const largeNumberWidth = 200;
+const smallNumberWidth = 70;
+// the IDPs headers are far shorter than the displacement ones, so they need less room
+const mediumNumberWidth = 120;
+const largeNumberWidth = 160;
 
-const mediumTextWidth = 220;
+const mediumTextWidth = 150;
 
 const GIDD_DISPLACEMENTS = gql`
     query GiddDisplacements(
@@ -254,7 +256,7 @@ function DataTable(props: Props) {
                     sortable: true,
                     variant: 'conflict',
                     abbreviate,
-                    columnWidth: largeNumberWidth,
+                    columnWidth: mediumNumberWidth,
                     headerCellRendererClassName: sortedHeaderClassName('conflictTotalDisplacement'),
                 },
             ) : undefined,
@@ -266,7 +268,7 @@ function DataTable(props: Props) {
                     sortable: true,
                     variant: 'disaster',
                     abbreviate,
-                    columnWidth: largeNumberWidth,
+                    columnWidth: mediumNumberWidth,
                     headerCellRendererClassName: sortedHeaderClassName('disasterTotalDisplacement'),
                 },
             ) : undefined,
@@ -281,7 +283,7 @@ function DataTable(props: Props) {
                 {
                     emphasize: true,
                     abbreviate,
-                    columnWidth: largeNumberWidth,
+                    columnWidth: mediumNumberWidth,
                 },
             ) : undefined,
         ]).filter(isDefined),

@@ -1,30 +1,33 @@
 .body-container {
+    --gidd-scale: 0.5;
+
+    --tui-spacing-ultra-small: calc(0.1rem * var(--gidd-scale));
+    --tui-spacing-extra-extra-small: calc(0.3rem * var(--gidd-scale));
+    --tui-spacing-extra-small: calc(0.7rem * var(--gidd-scale));
+    --tui-spacing-small: calc(0.8rem * var(--gidd-scale));
+    --tui-spacing-medium: calc(1rem * var(--gidd-scale));
+    --tui-spacing-large: calc(1.26rem * var(--gidd-scale));
+    --tui-radius-border-input-section: 0.25rem;
+
     --gidd-sidebar-height: 48rem;
-    --tui-font-family-heading: var(--tui-font-family-sans-serif);
 
     display: flex;
     align-items: center;
     flex-direction: column;
     background-color: transparent;
 
-    h3,
-    h4 {
-        color: var(--tui-color-text, #333);
-        font-size: var(--tui-font-size-medium);
-        font-weight: var(--tui-font-weight-bold);
-    }
-
     .card-description {
+        /* see .description in the card stylesheets — Header gives no gap */
+        margin-top: var(--tui-spacing-small);
         color: var(--tui-color-label, #7a7a7a);
         font-size: var(--tui-font-size-small);
     }
 
-    /* IDMC navy "Freight Big Black Pro" (freight-big-pro @ 900) for headings —
-       overrides the sans-serif --tui-font-family-heading set above */
+    /* IDMC navy "Freight Big Black Pro" (freight-big-pro @ 900) for headings */
     .slide-heading {
         color: var(--tui-color-brand, #193256);
-        font-family: 'freight-big-pro', serif;
-        font-weight: 900;
+        font-family: var(--tui-font-family-heading);
+        font-weight: var(--tui-font-weight-heading);
     }
 
     .gidd {
@@ -50,21 +53,21 @@
         .heading {
             margin: 0;
             color: var(--tui-color-brand, #193256);
-            font-family: 'freight-big-pro', serif;
-            font-weight: 900;
+            font-family: var(--tui-font-family-heading);
+            /* explicit: without it this h1 falls through to the UA/Drupal 2em */
+            font-size: var(--tui-font-size-super-large);
+            font-weight: var(--tui-font-weight-heading);
         }
 
         .heading-description {
             margin: 0;
-            color: var(--tui-color-text-light);
+            color: var(--tui-color-label, #7a7a7a);
             font-size: var(--tui-font-size-small);
         }
 
         .header-actions {
             display: flex;
             align-items: center;
-            --tui-spacing-small: 0.4rem;
-            --tui-spacing-medium: 0.5rem;
             gap: var(--tui-spacing-medium);
         }
     }
@@ -72,9 +75,6 @@
     .filters {
         display: flex;
         flex-direction: column;
-        --tui-spacing-extra-small: 0.35rem;
-        --tui-spacing-small: 0.4rem;
-        --tui-spacing-medium: 0.5rem;
 
         .filters-toggle {
             display: none;
@@ -259,7 +259,7 @@
 
             .carousel {
                 flex-grow: 1;
-                gap: 0.75rem;
+                gap: var(--tui-spacing-small);
                 min-height: 0;
             }
 
@@ -269,15 +269,16 @@
 
                 display: flex;
                 flex-direction: column;
-                gap: var(--tui-spacing-large);
+                /* matches IDU's card root gap (TopCountries/styles.css) */
+                gap: var(--tui-spacing-small);
                 background-color: var(--tui-color-foreground);
                 padding: var(--tui-spacing-medium);
 
                 .glance-description {
-                    margin: 0;
-                    color: var(--tui-color-text-light);
+                    margin: var(--tui-spacing-small) 0 0;
+                    color: var(--tui-color-label, #7a7a7a);
                     font-size: var(--tui-font-size-small);
-                    font-weight: var(--tui-font-weight-normal);
+                    font-weight: var(--tui-font-weight-medium);
                 }
 
                 .total-stat {
@@ -292,7 +293,7 @@
                 }
 
                 .total-sub-label {
-                    color: var(--tui-color-text-label);
+                    color: var(--tui-color-label, #7a7a7a);
                     font-size: var(--tui-font-size-small);
                 }
 
@@ -329,7 +330,7 @@
 
                 .show-on-map-button {
                     white-space: nowrap;
-                    color: var(--tui-color-text-light);
+                    color: var(--tui-color-label, #7a7a7a);
                     font-size: var(--tui-font-size-small);
 
                     &:hover {
@@ -357,8 +358,8 @@
 
                 .download-description {
                     margin: 0;
-                    color: var(--tui-color-text-light);
-                    font-size: var(--tui-font-size-extra-small);
+                    color: var(--tui-color-label, #7a7a7a);
+                    font-size: var(--tui-font-size-small);
 
                     a {
                         text-decoration: underline;
@@ -443,6 +444,9 @@
 
 }
 
+/* Compact filter-input treatment. Kept identical to the .filter-input block in
+   app/components/IduMap/styles.css so both dashboards' filter rows match —
+   keep the two in sync. */
 .filter-input {
     --tui-spacing-small: 0.25rem;
     --tui-spacing-medium: 0.4rem;
@@ -455,11 +459,15 @@
     box-sizing: border-box;
     justify-content: center;
     border: 1px solid var(--tui-color-separator, #d0d5dd);
-    border-radius: var(--tui-radius-border-input-section);
+    border-radius: 0.5rem;
     background-color: #fff;
     min-height: 2rem;
+    line-height: 1;
     font-size: var(--tui-font-size-small);
 
+    /* the select's clear/dropdown-arrow are toggle-ui Buttons in an actions area;
+       both the area and the buttons carry vertical padding that makes the input
+       taller than the others, so drop it from both */
     :global {
         [class*="actions"] {
             padding-top: 0;
@@ -469,6 +477,41 @@
         [class*="actions"] [class*="button"] {
             padding-top: 0;
             padding-bottom: 0;
+        }
+    }
+}
+
+/*
+ * SegmentInput modifier (use with .filter-input). The segment buttons take their
+ * padding from `--tui-spacing-small` (vertical) and `calc(medium - extra-small)`
+ * (horizontal), so set those to give the options comfortable, consistent padding
+ * instead of the over-tall / cramped default. Also drops the dashed focus outline.
+ * Mirrors the same block in app/components/IduMap/styles.css.
+ */
+/* The options popup is portaled to document.body by toggle-ui, so it escapes
+   .body-container and inherits neither the dashboard tokens nor .base's
+   font-size — without this it falls back to the body/UA size and renders
+   noticeably larger than IDU's. Mirrors .select-popup in
+   app/components/IduMap/styles.css. */
+.select-popup {
+    font-size: var(--tui-font-size-small, 0.8rem);
+}
+
+/* colour the grouped dropdown's cause headers, like IDU's .trigger-popup.
+   The group labels are GIDD's own strings (TRIGGER_GROUP_LABELS), which
+   differ from IDU's, so the attribute selectors cannot be shared. */
+.trigger-popup {
+    font-size: var(--tui-font-size-small, 0.8rem);
+
+    :global {
+        [title="Disasters"] {
+            color: var(--color-disaster, #018eca);
+            font-weight: var(--tui-font-weight-bold);
+        }
+
+        [title="Conflict and violence"] {
+            color: var(--color-conflict, #ef7d00);
+            font-weight: var(--tui-font-weight-bold);
         }
     }
 }

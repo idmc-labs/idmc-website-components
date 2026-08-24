@@ -59,6 +59,7 @@ import RawIduMap, {
     MapSelection,
     PopupProperties,
     iduToPopupProperties,
+    isFeatureInFocus,
 } from './RawIduMap';
 import IduTable from './IduTable';
 import DateFilter from './DateFilter';
@@ -734,12 +735,9 @@ function useIduMap(
         setFitBounds(undefined);
         setFlyTo(lngLat);
         // clear focus unless the selected record belongs to the focused entity
-        setMapFocus((prev) => {
-            if (!prev) return prev;
-            if (prev.type === 'event' && record.event_id === prev.eventId) return prev;
-            if (prev.type === 'country' && record.iso3 === prev.iso3) return prev;
-            return undefined;
-        });
+        setMapFocus((prev) => (
+            prev && isFeatureInFocus(iduToPopupProperties(record), prev) ? prev : undefined
+        ));
     }, [idusForMap]);
 
     const handleMapPointClick = useCallback((lngLat: LngLatLike, properties: PopupProperties) => {
@@ -752,12 +750,9 @@ function useIduMap(
                 : { lngLat, properties: [properties] }
         ));
         // clear focus unless the clicked point belongs to the focused entity
-        setMapFocus((prev) => {
-            if (!prev) return prev;
-            if (prev.type === 'event' && properties.eventId === prev.eventId) return prev;
-            if (prev.type === 'country' && properties.iso3 === prev.iso3) return prev;
-            return undefined;
-        });
+        setMapFocus((prev) => (
+            prev && isFeatureInFocus(properties, prev) ? prev : undefined
+        ));
     }, []);
 
     const handleMapPopupClose = useCallback(() => {

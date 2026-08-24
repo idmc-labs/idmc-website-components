@@ -1,15 +1,15 @@
 .top-countries-card {
     display: flex;
     flex-direction: column;
-    gap: var(--tui-spacing-medium);
 
     .slide-heading {
         color: var(--tui-color-brand, #193256);
-        font-family: 'freight-big-pro', serif;
-        font-weight: 900;
+        font-family: var(--tui-font-family-heading);
+        font-weight: var(--tui-font-weight-heading);
     }
 
     .description {
+        margin-top: var(--tui-spacing-small);
         color: var(--tui-color-label, #7a7a7a);
         font-size: var(--tui-font-size-small);
     }
@@ -17,11 +17,11 @@
     .list {
         display: flex;
         flex-direction: column;
-        gap: var(--tui-spacing-small);
+        gap: var(--tui-spacing-medium);
     }
 
     .footer {
-        color: var(--tui-color-text-light);
-        font-size: var(--tui-font-size-extra-small);
+        color: var(--tui-color-label, #7a7a7a);
+        font-size: var(--tui-font-size-small);
     }
 }

@@ -4,6 +4,11 @@ import { IoCalendarClearOutline } from 'react-icons/io5';
 
 import styles from './styles.css';
 
+/* Firefox keeps its own calendar button (see styles.css) and opens the picker
+   itself, so calling showPicker() on top of that would toggle it back closed. */
+const hasNativeCalendarButton = typeof CSS !== 'undefined'
+    && CSS.supports('-moz-appearance', 'none');
+
 interface Props {
     className?: string;
     startDate: string | undefined;
@@ -42,6 +47,9 @@ function DateFilter(props: Props) {
     }, [startDate, onChange]);
 
     const handleShowPicker = useCallback((e: React.MouseEvent<HTMLInputElement>) => {
+        if (hasNativeCalendarButton) {
+            return;
+        }
         const input = e.currentTarget;
         if (typeof input.showPicker === 'function') {
             try {

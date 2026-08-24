@@ -128,6 +128,9 @@ function DownloadMenu(props: Props) {
                 </p>
             )}
             <div className={styles.downloadGroupRow}>
+                <span className={styles.downloadGroupLabel}>
+                    Annual displacement data
+                </span>
                 <ButtonLikeLink
                     className={styles.downloadButton}
                     title={annualTitle}
@@ -135,7 +138,7 @@ function DownloadMenu(props: Props) {
                     target="_blank"
                     rel="noopener noreferrer"
                 >
-                    Annual displacement data
+                    Excel
                 </ButtonLikeLink>
             </div>
         </div>
