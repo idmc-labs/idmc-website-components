@@ -29,6 +29,7 @@ import useDebouncedValue from '#hooks/useDebouncedValue';
 import {
     GiddEventsQuery,
     GiddEventsQueryVariables,
+    Crisis_Type as CrisisType,
 } from '#generated/types';
 
 import EventTitle, { Props as EventTitleProps } from '../EventTitle';
@@ -58,13 +59,20 @@ function getCauseVariantClassName(eventCause: EventData['cause']) {
     return undefined;
 }
 
+// The server filters cause by enum (CRISIS_TYPE); the UI keys its cause options in lowercase, so
+// the two are mapped rather than cast.
+const CAUSE_BY_KEY: Record<string, CrisisType> = {
+    conflict: 'CONFLICT',
+    disaster: 'DISASTER',
+};
+
 const GIDD_EVENTS = gql`
     query GiddEvents(
         $page: Int,
         $ordering: String,
         $pageSize: Int,
         $eventName: String,
-        $cause: String,
+        $cause: CRISIS_TYPE,
         $endYear: Float,
         $startYear: Float,
         $hazardTypes: [ID!],
@@ -172,7 +180,7 @@ function EventsTable(props: Props) {
         page: activePage,
         countriesIso3,
         startYear,
-        cause,
+        cause: cause ? CAUSE_BY_KEY[cause] : undefined,
         endYear,
         hazardTypes,
         violenceSubTypes,
