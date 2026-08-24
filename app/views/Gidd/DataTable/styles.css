@@ -16,6 +16,7 @@
 
         display: flex;
         justify-content: flex-end;
+        font-size: var(--tui-font-size-extra-small);
     }
 
     .table {
@@ -31,6 +32,7 @@
         width: 100%;
         min-height: 60vh;
         overflow-x: auto;
+        font-size: var(--tui-font-size-small);
 
         th {
             --tui-font-size-medium: 0.7rem;
@@ -39,9 +41,6 @@
             font-size: var(--tui-font-size-medium);
         }
 
-        /* toggle-ui's sortable header renders the sort-direction icon and
-           the column label as separate siblings with no alignment CSS of
-           its own — force them onto one vertically centered row */
         :global {
             [class*="_title-container__"] {
                 display: flex;

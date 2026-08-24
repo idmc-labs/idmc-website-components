@@ -50,7 +50,7 @@
             .choropleth-labels {
                 display: flex;
                 justify-content: space-between;
-                color: var(--tui-color-text-light);
+                color: var(--tui-color-label, #7a7a7a);
                 font-size: var(--tui-font-size-extra-small);
             }
         }
@@ -65,15 +65,15 @@
             display: flex;
             align-items: center;
             gap: var(--tui-spacing-extra-small);
-            color: var(--tui-color-text-light);
+            color: var(--tui-color-label, #7a7a7a);
             font-size: var(--tui-font-size-small);
         }
 
         .legend-dot-conflict,
         .legend-dot-disaster {
             border-radius: 50%;
-            width: 0.6rem;
-            height: 0.6rem;
+            width: 0.75rem;
+            height: 0.75rem;
         }
 
         .legend-dot-conflict {
@@ -87,7 +87,7 @@
 
     .disclaimer {
         margin: var(--tui-spacing-small) 0 0;
-        color: var(--tui-color-text-light);
+        color: var(--tui-color-label, #7a7a7a);
         font-size: var(--tui-font-size-extra-small);
     }
 }
@@ -156,7 +156,7 @@
         }
 
         .subheading {
-            color: var(--tui-color-text-light);
+            color: var(--tui-color-label, #7a7a7a);
             font-size: var(--tui-font-size-extra-small);
         }
 
@@ -260,7 +260,7 @@
 }
 
 :global {
-    .mapboxgl-tip {
+    .mapboxgl-popup-tip {
         flex-shrink: 0;
     }
 

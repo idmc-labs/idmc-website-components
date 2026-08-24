@@ -136,7 +136,7 @@ function buildFocusCondition(focus: MapFocus): unknown[] {
     return ['==', ['get', 'triggerKey'], focus.triggerType];
 }
 
-function isFeatureInFocus(properties: PopupProperties, focus: MapFocus): boolean {
+export function isFeatureInFocus(properties: PopupProperties, focus: MapFocus): boolean {
     if (focus.type === 'country') {
         return properties.iso3 === focus.iso3;
     }

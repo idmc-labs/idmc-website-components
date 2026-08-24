@@ -1800,6 +1800,7 @@ function Gidd(props: Props) {
                             <SelectInput
                                 name="category"
                                 className={_cs(styles.filterItem, styles.filterInput)}
+                                optionsPopupClassName={styles.selectPopup}
                                 placeholder="Internal displacements or IDPs"
                                 keySelector={categoryKeySelector}
                                 labelSelector={categoryLabelSelector}
@@ -1810,6 +1811,7 @@ function Gidd(props: Props) {
                             <SelectInput
                                 name="cause"
                                 className={_cs(styles.filterCause, styles.filterInput)}
+                                optionsPopupClassName={styles.selectPopup}
                                 placeholder="All causes"
                                 keySelector={causeKeySelector}
                                 labelSelector={causeLabelSelector}
@@ -1821,6 +1823,7 @@ function Gidd(props: Props) {
                                 <MultiSelectInput
                                     name="triggerType"
                                     className={_cs(styles.filterItem, styles.filterInput)}
+                                    optionsPopupClassName={styles.triggerPopup}
                                     placeholder="All trigger types"
                                     value={triggerTypes}
                                     options={triggerTypeWidgetOptions}
@@ -1835,6 +1838,7 @@ function Gidd(props: Props) {
                                 <MultiSelectInput
                                     name="triggerType"
                                     className={_cs(styles.filterItem, styles.filterInput)}
+                                    optionsPopupClassName={styles.selectPopup}
                                     placeholder={
                                         displacementCause === 'conflict'
                                             ? 'All violence types'
@@ -1850,6 +1854,7 @@ function Gidd(props: Props) {
                             <MultiSelectInput
                                 name="regions"
                                 className={_cs(styles.filterItem, styles.filterInput)}
+                                optionsPopupClassName={styles.selectPopup}
                                 placeholder="All regions"
                                 value={regions}
                                 options={regionOptions}
@@ -1860,6 +1865,7 @@ function Gidd(props: Props) {
                             <MultiSelectInput
                                 name="country"
                                 className={_cs(styles.filterItem, styles.filterInput)}
+                                optionsPopupClassName={styles.selectPopup}
                                 placeholder="All countries and territories"
                                 value={countries}
                                 options={countriesOptions}
@@ -1875,6 +1881,7 @@ function Gidd(props: Props) {
                                     <SelectInput
                                         name="startYear"
                                         className={_cs(styles.yearSelect, styles.filterInput)}
+                                        optionsPopupClassName={styles.selectPopup}
                                         keySelector={yearKeySelector}
                                         labelSelector={yearLabelSelector}
                                         value={timeRange[0]}
@@ -1888,6 +1895,7 @@ function Gidd(props: Props) {
                                     <SelectInput
                                         name="endYear"
                                         className={_cs(styles.yearSelect, styles.filterInput)}
+                                        optionsPopupClassName={styles.selectPopup}
                                         keySelector={yearKeySelector}
                                         labelSelector={yearLabelSelector}
                                         value={timeRange[1]}
@@ -2033,7 +2041,7 @@ function Gidd(props: Props) {
                             <p className={styles.downloadDescription}>
                                 <strong>{'IDMC\'s Global Internal Displacement Database (GIDD) '}</strong>
                                 {`features validated, annual estimates of internal displacements and internally displaced
-                                people (IDPs). For provisional data from the past 180 days, consult the`}
+                                people (IDPs). For provisional data from the past 180 days, consult the `}
                                 <strong>
                                     <a href={iduDashboardLink} target="_parent">Internal Displacement Unit (IDU)</a>
                                 </strong>

@@ -5,6 +5,7 @@ import {
 } from '@togglecorp/toggle-ui';
 
 import useModalState from '#hooks/useModalState';
+import { Crisis_Type as CrisisType } from '#generated/types';
 
 import Modal from './Modal';
 
@@ -16,6 +17,9 @@ export type Props = {
     label: React.ReactNode;
     eventId: string | undefined;
     clientId: string;
+    // forwarded to the modal: the event details query exposes neither field
+    cause?: CrisisType | null;
+    violenceSubTypeName?: string | null;
 }
 
 function EventTitle(props: Props) {
@@ -25,6 +29,8 @@ function EventTitle(props: Props) {
         title,
         eventId,
         clientId,
+        cause,
+        violenceSubTypeName,
     } = props;
 
     const [
@@ -52,6 +58,8 @@ function EventTitle(props: Props) {
                             clientCode={clientId}
                             eventId={eventId}
                             title={title}
+                            cause={cause}
+                            violenceSubTypeName={violenceSubTypeName}
                             onCloseButtonClick={hideModal}
                         />
                     )}

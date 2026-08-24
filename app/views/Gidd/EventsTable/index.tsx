@@ -246,6 +246,8 @@ function EventsTable(props: Props) {
                     label: data.eventName,
                     eventId: data.eventId ?? undefined,
                     clientId: clientCode,
+                    cause: data.cause,
+                    violenceSubTypeName: data.violenceSubTypeName,
                 }),
                 columnWidth: mediumTextWidth,
                 columnStretch: true,

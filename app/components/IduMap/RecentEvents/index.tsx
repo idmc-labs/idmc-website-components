@@ -118,22 +118,18 @@ function RecentEvents(props: Props) {
                 {description}
             </div>
             <div className={styles.list}>
-                {sorted.length === 0 ? (
-                    <div className={styles.noData}>
-                        No data available for the selected filters.
-                    </div>
-                ) : (
-                    <ListView
-                        data={visible}
-                        keySelector={keySelector}
-                        renderer={EventListItem}
-                        rendererParams={rendererParams}
-                        direction="vertical"
-                        errored={false}
-                        pending={false}
-                        filtered={false}
-                    />
-                )}
+                <ListView
+                    data={visible}
+                    keySelector={keySelector}
+                    renderer={EventListItem}
+                    rendererParams={rendererParams}
+                    direction="vertical"
+                    errored={false}
+                    pending={false}
+                    filtered={false}
+                    messageShown
+                    emptyMessage="No data available for the selected filters."
+                />
                 {hasMore && (
                     <RawButton
                         name={undefined}
