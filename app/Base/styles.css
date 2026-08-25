@@ -81,6 +81,9 @@
 
     --tui-radius-border-large: 0.8rem;
     --color-progress-line-background: #f0f0f0;
+
+    --country-bar-columns: 1rem 7rem minmax(0, 1fr) auto;
+    --breakdown-bar-columns: 8rem minmax(0, 1fr) auto;
 }
 
 .base {

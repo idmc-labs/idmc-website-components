@@ -127,12 +127,6 @@ function getCoordinates(
     return [lng, lat];
 }
 
-// Fallback anchor for a popup when the country has no centroid on record.
-// Prefer countryCentroidByIso3 where possible: queryRenderedFeatures rebuilds
-// geometry from integer vector-tile units, so this coordinate is quantised to
-// the tile grid of whatever zoom the query ran at. That error is invisible at
-// the zoom you clicked from but doubles with every zoom step, detaching the
-// tip from the marker. The cursor lngLat is the last resort.
 function getFeatureCoordinates(
     feature: MapboxGeoJSONFeature,
     lngLat: LngLat,
@@ -144,15 +138,16 @@ function getFeatureCoordinates(
     return [lngLat.lng, lngLat.lat];
 }
 
-// GIDD's country type only exposes a centroid, not a bounding box, so a
-// single country zooms by flying to its point at a fixed zoom rather than
-// fitting its actual shape.
+function toCursorWorldCopy(
+    coordinates: [number, number],
+    lngLat: LngLat,
+): [number, number] {
+    const [lng, lat] = coordinates;
+    return [lng + Math.round((lngLat.lng - lng) / 360) * 360, lat];
+}
+
 const SINGLE_COUNTRY_ZOOM = 4;
 const FLY_TO_OPTIONS = { zoom: SINGLE_COUNTRY_ZOOM };
-// Roughly the full populated world extent — used to reset the camera when
-// the country/region filter is cleared, since MapCenter/MapBounds only ever
-// move the camera when given a defined value (clearing to `undefined` would
-// just leave the camera wherever it last was).
 const WORLD_BOUNDS: LngLatBoundsLike = [[-169, -58], [191, 80]];
 
 function computeBounds(points: [number, number][]): LngLatBoundsLike | undefined {
@@ -177,10 +172,6 @@ interface CameraTarget {
     fitBounds: LngLatBoundsLike | undefined;
 }
 
-// Shared by the countriesIso3-driven reset effect and by closing the map
-// popup, so both "return" to the same place: the current filter's implied
-// view, not unconditionally the world view (a country/region filter might
-// still be active when the popup closes).
 function computeCameraForCountries(
     countriesIso3: string[],
     countryCentroidByIso3: Map<string, [number, number]>,
@@ -742,10 +733,11 @@ function GiddMap(props: Props) {
 
     const handleMouseEnter = useCallback((feature: MapboxGeoJSONFeature, lngLat: LngLat) => {
         const properties = feature.properties as PointProperties;
-        setHoverLngLat(
+        setHoverLngLat(toCursorWorldCopy(
             countryCentroidByIso3.get(properties.iso3)
             ?? getFeatureCoordinates(feature, lngLat),
-        );
+            lngLat,
+        ));
         setHoverProperties(properties);
     }, [countryCentroidByIso3]);
 
@@ -757,16 +749,20 @@ function GiddMap(props: Props) {
     const handleClick = useCallback((feature: MapboxGeoJSONFeature, lngLat: LngLat) => {
         const properties = feature.properties as PointProperties;
         const clickedCoordinates = countryCentroidByIso3.get(properties.iso3);
+        const anchor = toCursorWorldCopy(
+            clickedCoordinates ?? getFeatureCoordinates(feature, lngLat),
+            lngLat,
+        );
 
         // the popup and the camera must use the same coordinate, otherwise the
         // fly-to zoom pulls them apart
         setSelection({
-            lngLat: clickedCoordinates ?? getFeatureCoordinates(feature, lngLat),
+            lngLat: anchor,
             properties,
         });
 
         if (isDefined(clickedCoordinates)) {
-            setFlyTo(clickedCoordinates);
+            setFlyTo(anchor);
             setFitBounds(undefined);
         }
 

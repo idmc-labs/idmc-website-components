@@ -25,3 +25,17 @@
         font-size: var(--tui-font-size-small);
     }
 }
+
+@supports (grid-template-columns: subgrid) {
+    .top-countries-card {
+        .list {
+            display: grid;
+            grid-template-columns: var(--country-bar-columns);
+            column-gap: var(--tui-spacing-small);
+
+            > * {
+                grid-column: 1 / -1;
+            }
+        }
+    }
+}
