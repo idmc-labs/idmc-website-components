@@ -125,20 +125,18 @@ function TopCountries(props: Props) {
             <div className={styles.description}>
                 {description}
             </div>
-            <div className={styles.list}>
-                <ListView
-                    data={countries}
-                    keySelector={keySelector}
-                    renderer={CountryBar}
-                    rendererParams={rendererParams}
-                    direction="vertical"
-                    errored={false}
-                    pending={false}
-                    filtered={false}
-                    messageShown
-                    emptyMessage="No data available for the selected filters."
-                />
-            </div>
+            <ListView
+                className={styles.list}
+                data={countries}
+                keySelector={keySelector}
+                renderer={CountryBar}
+                rendererParams={rendererParams}
+                errored={false}
+                pending={false}
+                filtered={false}
+                messageShown
+                emptyMessage="No data available for the selected filters."
+            />
             <div className={styles.legend}>
                 <div className={styles.legendItem}>
                     <span className={_cs(styles.legendDot, styles.legendConflict)} />

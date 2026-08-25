@@ -51,6 +51,27 @@
     text-align: left;
 }
 
+@supports (grid-template-columns: subgrid) {
+    .country-bar {
+        display: grid;
+        grid-template-columns: subgrid;
+
+        .rank,
+        .name {
+            width: auto;
+            min-width: 0;
+        }
+
+        .total {
+            min-width: 0;
+        }
+    }
+
+    .country-bar.clickable {
+        width: auto;
+    }
+}
+
 .country-bar.clickable:hover {
     background-color: var(--tui-color-background-hover, #f0f3f7);
 }
