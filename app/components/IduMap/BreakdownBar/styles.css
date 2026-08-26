@@ -17,7 +17,7 @@
         flex-grow: 1;
         border-radius: 0.25rem;
         background-color: var(--color-progress-line-background, #f0f0f0);
-        height: 0.5rem;
+        height: var(--bar-track-height, 0.5rem);
         overflow: hidden;
 
         .conflict-fill {

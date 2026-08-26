@@ -8,6 +8,7 @@
     --tui-spacing-medium: calc(1rem * var(--gidd-scale));
     --tui-spacing-large: calc(1.26rem * var(--gidd-scale));
     --tui-radius-border-input-section: 0.25rem;
+    --bar-track-height: 0.75rem;
 
     --gidd-sidebar-height: 48rem;
 

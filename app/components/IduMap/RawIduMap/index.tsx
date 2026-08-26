@@ -308,6 +308,7 @@ interface EventPopupCardProps {
     // after the headline figure
     detailed: boolean;
     onCountryFocus?: (iso3: string) => void;
+    onEventFocus?: (eventId: number) => void;
     onClose?: () => void;
 }
 
@@ -316,6 +317,7 @@ function EventPopupCard(props: EventPopupCardProps) {
         item,
         detailed,
         onCountryFocus,
+        onEventFocus,
         onClose,
     } = props;
 
@@ -325,7 +327,8 @@ function EventPopupCard(props: EventPopupCardProps) {
     const footerText = [item.source, formatDate(item.date)]
         .filter(isTruthyString)
         .join(' · ');
-    const canFocus = isDefined(onCountryFocus) && isTruthyString(item.iso3);
+    const canFocusCountry = isDefined(onCountryFocus) && isTruthyString(item.iso3);
+    const canFocusEvent = isDefined(onEventFocus) && isDefined(item.eventId);
     const focusButtonClassName = _cs(styles.focusButton, accentClassName);
 
     return (
@@ -368,7 +371,20 @@ function EventPopupCard(props: EventPopupCardProps) {
                             {footerText}
                         </div>
                     )}
-                    {canFocus && (
+                    {canFocusEvent && (
+                        <RawButton
+                            name={undefined}
+                            className={focusButtonClassName}
+                            onClick={() => {
+                                onEventFocus?.(item.eventId as number);
+                                onClose?.();
+                            }}
+                        >
+                            Focus event on map
+                            <IoArrowForward />
+                        </RawButton>
+                    )}
+                    {canFocusCountry && (
                         <RawButton
                             name={undefined}
                             className={focusButtonClassName}
@@ -393,6 +409,7 @@ interface Props {
     // sizes stay stable as filters change
     maxValue: number;
     onCountryFocus?: (iso3: string) => void;
+    onEventFocus?: (eventId: number) => void;
     // the currently-open popup (owned by the parent, so filters/events can drive it)
     selection: MapSelection | undefined;
     // center to ease the map to when a popup is opened from an event row
@@ -415,6 +432,7 @@ function RawIduMap(props: Props) {
         idus,
         maxValue,
         onCountryFocus,
+        onEventFocus,
         selection,
         flyTo,
         fitBounds,
@@ -425,6 +443,20 @@ function RawIduMap(props: Props) {
         onClose,
         onRemoveFocus,
     } = props;
+
+    const focusLabel = useMemo(() => {
+        if (isNotDefined(focus)) {
+            return undefined;
+        }
+        if (focus.type === 'country') {
+            return (idus ?? []).find((d) => d.iso3 === focus.iso3)?.country ?? focus.iso3;
+        }
+        if (focus.type === 'event') {
+            const match = (idus ?? []).find((d) => d.event_id === focus.eventId);
+            return match?.event_name ?? `Event ${focus.eventId}`;
+        }
+        return focus.triggerType;
+    }, [focus, idus]);
 
     const iduPointPaint = useMemo<mapboxgl.CirclePaint>(() => ({
         'circle-opacity': buildCircleOpacity(focus),
@@ -564,8 +596,10 @@ function RawIduMap(props: Props) {
                     onClick={onRemoveFocus}
                     title="Remove focus"
                 >
+                    <span className={styles.removeFocusLabel}>
+                        {`Focused: ${focusLabel}`}
+                    </span>
                     <IoClose />
-                    Remove focus
                 </RawButton>
             )}
             <MapReset trigger={resetTrigger} />
@@ -611,6 +645,7 @@ function RawIduMap(props: Props) {
                                             item={item}
                                             detailed
                                             onCountryFocus={onCountryFocus}
+                                            onEventFocus={onEventFocus}
                                             onClose={onClose}
                                         />
                                     </React.Fragment>

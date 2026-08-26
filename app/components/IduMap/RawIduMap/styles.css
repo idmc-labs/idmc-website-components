@@ -40,6 +40,13 @@
     background-color: var(--tui-color-background-hover, #f0f3f7);
 }
 
+.remove-focus-label {
+    max-width: 14rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .legend {
     display: flex;
     flex-direction: column;
