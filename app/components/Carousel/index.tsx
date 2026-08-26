@@ -130,7 +130,6 @@ function Carousel(props: Props) {
                 };
             });
         }
-        // setActiveItem(newValueOrSetter);
     }, []);
 
     const registerItem = React.useCallback((order) => {

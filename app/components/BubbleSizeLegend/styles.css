@@ -1,0 +1,44 @@
+.size-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+
+    .title {
+        color: var(--tui-color-label, #7a7a7a);
+        font-size: var(--tui-font-size-extra-small);
+    }
+
+    .plot {
+        position: relative;
+    }
+
+    .circles {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+
+        .circle {
+            box-sizing: border-box;
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 1px solid var(--tui-color-label, #7a7a7a);
+            border-radius: 50%;
+        }
+    }
+
+    .leader {
+        position: absolute;
+        border-top: 1px dashed var(--tui-color-label, #b0b0b0);
+        height: 0;
+    }
+
+    .label {
+        position: absolute;
+        transform: translateY(-50%);
+        white-space: nowrap;
+        color: var(--tui-color-label, #7a7a7a);
+        font-size: var(--tui-font-size-extra-small);
+    }
+}

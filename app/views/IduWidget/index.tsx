@@ -49,17 +49,13 @@ function IduWidget(props: IduWidgetProps) {
         clientCode,
     } = props;
 
-    // IDU list section
     const [iduActivePage, setIduActivePage] = useState(1);
     const iduPageSize = 2;
 
-    // IDU map section
     const {
         previousData,
         data: countryProfileData = previousData,
         // TODO: handle loading and error
-        // loading: countryProfileLoading,
-        // error: countryProfileError,
     } = useQuery<CountryProfileIduQuery, CountryProfileIduQueryVariables>(
         COUNTRY_PROFILE,
         {

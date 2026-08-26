@@ -30,7 +30,6 @@ function ButtonLikeLink(props: Props) {
 
     const handleClick: React.MouseEventHandler<HTMLAnchorElement> = useCallback((e) => {
         if (disabled) {
-            // NOTE: prevent action when disabled
             e.preventDefault();
         }
     }, [disabled]);

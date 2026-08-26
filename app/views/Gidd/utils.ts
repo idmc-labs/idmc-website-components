@@ -138,8 +138,6 @@ export const VIOLENCE_BREAKDOWN_QUERY = gql`
     }
 `;
 
-// ---- shared per-country ranking (backs TopCountriesCard) ----
-
 export const TOP_COUNTRIES_QUERY = gql`
     query GiddTopCountries(
         $endYear: Float,
