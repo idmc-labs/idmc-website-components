@@ -1,14 +1,10 @@
 import React from 'react';
 
 import { formatNumberRaw, getAutoPrecision } from '#components/Numeral';
-import { toSentenceCase } from '#components/IduMap/EventListItem';
+import { toLowerCaseKeepAbbr } from '#components/IduMap/EventListItem';
 
-// Regex to split the string by the templates
 const splitRegex = /({[^{}]*})/g;
 
-// Regex to test if a piece of string is a template or not
-//
-// and if so capture the template key
 const testRegex = /^{([^{}]*)}$/;
 
 type ParamsValue = React.ReactNode;
@@ -34,8 +30,6 @@ export default function generateString(str: string, params: ParamsForString) {
     // TODO: Support array param values
 
     const splits = str.split(splitRegex);
-    // Generate a list of {key, value} from the splits
-    // replacing the templates with params.
     const results = splits.map((split, index) => {
         const test = testRegex.exec(split);
         if (!test) {
@@ -52,9 +46,6 @@ export default function generateString(str: string, params: ParamsForString) {
         };
     });
 
-    // If params contains a react element,
-    // return a react fragment with the splits separated by
-    // spans.
     const withReactElement = hasReactElement(Object.values(params).flat());
     const flattenedResults = results.flat();
 
@@ -65,11 +56,8 @@ export default function generateString(str: string, params: ParamsForString) {
             </>
         );
     }
-    // Otherwise, return the concatenated string.
     return flattenedResults.map((r) => r.value).join('');
 }
-
-// ---- shared displacement-dashboard description helpers (GIDD + IDU) ----
 
 function pluralize(count: number, singular: string, plural: string) {
     return count === 1 ? singular : plural;
@@ -86,8 +74,6 @@ export function formatAbbreviatedNumber(value: number, abbreviate: boolean) {
     return `${output.value}${output.valueSuffix ?? ''}`;
 }
 
-// " associated with disasters" / " associated with conflict and violence" /
-// "" — the cause clause shared across the sidebar insight descriptions.
 export function buildCausePhrase(cause: 'conflict' | 'disaster' | undefined): string {
     if (cause === 'disaster') {
         return ' associated with disasters';
@@ -119,9 +105,9 @@ export function buildScopeLabel(names: string[]): string {
 
 // The trailing " Disaster/Conflict figures are filtered to the type(s) X, Y
 // and Z." sentence. Empty string when the given cause has no active
-// trigger-type sub-selection. Hazard types read as common nouns, so they are
-// lowercased mid-sentence; violence sub-types are named categories and are
-// sentence-cased instead.
+// trigger-type sub-selection. Trigger labels read as common nouns mid-sentence,
+// so they are lowercased, except all-caps abbreviations in brackets which are
+// kept uppercase (e.g. "Real name (IUCN)" -> "real name (IUCN)").
 export function buildTriggerFilterSuffix(params: {
     cause: 'conflict' | 'disaster';
     labels: string[];
@@ -130,10 +116,9 @@ export function buildTriggerFilterSuffix(params: {
     if (labels.length === 0) {
         return '';
     }
+    const joined = joinWithAnd(labels.map((label) => toLowerCaseKeepAbbr(label) ?? label));
     if (cause === 'conflict') {
-        const joined = joinWithAnd(labels.map((label) => toSentenceCase(label) ?? label));
         return ` Conflict figures are filtered to the ${pluralize(labels.length, 'type', 'types')} ${joined}.`;
     }
-    const joined = joinWithAnd(labels.map((label) => label.toLowerCase()));
     return ` Disaster figures are filtered to the ${pluralize(labels.length, 'hazard type', 'hazard types')} ${joined}.`;
 }

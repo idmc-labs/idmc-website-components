@@ -54,34 +54,48 @@
                 font-size: var(--tui-font-size-extra-small);
             }
         }
-    }
 
-    .legend {
-        display: flex;
-        gap: var(--tui-spacing-large);
-        margin-top: var(--tui-spacing-medium);
-
-        .legend-item {
+        .map-legend {
             display: flex;
-            align-items: center;
-            gap: var(--tui-spacing-extra-small);
-            color: var(--tui-color-label, #7a7a7a);
-            font-size: var(--tui-font-size-small);
-        }
+            position: absolute;
+            bottom: 0.75rem;
+            left: 0.75rem;
+            flex-direction: column;
+            z-index: 1;
+            gap: 0.5rem;
+            border-radius: 0.375rem;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+            background-color: #fff;
+            padding: 0.5rem 0.75rem;
 
-        .legend-dot-conflict,
-        .legend-dot-disaster {
-            border-radius: 50%;
-            width: 0.75rem;
-            height: 0.75rem;
-        }
+            .cause-legend {
+                display: flex;
+                flex-direction: column;
+                gap: 0.25rem;
 
-        .legend-dot-conflict {
-            background-color: var(--color-conflict);
-        }
+                .legend-item {
+                    display: flex;
+                    align-items: center;
+                    gap: var(--tui-spacing-extra-small);
+                    color: var(--tui-color-label, #7a7a7a);
+                    font-size: var(--tui-font-size-small);
+                }
 
-        .legend-dot-disaster {
-            background-color: var(--color-disaster);
+                .legend-dot-conflict,
+                .legend-dot-disaster {
+                    border-radius: 50%;
+                    width: 0.75rem;
+                    height: 0.75rem;
+                }
+
+                .legend-dot-conflict {
+                    background-color: var(--color-conflict);
+                }
+
+                .legend-dot-disaster {
+                    background-color: var(--color-disaster);
+                }
+            }
         }
     }
 

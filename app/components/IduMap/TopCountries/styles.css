@@ -83,6 +83,7 @@
     .top-countries {
         .list {
             display: grid;
+            align-content: start;
             grid-template-columns: var(--country-bar-columns);
             column-gap: var(--tui-spacing-small);
 

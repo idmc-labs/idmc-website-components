@@ -224,7 +224,6 @@ function triggerDownload(content: string, filename: string, mimeType: string) {
     URL.revokeObjectURL(url);
 }
 
-// Ordered column definitions matching the API Excel export format
 const EXCEL_COLUMNS: { header: string; key: string }[] = [
     { header: 'Id', key: 'id' },
     { header: 'Country', key: 'country' },
@@ -325,6 +324,13 @@ function useIduMap(
     const idus = useMemo(
         () => idusAll?.filter((item) => item.role === 'Recommended figure'),
         [idusAll],
+    );
+
+    // the bubble scale is anchored to the largest figure regardless of the
+    // active filters, so bubbles keep a stable size as filters change
+    const maxValue = useMemo(
+        () => (idus ?? []).reduce((acc, item) => Math.max(acc, item.figure ?? 0), 0),
+        [idus],
     );
 
     const {
@@ -699,17 +705,8 @@ function useIduMap(
         if (records.length === 0) {
             return;
         }
-        // open the popup on the event's first (earliest) displacement
-        const record = records.reduce((a, b) => (
-            (a.displacement_date ?? '') <= (b.displacement_date ?? '') ? a : b
-        ));
-        setMapSelection({
-            lngLat: [record.longitude as number, record.latitude as number],
-            properties: [iduToPopupProperties(record)],
-            eventId,
-            recordId: record.id,
-        });
-        // frame all of the event's displacements, not just the pinned one
+        // focus and frame the event's displacements without pinning any popup
+        setMapSelection(undefined);
         showItemsOnMap(records);
         setMapFocus({ type: 'event', eventId });
     }, [idusForMap, showItemsOnMap]);
@@ -734,10 +731,12 @@ function useIduMap(
         });
         setFitBounds(undefined);
         setFlyTo(lngLat);
-        // clear focus unless the selected record belongs to the focused entity
-        setMapFocus((prev) => (
-            prev && isFeatureInFocus(iduToPopupProperties(record), prev) ? prev : undefined
-        ));
+        // focus the event the clicked displacement belongs to (if any)
+        setMapFocus(
+            isDefined(record.event_id)
+                ? { type: 'event', eventId: record.event_id }
+                : undefined,
+        );
     }, [idusForMap]);
 
     const handleMapPointClick = useCallback((lngLat: LngLatLike, properties: PopupProperties) => {
@@ -1104,6 +1103,7 @@ function useIduMap(
                         >
                             <RawIduMap
                                 idus={idusForMap}
+                                maxValue={maxValue}
                                 onCountryFocus={
                                     isNotDefined(iso3) ? handleCountrySelect : undefined
                                 }

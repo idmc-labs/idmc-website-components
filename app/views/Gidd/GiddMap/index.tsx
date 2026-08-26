@@ -31,7 +31,13 @@ import { IoInformationCircleOutline } from 'react-icons/io5';
 import { mapboxStyle } from '#base/configs/mapbox';
 import Numeral from '#components/Numeral';
 import TooltipIcon from '#components/TooltipIcon';
-import { DATA_RELEASE } from '#utils/common';
+import BubbleSizeLegend from '#components/BubbleSizeLegend';
+import {
+    DATA_RELEASE,
+    getLogRadius,
+    BUBBLE_RADIUS_MIN,
+    BUBBLE_RADIUS_MAX,
+} from '#utils/common';
 import useDebouncedValue from '#hooks/useDebouncedValue';
 import {
     GiddMapCountryPointsQuery,
@@ -106,11 +112,14 @@ const MAP_DISPLACEMENTS = gql`
 const CONFLICT_COLOR = 'rgb(239, 125, 0)';
 const DISASTER_COLOR = 'rgb(1, 142, 202)';
 
-const RADIUS_MIN = 2;
-const RADIUS_MAX = 18;
-const RADIUS_SCALE_FACTOR = 0.028;
-
 const MIN_PIE_RADIUS = 6;
+
+// Hardcoded no-filter ceiling for GIDD flow (new displacement, all causes): the
+// largest country-year value with no filters applied (CHN, 2025 ≈ 103.9M).
+// Filters only ever shrink values, so a fixed domain keeps bubbles from
+// rescaling as filters change. Stock renders a choropleth (no bubbles), so this
+// only affects the flow map.
+const GIDD_FLOW_VALUE_MAX = 103_859_782;
 
 const MARKER_BORDER_WIDTH = 1.5;
 
@@ -148,7 +157,7 @@ function toCursorWorldCopy(
 
 const SINGLE_COUNTRY_ZOOM = 4;
 const FLY_TO_OPTIONS = { zoom: SINGLE_COUNTRY_ZOOM };
-const WORLD_BOUNDS: LngLatBoundsLike = [[-169, -58], [191, 80]];
+const WORLD_BOUNDS: LngLatBoundsLike = [[-140, -52], [165, 75]];
 
 function computeBounds(points: [number, number][]): LngLatBoundsLike | undefined {
     if (points.length === 0) {
@@ -192,11 +201,7 @@ function computeCameraForCountries(
 }
 
 function getRadiusForValue(value: number) {
-    if (value <= 0) {
-        return RADIUS_MIN;
-    }
-    const radius = RADIUS_MIN + Math.sqrt(value) * RADIUS_SCALE_FACTOR;
-    return Math.min(RADIUS_MAX, Math.max(RADIUS_MIN, radius));
+    return getLogRadius(value, 1, GIDD_FLOW_VALUE_MAX, BUBBLE_RADIUS_MIN, BUBBLE_RADIUS_MAX);
 }
 
 function createPieIcon(radius: number, conflictValue: number, disasterValue: number): ImageData {
@@ -836,8 +841,9 @@ function GiddMap(props: Props) {
                 <ReMap
                     mapStyle={mapboxStyle}
                     mapOptions={{
-                        logoPosition: 'bottom-left',
+                        logoPosition: 'bottom-right',
                         scrollZoom: false,
+                        renderWorldCopies: false,
                         zoom: 1,
                     }}
                     scaleControlShown
@@ -845,7 +851,11 @@ function GiddMap(props: Props) {
                 >
                     <MapContainer className={styles.mapContainer} />
                     <MapCenter center={flyTo} centerOptions={FLY_TO_OPTIONS} />
-                    <MapBounds bounds={fitBounds} padding={40} duration={1000} />
+                    <MapBounds
+                        bounds={fitBounds}
+                        padding={40}
+                        duration={countriesIso3.length > 0 ? 1000 : 0}
+                    />
                     {!isStockView && (
                         <>
                             <MapSource
@@ -917,6 +927,7 @@ function GiddMap(props: Props) {
                                 properties={selection.properties}
                                 cause={cause}
                                 category={category}
+                                startYear={startYear}
                                 endYear={endYear}
                                 detailed
                                 abbreviate={abbreviate}
@@ -936,6 +947,7 @@ function GiddMap(props: Props) {
                                 properties={hoverProperties}
                                 cause={cause}
                                 category={category}
+                                startYear={startYear}
                                 endYear={endYear}
                                 detailed={false}
                                 abbreviate={abbreviate}
@@ -959,19 +971,27 @@ function GiddMap(props: Props) {
                         </div>
                     </div>
                 )}
+                {!isStockView && (
+                    <div className={styles.mapLegend}>
+                        {showBreakdown && (
+                            <div className={styles.causeLegend}>
+                                <div className={styles.legendItem}>
+                                    <span className={styles.legendDotConflict} />
+                                    Conflict and violence
+                                </div>
+                                <div className={styles.legendItem}>
+                                    <span className={styles.legendDotDisaster} />
+                                    Disasters
+                                </div>
+                            </div>
+                        )}
+                        <BubbleSizeLegend
+                            domainMin={1}
+                            domainMax={GIDD_FLOW_VALUE_MAX}
+                        />
+                    </div>
+                )}
             </div>
-            {!isStockView && showBreakdown && (
-                <div className={styles.legend}>
-                    <div className={styles.legendItem}>
-                        <span className={styles.legendDotConflict} />
-                        Conflict and violence
-                    </div>
-                    <div className={styles.legendItem}>
-                        <span className={styles.legendDotDisaster} />
-                        Disasters
-                    </div>
-                </div>
-            )}
             <p className={styles.disclaimer}>
                 The boundaries and names shown and the designations used on
                 this map do not imply official endorsement or acceptance by

@@ -49,6 +49,7 @@ export interface Props {
     properties: PointProperties;
     cause: Cause | undefined;
     category: Category | undefined;
+    startYear: number;
     endYear: number;
     detailed: boolean;
     abbreviate: boolean;
@@ -63,6 +64,7 @@ function CountryPopupCard(props: Props) {
         properties,
         cause,
         category,
+        startYear,
         endYear,
         detailed,
         abbreviate,
@@ -106,10 +108,13 @@ function CountryPopupCard(props: Props) {
     const otherConflict = isStock ? conflictNew : conflictTotal;
     const otherDisaster = isStock ? disasterNew : disasterTotal;
     const otherTotal = (cOn ? otherConflict : 0) + (dOn ? otherDisaster : 0);
-    const otherLabel = isStock ? `Internal displacements in ${endYear}` : 'Total IDPs at year end';
+    const displacementsPeriod = startYear === endYear
+        ? `in ${endYear}`
+        : `from ${startYear} to ${endYear}`;
+    const otherLabel = isStock ? `Internal displacements ${displacementsPeriod}` : 'Total IDPs at year end';
     const subtitle = isStock
         ? `IDPs at the end of ${endYear}`
-        : `Internal displacements in ${endYear}`;
+        : `Internal displacements ${displacementsPeriod}`;
 
     return (
         <div className={styles.card}>

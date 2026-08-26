@@ -35,6 +35,12 @@ import { mapboxStyle } from '#base/configs/mapbox';
 import HTMLOutput from '#components/HTMLOutput';
 import RawButton from '#components/RawButton';
 import Numeral from '#components/Numeral';
+import BubbleSizeLegend from '#components/BubbleSizeLegend';
+import {
+    getLogRadius,
+    BUBBLE_RADIUS_MIN,
+    BUBBLE_RADIUS_MAX,
+} from '#utils/common';
 import {
     IduDataQuery,
 } from '#generated/types';
@@ -90,7 +96,7 @@ export function iduToPopupProperties(
 
 type IduGeoJSON = GeoJSON.FeatureCollection<
     GeoJSON.Point,
-    PopupProperties
+    PopupProperties & { radius: number }
 >;
 
 const typeLabels: Record<PopupProperties['type'], string> = {
@@ -110,16 +116,6 @@ const TYPE_COLOR_EXPR = [
     'Disaster', DISASTER_COLOR,
     OTHER_COLOR,
 ];
-
-const circleRadius: mapboxgl.CirclePaint['circle-radius'] = {
-    property: 'value',
-    base: 1.75,
-    stops: [
-        [0, 5],
-        [100, 9],
-        [1000, 13],
-    ],
-};
 
 export type MapFocus =
     | { type: 'country'; iso3: string }
@@ -393,6 +389,9 @@ function EventPopupCard(props: EventPopupCardProps) {
 
 interface Props {
     idus: IduDataQuery['idu'] | undefined;
+    // largest figure across the unfiltered data — anchors the bubble scale so
+    // sizes stay stable as filters change
+    maxValue: number;
     onCountryFocus?: (iso3: string) => void;
     // the currently-open popup (owned by the parent, so filters/events can drive it)
     selection: MapSelection | undefined;
@@ -414,6 +413,7 @@ interface Props {
 function RawIduMap(props: Props) {
     const {
         idus,
+        maxValue,
         onCountryFocus,
         selection,
         flyTo,
@@ -429,7 +429,7 @@ function RawIduMap(props: Props) {
     const iduPointPaint = useMemo<mapboxgl.CirclePaint>(() => ({
         'circle-opacity': buildCircleOpacity(focus),
         'circle-color': buildCircleColor(focus),
-        'circle-radius': circleRadius,
+        'circle-radius': ['get', 'radius'],
     }), [focus]);
 
     const handleMapPointClick = useCallback((feature: MapboxGeoJSONFeature, lngLat: LngLat) => {
@@ -482,7 +482,6 @@ function RawIduMap(props: Props) {
                         || isNotDefined(idu.latitude)
                         || isNotDefined(idu.figure)
                         || isNotDefined(idu.displacement_type)
-                        // NOTE: filtering out displacement_type Other
                         || idu.displacement_type === 'Other'
                     ) {
                         return undefined;
@@ -491,7 +490,16 @@ function RawIduMap(props: Props) {
                     return {
                         id: idu.id,
                         type: 'Feature' as const,
-                        properties: iduToPopupProperties(idu),
+                        properties: {
+                            ...iduToPopupProperties(idu),
+                            radius: getLogRadius(
+                                idu.figure,
+                                1,
+                                maxValue,
+                                BUBBLE_RADIUS_MIN,
+                                BUBBLE_RADIUS_MAX,
+                            ),
+                        },
                         geometry: {
                             type: 'Point' as const,
                             coordinates: [
@@ -502,10 +510,9 @@ function RawIduMap(props: Props) {
                     };
                 })
                 .filter(isDefined)
-                // NOTE: show newer on top
                 .sort((a, b) => compareDate(a.properties.date, b.properties.date)) ?? [],
         }),
-        [idus],
+        [idus, maxValue],
     );
 
     // once a marker is pinned, ignore hover entirely (only one popup at a time)
@@ -537,9 +544,12 @@ function RawIduMap(props: Props) {
                         <span className={_cs(styles.legendDot, styles.disaster)} />
                         Disasters
                     </div>
-                    <div className={styles.legendNote}>
-                        Size relative to the number of internal displacements
-                    </div>
+                    <BubbleSizeLegend
+                        className={styles.sizeLegend}
+                        title="Size by number of internal displacements"
+                        domainMin={1}
+                        domainMax={maxValue}
+                    />
                 </div>
                 <div className={styles.disclaimer}>
                     {/* eslint-disable-next-line max-len */}

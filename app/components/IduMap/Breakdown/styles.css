@@ -42,6 +42,7 @@
     .breakdown {
         .list {
             display: grid;
+            align-content: start;
             grid-template-columns: var(--breakdown-bar-columns);
             column-gap: var(--tui-spacing-small);
 

@@ -98,7 +98,6 @@ function Home() {
                         {countries?.map((country) => (
                             <a
                                 key={country.iso3}
-                                // className={!clientCode ? styles.disabledLink : undefined}
                                 aria-disabled={!clientCode}
                                 href={clientCode
                                     ? getCountryProfileLink(country.iso3, country.name, clientCode)
@@ -117,7 +116,6 @@ function Home() {
                         {countries?.map((country) => (
                             <a
                                 key={country.iso3}
-                                // className={!clientCode ? styles.disabledLink : undefined}
                                 aria-disabled={!clientCode}
                                 href={clientCode
                                     ? getConflictWidgetLink(country.iso3, clientCode)
@@ -136,7 +134,6 @@ function Home() {
                         {countries?.map((country) => (
                             <a
                                 key={country.iso3}
-                                // className={!clientCode ? styles.disabledLink : undefined}
                                 aria-disabled={!clientCode}
                                 href={clientCode
                                     ? getDisasterWidgetLink(country.iso3, clientCode)
@@ -155,7 +152,6 @@ function Home() {
                         {countries?.map((country) => (
                             <a
                                 key={country.iso3}
-                                // className={!clientCode ? styles.disabledLink : undefined}
                                 aria-disabled={!clientCode}
                                 href={clientCode
                                     ? getIduWidgetLink(country.iso3, clientCode)
@@ -192,7 +188,6 @@ function Home() {
                         IDU Map
                     </h3>
                     <a
-                        // className={!clientCode ? styles.disabledLink : undefined}
                         aria-disabled={!clientCode}
                         href={clientCode
                             ? getIduLink(clientCode)
@@ -206,7 +201,6 @@ function Home() {
                         GIDD
                     </h3>
                     <a
-                        // className={!clientCode ? styles.disabledLink : undefined}
                         aria-disabled={!clientCode}
                         href={clientCode ? getGiddLink(clientCode) : undefined}
                     >

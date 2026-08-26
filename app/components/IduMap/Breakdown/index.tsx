@@ -27,7 +27,6 @@ interface BreakdownDatum {
 
 const keySelector = (item: BreakdownDatum) => item.key;
 
-// disaster rows group by hazard type, conflict rows by violence name
 const variantConfig: {
     [key in Variant]: {
         displacementType: 'Disaster' | 'Conflict';
