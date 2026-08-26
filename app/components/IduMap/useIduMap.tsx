@@ -59,7 +59,6 @@ import RawIduMap, {
     MapSelection,
     PopupProperties,
     iduToPopupProperties,
-    isFeatureInFocus,
 } from './RawIduMap';
 import IduTable from './IduTable';
 import DateFilter from './DateFilter';
@@ -202,6 +201,22 @@ const TRIGGER_GROUP_CONFLICT = 'Conflict and Violence';
 
 const TODAY = new Date();
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
+
+// leave breathing room around a focus/zoom target so markers don't sit at the
+// very edge, and a single marker doesn't zoom in all the way
+const FOCUS_BUFFER_RATIO = 0.2;
+const FOCUS_MIN_BUFFER_DEG = 1.5;
+
+function padBounds(
+    [[minLng, minLat], [maxLng, maxLat]]: [[number, number], [number, number]],
+): LngLatBoundsLike {
+    const lngBuffer = Math.max((maxLng - minLng) * FOCUS_BUFFER_RATIO, FOCUS_MIN_BUFFER_DEG);
+    const latBuffer = Math.max((maxLat - minLat) * FOCUS_BUFFER_RATIO, FOCUS_MIN_BUFFER_DEG);
+    return [
+        [minLng - lngBuffer, Math.max(minLat - latBuffer, -85)],
+        [maxLng + lngBuffer, Math.min(maxLat + latBuffer, 85)],
+    ];
+}
 
 function toDateInputValue(date: Date) {
     return date.toISOString().split('T')[0];
@@ -490,13 +505,8 @@ function useIduMap(
         if (count === 0) {
             return false;
         }
-        if (minLng === maxLng && minLat === maxLat) {
-            setFlyTo([minLng, minLat]);
-            setFitBounds(undefined);
-        } else {
-            setFlyTo(undefined);
-            setFitBounds([[minLng, minLat], [maxLng, maxLat]]);
-        }
+        setFlyTo(undefined);
+        setFitBounds(padBounds([[minLng, minLat], [maxLng, maxLat]]));
         return true;
     }, []);
 
@@ -665,6 +675,12 @@ function useIduMap(
     }, [fitToFiltered]);
 
     const handleCountrySelect = useCallback((countryIso3: string) => {
+        const isSame = mapFocus?.type === 'country' && mapFocus.iso3 === countryIso3;
+        if (isSame) {
+            setMapFocus(undefined);
+            fitToFiltered();
+            return;
+        }
         // opening a focus closes any pinned popup and reframes to the focus items
         setMapSelection(undefined);
         const focusItems = (idusForMap ?? []).filter((d) => d.iso3 === countryIso3);
@@ -672,12 +688,12 @@ function useIduMap(
             const bbox = countryBboxMap.get(countryIso3);
             if (isDefined(bbox) && bbox.length === 4) {
                 setFlyTo(undefined);
-                setFitBounds([[bbox[0], bbox[1]], [bbox[2], bbox[3]]]);
+                setFitBounds(padBounds([[bbox[0], bbox[1]], [bbox[2], bbox[3]]]));
             }
         }
         setMapFocus({ type: 'country', iso3: countryIso3 });
         setMapOrTable('map');
-    }, [idusForMap, countryBboxMap, showItemsOnMap]);
+    }, [mapFocus, idusForMap, countryBboxMap, showItemsOnMap, fitToFiltered]);
 
     const handleTriggerSelect = useCallback((triggerType: string) => {
         const isSame = mapFocus?.type === 'trigger' && mapFocus.triggerType === triggerType;
@@ -696,6 +712,12 @@ function useIduMap(
     }, [mapFocus, idusForMap, showItemsOnMap, fitToFiltered]);
 
     const handleEventSelect = useCallback((eventId: number) => {
+        const isSame = mapFocus?.type === 'event' && mapFocus.eventId === eventId;
+        if (isSame) {
+            setMapFocus(undefined);
+            fitToFiltered();
+            return;
+        }
         setMapOrTable('map');
         const records = (idusForMap ?? []).filter((d) => (
             d.event_id === eventId
@@ -709,7 +731,7 @@ function useIduMap(
         setMapSelection(undefined);
         showItemsOnMap(records);
         setMapFocus({ type: 'event', eventId });
-    }, [idusForMap, showItemsOnMap]);
+    }, [mapFocus, idusForMap, showItemsOnMap, fitToFiltered]);
 
     // open the popup for one specific record (IduTable rows and RecentEvents IDUs)
     const handleRecordSelect = useCallback((recordId: number) => {
@@ -747,10 +769,6 @@ function useIduMap(
             prev && prev.lngLat === lngLat
                 ? { lngLat, properties: [...prev.properties, properties] }
                 : { lngLat, properties: [properties] }
-        ));
-        // clear focus unless the clicked point belongs to the focused entity
-        setMapFocus((prev) => (
-            prev && isFeatureInFocus(properties, prev) ? prev : undefined
         ));
     }, []);
 
@@ -1107,6 +1125,7 @@ function useIduMap(
                                 onCountryFocus={
                                     isNotDefined(iso3) ? handleCountrySelect : undefined
                                 }
+                                onEventFocus={handleEventSelect}
                                 selection={mapSelection}
                                 flyTo={flyTo}
                                 fitBounds={fitBounds}

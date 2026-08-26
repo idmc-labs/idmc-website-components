@@ -152,18 +152,14 @@ function TypeBreakdownCard(props: Props) {
 
     let heading: string;
     if (isConflict) {
-        heading = isStock ? 'IDPs from conflict by type' : 'Conflict displacement by type';
+        heading = isStock ? 'Conflict IDPs' : 'Internal displacements by conflict and violence';
     } else {
-        heading = isStock ? 'IDPs from disasters by hazard' : 'Disaster displacement by hazard';
+        heading = isStock ? 'Disasters IDPs' : 'Internal displacements by disasters';
     }
 
-    const metricLabel = isStock ? 'IDPs' : 'Internal displacements';
-    const causeLabel = isConflict ? 'conflict and violence' : 'disasters';
-    const breakdownLabel = isConflict ? 'type' : 'hazard';
     const yearRangeLabel = startYear === endYear ? `${endYear}` : `${startYear}-${endYear}`;
     const timeLabel = isStock ? `at the end of ${endYear}` : `in ${yearRangeLabel}`;
-    const description = `${metricLabel} by ${causeLabel}, breakdown by `
-        + `${breakdownLabel} · ${timeLabel} ${scopeLabel}.`;
+    const description = `Breakdown by trigger · ${timeLabel} ${scopeLabel}.`;
 
     const rowKeySelector = useCallback((row: BucketedItem) => row.id, []);
     const rowRendererParams = useCallback((_: string, row: BucketedItem) => ({
