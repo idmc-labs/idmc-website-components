@@ -566,8 +566,18 @@
             align-items: stretch;
         }
 
+        /* toggle-ui derives the segment colors from CSS vars read off
+           document.documentElement, which Drupal doesn't provide when embedded,
+           so force the intended colors for both states */
         [class*="segment"] > [class*="button"] {
+            background-color: transparent !important;
             height: 100%;
+            color: var(--tui-color-brand, #193256) !important;
+        }
+
+        [class*="segment"] > [class*="button"][class*="primary"] {
+            background-color: var(--tui-color-brand, #193256) !important;
+            color: #fff !important;
         }
     }
 }
