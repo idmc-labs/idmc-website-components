@@ -275,7 +275,7 @@ function GlobeSpinner(props: GlobeSpinnerProps) {
 }
 
 const INITIAL_CENTER: [number, number] = [0, 20];
-const INITIAL_ZOOM = 1;
+const INITIAL_ZOOM = 2;
 
 interface MapResetProps {
     trigger: number;
@@ -556,7 +556,7 @@ function RawIduMap(props: Props) {
             mapOptions={{
                 logoPosition: 'bottom-right',
                 scrollZoom: false,
-                zoom: 1,
+                zoom: INITIAL_ZOOM,
                 // projection isn't in @types 2.7; applied at construction for globe
                 projection: { name: 'globe' },
             } as Omit<mapboxgl.MapboxOptions, 'style' | 'container'>}
