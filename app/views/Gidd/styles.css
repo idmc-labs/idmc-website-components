@@ -194,8 +194,10 @@
                 }
 
                 .filter-item,
+                .filter-cause,
                 .filter-year {
                     flex-basis: auto;
+                    width: auto;
                     max-width: none;
                 }
             }
@@ -482,6 +484,27 @@
         [class*="actions"] [class*="button"] {
             padding-top: 0;
             padding-bottom: 0;
+        }
+    }
+}
+
+.filter-item,
+.filter-cause:not(.filter-segment) {
+    flex-shrink: 0;
+    width: 12rem;
+
+    :global {
+        [class*="_input__"] {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        [class*="_input__"] * {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
     }
 }

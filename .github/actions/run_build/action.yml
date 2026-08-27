@@ -51,7 +51,7 @@ runs:
           # Common
           REACT_APP_HELIX_CLIENT_ID: IDMCWSHSOLO009
           REACT_APP_MAPBOX_ACCESS_TOKEN: pk.eyJ1IjoidG9nZ2xlY29ycCIsImEiOiJjazk5ZXMza2YxZmQ1M2dvNWxneTEycnQwIn0.K3u-ns63rFzM7CzrnOBm2w
-          REACT_APP_MAPBOX_STYLE: mapbox://styles/togglecorp/cl50rwy0a002d14mo6w9zprio
+          REACT_APP_MAPBOX_STYLE: mapbox://styles/idmcda/ck9x61jf5148n1in1wws4mswc
           REACT_APP_HCAPTCHA_SITEKEY: fb0493e0-e1ce-4ee6-946c-43267d969ba2
           REACT_APP_TINY_MCE_KEY: o65ezg70uejj1ibo2janhtw6n1eiii7fm2w2yanfnvqe6ipa
           REACT_APP_SENTRY_DSN: https://5e568ceb82d94590879272b6644f86ea@o479248.ingest.sentry.io/6409048
