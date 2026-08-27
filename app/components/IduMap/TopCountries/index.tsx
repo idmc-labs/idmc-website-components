@@ -40,6 +40,19 @@ function displacementTerm(cause: 'all' | 'Conflict' | 'Disaster'): string {
     return 'internal';
 }
 
+function footnoteTextByCause(cause: 'all' | 'Conflict' | 'Disaster', filterSuffix: string): string {
+    if (filterSuffix) {
+        return 'Bars aggregate selected causes per country';
+    }
+    if (cause === 'Conflict') {
+        return 'Bars aggregate all conflict causes per country';
+    }
+    if (cause === 'Disaster') {
+        return 'Bars aggregate all disaster causes per country';
+    }
+    return 'Bars aggregate all causes per country';
+}
+
 interface Props {
     className?: string;
     idus: IduRow[] | undefined;
@@ -148,7 +161,7 @@ function TopCountries(props: Props) {
                 </div>
             </div>
             <div className={styles.hint}>
-                Bars aggregate all causes per country · click a row to zoom in on map.
+                {`${footnoteTextByCause(cause, filterSuffix)} · click a row to zoom in on map.`}
             </div>
         </div>
     );
