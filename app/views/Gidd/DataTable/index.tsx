@@ -48,7 +48,7 @@ function getCombinedTotal(
     return (a ?? 0) + (b ?? 0);
 }
 
-const smallNumberWidth = 70;
+const smallNumberWidth = 80;
 // the IDPs headers are far shorter than the displacement ones, so they need less room
 const mediumNumberWidth = 120;
 const largeNumberWidth = 160;
