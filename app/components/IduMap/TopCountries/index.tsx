@@ -45,10 +45,10 @@ function footnoteTextByCause(cause: 'all' | 'Conflict' | 'Disaster', filterSuffi
         return 'Bars aggregate selected causes per country';
     }
     if (cause === 'Conflict') {
-        return 'Bars aggregate all conflict causes per country';
+        return 'Bars aggregate all conflict and violence per country';
     }
     if (cause === 'Disaster') {
-        return 'Bars aggregate all disaster causes per country';
+        return 'Bars aggregate all disasters per country';
     }
     return 'Bars aggregate all causes per country';
 }

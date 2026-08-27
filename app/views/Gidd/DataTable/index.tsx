@@ -209,7 +209,7 @@ function DataTable(props: Props) {
             ),
             isFlowShown && isConflictDataShown ? createNumberColumn<DisplacementData, string>(
                 'conflictNewDisplacement',
-                'Conflict Displacement',
+                'Conflict Displacements',
                 (item) => item.conflictNewDisplacement,
                 {
                     sortable: true,
@@ -221,7 +221,7 @@ function DataTable(props: Props) {
             ) : undefined,
             isFlowShown && isDisasterDataShown ? createNumberColumn<DisplacementData, string>(
                 'disasterNewDisplacement',
-                'Disaster Internal Displacement',
+                'Disaster Displacements',
                 (item) => item.disasterNewDisplacement,
                 {
                     sortable: true,

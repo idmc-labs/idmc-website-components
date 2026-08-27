@@ -154,7 +154,7 @@ interface CauseOption {
 const causeKeySelector = (option: CauseOption) => option.key;
 const causeLabelSelector = (option: CauseOption) => option.label;
 const causeOptions: CauseOption[] = [
-    { key: 'Conflict', label: 'Conflict' },
+    { key: 'Conflict', label: 'Conflict and Violence' },
     { key: 'Disaster', label: 'Disasters' },
 ];
 
