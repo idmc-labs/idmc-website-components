@@ -26,6 +26,7 @@ import {
     LngLatBoundsLike,
     PopupOptions,
 } from 'mapbox-gl';
+import '#utils/mapbox';
 import { IoInformationCircleOutline } from 'react-icons/io5';
 
 import { mapboxStyle } from '#base/configs/mapbox';

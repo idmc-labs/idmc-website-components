@@ -25,6 +25,10 @@ FROM builder AS web-app-serve-build
 # Every runtime-configurable variable is built as a placeholder marker instead
 # of a real value; ./web-app-serve/apply-config.sh substitutes them from the
 # container environment when the container starts.
+# Absolute base URL this deployment is reachable at. An embedding page loads the
+# bundle across origins, so the runtime cannot derive where to fetch chunks from.
+ENV REACT_APP_ASSET_BASE_URL=WEB_APP_SERVE_PLACEHOLDER__REACT_APP_ASSET_BASE_URL
+
 ENV REACT_APP_ENVIRONMENT=WEB_APP_SERVE_PLACEHOLDER__REACT_APP_ENVIRONMENT
 ENV REACT_APP_DATA_RELEASE=WEB_APP_SERVE_PLACEHOLDER__REACT_APP_DATA_RELEASE
 ENV REACT_APP_GA_TRACKING_ID=WEB_APP_SERVE_PLACEHOLDER__REACT_APP_GA_TRACKING_ID

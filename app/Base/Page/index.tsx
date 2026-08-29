@@ -3,6 +3,7 @@ import { addBreadcrumb } from '@sentry/react';
 import ReactGA from 'react-ga4';
 
 import DocumentTitle from '#components/DocumentTitle';
+import Message from '#components/Message';
 import {
     routeSettings,
     notFoundRoute,
@@ -61,13 +62,15 @@ function Page(props: Props) {
     return (
         <>
             <DocumentTitle value={route.title} />
-            <Loader
-                readString={readString}
-                readInteger={readInteger}
-                readClientCode={readClientCode}
-                className={className}
-                route={route}
-            />
+            <React.Suspense fallback={<Message pending />}>
+                <Loader
+                    readString={readString}
+                    readInteger={readInteger}
+                    readClientCode={readClientCode}
+                    className={className}
+                    route={route}
+                />
+            </React.Suspense>
         </>
     );
 }

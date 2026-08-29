@@ -7,29 +7,33 @@ import {
 } from '@apollo/client';
 import { unique } from '@togglecorp/fujs';
 
-import 'mapbox-gl/dist/mapbox-gl.css';
 import '@togglecorp/toggle-ui/build/index.css';
-
-import { setMapboxToken } from '@togglecorp/re-map';
 
 import AlertContainer from '#components/AlertContainer';
 import AlertContext, { AlertOptions } from '#components/AlertContext';
 import Message from '#components/Message';
 
 import LanguageContext, { Lang } from '#context/LanguageContext';
-import sentryConfig from '#base/configs/sentry';
 import apolloConfig from '#base/configs/apollo';
-import { mapboxToken } from '#base/configs/mapbox';
 import useLocalStorage from '#hooks/useLocalStorage';
+import { readRuntimeConfig } from '#utils/runtimeConfig';
 import { parseQueryString, standaloneMode } from '#utils/common';
 
 import Page from './Page';
 import styles from './styles.css';
 
-setMapboxToken(mapboxToken);
-
-if (sentryConfig) {
-    init(sentryConfig);
+// NOTE: the config module is what pulls in the replay, tracing and profiling
+// integrations, which together outweigh the reporting client. Loading it apart
+// from the bundle keeps a deployment without a DSN from paying for them at all,
+// and one with a DSN from paying for them before the page renders.
+if (readRuntimeConfig(process.env.REACT_APP_SENTRY_DSN)) {
+    import(/* webpackChunkName: "sentry" */ '#base/configs/sentry').then(
+        ({ default: sentryConfig }) => {
+            if (sentryConfig) {
+                init(sentryConfig);
+            }
+        },
+    );
 }
 
 const apolloClient = new ApolloClient(apolloConfig);

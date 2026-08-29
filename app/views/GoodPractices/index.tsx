@@ -40,6 +40,7 @@ import mapboxgl, {
     PopupOptions,
     LngLat,
 } from 'mapbox-gl';
+import '#utils/mapbox';
 import {
     _cs,
     listToMap,
@@ -85,9 +86,13 @@ import { mapboxStyle } from '#base/configs/mapbox';
 import useTranslation from '#hooks/useTranslation';
 import generateString from '#utils/strings';
 
-import AddGoodPractice from './AddGoodPractice';
 import backgroundImage from '../../resources/img/backgroundImage.png';
 import styles from './styles.css';
+
+// NOTE: this form is the only thing that pulls in TinyMCE, which is larger than
+// the rest of the page put together. It is behind a modal, so it loads when the
+// modal opens.
+const AddGoodPractice = React.lazy(() => import(/* webpackChunkName: "add-good-practice" */ './AddGoodPractice'));
 
 const GOOD_PRACTICE_PAGE_SIZE = 6;
 
@@ -1202,9 +1207,11 @@ function GoodPractices(props: Props) {
                     </div>
                 </section>
                 {addNewGoodPracticeModalShown && (
-                    <AddGoodPractice
-                        onModalClose={hideNewGoodPracticeModal}
-                    />
+                    <React.Suspense fallback={null}>
+                        <AddGoodPractice
+                            onModalClose={hideNewGoodPracticeModal}
+                        />
+                    </React.Suspense>
                 )}
             </div>
         </div>

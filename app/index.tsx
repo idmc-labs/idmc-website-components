@@ -1,3 +1,8 @@
+// NOTE: first, and before any other import. It points the runtime at this app's
+// own origin, and a chunk requested before it runs would be fetched from the
+// embedding page's.
+import './publicPath';
+
 import React from 'react';
 import ReactDom from 'react-dom';
 import ReactGA from 'react-ga4';

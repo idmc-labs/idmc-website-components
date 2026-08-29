@@ -22,6 +22,7 @@ import {
     PopupOptions,
     LngLatLike,
 } from 'mapbox-gl';
+import '#utils/mapbox';
 import {
     isDefined,
     isNotDefined,

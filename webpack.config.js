@@ -9,7 +9,7 @@ const CopyPlugin = require('copy-webpack-plugin');
 const { merge } = require('webpack-merge');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
-// const CssMinimizerWebpackPlugin = require('css-minimizer-webpack-plugin');
+const CssMinimizerWebpackPlugin = require('css-minimizer-webpack-plugin');
 const StyleLintPlugin = require('stylelint-webpack-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
 // const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
@@ -44,11 +44,15 @@ module.exports = () => {
         },
         output: {
             path: getPath('build/'),
-            publicPath: '/',
+            // NOTE: 'auto' resolves chunk and asset URLs from the URL of the
+            // script that loaded the runtime. An embedding page serves the
+            // bundle from another origin than its own, so a fixed '/' would
+            // send every lazy chunk and emitted asset to the embedder's root.
+            publicPath: 'auto',
             sourceMapFilename: '[file].map',
-            chunkFilename: 'js/[name].chunk.js',
+            chunkFilename: 'js/[name].[contenthash].chunk.js',
             filename: 'js/[name].bundle.js',
-            assetModuleFilename: 'assets/[name][ext]',
+            assetModuleFilename: 'assets/[name].[contenthash][ext]',
             clean: true,
         },
         module: {
@@ -104,14 +108,16 @@ module.exports = () => {
                     test: /\.(eot|svg|ttf|woff|woff2|png|jpg|gif)$/i,
                     exclude: /(node_modules)/,
                     include: getPath('app/'),
-                    type: 'asset/inline',
-                    /*
-                    options: {
-                        name: isProduction
-                            ? 'assets/[name].[contenthash]][ext]',
-                            : 'assets/[name].[ext]',
+                    // NOTE: only the small icons are worth a data URI. Base64
+                    // inflates a file by a third and defeats gzip on anything
+                    // already compressed, and an inlined asset can never be
+                    // cached or fetched separately from the bundle.
+                    type: 'asset',
+                    parser: {
+                        dataUrlCondition: {
+                            maxSize: 4 * 1024,
+                        },
                     },
-                    */
                 },
             ],
         },
@@ -134,8 +140,13 @@ module.exports = () => {
                 systemvars: !!isProduction, // NOTE: need to filter system variables
             }),
             new MiniCssExtractPlugin({
+                // NOTE: `main.css` keeps its plain name -- an embedding page links
+                // to it by hand. The lazy chunks are resolved by the runtime, so
+                // they can carry a hash and be cached indefinitely.
                 filename: 'css/[name].css',
-                chunkFilename: 'css/[id].css',
+                chunkFilename: isProduction
+                    ? 'css/[id].[contenthash].css'
+                    : 'css/[id].css',
             }),
             new CopyPlugin({
                 patterns: [
@@ -202,11 +213,6 @@ module.exports = () => {
                 optimization: {
                     moduleIds: 'deterministic', // 'hashed',
                     runtimeChunk: 'single',
-                    /*
-                    usedExports: true,
-                    innerGraph: true,
-                    sideEffects: true,
-                    */
                     minimizer: [
                         // NOTE: Using TerserPlugin instead of UglifyJsPlugin
                         // as es6 support deprecated
@@ -217,20 +223,42 @@ module.exports = () => {
                                 compress: { typeofs: false },
                             },
                         }),
-                        // new CssMinimizerWebpackPlugin(),
+                        new CssMinimizerWebpackPlugin(),
                     ],
-                    /*
                     splitChunks: {
+                        // NOTE: 'async' only. An embedding page loads exactly the
+                        // two script tags it was given, so anything split out of
+                        // the initial chunk would simply never be fetched; every
+                        // extra chunk has to be one the runtime pulls in itself.
+                        chunks: 'async',
+                        minSize: 30 * 1024,
                         cacheGroups: {
-                            defaultVendors: {
+                            // The map stack is the single largest dependency and
+                            // only three of the nine pages touch it.
+                            mapbox: {
+                                test: /[\\/]node_modules[\\/](mapbox-gl|@mapbox[\\/]mapbox-gl-draw)[\\/]/,
+                                name: 'mapbox',
+                                priority: 30,
+                                reuseExistingChunk: true,
+                            },
+                            charts: {
+                                test: /[\\/]node_modules[\\/](recharts|recharts-scale|react-smooth|d3-.*|decimal.js-light|reduce-css-calc|victory-vendor)[\\/]/,
+                                name: 'charts',
+                                priority: 20,
+                                reuseExistingChunk: true,
+                            },
+                            // NOTE: no `name`. Naming this group would merge every
+                            // lazy dependency into one chunk, so a page that
+                            // wants the editor would also fetch the spreadsheet
+                            // writer. Unnamed, webpack groups by which pages
+                            // actually share a module.
+                            vendors: {
                                 test: /[\\/]node_modules[\\/]/,
-                                name: 'vendors',
-                                chunks: 'all',
-                                maxSize: 200 * 1024, // 200 KB
+                                priority: 10,
+                                reuseExistingChunk: true,
                             },
                         },
                     },
-                    */
                 },
                 plugins: [
                     new ResourceHintWebpackPlugin(),

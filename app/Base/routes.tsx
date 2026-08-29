@@ -1,14 +1,5 @@
 import React from 'react';
 
-import Home from '#views/Home';
-import { CountryProfileWithYear } from '#views/CountryProfile';
-import { GiddWithYear } from '#views/Gidd';
-import GoodPractice from '#views/GoodPractice';
-import GoodPractices from '#views/GoodPractices';
-import IduMap from '#views/IduMap';
-import { ConflictWidgetWithYear } from '#views/ConflictWidget';
-import { DisasterWidgetWithYear } from '#views/DisasterWidget';
-import IduWidget from '#views/IduWidget';
 import DocumentTitle from '#components/DocumentTitle';
 import Message from '#components/Message';
 import { standaloneMode } from '#utils/common';
@@ -16,6 +7,20 @@ import {
     ReadResult,
     ReadSource,
 } from '#utils/params';
+
+// NOTE: one page is rendered per document -- the embedding page names it, and it
+// never changes afterwards. Loading the views lazily therefore ships exactly the
+// one a visitor asked for, instead of all nine plus every library any of them
+// happens to need.
+const Home = React.lazy(() => import(/* webpackChunkName: "home" */ '#views/Home'));
+const CountryProfileWithYear = React.lazy(() => import(/* webpackChunkName: "country-profile" */ '#views/CountryProfile').then((m) => ({ default: m.CountryProfileWithYear })));
+const GiddWithYear = React.lazy(() => import(/* webpackChunkName: "gidd" */ '#views/Gidd').then((m) => ({ default: m.GiddWithYear })));
+const GoodPractice = React.lazy(() => import(/* webpackChunkName: "good-practice" */ '#views/GoodPractice'));
+const GoodPractices = React.lazy(() => import(/* webpackChunkName: "good-practices" */ '#views/GoodPractices'));
+const IduMap = React.lazy(() => import(/* webpackChunkName: "idu-map" */ '#views/IduMap'));
+const ConflictWidgetWithYear = React.lazy(() => import(/* webpackChunkName: "conflict-widget" */ '#views/ConflictWidget').then((m) => ({ default: m.ConflictWidgetWithYear })));
+const DisasterWidgetWithYear = React.lazy(() => import(/* webpackChunkName: "disaster-widget" */ '#views/DisasterWidget').then((m) => ({ default: m.DisasterWidgetWithYear })));
+const IduWidget = React.lazy(() => import(/* webpackChunkName: "idu-widget" */ '#views/IduWidget'));
 
 interface LoaderProps {
     readString: (

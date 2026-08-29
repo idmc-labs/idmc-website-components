@@ -17,6 +17,22 @@
             before main.bundle.js below). In development both are inlined into
             main.bundle.js (styles injected by style-loader), so /css/main.css and
             /js/runtime.bundle.js do not exist and will 404 harmlessly.
+
+            NOTE: these examples are served by the app itself, so they can reference
+            the bundle at the site root. A real embedding page is on another origin
+            and must give all three URLs that origin:
+
+                <link rel="stylesheet" href="https://<this-deployment>/css/main.css" />
+                <script src="https://<this-deployment>/js/runtime.bundle.js"></script>
+                <script src="https://<this-deployment>/js/main.bundle.js"></script>
+
+            The rest of the assets -- the per-page chunks, their stylesheets and the
+            images -- are fetched by the runtime, which resolves them against
+            REACT_APP_ASSET_BASE_URL, then against the src of the main.bundle.js tag.
+            An embedder whose page rewrites or concatenates script tags leaves neither
+            usable, and must instead declare the origin before the bundle loads:
+
+                <script>window.idmcComponentsBaseUrl = 'https://<this-deployment>/';</script>
         -->
         <link rel="stylesheet" href="./base.css" />
         <link rel="stylesheet" href="/css/main.css" />
