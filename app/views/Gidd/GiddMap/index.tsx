@@ -269,6 +269,19 @@ function getChoroplethColor(ramp: ChoroplethRampKey, t: number) {
     return `rgb(${r}, ${g}, ${b})`;
 }
 
+const CHOROPLETH_LEGEND_STOPS = 12;
+
+// The fill colors a country by `sqrt(value / maxValue)`, so an evenly spaced gradient would
+// read every country as up to twice its real share. Placing color `c(t)` at `t²` of the bar
+// puts each color where its value actually sits.
+function getChoroplethLegendGradient(ramp: ChoroplethRampKey) {
+    const stops = Array.from({ length: CHOROPLETH_LEGEND_STOPS + 1 }, (_, index) => {
+        const t = index / CHOROPLETH_LEGEND_STOPS;
+        return `${getChoroplethColor(ramp, t)} ${(t * t * 100).toFixed(2)}%`;
+    });
+    return `linear-gradient(to right, ${stops.join(', ')})`;
+}
+
 const SQUARE_BORDER_WIDTH = 1.5;
 
 function createSquareIcon(size: number, color: string): ImageData {
@@ -722,13 +735,6 @@ function GiddMap(props: Props) {
         [countryPoints],
     );
 
-    const minValue = useMemo(() => {
-        if (countryPoints.length === 0) {
-            return 0;
-        }
-        return Math.min(...countryPoints.map((point) => point.value));
-    }, [countryPoints]);
-
     const squareGeoJson: CountryPointGeoJSON = useMemo(() => ({
         type: 'FeatureCollection',
         features: !isStockView ? [] : countryPoints.map((point) => ({
@@ -993,13 +999,12 @@ function GiddMap(props: Props) {
                         <div
                             className={styles.choroplethBar}
                             style={{
-                                background: `linear-gradient(to right, ${
-                                    getChoroplethColor(choroplethRamp, 0)
-                                }, ${getChoroplethColor(choroplethRamp, 1)})`,
+                                background: getChoroplethLegendGradient(choroplethRamp),
                             }}
                         />
                         <div className={styles.choroplethLabels}>
-                            <Numeral value={minValue} abbreviate={abbreviate} />
+                            {/* the fill scales against 0, not the smallest country shown */}
+                            <Numeral value={0} abbreviate={abbreviate} />
                             <Numeral value={maxValue} abbreviate={abbreviate} />
                         </div>
                     </div>
@@ -1021,6 +1026,8 @@ function GiddMap(props: Props) {
                         <BubbleSizeLegend
                             domainMin={1}
                             domainMax={GIDD_FLOW_VALUE_MAX}
+                            valueMax={maxValue}
+                            abbreviate={abbreviate}
                         />
                     </div>
                 )}

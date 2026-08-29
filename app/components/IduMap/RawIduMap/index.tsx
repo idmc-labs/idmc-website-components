@@ -585,6 +585,7 @@ function RawIduMap(props: Props) {
                         title="Size by number of internal displacements"
                         domainMin={1}
                         domainMax={maxValue}
+                        abbreviate={abbreviate}
                     />
                 </div>
                 <div className={styles.disclaimer}>
