@@ -12,7 +12,6 @@ import {
 } from '@togglecorp/toggle-ui';
 import {
     DATA_RELEASE,
-    roundAndRemoveZero,
 } from '#utils/common';
 import {
     gql,
@@ -91,13 +90,9 @@ const GIDD_DISPLACEMENTS = gql`
                 countryName
                 countryId
                 year
-                conflictNewDisplacement
                 conflictNewDisplacementRounded
-                conflictTotalDisplacement
                 conflictTotalDisplacementRounded
-                disasterNewDisplacement
                 disasterNewDisplacementRounded
-                disasterTotalDisplacement
                 disasterTotalDisplacementRounded
             }
             totalCount
@@ -251,6 +246,8 @@ function DataTable(props: Props) {
                     headerCellRendererClassName: sortedHeaderClassName('disasterNewDisplacement'),
                 },
             ) : undefined,
+            // summed from the two published figures, so it can sit up to 1,000 away from a
+            // figure rounded once from the raw total -- the server has no combined column yet
             // not sortable: this is a client-side sum of two fields with no
             // single backing field the server can order by, and the table
             // is now server-paginated — sorting it would only reorder
@@ -258,14 +255,10 @@ function DataTable(props: Props) {
             isFlowShown && bothCauses ? createNumberColumn<DisplacementData, string>(
                 'totalNewDisplacement',
                 'Total Internal Displacement',
-                (item) => {
-                    // sum the raw figures, then round — not a sum of rounded parts
-                    const total = getCombinedTotal(
-                        item.conflictNewDisplacement,
-                        item.disasterNewDisplacement,
-                    );
-                    return roundAndRemoveZero(total);
-                },
+                (item) => getCombinedTotal(
+                    item.conflictNewDisplacementRounded,
+                    item.disasterNewDisplacementRounded,
+                ),
                 {
                     emphasize: true,
                     abbreviate,
@@ -300,14 +293,10 @@ function DataTable(props: Props) {
             isStockShown && bothCauses ? createNumberColumn<DisplacementData, string>(
                 'totalIDPs',
                 'Total IDPs',
-                (item) => {
-                    // sum the raw figures, then round — not a sum of rounded parts
-                    const total = getCombinedTotal(
-                        item.conflictTotalDisplacement,
-                        item.disasterTotalDisplacement,
-                    );
-                    return roundAndRemoveZero(total);
-                },
+                (item) => getCombinedTotal(
+                    item.conflictTotalDisplacementRounded,
+                    item.disasterTotalDisplacementRounded,
+                ),
                 {
                     emphasize: true,
                     abbreviate,

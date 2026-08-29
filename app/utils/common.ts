@@ -138,6 +138,19 @@ export function formatNumber(value: number) {
     return `${number}${normalizeSuffix}`;
 }
 
+// NOTE: kept single-argument so it can be handed to recharts' tickFormatter and
+// Tooltip formatter, which pass an index or series name as the second argument.
+export function formatFullNumber(value: number) {
+    const output = formatNumberRaw(
+        value,
+        ',',
+        false,
+        getAutoPrecision(value, 100, 2),
+    );
+
+    return output?.value ?? '';
+}
+
 export function getCountryProfileLink(
     iso3: string,
     countryName: string | undefined,
