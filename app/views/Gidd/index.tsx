@@ -1983,6 +1983,7 @@ function Gidd(props: Props) {
                                         isConflictDataShown={isConflictDataShown}
                                         isDisasterDataShown={isDisasterDataShown}
                                         category={displacementCategory}
+                                        cause={displacementCause}
                                         countriesIso3={effectiveCountries}
                                         hazardTypes={
                                             isDisasterDataShown ? selectedHazardTypeIds : undefined

@@ -29,6 +29,8 @@ import {
     GiddDisplacementsQueryVariables,
 } from '#generated/types';
 
+import { CAUSE_BY_KEY } from '../utils';
+
 import styles from './styles.css';
 
 type DisplacementData = NonNullable<
@@ -63,6 +65,7 @@ const GIDD_DISPLACEMENTS = gql`
         $endYear: Float,
         $startYear: Float,
         $countriesIso3: [String!],
+        $cause: CRISIS_TYPE,
         $hazardTypes: [ID!],
         $violenceSubTypes: [ID!],
         $releaseEnvironment: String!,
@@ -73,6 +76,7 @@ const GIDD_DISPLACEMENTS = gql`
             pageSize: $pageSize,
             page: $page,
             countriesIso3: $countriesIso3,
+            cause: $cause,
             endYear: $endYear,
             startYear: $startYear,
             hazardTypes: $hazardTypes,
@@ -98,12 +102,14 @@ const GIDD_DISPLACEMENTS = gql`
 `;
 
 type Category = 'flow' | 'stock';
+type Cause = 'conflict' | 'disaster';
 
 interface Props {
     className?: string;
     isConflictDataShown?: boolean;
     isDisasterDataShown?: boolean;
     category: Category | undefined;
+    cause: Cause | undefined;
     startYear: number;
     endYear: number;
     countriesIso3: string[] | undefined;
@@ -121,6 +127,7 @@ function DataTable(props: Props) {
         isConflictDataShown,
         isDisasterDataShown,
         category,
+        cause,
         startYear,
         endYear,
         countriesIso3,
@@ -144,6 +151,7 @@ function DataTable(props: Props) {
         page: activePage,
         pageSize: DISPLACEMENTS_TABLE_PAGE_SIZE,
         countriesIso3,
+        cause: cause ? CAUSE_BY_KEY[cause] : undefined,
         startYear,
         endYear,
         hazardTypes,
@@ -154,6 +162,7 @@ function DataTable(props: Props) {
         sorting,
         activePage,
         countriesIso3,
+        cause,
         startYear,
         endYear,
         hazardTypes,

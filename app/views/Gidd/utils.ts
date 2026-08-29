@@ -5,11 +5,19 @@ import { gql, useQuery } from '@apollo/client';
 import { DATA_RELEASE } from '#utils/common';
 import useDebouncedValue from '#hooks/useDebouncedValue';
 import {
+    Crisis_Type as CrisisType,
     GiddHazardBreakdownQuery,
     GiddViolenceBreakdownQuery,
     GiddTopCountriesQuery,
     GiddTopCountriesQueryVariables,
 } from '#generated/types';
+
+// The server filters cause by enum (CRISIS_TYPE); the UI keys its cause options in lowercase, so
+// the two are mapped rather than cast.
+export const CAUSE_BY_KEY: Record<string, CrisisType> = {
+    conflict: 'CONFLICT',
+    disaster: 'DISASTER',
+};
 
 export const OTHER_BUCKET_ID = '__other__';
 
@@ -143,6 +151,7 @@ export const TOP_COUNTRIES_QUERY = gql`
         $endYear: Float,
         $startYear: Float,
         $countriesIso3: [String!],
+        $cause: CRISIS_TYPE,
         $hazardTypes: [ID!],
         $violenceSubTypes: [ID!],
         $releaseEnvironment: String!,
@@ -150,6 +159,7 @@ export const TOP_COUNTRIES_QUERY = gql`
     ){
         giddPublicCountryDisplacements(
             countriesIso3: $countriesIso3,
+            cause: $cause,
             endYear: $endYear,
             startYear: $startYear,
             hazardTypes: $hazardTypes,
@@ -209,13 +219,23 @@ export function useCountryRanking(params: UseCountryRankingParams) {
 
     const variables = useMemo(() => ({
         countriesIso3,
+        cause: cause ? CAUSE_BY_KEY[cause] : undefined,
         startYear: isStock ? endYear : startYear,
         endYear,
         hazardTypes,
         violenceSubTypes,
         releaseEnvironment: DATA_RELEASE,
         clientId,
-    }), [countriesIso3, isStock, startYear, endYear, hazardTypes, violenceSubTypes, clientId]);
+    }), [
+        countriesIso3,
+        cause,
+        isStock,
+        startYear,
+        endYear,
+        hazardTypes,
+        violenceSubTypes,
+        clientId,
+    ]);
 
     const debouncedVariables = useDebouncedValue(variables);
 
