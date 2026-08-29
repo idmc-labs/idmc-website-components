@@ -2059,6 +2059,7 @@ function Gidd(props: Props) {
                                     cause={displacementCause}
                                     countriesIso3={effectiveCountries}
                                     hazardTypes={selectedHazardTypeIds}
+                                    violenceSubTypes={selectedViolenceSubTypeIds}
                                     startYear={timeRange[0]}
                                     endYear={timeRange[1]}
                                     clientCode={clientCode}

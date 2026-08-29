@@ -14,6 +14,7 @@ export interface Props {
     cause: Cause | undefined;
     countriesIso3: string[];
     hazardTypes: string[];
+    violenceSubTypes: string[];
     startYear: number;
     endYear: number;
     clientCode: string;
@@ -25,18 +26,29 @@ function DownloadMenu(props: Props) {
         cause,
         countriesIso3,
         hazardTypes,
+        violenceSubTypes,
         startYear,
         endYear,
         clientCode,
         disaggregationAvailable,
     } = props;
 
+    // Only one typology reaches each branch because selecting a trigger type sets the cause,
+    // and clearing the cause clears the trigger types -- so with no cause there is nothing to
+    // send. That is also the only safe shape: these rows carry one cause's typology columns,
+    // so pairing a violence filter with a hazard one drops every row rather than widening.
     let annualHref: string;
     let annualTitle: string;
     if (cause === 'conflict') {
         annualHref = suffixHelixRestEndpoint(prepareUrl(
             'gidd/displacements/displacement-export/',
-            { cause, iso3__in: countriesIso3, start_year: startYear, end_year: endYear },
+            {
+                cause,
+                iso3__in: countriesIso3,
+                violence_sub_type__in: violenceSubTypes,
+                start_year: startYear,
+                end_year: endYear,
+            },
         ), clientCode);
         annualTitle = 'Annual updates of internal displacement data related to conflict';
     } else if (cause === 'disaster') {
@@ -69,6 +81,7 @@ function DownloadMenu(props: Props) {
         : {
             cause,
             iso3__in: countriesIso3,
+            violence_sub_type__in: violenceSubTypes,
             start_year: startYear,
             end_year: endYear,
         };
