@@ -58,16 +58,16 @@ type IduReferenceCountry {
   id: Int!
   iso3: String
   geographical_group_id: Int
-  idmcShortName: String
+  idmc_short_name: String
   bbox: [Float!]
 }
 
 type IduReferences {
-  disasterTypes: [IduReferenceItem!]
-  disasterSubTypes: [IduReferenceSubItem!]
-  violenceTypes: [IduReferenceItem!]
-  violenceSubTypes: [IduReferenceSubItem!]
-  geographicalGroups: [IduReferenceItem!]
+  disaster_types: [IduReferenceItem!]
+  disaster_sub_types: [IduReferenceSubItem!]
+  violence_types: [IduReferenceItem!]
+  violence_sub_types: [IduReferenceSubItem!]
+  geographical_groups: [IduReferenceItem!]
   countries: [IduReferenceCountry!]
 }
 type Value {
