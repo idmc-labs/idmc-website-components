@@ -38,6 +38,7 @@ interface Props {
     onRecordSelect?: (recordId: number) => void;
     selectedRecordId: number | undefined;
     expandable?: boolean;
+    abbreviate?: boolean;
 }
 
 function RecentEvents(props: Props) {
@@ -51,6 +52,7 @@ function RecentEvents(props: Props) {
         onRecordSelect,
         selectedRecordId,
         expandable,
+        abbreviate = true,
     } = props;
 
     const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -83,6 +85,7 @@ function RecentEvents(props: Props) {
                 excerpt: item.standard_popup_text,
                 source: item.sources,
                 date: item.displacement_date,
+                abbreviate,
             };
         }
 
@@ -94,8 +97,9 @@ function RecentEvents(props: Props) {
             value: item.figure,
             onClick: onRecordSelect,
             selected: item.id === selectedRecordId,
+            abbreviate,
         };
-    }, [expandable, expandedId, handleExpandToggle, onRecordSelect, selectedRecordId]);
+    }, [expandable, expandedId, handleExpandToggle, onRecordSelect, selectedRecordId, abbreviate]);
 
     const handleShowMore = useCallback(() => {
         setVisibleCount((count) => count + PAGE_SIZE);

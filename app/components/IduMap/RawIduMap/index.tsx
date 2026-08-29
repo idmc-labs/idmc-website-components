@@ -310,6 +310,7 @@ interface EventPopupCardProps {
     onCountryFocus?: (iso3: string) => void;
     onEventFocus?: (eventId: number) => void;
     onClose?: () => void;
+    abbreviate?: boolean;
 }
 
 function EventPopupCard(props: EventPopupCardProps) {
@@ -319,6 +320,7 @@ function EventPopupCard(props: EventPopupCardProps) {
         onCountryFocus,
         onEventFocus,
         onClose,
+        abbreviate = true,
     } = props;
 
     const isDisaster = item.type === 'Disaster';
@@ -352,7 +354,7 @@ function EventPopupCard(props: EventPopupCardProps) {
                 <Numeral
                     className={styles.figure}
                     value={item.value}
-                    abbreviate
+                    abbreviate={abbreviate}
                     valueClassName={accentClassName}
                     abbrClassName={accentClassName}
                 />
@@ -422,6 +424,7 @@ interface Props {
     filtersActive: boolean;
     // increment to animate back to the initial globe view
     resetTrigger: number;
+    abbreviate?: boolean;
     onPointClick: (lngLat: LngLatLike, properties: PopupProperties) => void;
     onClose: () => void;
     onRemoveFocus: () => void;
@@ -439,6 +442,7 @@ function RawIduMap(props: Props) {
         focus,
         filtersActive,
         resetTrigger,
+        abbreviate = true,
         onPointClick,
         onClose,
         onRemoveFocus,
@@ -644,6 +648,7 @@ function RawIduMap(props: Props) {
                                         <EventPopupCard
                                             item={item}
                                             detailed
+                                            abbreviate={abbreviate}
                                             onCountryFocus={onCountryFocus}
                                             onEventFocus={onEventFocus}
                                             onClose={onClose}
@@ -662,6 +667,7 @@ function RawIduMap(props: Props) {
                         <EventPopupCard
                             item={hovered.properties}
                             detailed={false}
+                            abbreviate={abbreviate}
                         />
                     </MapTooltip>
                 )}

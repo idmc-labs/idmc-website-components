@@ -51,6 +51,7 @@ interface Props {
     filterSuffix: string;
     onEventSelect?: (eventId: number) => void;
     selectedEventId: number | undefined;
+    abbreviate?: boolean;
 }
 
 function LargestEvents(props: Props) {
@@ -64,6 +65,7 @@ function LargestEvents(props: Props) {
         filterSuffix,
         onEventSelect,
         selectedEventId,
+        abbreviate = true,
     } = props;
 
     const events = useMemo<LargestEvent[]>(() => {
@@ -96,7 +98,8 @@ function LargestEvents(props: Props) {
         value: event.value,
         onClick: onEventSelect,
         selected: event.eventId === selectedEventId,
-    }), [onEventSelect, selectedEventId]);
+        abbreviate,
+    }), [onEventSelect, selectedEventId, abbreviate]);
 
     const description = `Preliminary estimates of the largest ${displacementTerm(cause)} displacements reported ${scopeLabel} between ${formatDate(startDate)} - ${formatDate(endDate)}.${filterSuffix}`;
 
