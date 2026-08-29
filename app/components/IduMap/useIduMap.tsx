@@ -526,10 +526,9 @@ function useIduMap(
         return true;
     }, []);
 
-    const idusForExport = useMemo(
-        () => buildIduFilter(idusAll),
-        [idusAll, buildIduFilter],
-    );
+    // "Download current selection" means what the map and the table show: recommended
+    // figures only, not every role behind them.
+    const idusForExport = idusForMap;
 
     const handleDownloadGeojson = useCallback(() => {
         if (isNotDefined(idusForExport)) {
