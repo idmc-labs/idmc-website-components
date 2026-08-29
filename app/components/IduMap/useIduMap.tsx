@@ -170,6 +170,20 @@ const viewOptions: ViewOption[] = [
     { key: 'table', label: 'Table' },
 ];
 
+// Unlike GIDD, the IDU payload carries only the raw `figure`, so 'full' really is the
+// exact reported number.
+type NumberFormat = 'abbreviated' | 'full';
+interface NumberFormatOption {
+    key: NumberFormat;
+    label: string;
+}
+const numberFormatKeySelector = (option: NumberFormatOption) => option.key;
+const numberFormatLabelSelector = (option: NumberFormatOption) => option.label;
+const numberFormatOptions: NumberFormatOption[] = [
+    { key: 'abbreviated', label: 'Rounded' },
+    { key: 'full', label: 'Exact' },
+];
+
 interface Option {
     key: string;
     label: string;
@@ -291,6 +305,8 @@ function useIduMap(
     const [startDate, setStartDate] = useState<string | undefined>(defaultStartDate);
     const [endDate, setEndDate] = useState<string | undefined>(defaultEndDate);
     const [mapOrTable, setMapOrTable] = useState<ViewKey>('map');
+    const [numberFormat, setNumberFormat] = useState<NumberFormat>('abbreviated');
+    const abbreviateFigures = numberFormat === 'abbreviated';
     const [mountedViews, setMountedViews] = useState<Set<ViewKey>>(() => new Set<ViewKey>(['map']));
     // the open map popup lives here so events and filter changes can drive it
     const [mapSelection, setMapSelection] = useState<MapSelection | undefined>();
@@ -949,6 +965,7 @@ function useIduMap(
                     onEventSelect={isMobile ? undefined : handleEventSelect}
                     selectedEventId={focusedEventId}
                     expandable={isMobile}
+                    abbreviate={abbreviateFigures}
                 />
             ),
         },
@@ -964,6 +981,7 @@ function useIduMap(
                     filterSuffix={combinedFilterSuffix}
                     onCountrySelect={isMobile ? undefined : handleCountrySelect}
                     selectedIso3={selectedIso3}
+                    abbreviate={abbreviateFigures}
                 />
             ),
         },
@@ -977,6 +995,7 @@ function useIduMap(
                     description={disasterBreakdownDesc}
                     onTriggerSelect={isMobile ? undefined : handleTriggerSelect}
                     selectedTriggerType={selectedTriggerType}
+                    abbreviate={abbreviateFigures}
                 />
             ),
         },
@@ -990,6 +1009,7 @@ function useIduMap(
                     description={conflictBreakdownDesc}
                     onTriggerSelect={isMobile ? undefined : handleTriggerSelect}
                     selectedTriggerType={selectedTriggerType}
+                    abbreviate={abbreviateFigures}
                 />
             ),
         },
@@ -1005,6 +1025,7 @@ function useIduMap(
                     filterSuffix={combinedFilterSuffix}
                     onEventSelect={isMobile ? undefined : handleEventSelect}
                     selectedEventId={selectedEventId}
+                    abbreviate={abbreviateFigures}
                 />
             ),
         },
@@ -1123,6 +1144,19 @@ function useIduMap(
                         maxDate={defaultEndDate}
                         onChange={handleDateRangeChange}
                     />
+                    <SegmentInput
+                        className={_cs(
+                            styles.numberFormat,
+                            styles.filterInput,
+                            styles.filterSegment,
+                        )}
+                        name="numberFormat"
+                        options={numberFormatOptions}
+                        keySelector={numberFormatKeySelector}
+                        labelSelector={numberFormatLabelSelector}
+                        value={numberFormat}
+                        onChange={setNumberFormat}
+                    />
                 </div>
             </div>
             {!filtersExpanded && activeFilters.length > 0 && (
@@ -1159,6 +1193,7 @@ function useIduMap(
                                 filtersActive={appliedFilterCount > 0}
                                 disableSpin={isDefined(iso3)}
                                 resetTrigger={resetTrigger}
+                                abbreviate={abbreviateFigures}
                                 onPointClick={handleMapPointClick}
                                 onClose={handleMapPopupClose}
                                 onRemoveFocus={handleRemoveFocus}
@@ -1175,6 +1210,7 @@ function useIduMap(
                             <IduTable
                                 idus={idusForMap}
                                 onRecordSelect={handleRecordSelect}
+                                abbreviate={abbreviateFigures}
                             />
                         </div>
                     )}
@@ -1197,7 +1233,7 @@ function useIduMap(
                     </div>
                 </div>
                 <div className={styles.rightPane}>
-                    <StatBar idus={idusForMap} />
+                    <StatBar idus={idusForMap} abbreviate={abbreviateFigures} />
                     <SlideCarousel
                         className={styles.carousel}
                         slides={slides}

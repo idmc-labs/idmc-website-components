@@ -39,6 +39,7 @@ interface Props {
     onEventSelect?: (eventId: number) => void;
     selectedEventId: number | undefined;
     expandable?: boolean;
+    abbreviate?: boolean;
 }
 
 function RecentEvents(props: Props) {
@@ -52,6 +53,7 @@ function RecentEvents(props: Props) {
         onEventSelect,
         selectedEventId,
         expandable,
+        abbreviate = true,
     } = props;
 
     const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -89,6 +91,7 @@ function RecentEvents(props: Props) {
                 excerpt: item.standard_popup_text,
                 source: item.sources,
                 date: item.displacement_date,
+                abbreviate,
             };
         }
 
@@ -100,8 +103,9 @@ function RecentEvents(props: Props) {
             value: item.figure,
             onClick: onEventSelect,
             selected: isDefined(item.event_id) && item.event_id === selectedEventId,
+            abbreviate,
         };
-    }, [expandable, expandedId, handleExpandToggle, onEventSelect, selectedEventId]);
+    }, [expandable, expandedId, handleExpandToggle, onEventSelect, selectedEventId, abbreviate]);
 
     const handleShowMore = useCallback(() => {
         setVisibleCount((count) => count + PAGE_SIZE);

@@ -94,6 +94,10 @@
             .date-range {
                 flex-shrink: 0;
             }
+
+            .number-format {
+                flex-shrink: 0;
+            }
         }
     }
 

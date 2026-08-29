@@ -52,6 +52,7 @@ interface Props {
     // pass to make rows clickable (selects the group as a trigger-type filter)
     onTriggerSelect?: (triggerType: string) => void;
     selectedTriggerType?: string;
+    abbreviate?: boolean;
 }
 
 function Breakdown(props: Props) {
@@ -63,6 +64,7 @@ function Breakdown(props: Props) {
         description,
         onTriggerSelect,
         selectedTriggerType,
+        abbreviate = true,
     } = props;
 
     const { displacementType, groupSelector } = variantConfig[variant];
@@ -100,7 +102,8 @@ function Breakdown(props: Props) {
         variant,
         onClick: item.key ? onTriggerSelect : undefined,
         selected: item.key === selectedTriggerType,
-    }), [maxTotal, variant, onTriggerSelect, selectedTriggerType]);
+        abbreviate,
+    }), [maxTotal, variant, onTriggerSelect, selectedTriggerType, abbreviate]);
 
     return (
         <div className={_cs(styles.breakdown, className)}>
