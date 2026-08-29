@@ -44,7 +44,7 @@ const extraSmallTextWidth = 150;
 const mediumTextWidth = 280;
 
 type EventData = NonNullable<
-    NonNullable<GiddEventsQuery['giddPublicEvents']>['results']
+    NonNullable<GiddEventsQuery['giddPublicDisplacementEvents']>['results']
 >[number];
 type NumeralProps = React.ComponentProps<typeof Numeral>;
 const eventKeySelector = (item: { id: string }) => item.id;
@@ -81,7 +81,7 @@ const GIDD_EVENTS = gql`
         $releaseEnvironment: String!,
         $clientId: String!,
     ){
-        giddPublicEvents(
+        giddPublicDisplacementEvents(
             ordering: $ordering,
             pageSize: $pageSize,
             page: $page,
@@ -385,7 +385,7 @@ function EventsTable(props: Props) {
         ],
     );
 
-    const eventRows = eventsResponse?.giddPublicEvents?.results;
+    const eventRows = eventsResponse?.giddPublicDisplacementEvents?.results;
     const isEmpty = (eventRows ?? []).length === 0;
 
     return (
@@ -410,7 +410,7 @@ function EventsTable(props: Props) {
                     <Pager
                         className={styles.pager}
                         activePage={activePage}
-                        itemsCount={eventsResponse?.giddPublicEvents?.totalCount ?? 0}
+                        itemsCount={eventsResponse?.giddPublicDisplacementEvents?.totalCount ?? 0}
                         maxItemsPerPage={EVENTS_TABLE_PAGE_SIZE}
                         onActivePageChange={onActivePageChange}
                         itemsPerPageControlHidden
