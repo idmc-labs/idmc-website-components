@@ -132,12 +132,12 @@ const IDU_REFERENCES = gql`
             endpoint: "helix",
             path: "idus/references/?client_id={args.clientId}"
         ) {
-            disasterTypes { id name }
-            disasterSubTypes { id name type_id }
-            violenceTypes { id name }
-            violenceSubTypes { id name type_id }
-            geographicalGroups { id name }
-            countries { id iso3 geographical_group_id idmcShortName bbox }
+            disaster_types { id name }
+            disaster_sub_types { id name type_id }
+            violence_types { id name }
+            violence_sub_types { id name type_id }
+            geographical_groups { id name }
+            countries { id iso3 geographical_group_id idmc_short_name bbox }
         }
     }
 `;
@@ -354,7 +354,7 @@ function useIduMap(
         countryBboxMap,
     } = useMemo(() => {
         const refCountries = referencesData?.iduReferences?.countries ?? [];
-        const refGroups = referencesData?.iduReferences?.geographicalGroups ?? [];
+        const refGroups = referencesData?.iduReferences?.geographical_groups ?? [];
 
         const regionIso3Map = new Map<string, string[]>();
         const bboxMap = new Map<string, number[]>();
@@ -386,8 +386,8 @@ function useIduMap(
     // Trigger type options come from the references API (not derived from IDU data),
     // grouped by cause and limited to the groups matching the cause selection.
     const triggerOptions = useMemo<TriggerOption[]>(() => {
-        const disasterTypes = referencesData?.iduReferences?.disasterTypes ?? [];
-        const violenceSubTypes = referencesData?.iduReferences?.violenceSubTypes ?? [];
+        const disasterTypes = referencesData?.iduReferences?.disaster_types ?? [];
+        const violenceSubTypes = referencesData?.iduReferences?.violence_sub_types ?? [];
 
         const disasterOpts: TriggerOption[] = disasterTypes.map((t) => ({
             key: t.name,
@@ -422,7 +422,7 @@ function useIduMap(
         return refCountries
             .filter((c) => isTruthyString(c.iso3)
                 && (!allowedIso3 || allowedIso3.has(c.iso3 as string)))
-            .map((c) => ({ key: `c:${c.iso3}`, label: c.idmcShortName ?? (c.iso3 as string) }))
+            .map((c) => ({ key: `c:${c.iso3}`, label: c.idmc_short_name ?? (c.iso3 as string) }))
             .sort((a, b) => compareString(a.label, b.label));
     }, [referencesData, regions, regionToIso3]);
 
