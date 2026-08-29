@@ -18,7 +18,7 @@
             bottom: 0;
             left: var(--tui-spacing-small);
             background-color: var(--tui-color-);
-            width: calc(100% - #{var(--tui-spacing-medium)});
+            width: calc(100% - var(--tui-spacing-medium));
             height: var(--tui-width-separator-thin);
             animation: grow-h .2s ease-in;
         }

@@ -6,7 +6,7 @@
 
     .step-border {
         position: absolute;
-        top: calc((#{var(--tui-spacing-medium)} + 1rem) / 2);
+        top: calc((var(--tui-spacing-medium) + 1rem) / 2);
         z-index: -1;
         background-color: var(--tui-color-separator);
         width: 100%;
@@ -41,7 +41,7 @@
     }
 
     &.secondary {
-        border-radius: calc(1em + #{var(--tui-spacing-medium)});
+        border-radius: calc(1em + var(--tui-spacing-medium));
         background-color: var(--tui-color-background);
         width: fit-content;
     }
