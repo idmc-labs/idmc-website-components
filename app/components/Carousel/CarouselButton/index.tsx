@@ -62,6 +62,19 @@ function CarouselButton(props: Props) {
 
     // eslint-disable-next-line react/destructuring-assignment
     const isActive = props.action === 'set' && activeItem === props.order;
+
+    let label: string;
+    // eslint-disable-next-line react/destructuring-assignment
+    if (props.action === 'set') {
+        // eslint-disable-next-line react/destructuring-assignment
+        label = `Go to slide ${props.order + 1}`;
+        // eslint-disable-next-line react/destructuring-assignment
+    } else if (props.action === 'prev') {
+        label = 'Previous slide';
+    } else {
+        label = 'Next slide';
+    }
+
     return (
         <RawButton
             className={_cs(
@@ -71,6 +84,9 @@ function CarouselButton(props: Props) {
             )}
             name={undefined}
             onClick={handleClick}
+            title={label}
+            aria-label={label}
+            aria-current={isActive || undefined}
         >
             {/* eslint-disable-next-line react/destructuring-assignment */}
             {props.action === 'next' && <IoChevronForward />}

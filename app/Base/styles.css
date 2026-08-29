@@ -35,6 +35,10 @@
     --tui-spacing-mega-large: 3rem;
     --tui-spacing-ultra-large: 4rem;
 
+    /* Own token, not --tui-color-outline-light: that one also drives toggle-ui's always-on
+       dashed decoration, which components switch off. The keyboard focus ring must survive. */
+    --color-focus-ring: #193256;
+
     --tui-color-primary: #193256;
     --tui-color-accent: rgb(65, 131, 196);
     --tui-color-brand: #193256;

@@ -579,6 +579,18 @@
             background-color: var(--tui-color-brand, #193256) !important;
             color: #fff !important;
         }
+
+        /* the transparent outline-light above kills the dashed decoration; the keyboard
+           ring is drawn inset because the segment clips its overflow */
+        [class*="segment"] > [class*="button"]:focus-visible {
+            outline: 2px solid var(--color-focus-ring, #193256);
+            outline-offset: -2px;
+        }
+
+        /* the selected segment is filled with the ring's own color */
+        [class*="segment"] > [class*="button"][class*="primary"]:focus-visible {
+            outline-color: #fff;
+        }
     }
 }
 
