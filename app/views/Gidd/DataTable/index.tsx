@@ -85,6 +85,12 @@ const GIDD_DISPLACEMENTS = gql`
                 countryName
                 countryId
                 year
+                conflictNewDisplacementRounded
+                conflictTotalDisplacementRounded
+                disasterNewDisplacementRounded
+                disasterTotalDisplacementRounded
+                # raw, and only for the combined columns: a total is summed before it is
+                # rounded, never after
                 conflictNewDisplacement
                 conflictTotalDisplacement
                 disasterNewDisplacement
@@ -210,7 +216,7 @@ function DataTable(props: Props) {
             isFlowShown && isConflictDataShown ? createNumberColumn<DisplacementData, string>(
                 'conflictNewDisplacement',
                 'Conflict Displacements',
-                (item) => item.conflictNewDisplacement,
+                (item) => item.conflictNewDisplacementRounded,
                 {
                     sortable: true,
                     variant: 'conflict',
@@ -222,7 +228,7 @@ function DataTable(props: Props) {
             isFlowShown && isDisasterDataShown ? createNumberColumn<DisplacementData, string>(
                 'disasterNewDisplacement',
                 'Disaster Displacements',
-                (item) => item.disasterNewDisplacement,
+                (item) => item.disasterNewDisplacementRounded,
                 {
                     sortable: true,
                     variant: 'disaster',
@@ -231,6 +237,8 @@ function DataTable(props: Props) {
                     headerCellRendererClassName: sortedHeaderClassName('disasterNewDisplacement'),
                 },
             ) : undefined,
+            // summed from the raw figures, not the rounded ones: rounding two parts and
+            // adding them compounds both errors
             // not sortable: this is a client-side sum of two fields with no
             // single backing field the server can order by, and the table
             // is now server-paginated — sorting it would only reorder
@@ -251,7 +259,7 @@ function DataTable(props: Props) {
             isStockShown && isConflictDataShown ? createNumberColumn<DisplacementData, string>(
                 'conflictTotalDisplacement',
                 'Conflict IDPs',
-                (item) => item.conflictTotalDisplacement,
+                (item) => item.conflictTotalDisplacementRounded,
                 {
                     sortable: true,
                     variant: 'conflict',
@@ -263,7 +271,7 @@ function DataTable(props: Props) {
             isStockShown && isDisasterDataShown ? createNumberColumn<DisplacementData, string>(
                 'disasterTotalDisplacement',
                 'Disaster IDPs',
-                (item) => item.disasterTotalDisplacement,
+                (item) => item.disasterTotalDisplacementRounded,
                 {
                     sortable: true,
                     variant: 'disaster',

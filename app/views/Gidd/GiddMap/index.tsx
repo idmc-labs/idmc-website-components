@@ -97,14 +97,15 @@ const MAP_DISPLACEMENTS = gql`
             iso3
             countryName
             countryId
-            conflictNewDisplacement
             conflictNewDisplacementRounded
-            conflictTotalDisplacement
             conflictTotalDisplacementRounded
-            disasterNewDisplacement
             disasterNewDisplacementRounded
-            disasterTotalDisplacement
             disasterTotalDisplacementRounded
+            # raw, for the combined value only: a total is summed before it is rounded
+            conflictNewDisplacement
+            conflictTotalDisplacement
+            disasterNewDisplacement
+            disasterTotalDisplacement
         }
     }
 `;
@@ -399,7 +400,9 @@ function GiddMap(props: Props) {
         (hazardData?.giddPublicDisasterStatistics?.displacementsByHazardType ?? [])
             .map((item) => ({
                 ...item,
-                value: (isStockView ? item.totalDisplacements : item.newDisplacements) ?? 0,
+                value: (isStockView
+                    ? item.totalDisplacementsRounded
+                    : item.newDisplacementsRounded) ?? 0,
             }))
             .filter((item) => item.value > 0)
             .sort((a, b) => b.value - a.value)
@@ -422,7 +425,9 @@ function GiddMap(props: Props) {
         (violenceData?.giddPublicConflictStatistics?.displacementsByViolenceSubType ?? [])
             .map((item) => ({
                 ...item,
-                value: (isStockView ? item.totalDisplacements : item.newDisplacements) ?? 0,
+                value: (isStockView
+                    ? item.totalDisplacementsRounded
+                    : item.newDisplacementsRounded) ?? 0,
             }))
             .filter((item) => item.value > 0)
             .sort((a, b) => b.value - a.value)
@@ -514,14 +519,23 @@ function GiddMap(props: Props) {
             conflictTotal: number;
             disasterNew: number;
             disasterTotal: number;
+            rawConflictNew: number;
+            rawConflictTotal: number;
+            rawDisasterNew: number;
+            rawDisasterTotal: number;
         }>();
         newRows.forEach((row) => {
             const totalRow = totalByIso3.get(row.iso3);
             map.set(row.iso3, {
-                conflictNew: row.conflictNewDisplacement ?? 0,
-                conflictTotal: totalRow?.conflictTotalDisplacement ?? 0,
-                disasterNew: row.disasterNewDisplacement ?? 0,
-                disasterTotal: totalRow?.disasterTotalDisplacement ?? 0,
+                conflictNew: row.conflictNewDisplacementRounded ?? 0,
+                conflictTotal: totalRow?.conflictTotalDisplacementRounded ?? 0,
+                disasterNew: row.disasterNewDisplacementRounded ?? 0,
+                disasterTotal: totalRow?.disasterTotalDisplacementRounded ?? 0,
+                // the raw counterparts, used only where the two causes are added together
+                rawConflictNew: row.conflictNewDisplacement ?? 0,
+                rawConflictTotal: totalRow?.conflictTotalDisplacement ?? 0,
+                rawDisasterNew: row.disasterNewDisplacement ?? 0,
+                rawDisasterTotal: totalRow?.disasterTotalDisplacement ?? 0,
             });
         });
         return map;
@@ -572,21 +586,36 @@ function GiddMap(props: Props) {
 
                 const conflictValue = category === 'stock' ? stats.conflictTotal : stats.conflictNew;
                 const disasterValue = category === 'stock' ? stats.disasterTotal : stats.disasterNew;
+                // the combined bubble is sized and labelled from the raw figures: adding two
+                // rounded ones compounds both errors
+                const rawConflict = category === 'stock' ? stats.rawConflictTotal : stats.rawConflictNew;
+                const rawDisaster = category === 'stock' ? stats.rawDisasterTotal : stats.rawDisasterNew;
+
+                // The popup also prints the metric that is not on the map, so both are
+                // resolved here rather than re-summed downstream from the rounded parts.
+                const otherConflictValue = category === 'stock' ? stats.conflictNew : stats.conflictTotal;
+                const otherDisasterValue = category === 'stock' ? stats.disasterNew : stats.disasterTotal;
+                const otherRawConflict = category === 'stock' ? stats.rawConflictNew : stats.rawConflictTotal;
+                const otherRawDisaster = category === 'stock' ? stats.rawDisasterNew : stats.rawDisasterTotal;
 
                 let value: number;
+                let otherValue: number;
                 let markerCause: MarkerCause;
                 let isPie: boolean;
                 if (cause === 'conflict') {
                     value = conflictValue;
+                    otherValue = otherConflictValue;
                     markerCause = 'Conflict';
                     isPie = false;
                 } else if (cause === 'disaster') {
                     value = disasterValue;
+                    otherValue = otherDisasterValue;
                     markerCause = 'Disaster';
                     isPie = false;
                 } else {
-                    value = conflictValue + disasterValue;
-                    markerCause = conflictValue >= disasterValue ? 'Conflict' : 'Disaster';
+                    value = rawConflict + rawDisaster;
+                    otherValue = otherRawConflict + otherRawDisaster;
+                    markerCause = rawConflict >= rawDisaster ? 'Conflict' : 'Disaster';
                     isPie = getRadiusForValue(value) >= MIN_PIE_RADIUS;
                 }
 
@@ -600,6 +629,7 @@ function GiddMap(props: Props) {
                     name: country.idmcShortName ?? country.iso3,
                     coordinates,
                     value,
+                    otherValue,
                     radius: getRadiusForValue(value),
                     markerCause,
                     conflictValue,
@@ -626,6 +656,7 @@ function GiddMap(props: Props) {
                     name: point.name,
                     cause: point.markerCause,
                     value: point.value,
+                    otherValue: point.otherValue,
                     radius: point.radius,
                     conflictNew: point.conflictNew,
                     conflictTotal: point.conflictTotal,
@@ -654,6 +685,7 @@ function GiddMap(props: Props) {
                 name: point.name,
                 cause: point.markerCause,
                 value: point.value,
+                otherValue: point.otherValue,
                 conflictNew: point.conflictNew,
                 conflictTotal: point.conflictTotal,
                 disasterNew: point.disasterNew,
@@ -707,6 +739,7 @@ function GiddMap(props: Props) {
                 name: point.name,
                 cause: point.markerCause,
                 value: point.value,
+                otherValue: point.otherValue,
                 // choroplethRamp is included so switching cause (which swaps
                 // the whole ramp) never reuses a stale, wrong-colored icon —
                 // see the NOTE above pieIcons for why this matters

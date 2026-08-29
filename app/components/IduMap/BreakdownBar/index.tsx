@@ -12,7 +12,11 @@ export interface Props {
     className?: string;
     name: string;
     label: string | undefined | null;
+    // Sizes the bar, so every row is measured on one scale.
     value: number;
+    // Printed beside the bar when it differs from what the bar measures -- GIDD sizes from
+    // raw figures and prints the API's rounded ones.
+    displayValue?: number;
     maxValue: number;
     percent?: number;
     variant: 'conflict' | 'disaster';
@@ -27,6 +31,7 @@ function BreakdownBar(props: Props) {
         name,
         label,
         value,
+        displayValue,
         maxValue,
         percent,
         variant,
@@ -71,7 +76,7 @@ function BreakdownBar(props: Props) {
             )}
             <Numeral
                 className={styles.total}
-                value={value}
+                value={displayValue ?? value}
                 abbreviate={abbreviate}
             />
         </>

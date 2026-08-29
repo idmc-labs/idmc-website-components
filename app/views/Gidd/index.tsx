@@ -30,6 +30,7 @@ import {
 import { removeNull } from '@togglecorp/toggle-form';
 import {
     formatNumber,
+    formatFullNumber,
     START_YEAR,
     sumAndRemoveZero,
     DATA_RELEASE,
@@ -180,9 +181,7 @@ const GIDD_STATISTICS = gql`
             clientId: $clientId,
         ) {
             internalDisplacementsRounded
-            internalDisplacements
             totalDisplacementsRounded
-            totalDisplacements
             internalDisplacementCountries
             totalDisplacementCountries
         }
@@ -194,10 +193,8 @@ const GIDD_STATISTICS = gql`
             violenceSubTypes: $violenceSubTypes,
             clientId: $clientId,
         ) {
-            totalDisplacements
             totalDisplacementsRounded
             totalDisplacementCountries
-            newDisplacements
             newDisplacementsRounded
             internalDisplacementCountries
         }
@@ -209,16 +206,13 @@ const GIDD_STATISTICS = gql`
             releaseEnvironment: $releaseEnvironment,
             clientId: $clientId,
         ){
-            newDisplacements
             newDisplacementsRounded
-            totalDisplacements
             totalDisplacementsRounded
             totalDisplacementCountries
             internalDisplacementCountries
             displacementsByHazardType {
                 id
                 label
-                newDisplacements
                 newDisplacementsRounded
             }
             totalEvents
@@ -233,10 +227,12 @@ const GIDD_STATISTICS = gql`
         ) {
             totalDisplacementTimeseriesByYear @include(if: $combineCountries) {
                 totalRounded
+                total
                 year
             }
             newDisplacementTimeseriesByYear @include(if: $combineCountries) {
                 totalRounded
+                total
                 year
             }
             totalDisplacementTimeseriesByCountry @skip(if: $combineCountries) {
@@ -246,6 +242,7 @@ const GIDD_STATISTICS = gql`
                     iso3
                 }
                 totalRounded
+                total
                 year
             }
             newDisplacementTimeseriesByCountry @skip(if: $combineCountries) {
@@ -255,6 +252,7 @@ const GIDD_STATISTICS = gql`
                     iso3
                 }
                 totalRounded
+                total
                 year
             }
         }
@@ -268,10 +266,12 @@ const GIDD_STATISTICS = gql`
         ) {
             totalDisplacementTimeseriesByYear @include(if: $combineCountries) {
                 totalRounded
+                total
                 year
             }
             newDisplacementTimeseriesByYear @include(if: $combineCountries) {
                 totalRounded
+                total
                 year
             }
             totalDisplacementTimeseriesByCountry @skip(if: $combineCountries) {
@@ -281,6 +281,7 @@ const GIDD_STATISTICS = gql`
                     iso3
                 }
                 totalRounded
+                total
                 year
             }
             newDisplacementTimeseriesByCountry @skip(if: $combineCountries) {
@@ -290,6 +291,7 @@ const GIDD_STATISTICS = gql`
                     iso3
                 }
                 totalRounded
+                total
                 year
             }
         }
@@ -400,20 +402,25 @@ const displacementCategoryOptions: CategoryOption[] = [
     },
 ];
 
-type Precision = 'rounded' | 'exact';
-type PrecisionOption = {
-    key: Precision;
+// NOTE: this picks how a figure is written out, not which figure is shown. A published
+// figure is the API's own rounded one; a figure this view sums itself -- a combined series,
+// a country total -- is summed from the raw fields, because rounding the parts first
+// compounds their errors. "Exact" therefore means the full digits of whichever of the two
+// applies, not the unrounded source value.
+type NumberFormat = 'abbreviated' | 'full';
+type NumberFormatOption = {
+    key: NumberFormat;
     label: string;
 };
-const precisionKeySelector = (option: PrecisionOption) => option.key;
-const precisionLabelSelector = (option: PrecisionOption) => option.label;
-const precisionOptions: PrecisionOption[] = [
+const numberFormatKeySelector = (option: NumberFormatOption) => option.key;
+const numberFormatLabelSelector = (option: NumberFormatOption) => option.label;
+const numberFormatOptions: NumberFormatOption[] = [
     {
-        key: 'rounded',
+        key: 'abbreviated',
         label: 'Rounded',
     },
     {
-        key: 'exact',
+        key: 'full',
         label: 'Exact',
     },
 ];
@@ -462,7 +469,9 @@ function Gidd(props: Props) {
     const [dataActivePage, setDataActivePage] = useState<number>(1);
     const [eventsActivePage, setEventsActivePage] = useState<number>(1);
     const [eventSearchText, setEventSearchText] = useState<string | undefined>();
-    const [precision, setPrecision] = useState<Precision>('rounded');
+    const [numberFormat, setNumberFormat] = useState<NumberFormat>('abbreviated');
+    const abbreviateFigures = numberFormat === 'abbreviated';
+    const chartNumberFormatter = abbreviateFigures ? formatNumber : formatFullNumber;
     const [
         countries,
         setCountries,
@@ -750,12 +759,12 @@ function Gidd(props: Props) {
             const disasterDataByYear = listToMap(
                 disasterChartData?.totalDisplacementTimeseriesByYear,
                 (item) => item.year,
-                (item) => item.totalRounded,
+                (item) => item.total,
             );
             const conflictDataByYear = listToMap(
                 conflictChartData?.totalDisplacementTimeseriesByYear,
                 (item) => item.year,
-                (item) => item.totalRounded,
+                (item) => item.total,
             );
             return [
                 timeRangeArray.map((year) => ({
@@ -863,7 +872,8 @@ function Gidd(props: Props) {
                     year: Number(item.year),
                     countryName: item.country.countryName,
                     iso3: item.country.iso3,
-                    total: item.totalRounded,
+                    // raw: the combined series adds the two causes together below
+                    total: item.total,
                 }),
             );
             const conflictDataByCountries = listToMap(
@@ -873,7 +883,8 @@ function Gidd(props: Props) {
                     year: Number(item.year),
                     countryName: item.country.countryName,
                     iso3: item.country.iso3,
-                    total: item.totalRounded,
+                    // raw: the combined series adds the two causes together below
+                    total: item.total,
                 }),
             );
 
@@ -922,12 +933,12 @@ function Gidd(props: Props) {
             const disasterDataByYear = listToMap(
                 disasterChartData?.newDisplacementTimeseriesByYear,
                 (item) => item.year,
-                (item) => item.totalRounded,
+                (item) => item.total,
             );
             const conflictDataByYear = listToMap(
                 conflictChartData?.newDisplacementTimeseriesByYear,
                 (item) => item.year,
-                (item) => item.totalRounded,
+                (item) => item.total,
             );
             return [
                 timeRangeArray.map((year) => ({
@@ -1051,7 +1062,8 @@ function Gidd(props: Props) {
                     year: Number(item.year),
                     countryName: item.country.countryName,
                     iso3: item.country.iso3,
-                    total: item.totalRounded,
+                    // raw: the combined series adds the two causes together below
+                    total: item.total,
                 }),
             );
             const conflictDataByCountries = listToMap(
@@ -1061,7 +1073,8 @@ function Gidd(props: Props) {
                     year: Number(item.year),
                     countryName: item.country.countryName,
                     iso3: item.country.iso3,
-                    total: item.totalRounded,
+                    // raw: the combined series adds the two causes together below
+                    total: item.total,
                 }),
             );
 
@@ -1286,10 +1299,10 @@ function Gidd(props: Props) {
                             />
                             <YAxis
                                 axisLine={false}
-                                tickFormatter={formatNumber}
+                                tickFormatter={chartNumberFormatter}
                             />
                             <Tooltip
-                                formatter={formatNumber}
+                                formatter={chartNumberFormatter}
                             />
                             <Legend />
                             {barConfigs.map((barConfig) => (
@@ -1341,10 +1354,10 @@ function Gidd(props: Props) {
                             />
                             <YAxis
                                 axisLine={false}
-                                tickFormatter={formatNumber}
+                                tickFormatter={chartNumberFormatter}
                             />
                             <Tooltip
-                                formatter={formatNumber}
+                                formatter={chartNumberFormatter}
                             />
                             <Legend />
                             {lineConfigs.map((lineConfig) => (
@@ -1501,8 +1514,8 @@ function Gidd(props: Props) {
                     <div className={styles.totalStat}>
                         <Numeral
                             className={styles.totalValue}
-                            value={combinedStats?.internalDisplacements}
-                            abbreviate={precision === 'rounded'}
+                            value={combinedStats?.internalDisplacementsRounded}
+                            abbreviate={abbreviateFigures}
                         />
                         <span className={styles.totalSubLabel}>
                             {getCountryCountSubLabel(
@@ -1520,8 +1533,8 @@ function Gidd(props: Props) {
                             subLabel={getCountryCountSubLabel(
                                 conflictStats?.internalDisplacementCountries,
                             )}
-                            value={conflictStats?.newDisplacements}
-                            abbreviated={precision === 'rounded'}
+                            value={conflictStats?.newDisplacementsRounded}
+                            abbreviated={abbreviateFigures}
                         />
                     )}
                     {isDisasterDataShown && (
@@ -1532,8 +1545,8 @@ function Gidd(props: Props) {
                             subLabel={getCountryCountSubLabel(
                                 disasterStats?.internalDisplacementCountries,
                             )}
-                            value={disasterStats?.newDisplacements}
-                            abbreviated={precision === 'rounded'}
+                            value={disasterStats?.newDisplacementsRounded}
+                            abbreviated={abbreviateFigures}
                         />
                     )}
                 </div>
@@ -1551,8 +1564,8 @@ function Gidd(props: Props) {
                     <div className={styles.totalStat}>
                         <Numeral
                             className={styles.totalValue}
-                            value={combinedStats?.totalDisplacements}
-                            abbreviate={precision === 'rounded'}
+                            value={combinedStats?.totalDisplacementsRounded}
+                            abbreviate={abbreviateFigures}
                         />
                         <span className={styles.totalSubLabel}>
                             {getCountryStockCountSubLabel(
@@ -1572,8 +1585,8 @@ function Gidd(props: Props) {
                                 conflictStats?.totalDisplacementCountries,
                                 timeRange[1],
                             )}
-                            value={conflictStats?.totalDisplacements}
-                            abbreviated={precision === 'rounded'}
+                            value={conflictStats?.totalDisplacementsRounded}
+                            abbreviated={abbreviateFigures}
                         />
                     )}
                     {isDisasterDataShown && (
@@ -1585,8 +1598,8 @@ function Gidd(props: Props) {
                                 disasterStats?.totalDisplacementCountries,
                                 timeRange[1],
                             )}
-                            value={disasterStats?.totalDisplacements}
-                            abbreviated={precision === 'rounded'}
+                            value={disasterStats?.totalDisplacementsRounded}
+                            abbreviated={abbreviateFigures}
                         />
                     )}
                 </div>
@@ -1613,7 +1626,7 @@ function Gidd(props: Props) {
                 scopeLabel={scopeLabel}
                 disasterTriggerLabels={disasterTriggerLabels}
                 conflictTriggerLabels={conflictTriggerLabels}
-                abbreviate={precision === 'rounded'}
+                abbreviate={abbreviateFigures}
                 onCountrySelect={handleCountryFocus}
             />
         ),
@@ -1630,7 +1643,7 @@ function Gidd(props: Props) {
                 endYear={timeRange[1]}
                 clientCode={clientCode}
                 scopeLabel={scopeLabel}
-                abbreviate={precision === 'rounded'}
+                abbreviate={abbreviateFigures}
                 selectedTypeId={selectedTriggerType}
                 selectedTypeIds={selectedHazardTypeIds}
                 onTypeSelect={handleHazardSelect}
@@ -1650,7 +1663,7 @@ function Gidd(props: Props) {
                 endYear={timeRange[1]}
                 clientCode={clientCode}
                 scopeLabel={scopeLabel}
-                abbreviate={precision === 'rounded'}
+                abbreviate={abbreviateFigures}
                 selectedTypeId={selectedViolenceType}
                 selectedTypeIds={selectedViolenceSubTypeIds}
                 onTypeSelect={handleViolenceSelect}
@@ -1668,7 +1681,7 @@ function Gidd(props: Props) {
                 category={displacementCategory}
                 year={timeRange[1]}
                 clientCode={clientCode}
-                abbreviate={precision === 'rounded'}
+                abbreviate={abbreviateFigures}
             />
         ),
     });
@@ -1906,17 +1919,17 @@ function Gidd(props: Props) {
                                 </div>
                             </div>
                             <SegmentInput
-                                name="precision"
+                                name="numberFormat"
                                 className={_cs(
                                     styles.filterCause,
                                     styles.filterInput,
                                     styles.filterSegment,
                                 )}
-                                keySelector={precisionKeySelector}
-                                labelSelector={precisionLabelSelector}
-                                options={precisionOptions}
-                                value={precision}
-                                onChange={setPrecision}
+                                keySelector={numberFormatKeySelector}
+                                labelSelector={numberFormatLabelSelector}
+                                options={numberFormatOptions}
+                                value={numberFormat}
+                                onChange={setNumberFormat}
                             />
                         </div>
                     </div>
@@ -1974,7 +1987,7 @@ function Gidd(props: Props) {
                                         startYear={timeRange[0]}
                                         endYear={timeRange[1]}
                                         clientCode={clientCode}
-                                        abbreviate={precision === 'rounded'}
+                                        abbreviate={abbreviateFigures}
                                         onCountryFocus={handleCountryFocus}
                                     />
                                 )}
@@ -1997,7 +2010,7 @@ function Gidd(props: Props) {
                                         activePage={dataActivePage}
                                         onActivePageChange={setDataActivePage}
                                         clientCode={clientCode}
-                                        abbreviate={precision === 'rounded'}
+                                        abbreviate={abbreviateFigures}
                                     />
                                 )}
                                 {activeView === 'charts' && (
@@ -2022,7 +2035,7 @@ function Gidd(props: Props) {
                                         endYear={timeRange[1]}
                                         clientCode={clientCode}
                                         searchText={eventSearchText}
-                                        abbreviate={precision === 'rounded'}
+                                        abbreviate={abbreviateFigures}
                                     />
                                 )}
                             </div>

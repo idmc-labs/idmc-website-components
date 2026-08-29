@@ -101,13 +101,15 @@ function CountryPopupCard(props: Props) {
     const disasterNew = properties.disasterNew ?? 0;
     const disasterTotal = properties.disasterTotal ?? 0;
 
+    // The per-cause rows print the API's own rounded figures.
     const currentConflict = isStock ? conflictTotal : conflictNew;
     const currentDisaster = isStock ? disasterTotal : disasterNew;
-    const currentTotal = (cOn ? currentConflict : 0) + (dOn ? currentDisaster : 0);
 
-    const otherConflict = isStock ? conflictNew : conflictTotal;
-    const otherDisaster = isStock ? disasterNew : disasterTotal;
-    const otherTotal = (cOn ? otherConflict : 0) + (dOn ? otherDisaster : 0);
+    // The totals come from the map, which already applied the cause selection and summed
+    // from raw figures. Re-adding the rounded rows above would compound their errors, and
+    // the headline would then disagree with the bubble it sits on.
+    const currentTotal = properties.value;
+    const otherTotal = properties.otherValue;
     const displacementsPeriod = startYear === endYear
         ? `in ${endYear}`
         : `from ${startYear} to ${endYear}`;

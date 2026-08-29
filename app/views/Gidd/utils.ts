@@ -16,7 +16,12 @@ export const OTHER_BUCKET_ID = '__other__';
 export interface BucketableItem {
     id: string;
     name: string;
+    // Drives thresholding, ordering and the "Other" sum, so it must be the raw figure: a
+    // total is summed before it is rounded, never after.
     value: number;
+    // What the row prints -- the API's own rounded figure. "Other" is summed here rather
+    // than published, so it has none and prints its raw sum.
+    displayValue: number;
 }
 
 export type BucketedItem = BucketableItem & { isOther?: boolean };
@@ -47,12 +52,15 @@ export function bucketSmallValues<T extends BucketableItem>(
         return items;
     }
 
+    const otherTotal = sum(minor.map((item) => item.value));
+
     return [
         ...major,
         {
             id: OTHER_BUCKET_ID,
             name: 'Other',
-            value: sum(minor.map((item) => item.value)),
+            value: otherTotal,
+            displayValue: otherTotal,
             isOther: true,
         },
     ];
@@ -100,10 +108,10 @@ export const HAZARD_BREAKDOWN_QUERY = gql`
             displacementsByHazardType {
                 id
                 label
-                newDisplacements
                 newDisplacementsRounded
-                totalDisplacements
                 totalDisplacementsRounded
+                newDisplacements
+                totalDisplacements
             }
         }
     }
@@ -129,10 +137,10 @@ export const VIOLENCE_BREAKDOWN_QUERY = gql`
             displacementsByViolenceSubType {
                 id
                 label
-                newDisplacements
                 newDisplacementsRounded
-                totalDisplacements
                 totalDisplacementsRounded
+                newDisplacements
+                totalDisplacements
             }
         }
     }
@@ -159,6 +167,11 @@ export const TOP_COUNTRIES_QUERY = gql`
         ){
             iso3
             countryName
+            conflictNewDisplacementRounded
+            conflictTotalDisplacementRounded
+            disasterNewDisplacementRounded
+            disasterTotalDisplacementRounded
+            # raw, for the totals only: a total is summed before it is rounded, never after
             conflictNewDisplacement
             conflictTotalDisplacement
             disasterNewDisplacement
@@ -240,6 +253,10 @@ export function useCountryRanking(params: UseCountryRankingParams) {
         const rows = data?.giddPublicCountryDisplacements ?? [];
         return rows
             .map((row) => {
+                // Raw throughout. These two size the bar's segments and the third is the
+                // number printed beside them, so they have to share one scale -- and a
+                // total is summed before it is rounded, never after. Nothing here prints a
+                // per-cause figure, so there is no rounded value to carry.
                 const conflict = (isStock
                     ? row.conflictTotalDisplacement
                     : row.conflictNewDisplacement) ?? 0;

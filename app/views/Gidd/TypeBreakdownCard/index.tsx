@@ -140,6 +140,9 @@ function TypeBreakdownCard(props: Props) {
                 value: (isStock
                     ? entry.totalDisplacements
                     : entry.newDisplacements) ?? 0,
+                displayValue: (isStock
+                    ? entry.totalDisplacementsRounded
+                    : entry.newDisplacementsRounded) ?? 0,
             }))
             .filter((entry) => entry.value > 0)
             .sort((a, b) => b.value - a.value);
@@ -166,6 +169,7 @@ function TypeBreakdownCard(props: Props) {
         name: row.id,
         label: row.name,
         value: row.value,
+        displayValue: row.displayValue,
         maxValue,
         variant,
         abbreviate,
