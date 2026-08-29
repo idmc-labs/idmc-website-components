@@ -12,4 +12,9 @@
     &.focused {
         outline-color: var(--tui-color-outline-light);
     }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-focus-ring, #193256);
+        outline-offset: 2px;
+    }
 }
