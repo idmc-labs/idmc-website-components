@@ -52,6 +52,7 @@ import {
     HAZARD_BREAKDOWN_QUERY,
     VIOLENCE_BREAKDOWN_QUERY,
     BreakdownQueryVariables,
+    CAUSE_BY_KEY,
 } from '../utils';
 
 import CountryPopupCard from './CountryPopupCard';
@@ -80,6 +81,7 @@ const MAP_DISPLACEMENTS = gql`
         $endYear: Float,
         $startYear: Float,
         $countriesIso3: [String!],
+        $cause: CRISIS_TYPE,
         $hazardTypes: [ID!],
         $violenceSubTypes: [ID!],
         $releaseEnvironment: String!,
@@ -87,6 +89,7 @@ const MAP_DISPLACEMENTS = gql`
     ){
         giddPublicCountryDisplacements(
             countriesIso3: $countriesIso3,
+            cause: $cause,
             endYear: $endYear,
             startYear: $startYear,
             hazardTypes: $hazardTypes,
@@ -462,6 +465,7 @@ function GiddMap(props: Props) {
 
     const displacementsVariables = useMemo(() => ({
         countriesIso3,
+        cause: cause ? CAUSE_BY_KEY[cause] : undefined,
         startYear,
         endYear,
         hazardTypes,
@@ -470,6 +474,7 @@ function GiddMap(props: Props) {
         clientId: clientCode,
     }), [
         countriesIso3,
+        cause,
         startYear,
         endYear,
         hazardTypes,
@@ -494,6 +499,7 @@ function GiddMap(props: Props) {
 
     const stockDisplacementsVariables = useMemo(() => ({
         countriesIso3,
+        cause: cause ? CAUSE_BY_KEY[cause] : undefined,
         startYear: endYear,
         endYear,
         hazardTypes,
@@ -502,6 +508,7 @@ function GiddMap(props: Props) {
         clientId: clientCode,
     }), [
         countriesIso3,
+        cause,
         endYear,
         hazardTypes,
         violenceSubTypes,
