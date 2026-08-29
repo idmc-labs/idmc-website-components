@@ -60,6 +60,38 @@ Resources:
           HostedZoneId: !Ref 'HostedZoneId'
       ValidationMethod: DNS
 
+  # The TTLs on the cache behaviours govern only what CloudFront holds. A browser
+  # gets whatever `Cache-Control` the origin sent, and the S3 website endpoint sends
+  # none unless every upload carries the metadata -- which would put the rule in the
+  # deploy script rather than here. These set the header at the edge instead.
+  ImmutableResponseHeadersPolicy:
+    Type: AWS::CloudFront::ResponseHeadersPolicy
+    Properties:
+      ResponseHeadersPolicyConfig:
+        Name: !Sub
+          - 'idmc-website-components-${EnvName}-immutable'
+          - EnvName: !Ref Env
+        Comment: 'Contenthash-named assets: safe to hold indefinitely'
+        CustomHeadersConfig:
+          Items:
+          - Header: Cache-Control
+            Value: 'public, max-age=31536000, immutable'
+            Override: true
+
+  RevalidateResponseHeadersPolicy:
+    Type: AWS::CloudFront::ResponseHeadersPolicy
+    Properties:
+      ResponseHeadersPolicyConfig:
+        Name: !Sub
+          - 'idmc-website-components-${EnvName}-revalidate'
+          - EnvName: !Ref Env
+        Comment: 'Unhashed entry points: must be rechecked before reuse'
+        CustomHeadersConfig:
+          Items:
+          - Header: Cache-Control
+            Value: 'no-cache'
+            Override: true
+
   WebsiteCloudfront:
     Type: AWS::CloudFront::Distribution
     DependsOn:
@@ -79,6 +111,12 @@ Resources:
         DefaultRootObject: index.html
         Aliases:
         - !FindInMap [EnvMaps, !Ref Env, Domain]
+        # `js/main.bundle.js` and `css/main.css` are unhashed -- the embed snippets
+        # link them by hand -- and they reference chunks whose names carry a
+        # contenthash. A viewer holding a previous deployment's entry therefore asks
+        # for chunk names the bucket no longer has, and the SPA ErrorDocument answers
+        # a missing .js with index.html, so the failure surfaces as a parse error. The
+        # entry must revalidate on every request; only the hashed names may be held.
         DefaultCacheBehavior:
           AllowedMethods:
           - GET
@@ -90,6 +128,76 @@ Resources:
             Cookies:
               Forward: none
           ViewerProtocolPolicy: redirect-to-https
+          MinTTL: 0
+          DefaultTTL: 0
+          MaxTTL: 31536000
+          ResponseHeadersPolicyId: !Ref RevalidateResponseHeadersPolicy
+        # Evaluated in order, first match wins. `css/main.css` has to precede the
+        # `css/*.css` pattern: the CSS chunk names are `<id>.<contenthash>.css`, which
+        # no suffix distinguishes from the unhashed entry.
+        CacheBehaviors:
+        - PathPattern: 'css/main.css'
+          AllowedMethods:
+          - GET
+          - HEAD
+          Compress: true
+          TargetOriginId: S3Origin
+          ForwardedValues:
+            QueryString: true
+            Cookies:
+              Forward: none
+          ViewerProtocolPolicy: redirect-to-https
+          MinTTL: 0
+          DefaultTTL: 0
+          MaxTTL: 31536000
+          ResponseHeadersPolicyId: !Ref RevalidateResponseHeadersPolicy
+        - PathPattern: 'js/*.chunk.js'
+          AllowedMethods:
+          - GET
+          - HEAD
+          Compress: true
+          TargetOriginId: S3Origin
+          # A contenthash already distinguishes every revision, so a query string
+          # would only fragment the cache.
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+          ViewerProtocolPolicy: redirect-to-https
+          MinTTL: 31536000
+          DefaultTTL: 31536000
+          MaxTTL: 31536000
+          ResponseHeadersPolicyId: !Ref ImmutableResponseHeadersPolicy
+        - PathPattern: 'css/*.css'
+          AllowedMethods:
+          - GET
+          - HEAD
+          Compress: true
+          TargetOriginId: S3Origin
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+          ViewerProtocolPolicy: redirect-to-https
+          MinTTL: 31536000
+          DefaultTTL: 31536000
+          MaxTTL: 31536000
+          ResponseHeadersPolicyId: !Ref ImmutableResponseHeadersPolicy
+        - PathPattern: 'assets/*'
+          AllowedMethods:
+          - GET
+          - HEAD
+          Compress: true
+          TargetOriginId: S3Origin
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+          ViewerProtocolPolicy: redirect-to-https
+          MinTTL: 31536000
+          DefaultTTL: 31536000
+          MaxTTL: 31536000
+          ResponseHeadersPolicyId: !Ref ImmutableResponseHeadersPolicy
         PriceClass: PriceClass_All
         ViewerCertificate:
           AcmCertificateArn: !Ref AcmCertificate
