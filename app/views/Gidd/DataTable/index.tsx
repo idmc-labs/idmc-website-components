@@ -8,7 +8,6 @@ import {
     Table,
     Pager,
     SortContext,
-    useSortState,
 } from '@togglecorp/toggle-ui';
 import {
     DATA_RELEASE,
@@ -24,6 +23,7 @@ import {
 } from '#components/tableHelpers';
 import Message from '#components/Message';
 import useDebouncedValue from '#hooks/useDebouncedValue';
+import useClampedPage from '#hooks/useClampedPage';
 import {
     GiddDisplacementsQuery,
     GiddDisplacementsQueryVariables,
@@ -122,6 +122,9 @@ interface Props {
     hazardTypes?: string[];
     violenceSubTypes?: string[];
     activePage: number;
+    // Owned by the view, alongside the page: a filter change has to clear both, and a sort
+    // change has to send the reader back to the first page.
+    overallDataSortState: React.ContextType<typeof SortContext>;
     onActivePageChange: (newVal: number) => void;
     clientCode: string;
     abbreviate: boolean;
@@ -141,11 +144,11 @@ function DataTable(props: Props) {
         violenceSubTypes,
         activePage,
         onActivePageChange,
+        overallDataSortState,
         clientCode,
         abbreviate,
     } = props;
 
-    const overallDataSortState = useSortState({ name: 'year', direction: 'dsc' });
     const { sorting } = overallDataSortState;
 
     const sortedHeaderClassName = useCallback((columnId: string) => (
@@ -194,6 +197,16 @@ function DataTable(props: Props) {
         },
     );
 
+    const totalCount = displacementsResponse?.giddPublicCountryYearDisplacements?.totalCount;
+    useClampedPage(
+        activePage,
+        totalCount,
+        DISPLACEMENTS_TABLE_PAGE_SIZE,
+        onActivePageChange,
+    );
+
+    // `cause` scopes the rows server-side so `totalCount` and the pager agree with what is
+    // shown; hiding the columns is the display half of the same filter.
     const isFlowShown = category !== 'stock';
     const isStockShown = category !== 'flow';
     const bothCauses = !!isConflictDataShown && !!isDisasterDataShown;
@@ -340,10 +353,7 @@ function DataTable(props: Props) {
                     <Pager
                         className={styles.pager}
                         activePage={activePage}
-                        itemsCount={
-                            displacementsResponse
-                                ?.giddPublicCountryYearDisplacements?.totalCount ?? 0
-                        }
+                        itemsCount={totalCount ?? 0}
                         maxItemsPerPage={DISPLACEMENTS_TABLE_PAGE_SIZE}
                         onActivePageChange={onActivePageChange}
                         itemsPerPageControlHidden

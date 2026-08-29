@@ -3,6 +3,7 @@ import React, {
     useCallback,
     useState,
     useEffect,
+    useRef,
 } from 'react';
 import {
     _cs,
@@ -19,6 +20,7 @@ import {
     SegmentInput,
     TextInput,
     Button,
+    useSortState,
 } from '@togglecorp/toggle-ui';
 import {
     IoSearchOutline,
@@ -128,6 +130,9 @@ const stockDetails = 'The number of people living in internal displacement at a 
 
 const iduDashboardLink = suffixDrupalEndpoint('/internal-displacement-updates/');
 const documentationLink = `${HELIX_REST_ENDPOINT.replace(/\/+$/, '')}/#/`;
+
+const DEFAULT_DATA_SORTING = { name: 'year', direction: 'dsc' } as const;
+const DEFAULT_EVENTS_SORTING = { name: 'startDate', direction: 'dsc' } as const;
 
 const GIDD_FILTER_OPTIONS = gql`
     query GiddFilterOptions(
@@ -468,6 +473,42 @@ function Gidd(props: Props) {
     const [combineCountriesChart, setCombineCountriesChart] = useState(false);
     const [dataActivePage, setDataActivePage] = useState<number>(1);
     const [eventsActivePage, setEventsActivePage] = useState<number>(1);
+
+    // Sorting sits here rather than in the tables because it has to clear with the filters,
+    // and because the tables unmount when the view switches -- state they owned would reset
+    // on every tab change instead of on the change that actually invalidates it.
+    const overallDataSortState = useSortState(DEFAULT_DATA_SORTING);
+    const eventDataSortState = useSortState(DEFAULT_EVENTS_SORTING);
+    const { setSorting: setDataSorting } = overallDataSortState;
+    const { setSorting: setEventsSorting } = eventDataSortState;
+
+    // Every filter change invalidates the page the reader is on and the order they chose.
+    const resetTableState = useCallback(() => {
+        setDataActivePage(1);
+        setEventsActivePage(1);
+        setDataSorting(DEFAULT_DATA_SORTING);
+        setEventsSorting(DEFAULT_EVENTS_SORTING);
+    }, [setDataSorting, setEventsSorting]);
+
+    // A re-sort reorders the whole result set, so the page number no longer means anything.
+    // Guarded against the first run, which would otherwise discard the page on mount.
+    const lastDataSorting = useRef(overallDataSortState.sorting);
+    useEffect(() => {
+        if (lastDataSorting.current === overallDataSortState.sorting) {
+            return;
+        }
+        lastDataSorting.current = overallDataSortState.sorting;
+        setDataActivePage(1);
+    }, [overallDataSortState.sorting]);
+
+    const lastEventsSorting = useRef(eventDataSortState.sorting);
+    useEffect(() => {
+        if (lastEventsSorting.current === eventDataSortState.sorting) {
+            return;
+        }
+        lastEventsSorting.current = eventDataSortState.sorting;
+        setEventsActivePage(1);
+    }, [eventDataSortState.sorting]);
     const [eventSearchText, setEventSearchText] = useState<string | undefined>();
     const [numberFormat, setNumberFormat] = useState<NumberFormat>('abbreviated');
     const abbreviateFigures = numberFormat === 'abbreviated';
@@ -513,12 +554,13 @@ function Gidd(props: Props) {
         if (newVal) {
             setCombineCauseCharts(false);
         }
-        setDataActivePage(1);
-        setEventsActivePage(1);
-    }, [setTriggerTypes]);
+        resetTableState();
+    }, [setTriggerTypes, resetTableState]);
 
     const handleTriggerTypesChange = useCallback((newVal: string[]) => {
         const addedKeys = newVal.filter((key) => !triggerTypes.includes(key));
+
+        resetTableState();
 
         if (isNotDefined(displacementCause) && addedKeys.length > 0) {
             const addedGroup = parseTriggerKey(addedKeys[0])?.group;
@@ -530,7 +572,7 @@ function Gidd(props: Props) {
             }
         }
         setTriggerTypes(newVal);
-    }, [triggerTypes, displacementCause]);
+    }, [triggerTypes, displacementCause, resetTableState]);
 
     const handleCountriesChange = useCallback((newVal: string[]) => {
         setCountries(newVal);
@@ -538,9 +580,8 @@ function Gidd(props: Props) {
         if (newVal.length === 0 || newVal.length > 3) {
             setCombineCountriesChart(false);
         }
-        setDataActivePage(1);
-        setEventsActivePage(1);
-    }, [setCountries]);
+        resetTableState();
+    }, [setCountries, resetTableState]);
 
     const handleCountryFocus = useCallback((iso3: string) => {
         handleCountriesChange([iso3]);
@@ -549,9 +590,8 @@ function Gidd(props: Props) {
     const handleTimeRangeChange = useCallback((newVal: number[]) => {
         setTimeRange(newVal);
 
-        setDataActivePage(1);
-        setEventsActivePage(1);
-    }, []);
+        resetTableState();
+    }, [resetTableState]);
 
     const handleStartYearChange = useCallback((newVal: number | undefined) => {
         if (isNotDefined(newVal)) {
@@ -575,13 +615,13 @@ function Gidd(props: Props) {
         setTimeRange([endYear, endYear]);
         setDisplacementCategory(undefined);
         setActiveView('charts');
-        setDataActivePage(1);
-        setEventsActivePage(1);
+        resetTableState();
     }, [
         handleCauseChange,
         handleCountriesChange,
         setTriggerTypes,
         endYear,
+        resetTableState,
     ]);
 
     const domainForCharts = useMemo(() => {
@@ -655,9 +695,8 @@ function Gidd(props: Props) {
             const allowed = new Set(nextRegions.flatMap((id) => regionToIso3.get(id) ?? []));
             setCountries((prev) => prev.filter((iso3) => allowed.has(iso3)));
         }
-        setDataActivePage(1);
-        setEventsActivePage(1);
-    }, [regionToIso3]);
+        resetTableState();
+    }, [regionToIso3, resetTableState]);
 
     const countriesOptions = useMemo(() => {
         const allowedIso3 = regions.length > 0
@@ -1215,9 +1254,8 @@ function Gidd(props: Props) {
             setDisplacementCause('disaster');
             setCombineCauseCharts(false);
         }
-        setDataActivePage(1);
-        setEventsActivePage(1);
-    }, [displacementCause]);
+        resetTableState();
+    }, [displacementCause, resetTableState]);
 
     const selectedViolenceType = useMemo(() => {
         if (triggerTypes.length !== 1) {
@@ -1236,9 +1274,8 @@ function Gidd(props: Props) {
             setDisplacementCause('conflict');
             setCombineCauseCharts(false);
         }
-        setDataActivePage(1);
-        setEventsActivePage(1);
-    }, [displacementCause]);
+        resetTableState();
+    }, [displacementCause, resetTableState]);
 
     const chartTypeSelection = (
         <div className={styles.chartTypeContainer}>
@@ -1993,6 +2030,7 @@ function Gidd(props: Props) {
                                 )}
                                 {activeView === 'table' && (
                                     <DataTable
+                                        overallDataSortState={overallDataSortState}
                                         isConflictDataShown={isConflictDataShown}
                                         isDisasterDataShown={isDisasterDataShown}
                                         category={displacementCategory}
@@ -2025,6 +2063,7 @@ function Gidd(props: Props) {
                                 )}
                                 {activeView === 'events' && (
                                     <EventsTable
+                                        eventDataSortState={eventDataSortState}
                                         activePage={eventsActivePage}
                                         onActivePageChange={setEventsActivePage}
                                         countriesIso3={effectiveCountries}

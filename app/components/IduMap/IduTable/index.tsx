@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
     _cs,
     compareString,
@@ -86,6 +86,13 @@ function IduTable(props: Props) {
     const [activePage, setActivePage] = useState(1);
     const sortState = useSortState();
     const { sorting } = sortState;
+
+    // Narrowing the filters or reordering the rows makes the current page meaningless, and
+    // this table paginates in the browser -- past the end it renders neither rows nor a
+    // pager, so nothing on screen would bring the reader back.
+    useEffect(() => {
+        setActivePage(1);
+    }, [idus, sorting]);
 
     const columns = useMemo(() => {
         const sortedHeaderClassName = (columnId: string) => (

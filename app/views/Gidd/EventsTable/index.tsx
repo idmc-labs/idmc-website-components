@@ -10,7 +10,6 @@ import {
     TableColumn,
     Pager,
     SortContext,
-    useSortState,
     createDateColumn,
 } from '@togglecorp/toggle-ui';
 import {
@@ -26,6 +25,7 @@ import Numeral from '#components/Numeral';
 import Message from '#components/Message';
 import HazardType, { Props as HazardTypeProps } from '#components/IduMap/IduTable/HazardType';
 import useDebouncedValue from '#hooks/useDebouncedValue';
+import useClampedPage from '#hooks/useClampedPage';
 import {
     GiddEventsQuery,
     GiddEventsQueryVariables,
@@ -128,6 +128,9 @@ type Category = 'flow' | 'stock';
 interface Props {
     className?: string;
     activePage: number;
+    // Owned by the view, alongside the page: a filter change has to clear both, and a sort
+    // change has to send the reader back to the first page.
+    eventDataSortState: React.ContextType<typeof SortContext>;
     onActivePageChange: (newVal: number) => void;
     startYear: number;
     endYear: number;
@@ -146,6 +149,7 @@ function EventsTable(props: Props) {
         className,
         activePage,
         onActivePageChange,
+        eventDataSortState,
         startYear,
         endYear,
         countriesIso3,
@@ -161,7 +165,6 @@ function EventsTable(props: Props) {
     const isFlowShown = category !== 'stock';
     const isStockShown = category !== 'flow';
 
-    const eventDataSortState = useSortState({ name: 'startDate', direction: 'dsc' });
     const { sorting: eventSorting } = eventDataSortState;
 
     const sortedHeaderClassName = useCallback((columnId: string) => (
@@ -210,6 +213,14 @@ function EventsTable(props: Props) {
                 clientName: 'helix',
             },
         },
+    );
+
+    const totalCount = eventsResponse?.giddPublicDisplacementEvents?.totalCount;
+    useClampedPage(
+        activePage,
+        totalCount,
+        EVENTS_TABLE_PAGE_SIZE,
+        onActivePageChange,
     );
 
     const eventColumns = useMemo(
@@ -404,7 +415,7 @@ function EventsTable(props: Props) {
                     <Pager
                         className={styles.pager}
                         activePage={activePage}
-                        itemsCount={eventsResponse?.giddPublicDisplacementEvents?.totalCount ?? 0}
+                        itemsCount={totalCount ?? 0}
                         maxItemsPerPage={EVENTS_TABLE_PAGE_SIZE}
                         onActivePageChange={onActivePageChange}
                         itemsPerPageControlHidden
