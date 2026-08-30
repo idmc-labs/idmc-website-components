@@ -78,8 +78,8 @@ const COUNTRY_POINTS = gql`
 
 const MAP_DISPLACEMENTS = gql`
     query GiddMapDisplacements(
-        $endYear: Float,
-        $startYear: Float,
+        $endYear: Int,
+        $startYear: Int,
         $countriesIso3: [String!],
         $cause: CRISIS_TYPE,
         $hazardTypes: [ID!],

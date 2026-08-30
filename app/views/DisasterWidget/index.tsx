@@ -74,8 +74,8 @@ const categoricalColorScheme = [
 const STATS = gql`
     query DisasterStats(
         $iso3: String!,
-        $startYear: Float,
-        $endYear: Float,
+        $startYear: Int,
+        $endYear: Int,
         $releaseEnvironment: String!,
         $clientId: String!,
     ) {
@@ -99,8 +99,8 @@ const STATS = gql`
 const DISASTER_DATA = gql`
     query DisasterData(
         $countryIso3: String!,
-        $startYear: Float,
-        $endYear: Float,
+        $startYear: Int,
+        $endYear: Int,
         $categories: [ID!],
         $releaseEnvironment: String!,
         $clientId: String!,

@@ -91,8 +91,8 @@ export type BreakdownEntry = HazardBreakdownEntry & ViolenceBreakdownEntry;
 export const HAZARD_BREAKDOWN_QUERY = gql`
     query GiddHazardBreakdown(
         $countriesIso3: [String!],
-        $startYear: Float,
-        $endYear: Float,
+        $startYear: Int,
+        $endYear: Int,
         $hazardTypes: [ID!],
         $releaseEnvironment: String!,
         $clientId: String!,
@@ -120,8 +120,8 @@ export const HAZARD_BREAKDOWN_QUERY = gql`
 export const VIOLENCE_BREAKDOWN_QUERY = gql`
     query GiddViolenceBreakdown(
         $countriesIso3: [String!],
-        $startYear: Float,
-        $endYear: Float,
+        $startYear: Int,
+        $endYear: Int,
         $violenceSubTypes: [ID!],
         $releaseEnvironment: String!,
         $clientId: String!,
@@ -148,8 +148,8 @@ export const VIOLENCE_BREAKDOWN_QUERY = gql`
 
 export const TOP_COUNTRIES_QUERY = gql`
     query GiddTopCountries(
-        $endYear: Float,
-        $startYear: Float,
+        $endYear: Int,
+        $startYear: Int,
         $countriesIso3: [String!],
         $cause: CRISIS_TYPE,
         $hazardTypes: [ID!],
