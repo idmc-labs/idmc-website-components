@@ -1,0 +1,61 @@
+.country-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--tui-spacing-small);
+    padding: 0.5rem 0.25rem;
+
+    .rank {
+        flex-shrink: 0;
+        width: 1rem;
+        text-align: left;
+        color: var(--tui-color-label, #7a7a7a);
+    }
+
+    .name {
+        flex-shrink: 0;
+        width: 7rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .track {
+        display: flex;
+        flex-grow: 1;
+        border-radius: 0.25rem;
+        background-color: var(--color-progress-line-background, #f0f0f0);
+        height: 0.5rem;
+        overflow: hidden;
+
+        .conflict {
+            background-color: var(--color-conflict);
+        }
+
+        .disaster {
+            background-color: var(--color-disaster);
+        }
+    }
+
+    .total {
+        flex-shrink: 0;
+        min-width: 3.5rem;
+        text-align: right;
+        font-weight: var(--tui-font-weight-bold);
+    }
+}
+
+.country-bar.clickable {
+    cursor: pointer;
+    padding: 0.5rem 0.25rem;
+    width: 100%;
+    text-align: left;
+}
+
+.country-bar.clickable:hover {
+    background-color: var(--tui-color-background-hover, #f0f3f7);
+}
+
+.country-bar.selected,
+.country-bar.selected:hover {
+    background-color: var(--tui-color-background-selected, #e4ecf7);
+}

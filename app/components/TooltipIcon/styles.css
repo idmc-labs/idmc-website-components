@@ -11,3 +11,38 @@
     font-size: var(--tui-font-size-medium);
     /* font-weight: var(--tui-font-weight-light); */
 }
+
+.click-trigger {
+    cursor: pointer;
+}
+
+.close-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--tui-spacing-small);
+
+    .close-row-title {
+        font-size: var(--tui-font-size-medium);
+        font-weight: var(--tui-font-weight-bold);
+    }
+}
+
+.close-button {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    justify-content: center;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0.125rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    color: var(--tui-color-label, #7a7a7a);
+    font-size: 1.1rem;
+
+    &:hover {
+        color: var(--tui-color-text, #333);
+    }
+}

@@ -1,0 +1,86 @@
+.idu-table {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    padding-top: 2.75rem;
+    height: var(--idu-pane-height, 32rem);
+    gap: var(--tui-spacing-small);
+
+    .table {
+        flex-grow: 1;
+        overflow-x: hidden;
+        overflow-y: auto;
+        font-size: 0.8rem;
+
+        table {
+            width: 100%;
+            table-layout: fixed;
+        }
+
+        th {
+            --tui-font-size-medium: 0.7rem;
+            background-color: #f0f3f7;
+            text-transform: uppercase;
+            font-size: var(--tui-font-size-medium);
+        }
+
+        th:not(:nth-child(2)):not(:last-child),
+        td:not(:nth-child(2)):not(:last-child) {
+            text-align: right;
+        }
+
+        tbody tr:nth-child(even) td {
+            background-color: #f7f9fc;
+        }
+    }
+
+    .ellipsis {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .event-name-button {
+        display: block;
+        cursor: pointer;
+        width: 100%;
+        overflow: hidden;
+        text-align: left;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--tui-color-brand, #193256);
+    }
+
+    .event-name-button:hover {
+        text-decoration: underline;
+    }
+
+    .header {
+        * {
+            padding: 0 var(--tui-spacing-ultra-small) !important;
+            font-size: var(--tui-font-size-medium) !important;
+        }
+    }
+
+    .sorted-header {
+        font-weight: 700;
+    }
+
+    .figure {
+        font-weight: 600;
+    }
+
+    .conflict {
+        color: var(--color-conflict);
+    }
+
+    .disaster {
+        color: var(--color-disaster);
+    }
+
+    .pager {
+        align-self: flex-end;
+        flex-shrink: 0;
+        font-size: 0.7rem;
+    }
+}

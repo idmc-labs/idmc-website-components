@@ -15,10 +15,6 @@ function IduMap(props: Props) {
         <div
             className={styles.page}
         >
-            <div>
-                Hover over and click on the coloured bubbles to see near real-time
-                snapshots of situations of internal displacement.
-            </div>
             {widget}
         </div>
     );

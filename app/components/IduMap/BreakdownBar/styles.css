@@ -1,0 +1,53 @@
+.breakdown-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--tui-spacing-small);
+    padding: 0.5rem 0.25rem;
+
+    .label {
+        flex-shrink: 0;
+        width: 8rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .track {
+        display: flex;
+        flex-grow: 1;
+        border-radius: 0.25rem;
+        background-color: var(--color-progress-line-background, #f0f0f0);
+        height: 0.5rem;
+        overflow: hidden;
+
+        .conflict-fill {
+            background-color: var(--color-conflict);
+        }
+
+        .disaster-fill {
+            background-color: var(--color-disaster);
+        }
+    }
+
+    .total {
+        flex-shrink: 0;
+        min-width: 3.5rem;
+        text-align: right;
+    }
+}
+
+.breakdown-bar.clickable {
+    cursor: pointer;
+    padding: 0.5rem 0.25rem;
+    width: 100%;
+    text-align: left;
+}
+
+.breakdown-bar.clickable:hover {
+    background-color: var(--tui-color-background-hover, #f0f3f7);
+}
+
+.breakdown-bar.selected,
+.breakdown-bar.selected:hover {
+    background-color: var(--tui-color-background-selected, #e4ecf7);
+}

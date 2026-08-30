@@ -2,49 +2,79 @@ import React, {
     useState,
     useCallback,
     useMemo,
+    useRef,
 } from 'react';
+import { LngLatLike, LngLatBoundsLike } from 'mapbox-gl';
 import {
     gql,
     useQuery,
 } from '@apollo/client';
 import {
-    LngLatBounds,
-} from 'mapbox-gl';
-import {
-    IoExitOutline,
-    IoHelpCircleOutline,
-    IoDownloadOutline,
+    IoSearchOutline,
+    IoRefreshOutline,
+    IoFilterOutline,
+    IoChevronDownOutline,
+    IoChevronUpOutline,
+    // IoShareSocialOutline,
+    IoInformationCircleOutline,
 } from 'react-icons/io5';
 import {
     Button,
+    TextInput,
+    SegmentInput,
+    SelectInput,
+    MultiSelectInput,
 } from '@togglecorp/toggle-ui';
 import {
+    _cs,
+    isDefined,
     isNotDefined,
+    isTruthyString,
+    caseInsensitiveSubmatch,
+    compareString,
+    formatDateToString,
+    decodeDate,
 } from '@togglecorp/fujs';
 
 import {
     IduDataQuery,
     IduDataQueryVariables,
+    IduReferencesQuery,
+    IduReferencesQueryVariables,
 } from '#generated/types';
 
-import ButtonLikeLink from '#components/ButtonLikeLink';
-import Header from '#components/Header';
-import SliderInput from '#components/SliderInput';
-import Container from '#components/Container';
 import Message from '#components/Message';
+import RawButton from '#components/RawButton';
+import SlideCarousel from '#components/SlideCarousel';
+import TooltipIcon from '#components/TooltipIcon';
+import useDebouncedValue from '#hooks/useDebouncedValue';
+import useDocumentSize from '#hooks/useDocumentSize';
 
-import {
-    monthList,
-    suffixDrupalEndpoint,
-} from '#utils/common';
-import LegendElement from '#components/LegendElement';
+import { suffixDrupalEndpoint, HELIX_REST_ENDPOINT } from '#utils/common';
 
-import RawIduMap from './RawIduMap';
-import useInputState from '../../hooks/useInputState';
+import { toSentenceCase } from './EventListItem';
+import RawIduMap, {
+    MapFocus,
+    MapSelection,
+    PopupProperties,
+    iduToPopupProperties,
+} from './RawIduMap';
+import IduTable from './IduTable';
+import DateFilter from './DateFilter';
+import RecentEvents from './RecentEvents';
+import TopCountries from './TopCountries';
+import Breakdown from './Breakdown';
+import LargestEvents from './LargestEvents';
+import FilterPill from './FilterPill';
+import StatBar from './StatBar';
 
 import styles from './styles.css';
 
+const MOBILE_BREAKPOINT = 720;
+
 const giddLink = suffixDrupalEndpoint('/database/displacement-data');
+// the Helix REST endpoint (…/external-api/) hosts the API docs at /#/
+const documentationLink = `${HELIX_REST_ENDPOINT.replace(/\/+$/, '')}/#/`;
 
 const IDU_DATA = gql`
     query IduData($clientId: String!) {
@@ -93,55 +123,171 @@ const IDU_DATA = gql`
     }
 `;
 
-type DisplacementType = 'Conflict' | 'Disaster' | 'Other';
-type DisplacementNumber = 'less-than-100' | 'less-than-1000' | 'more-than-1000';
+const IDU_REFERENCES = gql`
+    query IduReferences($clientId: String!) {
+        iduReferences(clientId: $clientId) @rest(
+            type: "IduReferences",
+            method: "GET",
+            endpoint: "helix",
+            path: "idus/references/?client_id={args.clientId}"
+        ) {
+            disasterTypes { id name }
+            disasterSubTypes { id name type_id }
+            violenceTypes { id name }
+            violenceSubTypes { id name type_id }
+            geographicalGroups { id name }
+            countries { id iso3 geographical_group_id idmcShortName bbox }
+        }
+    }
+`;
 
-// const START_YEAR = 2008;
+const formatDate = (date: string | undefined) => (
+    date ? formatDateToString(decodeDate(date), 'dd MMM yyyy') : ''
+);
+
+type CauseKey = 'Conflict' | 'Disaster';
+interface CauseOption {
+    key: CauseKey;
+    label: string;
+}
+const causeKeySelector = (option: CauseOption) => option.key;
+const causeLabelSelector = (option: CauseOption) => option.label;
+const causeOptions: CauseOption[] = [
+    { key: 'Conflict', label: 'Conflict' },
+    { key: 'Disaster', label: 'Disasters' },
+];
+
+type ViewKey = 'map' | 'table';
+interface ViewOption {
+    key: ViewKey;
+    label: string;
+}
+const viewKeySelector = (option: ViewOption) => option.key;
+const viewLabelSelector = (option: ViewOption) => option.label;
+const viewOptions: ViewOption[] = [
+    { key: 'map', label: 'Map' },
+    { key: 'table', label: 'Table' },
+];
+
+interface Option {
+    key: string;
+    label: string;
+}
+const optionKeySelector = (option: Option) => option.key;
+const optionLabelSelector = (option: Option) => option.label;
+
+interface ActiveFilter {
+    key: string;
+    label: string;
+    onRemove: () => void;
+}
+
+interface TriggerOption {
+    // the raw hazard type / disaster category / violence name (matched in the filter)
+    key: string;
+    label: string;
+    // groupKey is sort-prefixed so "Disaster" always renders before "Conflict"
+    groupKey: string;
+    groupLabel: string;
+}
+const triggerKeySelector = (option: TriggerOption) => option.key;
+const triggerLabelSelector = (option: TriggerOption) => option.label;
+const triggerGroupKeySelector = (option: TriggerOption) => option.groupKey;
+const triggerGroupLabelSelector = (option: TriggerOption) => option.groupLabel;
+
+const TRIGGER_GROUP_DISASTER = 'Disaster';
+const TRIGGER_GROUP_CONFLICT = 'Conflict and Violence';
+
 const TODAY = new Date();
-const MONTHS = 6;
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
+
+function toDateInputValue(date: Date) {
+    return date.toISOString().split('T')[0];
+}
+
+const defaultEndDate = toDateInputValue(TODAY);
+const defaultStartDateObj = new Date(TODAY);
+defaultStartDateObj.setDate(defaultStartDateObj.getDate() - 180);
+const defaultStartDate = toDateInputValue(defaultStartDateObj);
+
+function triggerDownload(content: string, filename: string, mimeType: string) {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+// Ordered column definitions matching the API Excel export format
+const EXCEL_COLUMNS: { header: string; key: string }[] = [
+    { header: 'Id', key: 'id' },
+    { header: 'Country', key: 'country' },
+    { header: 'Iso3', key: 'iso3' },
+    { header: 'Latitude', key: 'latitude' },
+    { header: 'Longitude', key: 'longitude' },
+    { header: 'Centroid', key: 'centroid' },
+    { header: 'Role', key: 'role' },
+    { header: 'DisplacementType', key: 'displacement_type' },
+    { header: 'Qualifier', key: 'qualifier' },
+    { header: 'Figure', key: 'figure' },
+    { header: 'DisplacementDate', key: 'displacement_date' },
+    { header: 'DisplacementStartDate', key: 'displacement_start_date' },
+    { header: 'DisplacementEndDate', key: 'displacement_end_date' },
+    { header: 'Year', key: 'year' },
+    { header: 'EventId', key: 'event_id' },
+    { header: 'EventName', key: 'event_name' },
+    { header: 'EventCodes', key: 'event_codes' },
+    { header: 'EventCodeTypes', key: 'event_code_types' },
+    { header: 'EventStartDate', key: 'event_start_date' },
+    { header: 'EventEndDate', key: 'event_end_date' },
+    { header: 'Category', key: 'category' },
+    { header: 'Subcategory', key: 'subcategory' },
+    { header: 'Type', key: 'type' },
+    { header: 'Subtype', key: 'subtype' },
+    { header: 'StandardPopupText', key: 'standard_popup_text' },
+    { header: 'StandardInfoText', key: 'standard_info_text' },
+    { header: 'OldId', key: 'old_id' },
+    { header: 'Sources', key: 'sources' },
+    { header: 'SourceUrl', key: 'source_url' },
+    { header: 'LocationsName', key: 'locations_name' },
+    { header: 'LocationsCoordinates', key: 'locations_coordinates' },
+    { header: 'LocationsAccuracy', key: 'locations_accuracy' },
+    { header: 'LocationsType', key: 'locations_type' },
+    { header: 'DisplacementOccurred', key: 'displacement_occurred' },
+    { header: 'CreatedAt', key: 'created_at' },
+];
 
 function useIduMap(
     clientCode: string,
-    boundingBox?: LngLatBounds | undefined,
     iso3?: string,
 ) {
-    const [mapTimeMonthRange, setMapTimeMonthRange] = useState<[number, number]>(
-        [MONTHS - 1, MONTHS],
-    );
+    // searchInput drives the text field; the debounced value drives filtering
+    const [searchInput, setSearchInput] = useState<string | undefined>();
+    const searchText = useDebouncedValue(searchInput, 300);
+    const [cause, setCause] = useState<CauseKey | undefined>();
+    const [triggerTypes, setTriggerTypes] = useState<string[]>([]);
+    const [regions, setRegions] = useState<string[]>([]);
+    const [locations, setLocations] = useState<string[]>([]);
+    const [startDate, setStartDate] = useState<string | undefined>(defaultStartDate);
+    const [endDate, setEndDate] = useState<string | undefined>(defaultEndDate);
+    const [mapOrTable, setMapOrTable] = useState<ViewKey>('map');
+    const [mountedViews, setMountedViews] = useState<Set<ViewKey>>(() => new Set<ViewKey>(['map']));
+    // the open map popup lives here so events and filter changes can drive it
+    const [mapSelection, setMapSelection] = useState<MapSelection | undefined>();
+    const [flyTo, setFlyTo] = useState<LngLatLike | undefined>();
+    const [fitBounds, setFitBounds] = useState<LngLatBoundsLike | undefined>();
+    const [mapFocus, setMapFocus] = useState<MapFocus | undefined>();
+    const [resetTrigger, setResetTrigger] = useState(0);
+    // the event row highlighted in the pane == the event whose popup is open
+    const selectedEventId = mapSelection?.eventId;
 
-    const [iduFilterStartDate, iduFilterEndDate] = useMemo(
-        () => {
-            const lastYearToday = new Date(TODAY);
-            lastYearToday.setMonth(lastYearToday.getMonth() - MONTHS);
-
-            const filterStartDate = new Date(
-                lastYearToday.getFullYear(),
-                lastYearToday.getMonth(),
-                1,
-            );
-            filterStartDate.setMonth(filterStartDate.getMonth() + mapTimeMonthRange[0]);
-
-            const filterEndDate = new Date(
-                lastYearToday.getFullYear(),
-                lastYearToday.getMonth(),
-                1,
-            );
-            filterEndDate.setMonth(filterEndDate.getMonth() + 1 + mapTimeMonthRange[1]);
-            filterEndDate.setSeconds(filterEndDate.getSeconds() - 1);
-
-            return [filterStartDate, filterEndDate] as const;
-        },
-        [mapTimeMonthRange],
-    );
-
-    const [
-        mapTypeOfDisplacements,
-        setMapTypeOfDisplacements,
-    ] = useInputState<DisplacementType[]>(['Conflict', 'Disaster']);
-    const [
-        mapNoOfDisplacements,
-        setMapNoOfDisplacements,
-    ] = useInputState<DisplacementNumber[]>(['less-than-100', 'less-than-1000', 'more-than-1000']);
+    // the map is hidden on mobile, so event rows that open a map popup are inert
+    const { width: viewportWidth } = useDocumentSize();
+    const isMobile = viewportWidth <= MOBILE_BREAKPOINT;
 
     const {
         previousData: previousIduData,
@@ -157,94 +303,550 @@ function useIduMap(
         },
     );
 
-    const idus = React.useMemo(() => (
+    const {
+        data: referencesData,
+    } = useQuery<IduReferencesQuery, IduReferencesQueryVariables>(
+        IDU_REFERENCES,
+        {
+            variables: {
+                clientId: clientCode,
+            },
+        },
+    );
+
+    const idusAll = useMemo(() => (
         iso3
             ? iduData?.idu?.filter((item) => item.iso3 === iso3)
             : iduData?.idu
     ), [iso3, iduData]);
 
-    const idusForMap = React.useMemo(() => (
-        idus?.filter((d) => {
+    const idus = useMemo(
+        () => idusAll?.filter((item) => item.role === 'Recommended figure'),
+        [idusAll],
+    );
+
+    const {
+        regionToIso3,
+        regionOptions,
+        countryBboxMap,
+    } = useMemo(() => {
+        const refCountries = referencesData?.iduReferences?.countries ?? [];
+        const refGroups = referencesData?.iduReferences?.geographicalGroups ?? [];
+
+        const regionIso3Map = new Map<string, string[]>();
+        const bboxMap = new Map<string, number[]>();
+        refCountries.forEach((country) => {
+            if (isTruthyString(country.iso3)) {
+                if (isDefined(country.geographical_group_id)) {
+                    const key = String(country.geographical_group_id);
+                    const existing = regionIso3Map.get(key) ?? [];
+                    existing.push(country.iso3 as string);
+                    regionIso3Map.set(key, existing);
+                }
+                if (isDefined(country.bbox) && country.bbox.length === 4) {
+                    bboxMap.set(country.iso3 as string, country.bbox as number[]);
+                }
+            }
+        });
+
+        const options: Option[] = refGroups
+            .map((g) => ({ key: String(g.id), label: g.name }))
+            .sort((a, b) => compareString(a.label, b.label));
+
+        return {
+            regionToIso3: regionIso3Map,
+            regionOptions: options,
+            countryBboxMap: bboxMap,
+        };
+    }, [referencesData]);
+
+    // Trigger type options come from the references API (not derived from IDU data),
+    // grouped by cause and limited to the groups matching the cause selection.
+    const triggerOptions = useMemo<TriggerOption[]>(() => {
+        const disasterTypes = referencesData?.iduReferences?.disasterTypes ?? [];
+        const violenceSubTypes = referencesData?.iduReferences?.violenceSubTypes ?? [];
+
+        const disasterOpts: TriggerOption[] = disasterTypes.map((t) => ({
+            key: t.name,
+            label: toSentenceCase(t.name) ?? t.name,
+            groupKey: `1-${TRIGGER_GROUP_DISASTER}`,
+            groupLabel: TRIGGER_GROUP_DISASTER,
+        }));
+        const conflictOpts: TriggerOption[] = violenceSubTypes.map((t) => ({
+            key: t.name,
+            label: toSentenceCase(t.name) ?? t.name,
+            groupKey: `2-${TRIGGER_GROUP_CONFLICT}`,
+            groupLabel: TRIGGER_GROUP_CONFLICT,
+        }));
+
+        if (cause === 'Disaster') {
+            return disasterOpts;
+        }
+        if (cause === 'Conflict') {
+            return conflictOpts;
+        }
+        return [...disasterOpts, ...conflictOpts];
+    }, [referencesData, cause]);
+
+    // Country options come from the references API, narrowed to the selected region(s).
+    const countryOptions = useMemo<Option[]>(() => {
+        const refCountries = referencesData?.iduReferences?.countries ?? [];
+
+        const allowedIso3 = regions.length > 0
+            ? new Set<string>(regions.flatMap((id) => regionToIso3.get(id) ?? []))
+            : undefined;
+
+        return refCountries
+            .filter((c) => isTruthyString(c.iso3)
+                && (!allowedIso3 || allowedIso3.has(c.iso3 as string)))
+            .map((c) => ({ key: `c:${c.iso3}`, label: c.idmcShortName ?? (c.iso3 as string) }))
+            .sort((a, b) => compareString(a.label, b.label));
+    }, [referencesData, regions, regionToIso3]);
+
+    const buildIduFilter = useCallback((source: typeof idus) => {
+        const regionIso3 = regions.length > 0
+            ? new Set<string>(regions.flatMap((id) => regionToIso3.get(id) ?? []))
+            : undefined;
+        const countryIso3 = locations.length > 0
+            ? new Set<string>(locations.map((key) => key.slice(2)))
+            : undefined;
+
+        return source?.filter((d) => {
             if (isNotDefined(d.displacement_date)) {
                 return false;
             }
-
-            if (d.displacement_type && !mapTypeOfDisplacements.includes(d.displacement_type)) {
+            if (isDefined(cause) && d.displacement_type !== cause) {
                 return false;
             }
-
-            let key: DisplacementNumber;
-            if (d.figure < 100) {
-                key = 'less-than-100';
-            } else if (d.figure < 1000) {
-                key = 'less-than-1000';
-            } else {
-                key = 'more-than-1000';
-            }
-            if (!mapNoOfDisplacements.includes(key)) {
+            if (
+                triggerTypes.length > 0
+                && !triggerTypes.some(
+                    // NOTE: disasters filter by type, conflicts by subtype
+                    (value) => (d.displacement_type === 'Disaster' ? d.type : d.subtype) === value,
+                )
+            ) {
                 return false;
             }
+            if (regionIso3 && (isNotDefined(d.iso3) || !regionIso3.has(d.iso3))) {
+                return false;
+            }
+            if (countryIso3 && (isNotDefined(d.iso3) || !countryIso3.has(d.iso3))) {
+                return false;
+            }
+            const search = searchText?.trim();
+            if (search) {
+                const haystack = `${d.event_name ?? ''} ${d.country ?? ''} ${d.locations_name ?? ''}`;
+                if (!caseInsensitiveSubmatch(haystack, search)) {
+                    return false;
+                }
+            }
+            const displacementTime = new Date(d.displacement_date).getTime();
+            if (startDate && displacementTime < new Date(startDate).getTime()) {
+                return false;
+            }
+            if (endDate && displacementTime > (new Date(endDate).getTime() + DAY_IN_MS - 1)) {
+                return false;
+            }
+            return true;
+        });
+    }, [cause, triggerTypes, regions, regionToIso3, locations, searchText, startDate, endDate]);
 
-            const displacementDate = new Date(d.displacement_date);
+    const idusForMap = useMemo(() => buildIduFilter(idus), [idus, buildIduFilter]);
 
-            return displacementDate.getTime() >= iduFilterStartDate.getTime()
-                && displacementDate.getTime() <= iduFilterEndDate.getTime();
-        })
-    ), [idus, iduFilterStartDate, iduFilterEndDate, mapNoOfDisplacements, mapTypeOfDisplacements]);
+    const appliedFilterCount = (
+        (searchText && searchText.trim() ? 1 : 0)
+        + (isDefined(cause) ? 1 : 0)
+        + (triggerTypes.length > 0 ? 1 : 0)
+        + (regions.length > 0 ? 1 : 0)
+        + (locations.length > 0 ? 1 : 0)
+        + (startDate !== defaultStartDate || endDate !== defaultEndDate ? 1 : 0)
+    );
 
-    const handleDownload = useCallback(() => {
-        if (isNotDefined(idusForMap)) {
+    // ease/rotate the globe to frame a set of records; returns false when there is
+    // nothing to frame, so the caller can fall back to the default globe view
+    const showItemsOnMap = useCallback((items: typeof idus): boolean => {
+        let minLng = Infinity;
+        let minLat = Infinity;
+        let maxLng = -Infinity;
+        let maxLat = -Infinity;
+        let count = 0;
+        (items ?? []).forEach((d) => {
+            if (isDefined(d.longitude) && isDefined(d.latitude)) {
+                count += 1;
+                minLng = Math.min(minLng, d.longitude);
+                minLat = Math.min(minLat, d.latitude);
+                maxLng = Math.max(maxLng, d.longitude);
+                maxLat = Math.max(maxLat, d.latitude);
+            }
+        });
+        if (count === 0) {
+            return false;
+        }
+        if (minLng === maxLng && minLat === maxLat) {
+            setFlyTo([minLng, minLat]);
+            setFitBounds(undefined);
+        } else {
+            setFlyTo(undefined);
+            setFitBounds([[minLng, minLat], [maxLng, maxLat]]);
+        }
+        return true;
+    }, []);
+
+    const idusForExport = useMemo(
+        () => buildIduFilter(idusAll),
+        [idusAll, buildIduFilter],
+    );
+
+    const handleDownloadGeojson = useCallback(() => {
+        if (isNotDefined(idusForExport)) {
             return;
         }
-        const onlyData = idusForMap.map((item) => {
+        const features = idusForExport.map((item) => {
             const {
-                __typename,
-                ...remaining
+                __typename: _,
+                ...properties
             } = item as (typeof item & { __typename: string });
-            return remaining;
+            return {
+                type: 'Feature',
+                geometry: {
+                    type: 'MultiPoint',
+                    coordinates: (
+                        isDefined(item.longitude) && isDefined(item.latitude)
+                            ? [[item.longitude, item.latitude]]
+                            : []
+                    ),
+                },
+                properties,
+            };
+        });
+        const geojson = {
+            type: 'FeatureCollection',
+            readme: 'IDMC Internal Displacement Updates (IDU) — preliminary estimates of internal displacement events reported in the last 180 days. Data is updated daily.',
+            lastUpdated: new Date().toISOString(),
+            features,
+        };
+        triggerDownload(
+            JSON.stringify(geojson),
+            'idu-data.geojson',
+            'application/geo+json',
+        );
+    }, [idusForExport]);
+
+    const handleDownloadExcel = useCallback(async () => {
+        if (isNotDefined(idusForExport)) {
+            return;
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const ExcelJS = await import('exceljs') as any;
+        const Workbook = ExcelJS.default?.Workbook ?? ExcelJS.Workbook;
+        const workbook = new Workbook();
+
+        const dataSheet = workbook.addWorksheet('sheet1');
+        dataSheet.columns = EXCEL_COLUMNS.map((col) => ({
+            header: col.header,
+            key: col.key,
+            width: 22,
+        }));
+        idusForExport.forEach((item) => {
+            const row: Record<string, unknown> = {};
+            EXCEL_COLUMNS.forEach((col) => {
+                row[col.key] = (item as Record<string, unknown>)[col.key] ?? null;
+            });
+            dataSheet.addRow(row);
         });
 
-        const jsonStr = JSON.stringify(onlyData);
-        const blob = new Blob([jsonStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
+        const readmeSheet = workbook.addWorksheet('sheet2');
+        readmeSheet.addRow(['IDMC Internal Displacement Updates (IDU)']);
+        readmeSheet.addRow(['Preliminary estimates of internal displacement events reported in the last 180 days.']);
+        readmeSheet.addRow(['This provisional data is updated daily with new available data.']);
+        readmeSheet.addRow(['Validated annual estimates are published in the Global Internal Displacement Database (GIDD).']);
 
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob(
+            [buffer],
+            { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' },
+        );
+        const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = 'idu-data.json';
+        link.download = 'idu-data.xlsx';
         document.body.appendChild(link);
         link.click();
-
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
+    }, [idusForExport]);
+
+    const prevIdusForMap = useRef(idusForMap);
+    if (prevIdusForMap.current !== idusForMap) {
+        prevIdusForMap.current = idusForMap;
+        // a filter change closes any popup, drops focus, and reframes the map to
+        // the new result set (falling back to the globe when nothing matches)
+        setMapSelection(undefined);
+        setMapFocus(undefined);
+        if (!(appliedFilterCount > 0 && showItemsOnMap(idusForMap))) {
+            setFlyTo(undefined);
+            setFitBounds(undefined);
+            setResetTrigger((n) => n + 1);
+        }
+    }
+
+    // keep a view mounted once it has been opened, so its state survives toggles
+    React.useEffect(() => {
+        setMountedViews((prev) => {
+            if (prev.has(mapOrTable)) {
+                return prev;
+            }
+            const next = new Set(prev);
+            next.add(mapOrTable);
+            return next;
+        });
+    }, [mapOrTable]);
+
+    const handleReset = useCallback(() => {
+        setSearchInput(undefined);
+        setCause(undefined);
+        setTriggerTypes([]);
+        setRegions([]);
+        setLocations([]);
+        setStartDate(defaultStartDate);
+        setEndDate(defaultEndDate);
+        // close any open map popup even if the filters were already at default
+        setMapSelection(undefined);
+        setFlyTo(undefined);
+        setFitBounds(undefined);
+    }, []);
+
+    // selecting a region narrows the country options, so drop any selected
+    // country that no longer falls within the chosen region(s)
+    const applyRegions = useCallback((nextRegions: string[]) => {
+        setRegions(nextRegions);
+        if (nextRegions.length > 0) {
+            const allowed = new Set(nextRegions.flatMap((id) => regionToIso3.get(id) ?? []));
+            setLocations((prev) => prev.filter((key) => allowed.has(key.slice(2))));
+        }
+    }, [regionToIso3]);
+
+    const handleDateRangeChange = useCallback((
+        start: string | undefined,
+        end: string | undefined,
+    ) => {
+        setStartDate(start);
+        setEndDate(end);
+    }, []);
+
+    // changing the cause changes which trigger groups are available, so drop the
+    // current trigger selection to avoid a now-hidden filter lingering
+    const handleCauseChange = useCallback((value: CauseKey | undefined) => {
+        setCause(value);
+        setTriggerTypes([]);
+    }, []);
+
+    // return the map to the active-filter frame (or the globe when no filter is set)
+    const fitToFiltered = useCallback(() => {
+        if (appliedFilterCount > 0 && showItemsOnMap(idusForMap)) {
+            return;
+        }
+        setFlyTo(undefined);
+        setFitBounds(undefined);
+        setResetTrigger((n) => n + 1);
+    }, [appliedFilterCount, idusForMap, showItemsOnMap]);
+
+    const handleRemoveFocus = useCallback(() => {
+        setMapFocus(undefined);
+        setMapSelection(undefined);
+        fitToFiltered();
+    }, [fitToFiltered]);
+
+    const handleCountrySelect = useCallback((countryIso3: string) => {
+        // opening a focus closes any pinned popup and reframes to the focus items
+        setMapSelection(undefined);
+        const focusItems = (idusForMap ?? []).filter((d) => d.iso3 === countryIso3);
+        if (!showItemsOnMap(focusItems)) {
+            const bbox = countryBboxMap.get(countryIso3);
+            if (isDefined(bbox) && bbox.length === 4) {
+                setFlyTo(undefined);
+                setFitBounds([[bbox[0], bbox[1]], [bbox[2], bbox[3]]]);
+            }
+        }
+        setMapFocus({ type: 'country', iso3: countryIso3 });
+        setMapOrTable('map');
+    }, [idusForMap, countryBboxMap, showItemsOnMap]);
+
+    const handleTriggerSelect = useCallback((triggerType: string) => {
+        const isSame = mapFocus?.type === 'trigger' && mapFocus.triggerType === triggerType;
+        if (isSame) {
+            setMapFocus(undefined);
+            fitToFiltered();
+            return;
+        }
+        setMapSelection(undefined);
+        const focusItems = (idusForMap ?? []).filter((d) => (
+            (d.displacement_type === 'Disaster' ? d.type : d.subtype) === triggerType
+        ));
+        showItemsOnMap(focusItems);
+        setMapFocus({ type: 'trigger', triggerType });
+        setMapOrTable('map');
+    }, [mapFocus, idusForMap, showItemsOnMap, fitToFiltered]);
+
+    const handleEventSelect = useCallback((eventId: number) => {
+        setMapOrTable('map');
+        const records = (idusForMap ?? []).filter((d) => (
+            d.event_id === eventId
+            && isDefined(d.longitude)
+            && isDefined(d.latitude)
+        ));
+        if (records.length === 0) {
+            return;
+        }
+        // open the popup on the event's first (earliest) displacement
+        const record = records.reduce((a, b) => (
+            (a.displacement_date ?? '') <= (b.displacement_date ?? '') ? a : b
+        ));
+        setMapSelection({
+            lngLat: [record.longitude as number, record.latitude as number],
+            properties: [iduToPopupProperties(record)],
+            eventId,
+            recordId: record.id,
+        });
+        // frame all of the event's displacements, not just the pinned one
+        showItemsOnMap(records);
+        setMapFocus({ type: 'event', eventId });
+    }, [idusForMap, showItemsOnMap]);
+
+    // open the popup for one specific record (IduTable rows and RecentEvents IDUs)
+    const handleRecordSelect = useCallback((recordId: number) => {
+        setMapOrTable('map');
+        const record = (idusForMap ?? []).find((d) => (
+            d.id === recordId
+            && isDefined(d.longitude)
+            && isDefined(d.latitude)
+        ));
+        if (isNotDefined(record)) {
+            return;
+        }
+        const lngLat: LngLatLike = [record.longitude as number, record.latitude as number];
+        setMapSelection({
+            lngLat,
+            properties: [iduToPopupProperties(record)],
+            eventId: record.event_id ?? undefined,
+            recordId: record.id,
+        });
+        setFitBounds(undefined);
+        setFlyTo(lngLat);
+        // clear focus unless the selected record belongs to the focused entity
+        setMapFocus((prev) => {
+            if (!prev) return prev;
+            if (prev.type === 'event' && record.event_id === prev.eventId) return prev;
+            if (prev.type === 'country' && record.iso3 === prev.iso3) return prev;
+            return undefined;
+        });
     }, [idusForMap]);
 
-    const handleTypeOfDisplacementsChange = useCallback((value: DisplacementType) => {
-        setMapTypeOfDisplacements((oldValue: DisplacementType[]) => {
-            const newValue = [...oldValue];
-            const oldIndex = oldValue.findIndex((d) => d === value);
-            if (oldIndex !== -1) {
-                newValue.splice(oldIndex, 1);
-            } else {
-                newValue.push(value);
-            }
-
-            return newValue;
+    const handleMapPointClick = useCallback((lngLat: LngLatLike, properties: PopupProperties) => {
+        // a raw map click isn't tied to an event row, so no eventId / fly
+        setFlyTo(undefined);
+        // stack cards for overlapping points (same click fires once per feature)
+        setMapSelection((prev) => (
+            prev && prev.lngLat === lngLat
+                ? { lngLat, properties: [...prev.properties, properties] }
+                : { lngLat, properties: [properties] }
+        ));
+        // clear focus unless the clicked point belongs to the focused entity
+        setMapFocus((prev) => {
+            if (!prev) return prev;
+            if (prev.type === 'event' && properties.eventId === prev.eventId) return prev;
+            if (prev.type === 'country' && properties.iso3 === prev.iso3) return prev;
+            return undefined;
         });
-    }, [setMapTypeOfDisplacements]);
+    }, []);
 
-    const handleNoOfDisplacementsChange = useCallback((value: DisplacementNumber) => {
-        setMapNoOfDisplacements((oldValue: DisplacementNumber[]) => {
-            const newValue = [...oldValue];
-            const oldIndex = oldValue.findIndex((d) => d === value);
-            if (oldIndex !== -1) {
-                newValue.splice(oldIndex, 1);
-            } else {
-                newValue.push(value);
-            }
+    const handleMapPopupClose = useCallback(() => {
+        setMapSelection(undefined);
+        setFlyTo(undefined);
+    }, []);
 
-            return newValue;
+    // TODO: re-enable "Share this view" (encode the active filters into the URL)
+    // const handleShare = useCallback(() => {
+    //     if (navigator.clipboard) {
+    //         navigator.clipboard.writeText(window.location.href);
+    //     }
+    // }, []);
+
+    const [filtersExpanded, setFiltersExpanded] = useState(false);
+    const handleFiltersToggle = useCallback(() => {
+        setFiltersExpanded((prev) => !prev);
+    }, []);
+
+    const selectedIso3 = mapFocus?.type === 'country' ? mapFocus.iso3 : undefined;
+    const selectedTriggerType = mapFocus?.type === 'trigger' ? mapFocus.triggerType : undefined;
+
+    const activeFilters = useMemo<ActiveFilter[]>(() => {
+        const filters: ActiveFilter[] = [];
+        const trimmedSearch = searchText?.trim();
+        if (trimmedSearch) {
+            filters.push({
+                key: 'search',
+                label: trimmedSearch,
+                onRemove: () => setSearchInput(undefined),
+            });
+        }
+        if (isDefined(cause)) {
+            const causeOption = causeOptions.find((option) => option.key === cause);
+            filters.push({
+                key: 'cause',
+                label: causeOption?.label ?? cause,
+                onRemove: () => handleCauseChange(undefined),
+            });
+        }
+        triggerTypes.forEach((triggerType) => {
+            filters.push({
+                key: `trigger:${triggerType}`,
+                label: triggerType,
+                onRemove: () => setTriggerTypes(
+                    (prev) => prev.filter((item) => item !== triggerType),
+                ),
+            });
         });
-    }, [setMapNoOfDisplacements]);
+        regions.forEach((regionId) => {
+            const option = regionOptions.find((item) => item.key === regionId);
+            filters.push({
+                key: `region:${regionId}`,
+                label: option?.label ?? regionId,
+                onRemove: () => applyRegions(regions.filter((item) => item !== regionId)),
+            });
+        });
+        locations.forEach((location) => {
+            const option = countryOptions.find((item) => item.key === location);
+            filters.push({
+                key: `location:${location}`,
+                label: option?.label ?? location,
+                onRemove: () => setLocations((prev) => prev.filter((item) => item !== location)),
+            });
+        });
+        if (startDate !== defaultStartDate || endDate !== defaultEndDate) {
+            filters.push({
+                key: 'date',
+                label: `${startDate ?? ''} – ${endDate ?? ''}`,
+                onRemove: () => {
+                    setStartDate(defaultStartDate);
+                    setEndDate(defaultEndDate);
+                },
+            });
+        }
+        return filters;
+    }, [
+        searchText,
+        cause,
+        handleCauseChange,
+        triggerTypes,
+        regions,
+        regionOptions,
+        applyRegions,
+        locations,
+        startDate,
+        endDate,
+        countryOptions,
+    ]);
 
     if (error) {
         return {
@@ -253,125 +855,345 @@ function useIduMap(
         };
     }
 
+    const dateRange = `${formatDate(startDate)} – ${formatDate(endDate)}`;
+    const effectiveCause = cause ?? 'all';
+    const disasterBreakdownDesc = `Breakdown by trigger, ${dateRange}.`;
+    const conflictBreakdownDesc = `Breakdown by trigger, ${dateRange}.`;
+
+    const slides: { key: string; content: React.ReactNode }[] = [
+        {
+            key: 'recent-events',
+            content: (
+                <RecentEvents
+                    idus={idusForMap}
+                    startDate={startDate}
+                    endDate={endDate}
+                    onRecordSelect={isMobile ? undefined : handleRecordSelect}
+                    selectedRecordId={mapSelection?.recordId}
+                    expandable={isMobile}
+                />
+            ),
+        },
+        {
+            key: 'top-countries',
+            content: (
+                <TopCountries
+                    idus={idusForMap}
+                    cause={effectiveCause}
+                    startDate={startDate}
+                    endDate={endDate}
+                    onCountrySelect={isMobile ? undefined : handleCountrySelect}
+                    selectedIso3={selectedIso3}
+                />
+            ),
+        },
+        {
+            key: 'disaster-breakdown',
+            content: (
+                <Breakdown
+                    idus={idusForMap}
+                    variant="disaster"
+                    heading="Internal displacements by disasters"
+                    description={disasterBreakdownDesc}
+                    onTriggerSelect={isMobile ? undefined : handleTriggerSelect}
+                    selectedTriggerType={selectedTriggerType}
+                />
+            ),
+        },
+        {
+            key: 'conflict-breakdown',
+            content: (
+                <Breakdown
+                    idus={idusForMap}
+                    variant="conflict"
+                    heading="Internal displacements by conflict and violence"
+                    description={conflictBreakdownDesc}
+                    onTriggerSelect={isMobile ? undefined : handleTriggerSelect}
+                    selectedTriggerType={selectedTriggerType}
+                />
+            ),
+        },
+        {
+            key: 'largest-events',
+            content: (
+                <LargestEvents
+                    idus={idusForMap}
+                    cause={effectiveCause}
+                    startDate={startDate}
+                    endDate={endDate}
+                    onEventSelect={isMobile ? undefined : handleEventSelect}
+                    selectedEventId={selectedEventId}
+                />
+            ),
+        },
+    ];
+
     const widget = (
-        <Container
-            className={styles.container}
-            filtersClassName={styles.filtersContainer}
-            footerContainerClassName={styles.footerContainer}
-            filters={(
-                <>
-                    <div className={styles.timeRangeContainer}>
-                        <SliderInput
-                            label="Timescale"
-                            hideValues
-                            className={styles.timeRangeInput}
-                            min={0}
-                            max={MONTHS}
-                            labelDescription={`${monthList[iduFilterStartDate.getMonth()]} ${iduFilterStartDate.getFullYear()} - ${monthList[iduFilterEndDate.getMonth()]} ${iduFilterEndDate.getFullYear()}`}
-                            step={1}
-                            minDistance={0}
-                            value={mapTimeMonthRange}
-                            onChange={setMapTimeMonthRange}
-                        />
-                    </div>
-                    <div className={styles.displacementLegend}>
-                        <Header
-                            headingSize="extraSmall"
-                            heading="Type of Displacement"
-                        />
-                        <div className={styles.legendElementList}>
-                            <LegendElement
-                                name="Conflict"
-                                onClick={handleTypeOfDisplacementsChange}
-                                isActive={mapTypeOfDisplacements.includes('Conflict')}
-                                color="var(--color-conflict)"
-                                label="Conflict"
-                            />
-                            <LegendElement
-                                name="Disaster"
-                                onClick={handleTypeOfDisplacementsChange}
-                                isActive={mapTypeOfDisplacements.includes('Disaster')}
-                                color="var(--color-disaster)"
-                                label="Disaster"
-                            />
-                        </div>
-                    </div>
-                    <div className={styles.numberLegend}>
-                        <Header
-                            headingSize="extraSmall"
-                            heading="No. of Displacement"
-                        />
-                        <div className={styles.legendElementList}>
-                            <LegendElement
-                                name="less-than-100"
-                                onClick={handleNoOfDisplacementsChange}
-                                isActive={mapNoOfDisplacements.includes('less-than-100')}
-                                color="grey"
-                                size={10}
-                                label="< 100"
-                            />
-                            <LegendElement
-                                name="less-than-1000"
-                                onClick={handleNoOfDisplacementsChange}
-                                isActive={mapNoOfDisplacements.includes('less-than-1000')}
-                                color="grey"
-                                size={18}
-                                label="100 - 1000"
-                            />
-                            <LegendElement
-                                name="more-than-1000"
-                                onClick={handleNoOfDisplacementsChange}
-                                isActive={mapNoOfDisplacements.includes('more-than-1000')}
-                                color="grey"
-                                size={26}
-                                label="> 1000"
-                            />
-                        </div>
-                    </div>
-                </>
-            )}
-            footer={(
-                <a
-                    className={styles.documentationLink}
-                    href="https://www.internal-displacement.org/database/api-documentation/"
-                    rel="noreferrer"
-                    target="_blank"
-                >
-                    <IoHelpCircleOutline />
-                    API Documentation
-                </a>
-            )}
-            footerActions={(
-                <>
+        <div className={styles.dashboard}>
+            <div className={styles.topBar}>
+                <div className={styles.topActions}>
                     <Button
                         name={undefined}
-                        onClick={handleDownload}
-                        icons={(
-                            <IoDownloadOutline />
-                        )}
-                        disabled={loading || isNotDefined(idusForMap)}
+                        onClick={handleReset}
+                        icons={<IoRefreshOutline />}
+                        transparent
                     >
-                        Download dataset
+                        Reset filters
                     </Button>
-                    <ButtonLikeLink
-                        variant="primary"
-                        compact
-                        href={giddLink}
-                        target="_parent"
-                        icons={(
-                            <IoExitOutline />
-                        )}
+                    {/* Share this view is temporarily disabled
+                    <Button
+                        name={undefined}
+                        onClick={handleShare}
+                        icons={<IoShareSocialOutline />}
+                        transparent
                     >
-                        Go to IDMC&apos;s database
-                    </ButtonLikeLink>
-                </>
+                        Share this view
+                    </Button>
+                    */}
+                </div>
+            </div>
+            <div className={_cs(styles.filters, filtersExpanded && styles.filtersExpanded)}>
+                <RawButton
+                    name={undefined}
+                    className={styles.filtersToggle}
+                    onClick={handleFiltersToggle}
+                >
+                    <IoFilterOutline />
+                    Filters
+                    {appliedFilterCount > 0 && (
+                        <span className={styles.countPill}>
+                            {appliedFilterCount}
+                        </span>
+                    )}
+                    {filtersExpanded ? (
+                        <IoChevronUpOutline className={styles.chevron} />
+                    ) : (
+                        <IoChevronDownOutline className={styles.chevron} />
+                    )}
+                </RawButton>
+                <div className={_cs(styles.filterBar, filtersExpanded && styles.filterBarExpanded)}>
+                    <div className={styles.leftFilters}>
+                        <TextInput
+                            className={_cs(styles.search, styles.filterInput)}
+                            name="search"
+                            placeholder="Search events..."
+                            value={searchInput}
+                            onChange={setSearchInput}
+                            icons={<IoSearchOutline />}
+                        />
+                        <SelectInput
+                            className={_cs(styles.cause, styles.filterInput)}
+                            optionsPopupClassName={styles.selectPopup}
+                            name="cause"
+                            placeholder="All causes"
+                            options={causeOptions}
+                            keySelector={causeKeySelector}
+                            labelSelector={causeLabelSelector}
+                            value={cause}
+                            onChange={handleCauseChange}
+                        />
+                        <MultiSelectInput
+                            className={_cs(styles.triggerTypes, styles.filterInput)}
+                            optionsPopupClassName={styles.triggerPopup}
+                            name="triggerTypes"
+                            placeholder="All trigger types"
+                            options={triggerOptions}
+                            keySelector={triggerKeySelector}
+                            labelSelector={triggerLabelSelector}
+                            value={triggerTypes}
+                            onChange={setTriggerTypes}
+                            grouped
+                            groupKeySelector={triggerGroupKeySelector}
+                            groupLabelSelector={triggerGroupLabelSelector}
+                        />
+                        {isNotDefined(iso3) && (
+                            <>
+                                <MultiSelectInput
+                                    className={_cs(styles.regions, styles.filterInput)}
+                                    optionsPopupClassName={styles.selectPopup}
+                                    name="regions"
+                                    placeholder="All regions"
+                                    options={regionOptions}
+                                    keySelector={optionKeySelector}
+                                    labelSelector={optionLabelSelector}
+                                    value={regions}
+                                    onChange={applyRegions}
+                                />
+                                <MultiSelectInput
+                                    className={_cs(styles.countries, styles.filterInput)}
+                                    optionsPopupClassName={styles.selectPopup}
+                                    name="locations"
+                                    placeholder="All countries"
+                                    options={countryOptions}
+                                    keySelector={optionKeySelector}
+                                    labelSelector={optionLabelSelector}
+                                    value={locations}
+                                    onChange={setLocations}
+                                />
+                            </>
+                        )}
+                    </div>
+                    <DateFilter
+                        className={styles.dateRange}
+                        startDate={startDate}
+                        endDate={endDate}
+                        minDate={defaultStartDate}
+                        maxDate={defaultEndDate}
+                        onChange={handleDateRangeChange}
+                    />
+                </div>
+            </div>
+            {!filtersExpanded && activeFilters.length > 0 && (
+                <div className={styles.activeFilters}>
+                    {activeFilters.map((filter) => (
+                        <FilterPill
+                            key={filter.key}
+                            label={filter.label}
+                            onRemove={filter.onRemove}
+                        />
+                    ))}
+                </div>
             )}
-        >
-            <RawIduMap
-                idus={idusForMap}
-                boundingBox={boundingBox}
-            />
-        </Container>
+            <div className={styles.panes}>
+                <div className={styles.leftPane}>
+                    {mountedViews.has('map') && (
+                        <div
+                            className={_cs(
+                                styles.viewPane,
+                                mapOrTable !== 'map' && styles.viewHidden,
+                            )}
+                        >
+                            <RawIduMap
+                                idus={idusForMap}
+                                onCountryFocus={
+                                    isNotDefined(iso3) ? handleCountrySelect : undefined
+                                }
+                                selection={mapSelection}
+                                flyTo={flyTo}
+                                fitBounds={fitBounds}
+                                focus={mapFocus}
+                                filtersActive={appliedFilterCount > 0}
+                                resetTrigger={resetTrigger}
+                                onPointClick={handleMapPointClick}
+                                onClose={handleMapPopupClose}
+                                onRemoveFocus={handleRemoveFocus}
+                            />
+                        </div>
+                    )}
+                    {mountedViews.has('table') && (
+                        <div
+                            className={_cs(
+                                styles.viewPane,
+                                mapOrTable !== 'table' && styles.viewHidden,
+                            )}
+                        >
+                            <IduTable
+                                idus={idusForMap}
+                                onRecordSelect={handleRecordSelect}
+                            />
+                        </div>
+                    )}
+                    <div className={styles.viewToggle} title="Switch between map and table">
+                        <SegmentInput
+                            className={_cs(styles.filterInput, styles.filterSegment)}
+                            name="view"
+                            options={viewOptions}
+                            keySelector={viewKeySelector}
+                            labelSelector={viewLabelSelector}
+                            value={mapOrTable}
+                            onChange={(v) => {
+                                setMapOrTable(v);
+                                if (v === 'table') {
+                                    // leaving the map view drops any active focus
+                                    setMapFocus(undefined);
+                                }
+                            }}
+                        />
+                    </div>
+                </div>
+                <div className={styles.rightPane}>
+                    <StatBar idus={idusForMap} />
+                    <SlideCarousel
+                        className={styles.carousel}
+                        slides={slides}
+                        fillHeight
+                        expandable={false}
+                        pagerExtra={(
+                            <TooltipIcon
+                                className={styles.definitions}
+                                tooltipClassName={styles.definitionsTooltip}
+                                trigger="click"
+                                title="Definitions"
+                                infoLabel={(
+                                    <>
+                                        <IoInformationCircleOutline />
+                                        Definitions
+                                    </>
+                                )}
+                                content={(
+                                    <div className={styles.definitionsContent}>
+                                        <p>
+                                            <strong>Internal displacements</strong>
+                                            {' — the number of times people are forced to move inside their country during a specific time period.'}
+                                        </p>
+                                        <p>
+                                            <strong>Internally displaced persons (IDPs)</strong>
+                                            {' — the number of people living in internal displacement at a specific point in time.'}
+                                        </p>
+                                        <p>
+                                            {'The IDU reports '}
+                                            <strong>internal displacements only</strong>
+                                            {'. IDP figures are included in the '}
+                                            <a href={giddLink} target="_parent">GIDD</a>
+                                            .
+                                        </p>
+                                    </div>
+                                )}
+                            />
+                        )}
+                    />
+                    <div className={styles.rightFooter}>
+                        <p className={styles.footerText}>
+                            <strong>IDMC&apos;s Internal Displacement Updates (IDU)</strong>
+                            {' are preliminary estimates of internal displacement events reported in the last 180 days. This provisional data is updated daily with new available data. Validated, annual estimates are published in the '}
+                            <strong>
+                                <a href={giddLink} target="_parent">
+                                    Global Internal Displacement Database (GIDD)
+                                </a>
+                            </strong>
+                            {'. To request an API key, read the '}
+                            <strong>
+                                <a href={documentationLink} target="_parent">
+                                    documentation
+                                </a>
+                            </strong>
+                            .
+                        </p>
+                        <div className={styles.downloadRow}>
+                            <span className={styles.downloadLabel}>
+                                Download current selection
+                            </span>
+                            <Button
+                                className={styles.downloadButton}
+                                name={undefined}
+                                onClick={handleDownloadGeojson}
+                                disabled={loading || isNotDefined(idusForMap)}
+                            >
+                                GeoJSON
+                            </Button>
+                            <Button
+                                className={styles.downloadButton}
+                                name={undefined}
+                                onClick={handleDownloadExcel}
+                                disabled={loading || isNotDefined(idusForMap)}
+                            >
+                                Excel
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 
     return {

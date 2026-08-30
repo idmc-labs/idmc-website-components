@@ -38,8 +38,37 @@ type IduData {
   locations_type: String
   displacement_occurred: String
   created_at: String
+  context_of_violence: String
   standard_popup_text: String
   standard_info_text: String
+}
+
+type IduReferenceItem {
+  id: Int!
+  name: String!
+}
+
+type IduReferenceSubItem {
+  id: Int!
+  name: String!
+  type_id: Int
+}
+
+type IduReferenceCountry {
+  id: Int!
+  iso3: String
+  geographical_group_id: Int
+  idmcShortName: String
+  bbox: [Float!]
+}
+
+type IduReferences {
+  disasterTypes: [IduReferenceItem!]
+  disasterSubTypes: [IduReferenceSubItem!]
+  violenceTypes: [IduReferenceItem!]
+  violenceSubTypes: [IduReferenceSubItem!]
+  geographicalGroups: [IduReferenceItem!]
+  countries: [IduReferenceCountry!]
 }
 type Value {
   canonical_url: String!
@@ -76,6 +105,7 @@ type RelatedMaterials {
 
 type Query {
   idu(clientId: String!): [IduData!]!
+  iduReferences(clientId: String!): IduReferences!
   relatedMaterials(countryName: String!, offset: Int!, itemsPerPage: Int!): RelatedMaterials!
 }
 

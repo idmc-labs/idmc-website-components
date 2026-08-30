@@ -1,8 +1,5 @@
 import React, { useCallback, useState } from 'react';
 import {
-    LngLatBounds,
-} from 'mapbox-gl';
-import {
     gql,
     useQuery,
 } from '@apollo/client';
@@ -79,7 +76,6 @@ function IduWidget(props: IduWidgetProps) {
         widget: iduWidget,
     } = useIduMap(
         clientCode,
-        countryInfo?.boundingBox as LngLatBounds | undefined,
         iso3,
     );
 
