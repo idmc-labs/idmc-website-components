@@ -59,8 +59,8 @@ const giddDisplacementDataLink = suffixDrupalEndpoint('/database/displacement-da
 const STATS = gql`
     query ConflictStats(
         $iso3: String!,
-        $startYear: Float,
-        $endYear: Float,
+        $startYear: Int,
+        $endYear: Int,
         $releaseEnvironment: String!,
         $clientId: String!,
     ) {
@@ -80,8 +80,8 @@ const STATS = gql`
 const CONFLICT_DATA = gql`
     query ConflictData(
         $countryIso3: String!,
-        $startYear: Float,
-        $endYear: Float,
+        $startYear: Int,
+        $endYear: Int,
         $releaseEnvironment: String!,
         $clientId: String!,
     ) {
