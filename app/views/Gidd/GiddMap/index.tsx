@@ -863,7 +863,11 @@ function GiddMap(props: Props) {
             fetchViolenceBreakdown({ variables: breakdownVariables });
         }
 
-        return undefined;
+        // re-map dispatches as `features.every((f) => !layer.onClick(...))`, so a falsy return
+        // means "not handled, try the next feature" -- and features arrive top-most first, so
+        // every later one would overwrite this selection and the bottom marker would win.
+        // RawIduMap returns false on purpose, because it stacks records into one popup.
+        return true;
     }, [
         cause,
         startYear,
