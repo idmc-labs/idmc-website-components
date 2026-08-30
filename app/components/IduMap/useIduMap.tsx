@@ -321,6 +321,7 @@ function useIduMap(
 
     const {
         data: referencesData,
+        loading: referencesLoading,
     } = useQuery<IduReferencesQuery, IduReferencesQueryVariables>(
         IDU_REFERENCES,
         {
@@ -329,6 +330,8 @@ function useIduMap(
             },
         },
     );
+
+    const pending = loading || referencesLoading;
 
     const idusAll = useMemo(() => (
         iso3
@@ -510,6 +513,32 @@ function useIduMap(
         return true;
     }, []);
 
+    const frameCountry = useCallback((): boolean => {
+        if (isNotDefined(iso3)) {
+            return false;
+        }
+        if (showItemsOnMap(idusForMap)) {
+            return true;
+        }
+        const bbox = countryBboxMap.get(iso3);
+        if (isDefined(bbox) && bbox.length === 4) {
+            setFlyTo(undefined);
+            setFitBounds(padBounds([[bbox[0], bbox[1]], [bbox[2], bbox[3]]]));
+            return true;
+        }
+        return false;
+    }, [iso3, idusForMap, showItemsOnMap, countryBboxMap]);
+
+    // frame the country on a country page, otherwise return to the globe
+    const resetMapView = useCallback(() => {
+        if (frameCountry()) {
+            return;
+        }
+        setFlyTo(undefined);
+        setFitBounds(undefined);
+        setResetTrigger((n) => n + 1);
+    }, [frameCountry]);
+
     // "Download current selection" means what the map and the table show: recommended
     // figures only, not every role behind them.
     const idusForExport = idusForMap;
@@ -600,9 +629,7 @@ function useIduMap(
         setMapSelection(undefined);
         setMapFocus(undefined);
         if (!(appliedFilterCount > 0 && showItemsOnMap(idusForMap))) {
-            setFlyTo(undefined);
-            setFitBounds(undefined);
-            setResetTrigger((n) => n + 1);
+            resetMapView();
         }
     }
 
@@ -626,11 +653,11 @@ function useIduMap(
         setLocations([]);
         setStartDate(defaultStartDate);
         setEndDate(defaultEndDate);
+        setMapFocus(undefined);
         // close any open map popup even if the filters were already at default
         setMapSelection(undefined);
-        setFlyTo(undefined);
-        setFitBounds(undefined);
-    }, []);
+        resetMapView();
+    }, [resetMapView]);
 
     // selecting a region narrows the country options, so drop any selected
     // country that no longer falls within the chosen region(s)
@@ -657,15 +684,13 @@ function useIduMap(
         setTriggerTypes([]);
     }, []);
 
-    // return the map to the active-filter frame (or the globe when no filter is set)
+    // return the map to the active-filter frame, else the country/globe default
     const fitToFiltered = useCallback(() => {
         if (appliedFilterCount > 0 && showItemsOnMap(idusForMap)) {
             return;
         }
-        setFlyTo(undefined);
-        setFitBounds(undefined);
-        setResetTrigger((n) => n + 1);
-    }, [appliedFilterCount, idusForMap, showItemsOnMap]);
+        resetMapView();
+    }, [appliedFilterCount, idusForMap, showItemsOnMap, resetMapView]);
 
     const handleRemoveFocus = useCallback(() => {
         setMapFocus(undefined);
@@ -889,6 +914,7 @@ function useIduMap(
     if (error) {
         return {
             idus,
+            pending,
             widget: <Message message="Some error occurred!" />,
         };
     }
@@ -1255,6 +1281,7 @@ function useIduMap(
 
     return {
         idus,
+        pending,
         widget,
     };
 }

@@ -23,6 +23,7 @@ import {
     createNumberColumn,
 } from '#components/tableHelpers';
 import Message from '#components/Message';
+import PendingMessage from '#components/PendingMessage';
 import useDebouncedValue from '#hooks/useDebouncedValue';
 import {
     GiddDisplacementsQuery,
@@ -175,6 +176,7 @@ function DataTable(props: Props) {
     const {
         previousData: previousDisplacementsResponse,
         data: displacementsResponse = previousDisplacementsResponse,
+        loading,
     } = useQuery<
         GiddDisplacementsQuery,
         GiddDisplacementsQueryVariables
@@ -312,6 +314,7 @@ function DataTable(props: Props) {
 
     return (
         <div className={_cs(className, styles.dataTable)}>
+            {loading && <PendingMessage noDelay />}
             {isEmpty ? (
                 <Message
                     empty

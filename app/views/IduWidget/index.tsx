@@ -1,20 +1,14 @@
-import React, { useCallback, useState } from 'react';
+import React from 'react';
 import {
     gql,
     useQuery,
 } from '@apollo/client';
-import {
-    IoArrowDown,
-    IoArrowUp,
-} from 'react-icons/io5';
-import { Button } from '@togglecorp/toggle-ui';
-
+import PendingMessage from '#components/PendingMessage';
 import useIduMap from '#components/IduMap/useIduMap';
 import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
 import EllipsizedContent from '#components/EllipsizedContent';
 import TooltipIcon from '#components/TooltipIcon';
-import DisplacementIcon from '#components/DisplacementIcon';
 
 import {
     CountryProfileIduQuery,
@@ -49,9 +43,6 @@ function IduWidget(props: IduWidgetProps) {
         clientCode,
     } = props;
 
-    const [iduActivePage, setIduActivePage] = useState(1);
-    const iduPageSize = 2;
-
     const {
         previousData,
         data: countryProfileData = previousData,
@@ -69,21 +60,14 @@ function IduWidget(props: IduWidgetProps) {
 
     const {
         idus,
+        pending,
         widget: iduWidget,
     } = useIduMap(
         clientCode,
         iso3,
     );
 
-    const handleIduActivePage = useCallback(() => {
-        setIduActivePage((val) => val + 1);
-    }, [setIduActivePage]);
-
-    const showlessIduPage = useCallback(() => {
-        setIduActivePage(1);
-    }, [setIduActivePage]);
-
-    if (!(idus && idus.length > 0) && !countryInfo?.internalDisplacementDescription) {
+    if (!pending && !(idus && idus.length > 0) && !countryInfo?.internalDisplacementDescription) {
         return null;
     }
 
@@ -92,6 +76,7 @@ function IduWidget(props: IduWidgetProps) {
             id="internal-displacement"
             className={styles.internalDisplacementUpdates}
         >
+            {pending && <PendingMessage noDelay />}
             <Header
                 headingSize="large"
                 heading={countryMetadata.internalDisplacementUpdatesHeader}
@@ -105,65 +90,21 @@ function IduWidget(props: IduWidgetProps) {
                 {/* eslint-disable-next-line max-len, react/jsx-one-expression-per-line */}
                 IDMC&apos;s Internal Displacement Updates (IDU) are preliminary estimates of internal displacement events reported in the last 180 days. This provisional data is updated daily with new available data. Curated and validated estimates are published in the <a href={giddLink}>Global Internal Displacement Database (GIDD).</a> To find out more about how we monitor and report on our figures, click <a href={monitoringLink}>here.</a>
             </p>
-            <EllipsizedContent>
-                <HTMLOutput
-                    value={countryInfo?.internalDisplacementDescription}
-                />
-            </EllipsizedContent>
+            {countryInfo?.internalDisplacementDescription && (
+                <EllipsizedContent>
+                    <HTMLOutput
+                        value={countryInfo?.internalDisplacementDescription}
+                    />
+                </EllipsizedContent>
+            )}
             {idus && idus.length > 0 && (
-                <>
-                    <div className={styles.iduContainer}>
-                        {idus.slice(0, iduActivePage * iduPageSize)?.map((idu) => (
-                            <div
-                                key={idu.id}
-                                className={styles.idu}
-                            >
-                                <div className={styles.displacementIcon}>
-                                    <DisplacementIcon
-                                        className={styles.icon}
-                                        displacementType={idu.displacement_type}
-                                        disasterType={idu.type}
-                                    />
-                                    <div>
-                                        {idu.displacement_type === 'Disaster'
-                                            ? `${idu.displacement_type} - ${idu.type}`
-                                            : idu.displacement_type}
-                                    </div>
-                                </div>
-                                <HTMLOutput
-                                    value={idu.standard_popup_text}
-                                />
-                            </div>
-                        ))}
-                        <div className={styles.iduPager}>
-                            {idus.length > (iduActivePage * iduPageSize) && (
-                                <Button
-                                    name={undefined}
-                                    onClick={handleIduActivePage}
-                                    actions={<IoArrowDown />}
-                                    transparent
-                                >
-                                    Show Older Displacements
-                                </Button>
-                            )}
-                            {iduActivePage > 1 && (
-                                <Button
-                                    name={undefined}
-                                    onClick={showlessIduPage}
-                                    actions={<IoArrowUp />}
-                                    transparent
-                                >
-                                    Show Less
-                                </Button>
-                            )}
-                        </div>
-                        <div className={styles.mapDescription}>
-                            Hover over and click on the coloured bubbles to see near real-time
-                            snapshots of situations of internal displacement.
-                        </div>
-                        {iduWidget}
+                <div className={styles.iduContainer}>
+                    <div className={styles.mapDescription}>
+                        Hover over and click on the coloured bubbles to see near real-time
+                        snapshots of situations of internal displacement.
                     </div>
-                </>
+                    {iduWidget}
+                </div>
             )}
         </section>
     );

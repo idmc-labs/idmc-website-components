@@ -275,6 +275,7 @@
                 gap: var(--tui-spacing-medium);
                 background-color: var(--tui-color-foreground);
                 padding: var(--tui-spacing-medium);
+                min-height: 100%;
 
                 .glance-description {
                     margin: var(--tui-spacing-small) 0 var(--tui-spacing-small);

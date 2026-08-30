@@ -66,6 +66,7 @@ import { toSentenceCase } from '#components/IduMap/EventListItem';
 import useDebouncedValue from '#hooks/useDebouncedValue';
 import useDocumentSize from '#hooks/useDocumentSize';
 import Message from '#components/Message';
+import PendingMessage from '#components/PendingMessage';
 import {
     GiddFilterOptionsQuery,
     GiddFilterOptionsQueryVariables,
@@ -605,6 +606,7 @@ function Gidd(props: Props) {
     const {
         previousData: previousCountryFilterData,
         data: countryFilterResponse = previousCountryFilterData,
+        loading: filterOptionsLoading,
     } = useQuery<
         GiddFilterOptionsQuery,
         GiddFilterOptionsQueryVariables
@@ -725,6 +727,7 @@ function Gidd(props: Props) {
     const {
         previousData: previousStatisticsData,
         data: statisticsResponse = previousStatisticsData,
+        loading: statisticsLoading,
     } = useQuery<GiddStatisticsQuery, GiddStatisticsQueryVariables>(
         GIDD_STATISTICS,
         {
@@ -1481,6 +1484,7 @@ function Gidd(props: Props) {
 
     const glanceCard = (
         <div className={styles.glanceCard}>
+            {statisticsLoading && <PendingMessage noDelay />}
             <Header
                 heading="At a glance"
                 headingClassName={styles.slideHeading}
@@ -1754,6 +1758,7 @@ function Gidd(props: Props) {
 
     return (
         <div className={styles.bodyContainer}>
+            {filterOptionsLoading && <PendingMessage noDelay />}
             <div className={styles.gidd}>
                 <div className={styles.headerRow}>
                     <div className={styles.headerText}>
@@ -2003,6 +2008,7 @@ function Gidd(props: Props) {
                                 )}
                                 {activeView === 'charts' && (
                                     <>
+                                        {statisticsLoading && <PendingMessage noDelay />}
                                         {chartTypeSelection}
                                         <div className={styles.chartsStack}>
                                             {flowChartBlock}
