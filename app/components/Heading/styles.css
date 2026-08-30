@@ -9,8 +9,10 @@
 
     .heading-tooltip-container {
         display: flex;
+        align-items: center;
 
         .info-icon {
+            display: inline-flex;
             margin: 0 var(--tui-spacing-extra-extra-small);
             font-size: var(--tui-font-size-medium);
         }
@@ -55,4 +57,13 @@
         width: 2ch;
         height: var(--tui-width-separator-thick);
     }
+}
+
+.heading-tooltip {
+    max-width: 20rem;
+}
+
+.heading-tooltip-content {
+    text-transform: none;
+    font-weight: var(--tui-font-weight-normal);
 }

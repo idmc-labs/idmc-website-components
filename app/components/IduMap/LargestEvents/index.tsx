@@ -47,6 +47,8 @@ interface Props {
     cause: 'all' | 'Conflict' | 'Disaster';
     startDate: string | undefined;
     endDate: string | undefined;
+    scopeLabel: string;
+    filterSuffix: string;
     onEventSelect?: (eventId: number) => void;
     selectedEventId: number | undefined;
 }
@@ -58,6 +60,8 @@ function LargestEvents(props: Props) {
         cause,
         startDate,
         endDate,
+        scopeLabel,
+        filterSuffix,
         onEventSelect,
         selectedEventId,
     } = props;
@@ -94,7 +98,7 @@ function LargestEvents(props: Props) {
         selected: event.eventId === selectedEventId,
     }), [onEventSelect, selectedEventId]);
 
-    const description = `Preliminary estimates of the largest ${displacementTerm(cause)} displacements reported between ${formatDate(startDate)} - ${formatDate(endDate)}.`;
+    const description = `Preliminary estimates of the largest ${displacementTerm(cause)} displacements reported ${scopeLabel} between ${formatDate(startDate)} - ${formatDate(endDate)}.${filterSuffix}`;
 
     return (
         <div className={_cs(styles.largestEvents, className)}>
@@ -104,20 +108,19 @@ function LargestEvents(props: Props) {
             <div className={styles.description}>
                 {description}
             </div>
-            <div className={styles.list}>
-                <ListView
-                    data={events}
-                    keySelector={keySelector}
-                    renderer={EventListItem}
-                    rendererParams={rendererParams}
-                    direction="vertical"
-                    errored={false}
-                    pending={false}
-                    filtered={false}
-                    messageShown
-                    emptyMessage="No data available for the selected filters."
-                />
-            </div>
+            <ListView
+                className={styles.list}
+                data={events}
+                keySelector={keySelector}
+                renderer={EventListItem}
+                rendererParams={rendererParams}
+                direction="vertical"
+                errored={false}
+                pending={false}
+                filtered={false}
+                messageShown
+                emptyMessage="No data available for the selected filters."
+            />
             <div className={styles.hint}>
                 Click a row to pin the event on the map.
             </div>

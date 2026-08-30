@@ -9,8 +9,6 @@ export interface Props {
     category: string | undefined | null;
 }
 
-// Table cell for hazard type: the hazard name as the heading and its category
-// as the sub-title.
 function HazardType(props: Props) {
     const {
         className,

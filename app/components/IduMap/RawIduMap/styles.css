@@ -40,6 +40,13 @@
     background-color: var(--tui-color-background-hover, #f0f3f7);
 }
 
+.remove-focus-label {
+    max-width: 14rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .legend {
     display: flex;
     flex-direction: column;
@@ -72,10 +79,8 @@
         background-color: var(--color-disaster, #018eca);
     }
 
-    .legend-note {
+    .size-legend {
         margin-top: 0.25rem;
-        color: var(--tui-color-label, #7a7a7a);
-        font-size: var(--tui-font-size-extra-small);
     }
 }
 

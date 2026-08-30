@@ -2,6 +2,8 @@ import React from 'react';
 import { IoInformationCircleOutline } from 'react-icons/io5';
 import { _cs } from '@togglecorp/fujs';
 
+import TooltipIcon from '#components/TooltipIcon';
+
 import styles from './styles.css';
 
 export type HeadingSizeType = 'extraSmall' | 'small' | 'medium' | 'large' | 'extraLarge' | 'smallAlt';
@@ -12,7 +14,8 @@ interface Props {
     size?: HeadingSizeType;
     hideBorder?: boolean;
     darkMode?: boolean;
-    tooltip?: string;
+    tooltip?: React.ReactNode;
+    tooltipTitle?: React.ReactNode;
 }
 
 function Heading(props: Props) {
@@ -21,6 +24,7 @@ function Heading(props: Props) {
         children: childrenFromProps,
         size = 'medium',
         tooltip,
+        tooltipTitle,
         hideBorder = false,
         darkMode,
     } = props;
@@ -31,9 +35,17 @@ function Heading(props: Props) {
             tempChildren = (
                 <div className={styles.headingTooltipContainer}>
                     {tempChildren}
-                    <IoInformationCircleOutline
+                    <TooltipIcon
                         className={styles.infoIcon}
-                        title={tooltip}
+                        tooltipClassName={styles.headingTooltip}
+                        trigger="click"
+                        title={tooltipTitle}
+                        infoLabel={<IoInformationCircleOutline />}
+                        content={(
+                            <div className={styles.headingTooltipContent}>
+                                {tooltip}
+                            </div>
+                        )}
                     />
                 </div>
             );
@@ -54,6 +66,7 @@ function Heading(props: Props) {
         size,
         childrenFromProps,
         tooltip,
+        tooltipTitle,
         hideBorder,
     ]);
 

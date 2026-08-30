@@ -123,6 +123,9 @@ export function createNumberColumn<D, K>(
         orderable?: boolean;
         hideable?: boolean;
         variant?: 'conflict' | 'disaster';
+        // bold without a cause colour, for neutral columns like combined totals
+        emphasize?: boolean;
+        abbreviate?: boolean;
         separator?: string;
         placeholder?: string;
         columnClassName?: string;
@@ -130,6 +133,10 @@ export function createNumberColumn<D, K>(
         headerCellRendererClassName?: string;
     },
 ) {
+    const valueClassName = _cs(
+        (options?.variant || options?.emphasize) && styles.figure,
+        options?.variant && styles[options.variant],
+    );
     const item: TableColumn<D, K, NumeralProps, TableHeaderCellProps> & {
         valueSelector: (item: D) => number | undefined | null,
         valueComparator: (foo: D, bar: D) => number,
@@ -157,6 +164,9 @@ export function createNumberColumn<D, K>(
             value: accessor(datum),
             placeholder: options?.placeholder ?? '',
             separator: options?.separator ?? ',',
+            abbreviate: options?.abbreviate,
+            valueClassName,
+            abbrClassName: valueClassName,
         }),
         valueSelector: accessor,
         valueComparator: (foo: D, bar: D) => compareNumber(accessor(foo), accessor(bar)),

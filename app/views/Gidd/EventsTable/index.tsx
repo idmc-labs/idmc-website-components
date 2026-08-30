@@ -1,9 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import {
     _cs,
+    isDefined,
 } from '@togglecorp/fujs';
 import {
-    TextInput,
     Table,
     TableHeaderCell,
     TableHeaderCellProps,
@@ -13,7 +13,6 @@ import {
     useSortState,
     createDateColumn,
 } from '@togglecorp/toggle-ui';
-import { IoSearchOutline } from 'react-icons/io5';
 import {
     getHazardTypeLabel,
     DATA_RELEASE,
@@ -23,86 +22,108 @@ import {
     useQuery,
 } from '@apollo/client';
 
-import {
-    createTextColumn,
-    createNumberColumn,
-} from '#components/tableHelpers';
+import Numeral from '#components/Numeral';
+import Message from '#components/Message';
+import HazardType, { Props as HazardTypeProps } from '#components/IduMap/IduTable/HazardType';
+import useDebouncedValue from '#hooks/useDebouncedValue';
 import {
     GiddEventsQuery,
     GiddEventsQueryVariables,
 } from '#generated/types';
-import useDebouncedValue from '#hooks/useDebouncedValue';
 
 import EventTitle, { Props as EventTitleProps } from '../EventTitle';
 
+import { CAUSE_BY_KEY } from '../utils';
+
 import styles from './styles.css';
 
-const smallNumberWidth = 80;
-const largeNumberWidth = 200;
+const mediumNumberWidth = 120;
 
 const dateWidth = 120;
 
-const smallTextWidth = 200;
-const mediumTextWidth = 220;
-const largeTextWidth = 320;
+const extraSmallTextWidth = 150;
+const mediumTextWidth = 280;
 
-type EventData = NonNullable<NonNullable<GiddEventsQuery['giddPublicDisasters']>['results']>[number];
+type EventData = NonNullable<
+    NonNullable<GiddEventsQuery['giddPublicDisplacementEvents']>['results']
+>[number];
+type NumeralProps = React.ComponentProps<typeof Numeral>;
 const eventKeySelector = (item: { id: string }) => item.id;
 
-const description = 'The events table displays a summary of internal displacement data aggregated by events. An event is defined as any natural hazard phenomena that triggered forced movements before, during or after a disaster hit.';
+function getCauseVariantClassName(eventCause: EventData['cause']) {
+    if (eventCause === 'CONFLICT') {
+        return styles.conflict;
+    }
+    if (eventCause === 'DISASTER') {
+        return styles.disaster;
+    }
+    return undefined;
+}
 
 const GIDD_EVENTS = gql`
-query GiddEvents(
-    $page: Int,
-    $ordering: String,
-    $pageSize: Int,
-    $eventName: String,
-    $endYear: Float,
-    $startYear: Float,
-    $hazardTypes: [ID!],
-    $countriesIso3: [String!],
-    $releaseEnvironment: String!,
-    $clientId: String!,
-){
-    giddPublicDisasters(
-        ordering: $ordering,
-        pageSize: $pageSize,
-        page: $page,
-        filters: {
-            eventName: $eventName,
-            countriesIso3: $countriesIso3,
-            endYear: $endYear,
-            startYear: $startYear,
-            hazardTypes: $hazardTypes,
-            releaseEnvironment: $releaseEnvironment,
-        },
-        clientId: $clientId,
+    query GiddEvents(
+        $page: Int,
+        $ordering: String,
+        $pageSize: Int,
+        $eventName: String,
+        $cause: CRISIS_TYPE,
+        $endYear: Float,
+        $startYear: Float,
+        $hazardTypes: [ID!],
+        $violenceSubTypes: [ID!],
+        $countriesIso3: [String!],
+        $releaseEnvironment: String!,
+        $clientId: String!,
     ){
-        results {
-            id
-            countryName
-            endDate
-            eventId
-            eventName
-            hazardCategoryName
-            hazardSubCategoryName
-            hazardSubTypeName
-            hazardTypeId
-            hazardTypeName
-            iso3
-            newDisplacementRounded
-            eventCodes
-            startDate
-            year
+        giddPublicDisplacementEvents(
+            ordering: $ordering,
+            pageSize: $pageSize,
+            page: $page,
+            filters: {
+                eventName: $eventName,
+                countriesIso3: $countriesIso3,
+                endYear: $endYear,
+                startYear: $startYear,
+                hazardTypes: $hazardTypes,
+                violenceSubTypes: $violenceSubTypes,
+                cause: $cause,
+                releaseEnvironment: $releaseEnvironment,
+            },
+            clientId: $clientId,
+        ){
+            results {
+                id
+                countryName
+                endDate
+                eventId
+                eventName
+                hazardCategoryName
+                hazardSubCategoryName
+                hazardSubTypeName
+                hazardTypeId
+                hazardTypeName
+                violenceId
+                violenceName
+                violenceSubTypeId
+                violenceSubTypeName
+                cause
+                causeDisplay
+                iso3
+                newDisplacement
+                totalDisplacement
+                startDate
+                year
+            }
+            totalCount
+            page
+            pageSize
         }
-        totalCount
-        page
-        pageSize
     }
-}
 `;
 
 const EVENTS_TABLE_PAGE_SIZE = 10;
+
+type Category = 'flow' | 'stock';
 
 interface Props {
     className?: string;
@@ -110,9 +131,14 @@ interface Props {
     onActivePageChange: (newVal: number) => void;
     startYear: number;
     endYear: number;
+    cause: string | undefined;
+    category: Category | undefined;
     countriesIso3: string[] | undefined;
     hazardTypes: string[] | undefined;
+    violenceSubTypes: string[] | undefined;
     clientCode: string;
+    searchText: string | undefined;
+    abbreviate: boolean;
 }
 
 function EventsTable(props: Props) {
@@ -124,30 +150,45 @@ function EventsTable(props: Props) {
         endYear,
         countriesIso3,
         hazardTypes,
+        violenceSubTypes,
         clientCode,
+        searchText,
+        cause,
+        category,
+        abbreviate,
     } = props;
 
-    const eventDataSortState = useSortState({ name: 'year', direction: 'dsc' });
+    const isFlowShown = category !== 'stock';
+    const isStockShown = category !== 'flow';
+
+    const eventDataSortState = useSortState({ name: 'startDate', direction: 'dsc' });
     const { sorting: eventSorting } = eventDataSortState;
-    const [eventSearchText, setEventSearchText] = useState<string | undefined>();
+
+    const sortedHeaderClassName = useCallback((columnId: string) => (
+        eventSorting?.name === columnId ? styles.sortedHeader : undefined
+    ), [eventSorting]);
 
     const giddEventsVariables = useMemo(() => ({
-        eventName: eventSearchText,
+        eventName: searchText,
         ordering: `${eventSorting?.direction === 'asc' ? '' : '-'}${eventSorting?.name}`,
         page: activePage,
         countriesIso3,
         startYear,
+        cause: cause ? CAUSE_BY_KEY[cause] : undefined,
         endYear,
         hazardTypes,
+        violenceSubTypes,
         pageSize: EVENTS_TABLE_PAGE_SIZE,
         releaseEnvironment: DATA_RELEASE,
         clientId: clientCode,
     }), [
         countriesIso3,
         startYear,
+        cause,
         endYear,
-        eventSearchText,
+        searchText,
         hazardTypes,
+        violenceSubTypes,
         eventSorting,
         activePage,
         clientCode,
@@ -165,8 +206,6 @@ function EventsTable(props: Props) {
         GIDD_EVENTS,
         {
             variables: debouncedVariables,
-            // FIXME: Skip is not working
-            // skip: displacementCause !== 'disaster',
             context: {
                 clientName: 'helix',
             },
@@ -175,6 +214,24 @@ function EventsTable(props: Props) {
 
     const eventColumns = useMemo(
         () => {
+            const countryColumn: TableColumn<
+                EventData, string, HazardTypeProps, TableHeaderCellProps
+            > = {
+                id: 'countryName',
+                title: 'Country',
+                headerCellRenderer: TableHeaderCell,
+                headerCellRendererParams: {
+                    sortable: true,
+                },
+                headerCellRendererClassName: sortedHeaderClassName('countryName'),
+                cellRenderer: HazardType,
+                cellRendererParams: (_, data) => ({
+                    value: data.countryName,
+                    category: String(data.year),
+                }),
+                columnWidth: extraSmallTextWidth,
+            };
+
             const eventTitle: TableColumn<
                 EventData, string, EventTitleProps, TableHeaderCellProps
             > = {
@@ -184,124 +241,176 @@ function EventsTable(props: Props) {
                 headerCellRendererParams: {
                     sortable: true,
                 },
+                headerCellRendererClassName: sortedHeaderClassName('eventName'),
                 cellRenderer: EventTitle,
                 cellRendererParams: (_, data) => ({
                     title: data.eventName,
                     label: data.eventName,
                     eventId: data.eventId ?? undefined,
                     clientId: clientCode,
+                    cause: data.cause,
+                    violenceSubTypeName: data.violenceSubTypeName,
                 }),
-                columnWidth: largeTextWidth,
+                columnWidth: mediumTextWidth,
                 columnStretch: true,
             };
 
+            const displacementsColumn: TableColumn<
+                EventData, string, NumeralProps, TableHeaderCellProps
+            > | undefined = isFlowShown ? {
+                id: 'newDisplacement',
+                title: 'Internal Displacements',
+                headerCellRenderer: TableHeaderCell,
+                headerCellRendererParams: {
+                    sortable: true,
+                },
+                headerCellRendererClassName: _cs(
+                    styles.numberHeader,
+                    sortedHeaderClassName('newDisplacement'),
+                ),
+                cellRenderer: Numeral,
+                cellRendererClassName: styles.number,
+                cellRendererParams: (_, data) => {
+                    const valueClassName = _cs(
+                        styles.figure,
+                        getCauseVariantClassName(data.cause),
+                    );
+                    return {
+                        value: data.newDisplacement,
+                        placeholder: '',
+                        separator: ',',
+                        abbreviate,
+                        valueClassName,
+                        abbrClassName: valueClassName,
+                    };
+                },
+                columnWidth: mediumNumberWidth,
+                columnStretch: true,
+            } : undefined;
+
+            const idpsColumn: TableColumn<
+                EventData, string, NumeralProps, TableHeaderCellProps
+            > | undefined = isStockShown ? {
+                id: 'totalDisplacement',
+                title: 'Internally Displaced People (IDPs)',
+                headerCellRenderer: TableHeaderCell,
+                headerCellRendererParams: {
+                    sortable: true,
+                },
+                headerCellRendererClassName: _cs(
+                    styles.numberHeader,
+                    sortedHeaderClassName('totalDisplacement'),
+                ),
+                cellRenderer: Numeral,
+                cellRendererClassName: styles.number,
+                cellRendererParams: (_, data) => {
+                    const valueClassName = _cs(
+                        styles.figure,
+                        getCauseVariantClassName(data.cause),
+                    );
+                    return {
+                        value: data.totalDisplacement,
+                        placeholder: '',
+                        separator: ',',
+                        abbreviate,
+                        valueClassName,
+                        abbrClassName: valueClassName,
+                    };
+                },
+                columnWidth: mediumNumberWidth,
+                columnStretch: true,
+            } : undefined;
+
+            const eventTypeColumn: TableColumn<
+                EventData, string, HazardTypeProps, TableHeaderCellProps
+            > = {
+                id: 'hazardTypeName',
+                title: 'Event Type',
+                headerCellRenderer: TableHeaderCell,
+                headerCellRendererParams: {
+                    sortable: true,
+                },
+                headerCellRendererClassName: sortedHeaderClassName('hazardTypeName'),
+                cellRenderer: HazardType,
+                cellRendererParams: (_, data) => {
+                    if (data.cause === 'CONFLICT') {
+                        return {
+                            value: data.violenceSubTypeName,
+                            category: data.violenceName,
+                        };
+                    }
+                    return {
+                        value: (data.hazardTypeId && data.hazardTypeName)
+                            ? getHazardTypeLabel({
+                                id: data.hazardTypeId,
+                                label: data.hazardTypeName,
+                            })
+                            : data.hazardTypeName,
+                        category: data.hazardCategoryName,
+                    };
+                },
+                columnWidth: extraSmallTextWidth,
+            };
+
             return ([
-                createTextColumn<EventData, string>(
-                    'countryName',
-                    'Country / Territory',
-                    (item) => item.countryName,
-                    {
-                        sortable: true,
-                        columnWidth: mediumTextWidth,
-                    },
-                ),
-                createNumberColumn<EventData, string>(
-                    'year',
-                    'Year',
-                    (item) => Number(item.year),
-                    {
-                        sortable: true,
-                        separator: '',
-                        columnWidth: smallNumberWidth,
-                    },
-                ),
+                countryColumn,
                 eventTitle,
-                createTextColumn<EventData, string>(
-                    'eventCodes',
-                    'Event Codes',
-                    (item) => item.eventCodes?.join('; '),
-                    {
-                        sortable: true,
-                        columnWidth: mediumTextWidth,
-                    },
-                ),
                 createDateColumn<EventData, string>(
                     'startDate',
-                    'Date of event (start)',
+                    'Start Date',
                     (item) => item.startDate,
                     {
                         sortable: true,
                         columnWidth: dateWidth,
+                        headerCellRendererClassName: sortedHeaderClassName('startDate'),
                     },
                 ),
-                createNumberColumn<EventData, string>(
-                    'newDisplacementRounded',
-                    'Disaster Internal Displacements',
-                    (item) => item.newDisplacementRounded,
-                    {
-                        sortable: true,
-                        columnWidth: largeNumberWidth,
-                    },
-                ),
-                createTextColumn<EventData, string>(
-                    'hazardCategoryName',
-                    'Hazard Category',
-                    (item) => item.hazardCategoryName,
-                    {
-                        sortable: true,
-                        columnWidth: smallTextWidth,
-                    },
-                ),
-                createTextColumn<EventData, string>(
-                    'hazardTypeName',
-                    'Hazard Type',
-                    (item) => ((item.hazardTypeId && item.hazardTypeName)
-                        ? getHazardTypeLabel({
-                            id: item.hazardTypeId,
-                            label: item.hazardTypeName,
-                        })
-                        : item.hazardTypeName),
-                    {
-                        sortable: true,
-                        columnWidth: smallTextWidth,
-                    },
-                ),
-            ]);
+                displacementsColumn,
+                idpsColumn,
+                eventTypeColumn,
+            ]).filter(isDefined);
         },
-        [clientCode],
+        [
+            clientCode,
+            sortedHeaderClassName,
+            isFlowShown,
+            isStockShown,
+            abbreviate,
+        ],
     );
+
+    const eventRows = eventsResponse?.giddPublicDisplacementEvents?.results;
+    const isEmpty = (eventRows ?? []).length === 0;
 
     return (
         <div className={_cs(className, styles.eventsTable)}>
-            {description}
-            <TextInput
-                icons={(
-                    <IoSearchOutline />
-                )}
-                className={styles.input}
-                inputSectionClassName={styles.inputSection}
-                name="eventTitle"
-                label="Search Events"
-                value={eventSearchText}
-                onChange={setEventSearchText}
-            />
-            <SortContext.Provider value={eventDataSortState}>
-                <Pager
-                    className={styles.pager}
-                    activePage={activePage}
-                    itemsCount={eventsResponse?.giddPublicDisasters?.totalCount ?? 0}
-                    maxItemsPerPage={EVENTS_TABLE_PAGE_SIZE}
-                    onActivePageChange={onActivePageChange}
-                    itemsPerPageControlHidden
+            {isEmpty ? (
+                <Message
+                    empty
+                    messageIconHidden
+                    emptyMessage="No data available for the selected filters."
                 />
-                <Table
-                    containerClassName={styles.table}
-                    data={eventsResponse?.giddPublicDisasters?.results}
-                    keySelector={eventKeySelector}
-                    columns={eventColumns}
-                    resizableColumn
-                />
-            </SortContext.Provider>
+            ) : (
+                <SortContext.Provider value={eventDataSortState}>
+                    <Table
+                        // using dynamic key to reset the column width caching
+                        key={eventColumns.map((column) => column.id).join(',')}
+                        containerClassName={styles.table}
+                        data={eventRows}
+                        keySelector={eventKeySelector}
+                        columns={eventColumns}
+                        resizableColumn
+                    />
+                    <Pager
+                        className={styles.pager}
+                        activePage={activePage}
+                        itemsCount={eventsResponse?.giddPublicDisplacementEvents?.totalCount ?? 0}
+                        maxItemsPerPage={EVENTS_TABLE_PAGE_SIZE}
+                        onActivePageChange={onActivePageChange}
+                        itemsPerPageControlHidden
+                    />
+                </SortContext.Provider>
+            )}
         </div>
     );
 }

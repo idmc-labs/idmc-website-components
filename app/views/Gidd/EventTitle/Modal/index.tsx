@@ -2,12 +2,10 @@ import React, { memo, useMemo, useCallback } from 'react';
 import {
     _cs,
     isDefined,
+    isTruthyString,
     compareNumber,
 } from '@togglecorp/fujs';
-import {
-    Modal,
-    List,
-} from '@togglecorp/toggle-ui';
+import { Modal } from '@togglecorp/toggle-ui';
 import { removeNull } from '@togglecorp/toggle-form';
 import {
     gql,
@@ -18,12 +16,14 @@ import ProgressLine from '#components/ProgressLine';
 import TextOutput from '#components/TextOutput';
 import NumberBlock from '#components/NumberBlock';
 import Message from '#components/Message';
+import ListView from '#components/ListView';
 import {
     DATA_RELEASE,
 } from '#utils/common';
 import {
     GiddEventDetailsQuery,
     GiddEventDetailsQueryVariables,
+    Crisis_Type as CrisisType,
 } from '#generated/types';
 
 import styles from './styles.css';
@@ -67,6 +67,10 @@ export type Props = {
     onCloseButtonClick: () => void;
     eventId: string;
     clientCode: string;
+    // giddPublicEvent exposes neither the cause nor any violence field, so
+    // both come from the events table row that opened this modal
+    cause?: CrisisType | null;
+    violenceSubTypeName?: string | null;
 }
 
 function EventModal(props: Props) {
@@ -76,6 +80,8 @@ function EventModal(props: Props) {
         eventId,
         onCloseButtonClick,
         clientCode,
+        cause,
+        violenceSubTypeName,
     } = props;
 
     const eventVariables = useMemo((): GiddEventDetailsQueryVariables => ({
@@ -114,6 +120,14 @@ function EventModal(props: Props) {
         return removeNull(tempCountries.filter(isDefined));
     }, [event?.affectedCountries]);
 
+    // conflict events carry no hazard types; their taxonomy is the violence
+    // sub-type, which only the events table row knows about
+    const isConflict = cause === 'CONFLICT';
+    const subTypeLabel = isConflict ? 'Conflict Subtypes' : 'Hazard Subtypes';
+    const subTypeValue = isConflict
+        ? violenceSubTypeName
+        : event?.hazardTypes?.map((hazard) => hazard?.name).join(' / ');
+
     const countryRendererParams = useCallback((_: string, country: Country) => ({
         total: sortedCountries?.[0]?.newDisplacementRounded,
         value: country?.newDisplacementRounded ?? 0,
@@ -149,11 +163,13 @@ function EventModal(props: Props) {
                     value={event?.affectedCountries?.map((country) => country?.countryName).join(', ')}
                     displayType="block"
                 />
-                <TextOutput
-                    label="Hazard Subtypes"
-                    value={event?.hazardTypes?.map((hazard) => hazard?.name).join(' / ')}
-                    displayType="block"
-                />
+                {isTruthyString(subTypeValue) && (
+                    <TextOutput
+                        label={subTypeLabel}
+                        value={subTypeValue}
+                        displayType="block"
+                    />
+                )}
                 <TextOutput
                     label="Start Date"
                     value={event?.startDate}
@@ -174,11 +190,17 @@ function EventModal(props: Props) {
             </div>
             <div className={styles.border} />
             <div className={styles.right}>
-                <List
+                <ListView
                     rendererParams={countryRendererParams}
                     renderer={ProgressLine}
                     keySelector={countryKeySelector}
                     data={sortedCountries}
+                    pending={loading && !data}
+                    errored={false}
+                    filtered={false}
+                    messageShown
+                    compactPendingMessage
+                    emptyMessage="No affected countries recorded for this event."
                 />
             </div>
         </Modal>

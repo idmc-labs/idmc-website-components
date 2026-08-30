@@ -7,16 +7,27 @@ import HTMLOutput from '#components/HTMLOutput';
 
 import styles from './styles.css';
 
+// Restore all-caps abbreviations in brackets after a case transform,
+// e.g. "storm (tc)" -> "storm (TC)". `transformed` and `original` must have
+// the same length so bracket offsets line up.
+function keepBracketAbbreviations(transformed: string, original: string): string {
+    return transformed.replace(/\(([^)]*)\)/g, (_, inner: string, offset: number) => {
+        const source = original.slice(offset + 1, offset + 1 + inner.length);
+        const letters = source.replace(/[^a-zA-Z]/g, '');
+        const isAbbreviation = letters.length > 0 && letters === letters.toUpperCase();
+        return `(${isAbbreviation ? source : inner})`;
+    });
+}
+
 export function toSentenceCase(str: string | null | undefined): string | null | undefined {
     if (!str) return str;
     const sentence = str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-    // keep all-caps abbreviations in brackets uppercase, e.g. "storm (TC)" -> "Storm (TC)"
-    return sentence.replace(/\(([^)]*)\)/g, (match, inner: string, offset: number) => {
-        const original = str.slice(offset + 1, offset + 1 + inner.length);
-        const letters = original.replace(/[^a-zA-Z]/g, '');
-        const isAbbreviation = letters.length > 0 && letters === letters.toUpperCase();
-        return `(${isAbbreviation ? original : inner})`;
-    });
+    return keepBracketAbbreviations(sentence, str);
+}
+
+export function toLowerCaseKeepAbbr(str: string | null | undefined): string | null | undefined {
+    if (!str) return str;
+    return keepBracketAbbreviations(str.toLowerCase(), str);
 }
 
 function formatDate(date: string | null | undefined) {

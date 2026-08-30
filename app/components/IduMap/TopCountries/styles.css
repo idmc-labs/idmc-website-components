@@ -22,7 +22,7 @@
         flex-grow: 1;
         padding-right: var(--tui-spacing-small);
         min-height: 0;
-        gap: var(--tui-spacing-small-medium);
+        gap: var(--tui-spacing-medium);
         overflow-y: auto;
     }
 
@@ -30,6 +30,7 @@
         display: none;
         align-items: center;
         flex-shrink: 0;
+        margin-top: var(--tui-spacing-small);
         gap: var(--tui-spacing-medium);
 
         .legend-item {
@@ -74,6 +75,21 @@
         /* the hint refers to focusing on the map, which is hidden on mobile */
         .hint {
             display: none;
+        }
+    }
+}
+
+@supports (grid-template-columns: subgrid) {
+    .top-countries {
+        .list {
+            display: grid;
+            align-content: start;
+            grid-template-columns: var(--country-bar-columns);
+            column-gap: var(--tui-spacing-small);
+
+            > * {
+                grid-column: 1 / -1;
+            }
         }
     }
 }

@@ -12,7 +12,7 @@ const config = {
                 ignorePseudoClasses: ['global'],
             },
         ],
-        'no-descending-specificity': false,
+        'no-descending-specificity': null,
     },
 };
 

@@ -16,25 +16,7 @@
 
         display: flex;
         justify-content: flex-end;
-    }
-
-    .input {
-        --tui-spacing-super-small: 1px;
-        --tui-spacing-extra-small: 3px;
-        --tui-spacing-small: 6px;
-        --tui-spacing-small-medium: 8px;
-        --tui-spacing-medium: 10px;
-        --tui-spacing-large-medium: 13px;
-        --tui-spacing-large: 16px;
-        --tui-spacing-extra-large: 24px;
-
-        width: 20rem;
-
-        .input-section {
-            border-radius: 0.25rem;
-            background-color: var(--tui-filter-background-color);
-            height: 2.5rem;
-        }
+        font-size: var(--tui-font-size-extra-small);
     }
 
     .table {
@@ -50,5 +32,74 @@
         width: 100%;
         min-height: 60vh;
         overflow-x: auto;
+        font-size: var(--tui-font-size-small);
+
+        th {
+            --tui-font-size-medium: 0.7rem;
+            background-color: #f0f3f7;
+            text-transform: uppercase;
+            font-size: var(--tui-font-size-medium);
+        }
+
+        :global {
+            [class*="_title-container__"] {
+                display: flex;
+                align-items: center;
+                min-width: 0;
+            }
+
+            [class*="_title__"] {
+                display: flex;
+                align-items: center;
+                min-width: 0;
+                gap: var(--tui-spacing-extra-small);
+
+                button {
+                    flex-shrink: 0;
+                }
+
+                > div {
+                    display: -webkit-box;
+                    -webkit-box-orient: vertical;
+                    -webkit-line-clamp: 2;
+                    min-width: 0;
+                    overflow: hidden;
+                    overflow-wrap: break-word;
+                }
+            }
+        }
+
+        tbody tr:nth-child(even) td {
+            background-color: #f7f9fc;
+        }
+    }
+
+    .sorted-header {
+        font-weight: 700;
+    }
+
+    .number-header {
+        * {
+            justify-content: flex-end;
+            text-align: right!important;
+        }
+    }
+
+    .number {
+        display: block;
+        text-align: right;
+    }
+
+    .figure {
+        font-weight: var(--tui-font-weight-bold);
+    }
+
+    /* NOTE: conflict/disaster are applied dynamically per-row based on cause */
+    .conflict {
+        color: var(--color-conflict);
+    }
+
+    .disaster {
+        color: var(--color-disaster);
     }
 }

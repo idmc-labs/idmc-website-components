@@ -35,6 +35,12 @@ import { mapboxStyle } from '#base/configs/mapbox';
 import HTMLOutput from '#components/HTMLOutput';
 import RawButton from '#components/RawButton';
 import Numeral from '#components/Numeral';
+import BubbleSizeLegend from '#components/BubbleSizeLegend';
+import {
+    getLogRadius,
+    BUBBLE_RADIUS_MIN,
+    BUBBLE_RADIUS_MAX,
+} from '#utils/common';
 import {
     IduDataQuery,
 } from '#generated/types';
@@ -90,7 +96,7 @@ export function iduToPopupProperties(
 
 type IduGeoJSON = GeoJSON.FeatureCollection<
     GeoJSON.Point,
-    PopupProperties
+    PopupProperties & { radius: number }
 >;
 
 const typeLabels: Record<PopupProperties['type'], string> = {
@@ -111,16 +117,6 @@ const TYPE_COLOR_EXPR = [
     OTHER_COLOR,
 ];
 
-const circleRadius: mapboxgl.CirclePaint['circle-radius'] = {
-    property: 'value',
-    base: 1.75,
-    stops: [
-        [0, 5],
-        [100, 9],
-        [1000, 13],
-    ],
-};
-
 export type MapFocus =
     | { type: 'country'; iso3: string }
     | { type: 'event'; eventId: number }
@@ -136,7 +132,7 @@ function buildFocusCondition(focus: MapFocus): unknown[] {
     return ['==', ['get', 'triggerKey'], focus.triggerType];
 }
 
-function isFeatureInFocus(properties: PopupProperties, focus: MapFocus): boolean {
+export function isFeatureInFocus(properties: PopupProperties, focus: MapFocus): boolean {
     if (focus.type === 'country') {
         return properties.iso3 === focus.iso3;
     }
@@ -279,7 +275,7 @@ function GlobeSpinner(props: GlobeSpinnerProps) {
 }
 
 const INITIAL_CENTER: [number, number] = [0, 20];
-const INITIAL_ZOOM = 1;
+const INITIAL_ZOOM = 2;
 
 interface MapResetProps {
     trigger: number;
@@ -312,6 +308,7 @@ interface EventPopupCardProps {
     // after the headline figure
     detailed: boolean;
     onCountryFocus?: (iso3: string) => void;
+    onEventFocus?: (eventId: number) => void;
     onClose?: () => void;
 }
 
@@ -320,6 +317,7 @@ function EventPopupCard(props: EventPopupCardProps) {
         item,
         detailed,
         onCountryFocus,
+        onEventFocus,
         onClose,
     } = props;
 
@@ -329,7 +327,8 @@ function EventPopupCard(props: EventPopupCardProps) {
     const footerText = [item.source, formatDate(item.date)]
         .filter(isTruthyString)
         .join(' · ');
-    const canFocus = isDefined(onCountryFocus) && isTruthyString(item.iso3);
+    const canFocusCountry = isDefined(onCountryFocus) && isTruthyString(item.iso3);
+    const canFocusEvent = isDefined(onEventFocus) && isDefined(item.eventId);
     const focusButtonClassName = _cs(styles.focusButton, accentClassName);
 
     return (
@@ -372,7 +371,20 @@ function EventPopupCard(props: EventPopupCardProps) {
                             {footerText}
                         </div>
                     )}
-                    {canFocus && (
+                    {canFocusEvent && (
+                        <RawButton
+                            name={undefined}
+                            className={focusButtonClassName}
+                            onClick={() => {
+                                onEventFocus?.(item.eventId as number);
+                                onClose?.();
+                            }}
+                        >
+                            Focus event on map
+                            <IoArrowForward />
+                        </RawButton>
+                    )}
+                    {canFocusCountry && (
                         <RawButton
                             name={undefined}
                             className={focusButtonClassName}
@@ -393,7 +405,11 @@ function EventPopupCard(props: EventPopupCardProps) {
 
 interface Props {
     idus: IduDataQuery['idu'] | undefined;
+    // largest figure across the unfiltered data — anchors the bubble scale so
+    // sizes stay stable as filters change
+    maxValue: number;
     onCountryFocus?: (iso3: string) => void;
+    onEventFocus?: (eventId: number) => void;
     // the currently-open popup (owned by the parent, so filters/events can drive it)
     selection: MapSelection | undefined;
     // center to ease the map to when a popup is opened from an event row
@@ -414,7 +430,9 @@ interface Props {
 function RawIduMap(props: Props) {
     const {
         idus,
+        maxValue,
         onCountryFocus,
+        onEventFocus,
         selection,
         flyTo,
         fitBounds,
@@ -426,10 +444,24 @@ function RawIduMap(props: Props) {
         onRemoveFocus,
     } = props;
 
+    const focusLabel = useMemo(() => {
+        if (isNotDefined(focus)) {
+            return undefined;
+        }
+        if (focus.type === 'country') {
+            return (idus ?? []).find((d) => d.iso3 === focus.iso3)?.country ?? focus.iso3;
+        }
+        if (focus.type === 'event') {
+            const match = (idus ?? []).find((d) => d.event_id === focus.eventId);
+            return match?.event_name ?? `Event ${focus.eventId}`;
+        }
+        return focus.triggerType;
+    }, [focus, idus]);
+
     const iduPointPaint = useMemo<mapboxgl.CirclePaint>(() => ({
         'circle-opacity': buildCircleOpacity(focus),
         'circle-color': buildCircleColor(focus),
-        'circle-radius': circleRadius,
+        'circle-radius': ['get', 'radius'],
     }), [focus]);
 
     const handleMapPointClick = useCallback((feature: MapboxGeoJSONFeature, lngLat: LngLat) => {
@@ -482,7 +514,6 @@ function RawIduMap(props: Props) {
                         || isNotDefined(idu.latitude)
                         || isNotDefined(idu.figure)
                         || isNotDefined(idu.displacement_type)
-                        // NOTE: filtering out displacement_type Other
                         || idu.displacement_type === 'Other'
                     ) {
                         return undefined;
@@ -491,7 +522,16 @@ function RawIduMap(props: Props) {
                     return {
                         id: idu.id,
                         type: 'Feature' as const,
-                        properties: iduToPopupProperties(idu),
+                        properties: {
+                            ...iduToPopupProperties(idu),
+                            radius: getLogRadius(
+                                idu.figure,
+                                1,
+                                maxValue,
+                                BUBBLE_RADIUS_MIN,
+                                BUBBLE_RADIUS_MAX,
+                            ),
+                        },
                         geometry: {
                             type: 'Point' as const,
                             coordinates: [
@@ -502,10 +542,9 @@ function RawIduMap(props: Props) {
                     };
                 })
                 .filter(isDefined)
-                // NOTE: show newer on top
                 .sort((a, b) => compareDate(a.properties.date, b.properties.date)) ?? [],
         }),
-        [idus],
+        [idus, maxValue],
     );
 
     // once a marker is pinned, ignore hover entirely (only one popup at a time)
@@ -517,7 +556,7 @@ function RawIduMap(props: Props) {
             mapOptions={{
                 logoPosition: 'bottom-right',
                 scrollZoom: false,
-                zoom: 1,
+                zoom: INITIAL_ZOOM,
                 // projection isn't in @types 2.7; applied at construction for globe
                 projection: { name: 'globe' },
             } as Omit<mapboxgl.MapboxOptions, 'style' | 'container'>}
@@ -537,9 +576,12 @@ function RawIduMap(props: Props) {
                         <span className={_cs(styles.legendDot, styles.disaster)} />
                         Disasters
                     </div>
-                    <div className={styles.legendNote}>
-                        Size relative to the number of internal displacements
-                    </div>
+                    <BubbleSizeLegend
+                        className={styles.sizeLegend}
+                        title="Size by number of internal displacements"
+                        domainMin={1}
+                        domainMax={maxValue}
+                    />
                 </div>
                 <div className={styles.disclaimer}>
                     {/* eslint-disable-next-line max-len */}
@@ -554,8 +596,10 @@ function RawIduMap(props: Props) {
                     onClick={onRemoveFocus}
                     title="Remove focus"
                 >
+                    <span className={styles.removeFocusLabel}>
+                        {`Focused: ${focusLabel}`}
+                    </span>
                     <IoClose />
-                    Remove focus
                 </RawButton>
             )}
             <MapReset trigger={resetTrigger} />
@@ -601,6 +645,7 @@ function RawIduMap(props: Props) {
                                             item={item}
                                             detailed
                                             onCountryFocus={onCountryFocus}
+                                            onEventFocus={onEventFocus}
                                             onClose={onClose}
                                         />
                                     </React.Fragment>

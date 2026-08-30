@@ -21,7 +21,7 @@
         flex-direction: column;
         flex-grow: 1;
         min-height: 0;
-        gap: var(--tui-spacing-small-medium);
+        gap: var(--tui-spacing-medium);
         overflow-y: auto;
     }
 
@@ -35,5 +35,20 @@
 @media (max-width: 720px) {
     .breakdown {
         min-height: 50vh;
+    }
+}
+
+@supports (grid-template-columns: subgrid) {
+    .breakdown {
+        .list {
+            display: grid;
+            align-content: start;
+            grid-template-columns: var(--breakdown-bar-columns);
+            column-gap: var(--tui-spacing-small);
+
+            > * {
+                grid-column: 1 / -1;
+            }
+        }
     }
 }

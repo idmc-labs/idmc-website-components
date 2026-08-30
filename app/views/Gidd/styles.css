@@ -1,286 +1,595 @@
 .body-container {
+    --gidd-scale: 0.5;
+
+    --tui-spacing-ultra-small: calc(0.1rem * var(--gidd-scale));
+    --tui-spacing-extra-extra-small: calc(0.3rem * var(--gidd-scale));
+    --tui-spacing-extra-small: calc(0.7rem * var(--gidd-scale));
+    --tui-spacing-small: calc(0.8rem * var(--gidd-scale));
+    --tui-spacing-medium: calc(1rem * var(--gidd-scale));
+    --tui-spacing-large: calc(1.26rem * var(--gidd-scale));
+    --tui-radius-border-input-section: 0.25rem;
+    --bar-track-height: 0.75rem;
+
+    --gidd-sidebar-height: 48rem;
+
     display: flex;
     align-items: center;
     flex-direction: column;
     background-color: transparent;
 
+    .card-description {
+        /* see .description in the card stylesheets — Header gives no gap */
+        margin-top: var(--tui-spacing-small);
+        color: var(--tui-color-label, #7a7a7a);
+        font-size: var(--tui-font-size-small);
+    }
+
+    /* IDMC navy "Freight Big Black Pro" (freight-big-pro @ 900) for headings */
+    .slide-heading {
+        color: var(--tui-color-brand, #193256);
+        font-family: var(--tui-font-family-heading);
+        font-weight: var(--tui-font-weight-heading);
+    }
+
     .gidd {
         display: flex;
         flex-direction: column;
         width: 100%;
-        gap: var(--tui-spacing-extra-large);
+        gap: var(--tui-spacing-large);
     }
 
-    .filter-container {
-        border-radius: var(--tui-radius-border-large);
-        background-color: var(--tui-color-brand);
-        padding: var(--tui-spacing-medium);
-        color: var(--color-text-on-dark);
+    .header-row {
+        display: flex;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: var(--tui-spacing-large);
 
-        .reset-button {
-            padding: var(--tui-spacing-small);
-            color: var(--tui-color-text-on-dark);
+        .header-text {
+            display: flex;
+            flex-direction: column;
+            gap: var(--tui-spacing-extra-small);
+        }
 
-            &:hover {
-                opacity: 0.9;
-                color: var(--tui-color-text-on-dark);
+        .heading {
+            margin: 0;
+            color: var(--tui-color-brand, #193256);
+            font-family: var(--tui-font-family-heading);
+            /* explicit: without it this h1 falls through to the UA/Drupal 2em */
+            font-size: var(--tui-font-size-super-large);
+            font-weight: var(--tui-font-weight-heading);
+        }
+
+        .heading-description {
+            margin: 0;
+            color: var(--tui-color-label, #7a7a7a);
+            font-size: var(--tui-font-size-small);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: var(--tui-spacing-medium);
+        }
+    }
+
+    .filters {
+        display: flex;
+        flex-direction: column;
+
+        .filters-toggle {
+            display: none;
+            align-items: center;
+            align-self: flex-start;
+            gap: var(--tui-spacing-small);
+            padding: var(--tui-spacing-small) var(--tui-spacing-small-medium);
+            color: var(--tui-color-text, #333);
+            font-weight: var(--tui-font-weight-bold);
+
+            .count-pill {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 1rem;
+                background-color: var(--tui-color-brand, #193256);
+                padding: 0 var(--tui-spacing-small);
+                min-width: 1.25rem;
+                height: 1.25rem;
+                color: #fff;
+                font-size: var(--tui-font-size-extra-small);
+            }
+
+            .chevron {
+                margin-left: auto;
             }
         }
 
-        .filter-body-container {
+        .filter-bar {
             display: flex;
+            align-items: center;
             flex-wrap: wrap;
-            gap: var(--tui-spacing-large);
+            justify-content: space-between;
+            gap: var(--tui-spacing-small);
 
-            .left-section {
+            .filter-bar-left,
+            .filter-bar-right {
                 display: flex;
-                flex-basis: calc(100% / 3 - 2 * var(--tui-spacing-large) / 3);
-                flex-direction: column;
+                align-items: center;
+                gap: var(--tui-spacing-small);
+            }
+            .filter-bar-left {
                 flex-grow: 1;
-                flex-wrap: wrap;
-                justify-content: space-between;
-                gap: var(--tui-spacing-large);
-
-                &.left-section {
-                    justify-content: flex-start;
-                }
-
-                @media screen and (max-width: 720px) {
-                    flex-basis: 100%;
-                }
+            }
+            .filter-bar-right {
+                justify-content: flex-start;
             }
 
-            .right {
+            .filter-cause {
+                flex-shrink: 0;
+            }
+
+            .filter-year {
                 display: flex;
-                align-self: flex-start;
-                flex-basis: calc(100% / 3 * 2 - 2 * var(--tui-spacing-large) / 3);
-                flex-direction: column;
-                flex-grow: 1;
-                gap: var(--tui-spacing-medium);
-
-                .top {
-                    display: flex;
-                    flex-direction: column;
-                    flex-wrap: wrap;
-                    gap: var(--tui-spacing-large);
-
-                    .filter-section {
-                        display: flex;
-                        align-items: flex-end;
-                        flex-wrap: wrap;
-                        gap: var(--tui-spacing-large);
-
-                        .filter-input {
-                            flex-basis: calc(100% / 2 - var(--tui-spacing-large));
-
-                            @media screen and (max-width: 720px) {
-                                flex-basis: 100%;
-                            }
-                        }
-
-                        .input {
-                            background-color: var(--tui-color-background);
-                        }
-
-                        .slider-input {
-                            border-radius: 0.25rem;
-                            padding: var(--tui-spacing-extra-extra-small);
-                        }
-                    }
-                }
-
-                @media screen and (max-width: 720px) {
-                    flex-basis: 100%;
-                }
-
-                .switch {
-                    color: var(--tui-color-foreground);
-
-                    .switch-label {
-                        padding: 0;
-                        color: var(--tui-color-foreground);
-                        font-size: var(--tui-font-size-small);
-                    }
-                }
-
-                .disaster-filters {
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: var(--tui-spacing-large);
-
-                    >* {
-                        flex-basis: calc(50% - var(--tui-spacing-large) / 2);
-                    }
-                }
-            }
-
-            .heading-description {
-                font-size: var(--tui-font-size-small);
-            }
-
-            .download-section {
-                display: flex;
-                flex-direction: column;
-                border-radius: var(--tui-radius-border-large);
-                background-color: var(--tui-color-background);
-                padding: var(--tui-spacing-medium);
+                align-items: center;
                 gap: var(--tui-spacing-small);
 
-                .download-description {
-                    color: #000;
-                    font-size: var(--tui-font-size-extra-small);
+                .year-field {
+                    display: flex;
+                    align-items: center;
+                    gap: var(--tui-spacing-small);
+                }
 
+                .year-label {
+                    text-transform: uppercase;
+                    color: var(--tui-color-label, #7a7a7a);
+                    font-size: var(--tui-font-size-small);
+                    font-weight: var(--tui-font-weight-bold);
+                }
+
+                .year-select {
+                    width: 7.5rem;
+                    min-height: 0;
                 }
             }
         }
     }
 
-    .stats-container {
+    .active-filters {
+        display: none;
+        flex-wrap: wrap;
+        gap: var(--tui-spacing-small);
+    }
+
+    @media screen and (max-width: 720px) {
+        .gidd {
+            padding: 0 var(--tui-spacing-medium);
+        }
+
+        .filters {
+            /* collapsed: keep the Filters button compact, not full width */
+            align-self: flex-start;
+            border: 1px solid var(--tui-color-separator, #d0d5dd);
+            border-radius: 0.25rem;
+
+            .filters-toggle {
+                display: flex;
+            }
+
+            .filter-bar {
+                display: none;
+                align-items: stretch;
+                flex-direction: column;
+                border-top: 1px solid var(--tui-color-separator, #d0d5dd);
+                padding: var(--tui-spacing-small-medium);
+
+                .filter-bar-left,
+                .filter-bar-right {
+                    align-items: stretch;
+                    flex-direction: column;
+                }
+
+                /* the segment controls stay their natural width, not stretched */
+                .filter-cause {
+                    align-self: flex-start;
+                }
+
+                .filter-item,
+                .filter-cause,
+                .filter-year {
+                    flex-basis: auto;
+                    width: auto;
+                    max-width: none;
+                }
+            }
+
+            .filter-bar.filter-bar-expanded {
+                display: flex;
+            }
+        }
+
+        /* expanded: stretch full width so the stacked inputs fill the row */
+        .filters.filters-expanded {
+            align-self: stretch;
+        }
+
+        .active-filters {
+            display: flex;
+        }
+    }
+
+    .main-row {
         display: flex;
-        width: 100%;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: var(--tui-spacing-large);
+
+        .main-panel {
+            display: flex;
+            flex-basis: 65%;
+            flex-direction: column;
+            flex-grow: 1;
+            background-color: var(--tui-color-foreground);
+            gap: var(--tui-spacing-medium);
+            min-width: 0;
+
+            .view-selector {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                justify-content: space-between;
+                gap: var(--tui-spacing-small);
+                padding: var(--tui-spacing-large) var(--tui-spacing-large) 0;
+            }
+
+            .event-search {
+                flex: 0 1 16rem;
+                max-width: 16rem;
+            }
+
+            .view-panels {
+                padding: 0 var(--tui-spacing-large) var(--tui-spacing-large);
+            }
+        }
+
+        .sidebar {
+            display: flex;
+            flex-basis: 30%;
+            flex-direction: column;
+            flex-grow: 1;
+            min-width: 18rem;
+            height: var(--gidd-sidebar-height);
+            gap: 1rem;
+
+            .carousel {
+                flex-grow: 1;
+                gap: var(--tui-spacing-small);
+                min-height: 0;
+            }
+
+            .glance-card {
+                --tui-font-size-massive-large: 1.75rem;
+                --tui-font-size-super-large: 1.35rem;
+
+                display: flex;
+                flex-direction: column;
+                gap: var(--tui-spacing-medium);
+                background-color: var(--tui-color-foreground);
+                padding: var(--tui-spacing-medium);
+
+                .glance-description {
+                    margin: var(--tui-spacing-small) 0 var(--tui-spacing-small);
+                    color: var(--tui-color-label, #7a7a7a);
+                    font-size: var(--tui-font-size-small);
+                    font-weight: var(--tui-font-weight-medium);
+                }
+
+                .total-stat {
+                    display: flex;
+                    align-items: baseline;
+                    gap: var(--tui-spacing-small);
+                }
+
+                .total-value {
+                    font-size: var(--tui-font-size-massive-large);
+                    font-weight: var(--tui-font-weight-bold);
+                }
+
+                .total-sub-label {
+                    color: var(--tui-color-label, #7a7a7a);
+                    font-size: var(--tui-font-size-small);
+                }
+
+                .glance-section {
+                    display: flex;
+                    flex-direction: column;
+                    gap: var(--tui-spacing-medium);
+
+                    /* section headings sit just below the "At a glance" card heading */
+                    .slide-heading {
+                        font-size: var(--tui-font-size-large-medium);
+                    }
+
+                    &.selected {
+                        margin: calc(-1 * var(--tui-spacing-medium));
+                        border-radius: var(--tui-radius-border-large);
+                        background-color: var(--tui-color-background);
+                        padding: var(--tui-spacing-medium);
+                    }
+                }
+
+                .shown-on-map {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: var(--tui-spacing-extra-small);
+                    white-space: nowrap;
+                    color: var(--tui-color-brand);
+                    font-size: var(--tui-font-size-small);
+                    font-weight: var(--tui-font-weight-bold);
+                }
+
+                .shown-on-map-dot {
+                    flex-shrink: 0;
+                    border-radius: 50%;
+                    background-color: var(--tui-color-brand);
+                    width: 0.5rem;
+                    height: 0.5rem;
+                }
+
+                .show-on-map-button {
+                    white-space: nowrap;
+                    color: var(--tui-color-label, #7a7a7a);
+                    font-size: var(--tui-font-size-small);
+
+                    &:hover {
+                        text-decoration: underline;
+                        color: var(--tui-color-brand);
+                    }
+                }
+
+                @media screen and (max-width: 720px) {
+                    .shown-on-map,
+                    .show-on-map-button {
+                        display: none;
+                    }
+                }
+            }
+
+
+            .download-footer {
+                display: flex;
+                flex-direction: column;
+                gap: var(--tui-spacing-small);
+                border-radius: 0.5rem;
+                background-color: var(--tui-filter-background-color, #eff4fa);
+                padding: var(--tui-spacing-medium);
+
+                .download-description {
+                    margin: 0;
+                    color: var(--tui-color-label, #7a7a7a);
+                    font-size: var(--tui-font-size-small);
+
+                    a {
+                        text-decoration: underline;
+                        color: var(--tui-color-accent, #1a5276);
+                    }
+                }
+
+                .download-section {
+                    display: flex;
+                    flex-direction: column;
+                    gap: var(--tui-spacing-small);
+
+                    .download-label {
+                        text-transform: uppercase;
+                        color: var(--tui-color-label, #7a7a7a);
+                        font-size: var(--tui-font-size-extra-small);
+                        font-weight: var(--tui-font-weight-bold);
+                    }
+                }
+            }
+        }
+
+        @media screen and (max-width: 900px) {
+            .main-panel,
+            .sidebar {
+                flex-basis: 100%;
+            }
+        }
+
+        @media screen and (max-width: 720px) {
+            .main-panel {
+                display: none;
+            }
+        }
+    }
+
+    .chart-type-container {
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--tui-spacing-large);
+        margin-bottom: var(--tui-spacing-medium);
+
+        .switch {
+            align-items: flex-start;
+            gap: var(--tui-spacing-extra-extra-small);
+
+            .knob {
+                margin: 0;
+            }
+
+            .switch-label {
+                padding: 0;
+                font-size: var(--tui-font-size-small);
+            }
+        }
+    }
+
+    .charts-stack {
+        display: flex;
+        flex-wrap: wrap;
         gap: var(--tui-spacing-extra-large);
 
-        .stat-box {
+        .chart-block {
             display: flex;
             flex-basis: calc(50% - var(--tui-spacing-extra-large) / 2);
             flex-direction: column;
-            border: var(--tui-width-separator-thin) solid var(--tui-color-separator);
-            border-radius: var(--tui-radius-border-large);
-            background-color: var(--tui-color-foreground);
-            padding: var(--tui-spacing-large);
-            max-width: calc(50% - var(--tui-spacing-extra-large) / 2);
+            flex-grow: 1;
             gap: var(--tui-spacing-medium);
-
-            .causes-block {
-                display: flex;
-                gap: var(--tui-spacing-medium);
-            }
-
-            .chart-type-container {
-                display: flex;
-                gap: var(--tui-spacing-small);
-
-                .switch {
-                    align-items: flex-start;
-                    gap: var(--tui-spacing-extra-extra-small);
-
-                    .knob {
-                        margin: 0;
-                    }
-
-                    .switch-label {
-                        padding: 0;
-                        font-size: var(--tui-font-size-small);
-                    }
-                }
-            }
-
-            .chart-container {
-                width: 100%;
-                height: 16rem;
-
-                .select-input {
-                    --tui-spacing-super-small: 1px;
-                    --tui-spacing-extra-small: 3px;
-                    --tui-spacing-small: 6px;
-                    --tui-spacing-small-medium: 8px;
-                    --tui-spacing-medium: 10px;
-                    --tui-spacing-large-medium: 13px;
-                    --tui-spacing-large: 16px;
-                    --tui-spacing-extra-large: 24px;
-                }
-            }
-
-            .top-stats {
-                display: flex;
-                flex-direction: column;
-                gap: var(--tui-spacing-medium);
-            }
-
-            &.only-one-selected {
-                flex-basis: 100%;
-                max-width: 100%;
-
-                &.disaster-stat-box {
-                    display: flex;
-                    flex-direction: row;
-                    gap: var(--tui-spacing-extra-large);
-
-                    .top-stats,
-                    .disaster-stats {
-                        flex-basis: calc(50% - var(--tui-spacing-extra-large) / 2);
-                        max-width: calc(50% - var(--tui-spacing-extra-large) / 2);
-                    }
-                }
-            }
+            min-width: 0;
         }
 
-        @media (max-width: 720px) {
-            flex-direction: column;
-
-            .stat-box {
-                max-width: 100%;
-
-                &.only-one-selected {
-                    &.disaster-stat-box {
-                        flex-direction: column;
-
-                        .top-stats,
-                        .disaster-stats {
-                            flex-basis: 100%;
-                            max-width: 100%;
-                        }
-                    }
-                }
-            }
+        .chart-panel {
+            width: 100%;
+            height: 16rem;
         }
     }
 
-    .table-container {
+    .number-row {
         display: flex;
-        flex-direction: column;
-        border: var(--tui-width-separator-thin) solid var(--tui-color-separator);
-        border-radius: var(--tui-radius-border-large);
-        background-color: var(--tui-color-foreground);
         gap: var(--tui-spacing-medium);
-
-        .header {
-            padding-top: var(--tui-spacing-large);
-        }
-
-        .tab-panels {
-            padding: 0 var(--tui-spacing-large);
-        }
     }
 
-    .select-input {
-        --tui-spacing-super-small: 1px;
-        --tui-spacing-extra-small: 3px;
-        --tui-spacing-small: 6px;
-        --tui-spacing-small-medium: 8px;
-        --tui-spacing-medium: 10px;
-        --tui-spacing-large-medium: 13px;
-        --tui-spacing-large: 16px;
-        --tui-spacing-extra-large: 24px;
+}
 
-        .input-section {
-            border-radius: 0.25rem;
-            background-color: var(--tui-filter-background-color);
+/* Compact filter-input treatment. Kept identical to the .filter-input block in
+   app/components/IduMap/styles.css so both dashboards' filter rows match —
+   keep the two in sync. */
+.filter-input {
+    --tui-spacing-small: 0.25rem;
+    --tui-spacing-medium: 0.4rem;
+    --tui-radius-border-input-section: 0.5rem;
+    --tui-color-background-input-section-light: transparent;
+    --tui-color-background-input-section-readonly-light: transparent;
+    --tui-color-background-button: transparent;
+    --tui-color-separator-light: transparent;
+
+    box-sizing: border-box;
+    justify-content: center;
+    border: 1px solid var(--tui-color-separator, #d0d5dd);
+    border-radius: 0.5rem;
+    background-color: #fff;
+    min-height: 2rem;
+    line-height: 1;
+    font-size: var(--tui-font-size-small);
+
+    /* the select's clear/dropdown-arrow are toggle-ui Buttons in an actions area;
+       both the area and the buttons carry vertical padding that makes the input
+       taller than the others, so drop it from both */
+    :global {
+        [class*="actions"] {
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+
+        [class*="actions"] [class*="button"] {
+            padding-top: 0;
+            padding-bottom: 0;
         }
     }
 }
 
-.popup {
-    .export-message {
-        padding: var(--tui-spacing-small) var(--tui-spacing-large);
-        max-width: 26rem;
-        font-size: var(--tui-font-size-small);
-        font-style: italic;
+.filter-item,
+.filter-cause:not(.filter-segment) {
+    flex-shrink: 0;
+    width: 12rem;
+
+    :global {
+        [class*="_input__"] {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        [class*="_input__"] * {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
     }
 }
 
+/*
+ * SegmentInput modifier (use with .filter-input). The segment buttons take their
+ * padding from `--tui-spacing-small` (vertical) and `calc(medium - extra-small)`
+ * (horizontal), so set those to give the options comfortable, consistent padding
+ * instead of the over-tall / cramped default. Also drops the dashed focus outline.
+ * Mirrors the same block in app/components/IduMap/styles.css.
+ */
+/* The options popup is portaled to document.body by toggle-ui, so it escapes
+   .body-container and inherits neither the dashboard tokens nor .base's
+   font-size — without this it falls back to the body/UA size and renders
+   noticeably larger than IDU's. Mirrors .select-popup in
+   app/components/IduMap/styles.css. */
+.select-popup {
+    font-size: var(--tui-font-size-small, 0.8rem);
+}
+
+/* colour the grouped dropdown's cause headers, like IDU's .trigger-popup.
+   The group labels are GIDD's own strings (TRIGGER_GROUP_LABELS), which
+   differ from IDU's, so the attribute selectors cannot be shared. */
+.trigger-popup {
+    font-size: var(--tui-font-size-small, 0.8rem);
+
+    :global {
+        [title="Disasters"] {
+            color: var(--color-disaster, #018eca);
+            font-weight: var(--tui-font-weight-bold);
+        }
+
+        [title="Conflict and violence"] {
+            color: var(--color-conflict, #ef7d00);
+            font-weight: var(--tui-font-weight-bold);
+        }
+    }
+}
+
+.filter-segment {
+    --tui-spacing-small: 0.25rem;
+    --tui-spacing-medium: 0.5rem;
+    --tui-spacing-extra-small: 0.1rem;
+    --tui-color-outline-light: transparent;
+
+    /* definite height (not min-height) so children can use height: 100% */
+    height: 2rem;
+    min-height: 0;
+    overflow: hidden;
+
+    :global {
+        [class*="radio-list"] {
+            align-items: stretch;
+            height: 100%;
+        }
+
+        [class*="segment"] {
+            display: flex;
+            align-items: stretch;
+        }
+
+        /* toggle-ui derives the segment colors from CSS vars read off
+           document.documentElement, which Drupal doesn't provide when embedded,
+           so force the intended colors for both states */
+        [class*="segment"] > [class*="button"] {
+            background-color: transparent !important;
+            height: 100%;
+            color: var(--tui-color-brand, #193256) !important;
+        }
+
+        [class*="segment"] > [class*="button"][class*="primary"] {
+            background-color: var(--tui-color-brand, #193256) !important;
+            color: #fff !important;
+        }
+    }
+}
 
 :global {
+    /* Recharts' own legend icon is inlined with vertical-align: middle, but
+       the label span next to it gets no vertical-align at all (defaults to
+       baseline) — the two end up sitting at different heights. */
+    .recharts-legend-item-text {
+        vertical-align: middle;
+    }
+
     .recharts-tooltip-wrapper {
         width: 12rem;
 

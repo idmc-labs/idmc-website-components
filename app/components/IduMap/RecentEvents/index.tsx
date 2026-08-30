@@ -33,6 +33,8 @@ interface Props {
     idus: IduRow[] | undefined;
     startDate: string | undefined;
     endDate: string | undefined;
+    scopeLabel: string;
+    filterSuffix: string;
     onRecordSelect?: (recordId: number) => void;
     selectedRecordId: number | undefined;
     expandable?: boolean;
@@ -44,6 +46,8 @@ function RecentEvents(props: Props) {
         idus,
         startDate,
         endDate,
+        scopeLabel,
+        filterSuffix,
         onRecordSelect,
         selectedRecordId,
         expandable,
@@ -103,7 +107,7 @@ function RecentEvents(props: Props) {
     );
     const hasMore = visibleCount < sorted.length;
 
-    const description = `Preliminary estimates of internal displacements from ${formatDate(startDate)} – ${formatDate(endDate)}.`;
+    const description = `Preliminary estimates of internal displacements ${scopeLabel} from ${formatDate(startDate)} – ${formatDate(endDate)}.${filterSuffix}`;
 
     return (
         <div className={_cs(styles.recentEvents, className)}>
@@ -114,22 +118,18 @@ function RecentEvents(props: Props) {
                 {description}
             </div>
             <div className={styles.list}>
-                {sorted.length === 0 ? (
-                    <div className={styles.noData}>
-                        No data available for the selected filters.
-                    </div>
-                ) : (
-                    <ListView
-                        data={visible}
-                        keySelector={keySelector}
-                        renderer={EventListItem}
-                        rendererParams={rendererParams}
-                        direction="vertical"
-                        errored={false}
-                        pending={false}
-                        filtered={false}
-                    />
-                )}
+                <ListView
+                    data={visible}
+                    keySelector={keySelector}
+                    renderer={EventListItem}
+                    rendererParams={rendererParams}
+                    direction="vertical"
+                    errored={false}
+                    pending={false}
+                    filtered={false}
+                    messageShown
+                    emptyMessage="No data available for the selected filters."
+                />
                 {hasMore && (
                     <RawButton
                         name={undefined}

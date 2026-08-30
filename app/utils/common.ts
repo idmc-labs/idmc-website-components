@@ -23,6 +23,33 @@ export const DATA_RELEASE = requireRuntimeConfig('REACT_APP_DATA_RELEASE', proce
 
 export const standaloneMode = (window as { standaloneMode?: boolean }).standaloneMode ?? false;
 
+// Shared bubble-radius scale for the displacement maps (GIDD flow + IDU), so a
+// value renders at a consistent size across both. The value domain is scoped
+// per map (see each map's call site); the pixel range is shared.
+export const BUBBLE_RADIUS_MIN = 2;
+export const BUBBLE_RADIUS_MAX = 24;
+
+// Continuous logarithmic radius: maps value in [domainMin, domainMax] onto
+// [radiusMin, radiusMax]. Log keeps small values visible while a handful of
+// huge outliers don't saturate the whole map to the max radius.
+export function getLogRadius(
+    value: number,
+    domainMin: number,
+    domainMax: number,
+    radiusMin: number,
+    radiusMax: number,
+) {
+    if (value <= 0) {
+        return 0;
+    }
+    if (domainMax <= domainMin) {
+        return radiusMin;
+    }
+    const t = Math.log(value / domainMin) / Math.log(domainMax / domainMin);
+    const clamped = Math.min(1, Math.max(0, t));
+    return radiusMin + ((radiusMax - radiusMin) * clamped);
+}
+
 export function parseQueryString(value: string) {
     const val = value.substring(1);
     return listToMap(
@@ -271,8 +298,5 @@ export function isDisaggregationAvailable(args: {
         filterStartYear,
         filterEndYear,
     } = args;
-    return (
-        filterStartYear === filterEndYear
-        && filterStartYear >= 2023
-    );
+    return filterStartYear === filterEndYear;
 }

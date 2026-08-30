@@ -17,7 +17,7 @@
         flex-grow: 1;
         border-radius: 0.25rem;
         background-color: var(--color-progress-line-background, #f0f0f0);
-        height: 0.5rem;
+        height: var(--bar-track-height, 0.5rem);
         overflow: hidden;
 
         .conflict-fill {
@@ -34,6 +34,21 @@
         min-width: 3.5rem;
         text-align: right;
     }
+
+    .percent {
+        flex-shrink: 0;
+        min-width: 2.5rem;
+        text-align: right;
+        font-weight: var(--tui-font-weight-bold);
+    }
+
+    .conflict-text {
+        color: var(--color-conflict);
+    }
+
+    .disaster-text {
+        color: var(--color-disaster);
+    }
 }
 
 .breakdown-bar.clickable {
@@ -41,6 +56,26 @@
     padding: 0.5rem 0.25rem;
     width: 100%;
     text-align: left;
+}
+
+@supports (grid-template-columns: subgrid) {
+    .breakdown-bar {
+        display: grid;
+        grid-template-columns: subgrid;
+
+        .label {
+            width: auto;
+            min-width: 0;
+        }
+
+        .total {
+            min-width: 0;
+        }
+    }
+
+    .breakdown-bar.clickable {
+        width: auto;
+    }
 }
 
 .breakdown-bar.clickable:hover {

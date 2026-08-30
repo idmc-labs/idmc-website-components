@@ -47,3 +47,32 @@
         }
     }
 }
+
+/* Firefox's own calendar icon can't be hidden, so drop ours there to avoid showing two. */
+@supports (-moz-appearance: none) {
+    .date-filter .input-wrapper {
+        .icon {
+            display: none;
+        }
+
+        .input {
+            padding-right: 0.5rem;
+        }
+    }
+}
+
+@media (max-width: 720px) {
+    .date-filter {
+        .field {
+            flex-grow: 1;
+        }
+
+        .input-wrapper {
+            flex-grow: 1;
+        }
+
+        .input {
+            width: 100%;
+        }
+    }
+}

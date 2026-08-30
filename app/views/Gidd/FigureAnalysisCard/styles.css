@@ -1,0 +1,111 @@
+.figure-analysis-card {
+    .slide-heading {
+        color: var(--tui-color-brand, #193256);
+        font-family: var(--tui-font-family-heading);
+        font-weight: var(--tui-font-weight-heading);
+    }
+
+    .description {
+        /* Header's block div breaks the card's flex gap here, so restore it. */
+        margin-top: var(--tui-spacing-small);
+        color: var(--tui-color-label, #7a7a7a);
+        font-size: var(--tui-font-size-small);
+    }
+
+    .placeholder {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        gap: var(--tui-spacing-small);
+        border-radius: var(--tui-radius-border-large);
+        background-color: var(--tui-color-background);
+        padding: var(--tui-spacing-extra-large);
+        text-align: center;
+    }
+
+    .placeholder-title {
+        color: var(--tui-color-text);
+        font-weight: var(--tui-font-weight-bold);
+    }
+
+    .placeholder-text {
+        color: var(--tui-color-label, #7a7a7a);
+        font-size: var(--tui-font-size-small);
+    }
+
+    .list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tui-spacing-medium);
+        border-radius: var(--tui-radius-border-large);
+        background-color: var(--tui-color-background);
+        padding: var(--tui-spacing-medium);
+    }
+
+    .entry {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tui-spacing-small);
+
+        &:not(:first-child) {
+            border-top: var(--tui-width-separator-thin) solid var(--tui-color-separator);
+            padding-top: var(--tui-spacing-medium);
+        }
+    }
+
+    .entry-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: var(--tui-spacing-medium);
+    }
+
+    .entry-title {
+        color: var(--tui-color-text);
+        font-size: var(--tui-font-size-small);
+        font-weight: var(--tui-font-weight-bold);
+    }
+
+    .entry-value {
+        flex-shrink: 0;
+        font-weight: var(--tui-font-weight-bold);
+
+        &.conflict {
+            color: var(--color-conflict);
+        }
+
+        &.disaster {
+            color: var(--color-disaster);
+        }
+    }
+
+    .entry-body {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tui-spacing-extra-small);
+    }
+
+    .entry-description {
+        color: var(--tui-color-label, #7a7a7a);
+        font-size: var(--tui-font-size-small);
+
+        &.clamped {
+            display: -webkit-box;
+            overflow: hidden;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 4;
+        }
+    }
+
+    .read-more {
+        align-self: flex-start;
+        color: var(--tui-color-brand, #193256);
+        font-size: var(--tui-font-size-small);
+        font-weight: var(--tui-font-weight-bold);
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+}

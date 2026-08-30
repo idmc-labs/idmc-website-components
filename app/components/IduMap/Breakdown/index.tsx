@@ -27,7 +27,6 @@ interface BreakdownDatum {
 
 const keySelector = (item: BreakdownDatum) => item.key;
 
-// disaster rows group by hazard type, conflict rows by violence name
 const variantConfig: {
     [key in Variant]: {
         displacementType: 'Disaster' | 'Conflict';
@@ -111,20 +110,18 @@ function Breakdown(props: Props) {
             <div className={styles.description}>
                 {description}
             </div>
-            <div className={styles.list}>
-                <ListView
-                    data={items}
-                    keySelector={keySelector}
-                    renderer={BreakdownBar}
-                    rendererParams={rendererParams}
-                    direction="vertical"
-                    errored={false}
-                    pending={false}
-                    filtered={false}
-                    messageShown
-                    emptyMessage="No data available for the selected filters."
-                />
-            </div>
+            <ListView
+                className={styles.list}
+                data={items}
+                keySelector={keySelector}
+                renderer={BreakdownBar}
+                rendererParams={rendererParams}
+                errored={false}
+                pending={false}
+                filtered={false}
+                messageShown
+                emptyMessage="No data available for the selected filters."
+            />
             <div className={styles.hint}>
                 Preliminary · unvalidated reports from the selected timeframe.
             </div>
