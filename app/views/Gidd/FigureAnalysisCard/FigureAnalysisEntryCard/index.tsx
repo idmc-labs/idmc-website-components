@@ -5,7 +5,7 @@ import Numeral from '#components/Numeral';
 import RawButton from '#components/RawButton';
 import MarkdownViewer from '#components/MarkdownViewer';
 
-import { FigureAnalysisEntry } from '../FigureAnalysisFetcher';
+import { FigureAnalysisEntry } from '../types';
 
 import styles from '../styles.css';
 

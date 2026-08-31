@@ -49,6 +49,11 @@
         padding: var(--tui-spacing-medium);
     }
 
+    .pager {
+        align-self: center;
+        font-size: var(--tui-font-size-extra-small);
+    }
+
     .entry {
         display: flex;
         flex-direction: column;
