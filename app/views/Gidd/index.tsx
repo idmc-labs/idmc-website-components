@@ -2006,6 +2006,7 @@ function Gidd(props: Props) {
                                             endYear={timeRange[1]}
                                             clientCode={clientCode}
                                             abbreviate={precision === 'rounded'}
+                                            active={activeView === 'map'}
                                             onCountryFocus={handleCountryFocus}
                                         />
                                     </div>
@@ -2038,6 +2039,7 @@ function Gidd(props: Props) {
                                             onActivePageChange={setDataActivePage}
                                             clientCode={clientCode}
                                             abbreviate={precision === 'rounded'}
+                                            active={activeView === 'table'}
                                         />
                                     </div>
                                 )}
@@ -2047,7 +2049,8 @@ function Gidd(props: Props) {
                                         activeView !== 'charts' && styles.viewHidden,
                                     )}
                                     >
-                                        {statisticsLoading && <PendingMessage noDelay />}
+                                        {activeView === 'charts' && statisticsLoading
+                                            && <PendingMessage noDelay />}
                                         {chartTypeSelection}
                                         <div className={styles.chartsStack}>
                                             {flowChartBlock}
@@ -2074,6 +2077,7 @@ function Gidd(props: Props) {
                                             clientCode={clientCode}
                                             searchText={eventSearchText}
                                             abbreviate={precision === 'rounded'}
+                                            active={activeView === 'events'}
                                         />
                                     </div>
                                 )}

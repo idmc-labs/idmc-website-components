@@ -125,6 +125,9 @@ interface Props {
     onActivePageChange: (newVal: number) => void;
     clientCode: string;
     abbreviate: boolean;
+    // false while this view is mounted but hidden, so its loading overlay
+    // doesn't portal on top of whichever view is actually visible
+    active?: boolean;
 }
 
 function DataTable(props: Props) {
@@ -143,6 +146,7 @@ function DataTable(props: Props) {
         onActivePageChange,
         clientCode,
         abbreviate,
+        active = true,
     } = props;
 
     const overallDataSortState = useSortState({ name: 'year', direction: 'dsc' });
@@ -327,7 +331,7 @@ function DataTable(props: Props) {
 
     return (
         <div className={_cs(className, styles.dataTable)}>
-            {loading && <PendingMessage noDelay />}
+            {active && loading && <PendingMessage noDelay />}
             {isEmpty ? (
                 <Message
                     empty

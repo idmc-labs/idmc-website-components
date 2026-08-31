@@ -865,8 +865,12 @@ function GoodPractices(props: Props) {
                         mapOptions={{
                             logoPosition: 'bottom-left',
                             scrollZoom: false,
+                            renderWorldCopies: false,
+                            center: [0, 0],
                             zoom: 1,
-                        }}
+                            // projection isn't in @types 2.7; cast to keep winkelTripel
+                            projection: { name: 'winkelTripel' },
+                        } as Omit<mapboxgl.MapboxOptions, 'style' | 'container'>}
                         scaleControlShown
                         navControlShown
                     >
