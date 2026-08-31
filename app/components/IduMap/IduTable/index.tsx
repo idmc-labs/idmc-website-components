@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
     _cs,
     compareString,
@@ -84,6 +84,11 @@ function IduTable(props: Props) {
     const [activePage, setActivePage] = useState(1);
     const sortState = useSortState();
     const { sorting } = sortState;
+
+    // reset pagination when the filtered dataset changes
+    useEffect(() => {
+        setActivePage(1);
+    }, [idus]);
 
     const columns = useMemo(() => {
         const sortedHeaderClassName = (columnId: string) => (
@@ -182,7 +187,7 @@ function IduTable(props: Props) {
                 (item) => item.event_codes ?? '-',
                 {
                     sortable: true,
-                    columnWidth: 180,
+                    columnWidth: 110,
                     cellRendererClassName: styles.ellipsis,
                     headerCellRendererClassName: sortedHeaderClassName('event_codes'),
                 },

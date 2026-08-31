@@ -1,6 +1,7 @@
-import React, { useMemo, useCallback, useState } from 'react';
+import React, { useMemo, useCallback, useState, useEffect } from 'react';
 import {
     _cs,
+    isDefined,
     formatDateToString,
     decodeDate,
 } from '@togglecorp/fujs';
@@ -35,8 +36,8 @@ interface Props {
     endDate: string | undefined;
     scopeLabel: string;
     filterSuffix: string;
-    onRecordSelect?: (recordId: number) => void;
-    selectedRecordId: number | undefined;
+    onEventSelect?: (eventId: number) => void;
+    selectedEventId: number | undefined;
     expandable?: boolean;
 }
 
@@ -48,13 +49,18 @@ function RecentEvents(props: Props) {
         endDate,
         scopeLabel,
         filterSuffix,
-        onRecordSelect,
-        selectedRecordId,
+        onEventSelect,
+        selectedEventId,
         expandable,
     } = props;
 
     const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
     const [expandedId, setExpandedId] = useState<number | undefined>();
+
+    // reset pagination when the filtered dataset changes
+    useEffect(() => {
+        setVisibleCount(PAGE_SIZE);
+    }, [idus]);
 
     const handleExpandToggle = useCallback((id: number) => {
         setExpandedId((prev) => (prev === id ? undefined : id));
@@ -87,15 +93,15 @@ function RecentEvents(props: Props) {
         }
 
         return {
-            name: item.id,
+            name: item.event_id ?? -1,
             title: item.event_name ?? item.country,
             subtitle: dateRange || undefined,
             displacementType: item.displacement_type,
             value: item.figure,
-            onClick: onRecordSelect,
-            selected: item.id === selectedRecordId,
+            onClick: onEventSelect,
+            selected: isDefined(item.event_id) && item.event_id === selectedEventId,
         };
-    }, [expandable, expandedId, handleExpandToggle, onRecordSelect, selectedRecordId]);
+    }, [expandable, expandedId, handleExpandToggle, onEventSelect, selectedEventId]);
 
     const handleShowMore = useCallback(() => {
         setVisibleCount((count) => count + PAGE_SIZE);

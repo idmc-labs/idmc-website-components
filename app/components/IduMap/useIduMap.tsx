@@ -815,6 +815,7 @@ function useIduMap(
 
     const selectedIso3 = mapFocus?.type === 'country' ? mapFocus.iso3 : undefined;
     const selectedTriggerType = mapFocus?.type === 'trigger' ? mapFocus.triggerType : undefined;
+    const focusedEventId = mapFocus?.type === 'event' ? mapFocus.eventId : undefined;
 
     const activeFilters = useMemo<ActiveFilter[]>(() => {
         const filters: ActiveFilter[] = [];
@@ -945,8 +946,8 @@ function useIduMap(
                     endDate={endDate}
                     scopeLabel={scopeLabel}
                     filterSuffix={combinedFilterSuffix}
-                    onRecordSelect={isMobile ? undefined : handleRecordSelect}
-                    selectedRecordId={mapSelection?.recordId}
+                    onEventSelect={isMobile ? undefined : handleEventSelect}
+                    selectedEventId={focusedEventId}
                     expandable={isMobile}
                 />
             ),
@@ -1156,6 +1157,7 @@ function useIduMap(
                                 fitBounds={fitBounds}
                                 focus={mapFocus}
                                 filtersActive={appliedFilterCount > 0}
+                                disableSpin={isDefined(iso3)}
                                 resetTrigger={resetTrigger}
                                 onPointClick={handleMapPointClick}
                                 onClose={handleMapPopupClose}

@@ -8,12 +8,13 @@
 
     .table {
         flex-grow: 1;
-        overflow-x: hidden;
+        overflow-x: auto;
         overflow-y: auto;
         font-size: 0.8rem;
 
         table {
-            width: 100%;
+            width: max-content;
+            min-width: 100%;
             table-layout: fixed;
         }
 
