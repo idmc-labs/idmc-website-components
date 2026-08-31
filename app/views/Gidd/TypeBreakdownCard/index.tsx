@@ -134,13 +134,15 @@ function TypeBreakdownCard(props: Props) {
             ? (entries ?? []).filter((entry) => selectedIds.has(entry.id))
             : (entries ?? []);
         const values = scopedEntries
-            .map((entry) => ({
-                id: entry.id,
-                name: entry.label,
-                value: (isStock
-                    ? entry.totalDisplacements
-                    : entry.newDisplacements) ?? 0,
-            }))
+            .map((entry) => {
+                const flow = entry.newDisplacementsRounded;
+                const stock = entry.totalDisplacementsRounded;
+                return {
+                    id: entry.id,
+                    name: entry.label,
+                    value: (isStock ? stock : flow) ?? 0,
+                };
+            })
             .filter((entry) => entry.value > 0)
             .sort((a, b) => b.value - a.value);
 

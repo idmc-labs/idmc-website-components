@@ -464,6 +464,7 @@ function Gidd(props: Props) {
     const [eventsActivePage, setEventsActivePage] = useState<number>(1);
     const [eventSearchText, setEventSearchText] = useState<string | undefined>();
     const [precision, setPrecision] = useState<Precision>('rounded');
+    const isRounded = precision === 'rounded';
     const [
         countries,
         setCountries,
@@ -1505,8 +1506,8 @@ function Gidd(props: Props) {
                     <div className={styles.totalStat}>
                         <Numeral
                             className={styles.totalValue}
-                            value={combinedStats?.internalDisplacements}
-                            abbreviate={precision === 'rounded'}
+                            value={combinedStats?.internalDisplacementsRounded}
+                            abbreviate={isRounded}
                         />
                         <span className={styles.totalSubLabel}>
                             {getCountryCountSubLabel(
@@ -1524,8 +1525,8 @@ function Gidd(props: Props) {
                             subLabel={getCountryCountSubLabel(
                                 conflictStats?.internalDisplacementCountries,
                             )}
-                            value={conflictStats?.newDisplacements}
-                            abbreviated={precision === 'rounded'}
+                            value={conflictStats?.newDisplacementsRounded}
+                            abbreviated={isRounded}
                         />
                     )}
                     {isDisasterDataShown && (
@@ -1536,8 +1537,8 @@ function Gidd(props: Props) {
                             subLabel={getCountryCountSubLabel(
                                 disasterStats?.internalDisplacementCountries,
                             )}
-                            value={disasterStats?.newDisplacements}
-                            abbreviated={precision === 'rounded'}
+                            value={disasterStats?.newDisplacementsRounded}
+                            abbreviated={isRounded}
                         />
                     )}
                 </div>
@@ -1555,8 +1556,8 @@ function Gidd(props: Props) {
                     <div className={styles.totalStat}>
                         <Numeral
                             className={styles.totalValue}
-                            value={combinedStats?.totalDisplacements}
-                            abbreviate={precision === 'rounded'}
+                            value={combinedStats?.totalDisplacementsRounded}
+                            abbreviate={isRounded}
                         />
                         <span className={styles.totalSubLabel}>
                             {getCountryStockCountSubLabel(
@@ -1576,8 +1577,8 @@ function Gidd(props: Props) {
                                 conflictStats?.totalDisplacementCountries,
                                 timeRange[1],
                             )}
-                            value={conflictStats?.totalDisplacements}
-                            abbreviated={precision === 'rounded'}
+                            value={conflictStats?.totalDisplacementsRounded}
+                            abbreviated={isRounded}
                         />
                     )}
                     {isDisasterDataShown && (
@@ -1589,8 +1590,8 @@ function Gidd(props: Props) {
                                 disasterStats?.totalDisplacementCountries,
                                 timeRange[1],
                             )}
-                            value={disasterStats?.totalDisplacements}
-                            abbreviated={precision === 'rounded'}
+                            value={disasterStats?.totalDisplacementsRounded}
+                            abbreviated={isRounded}
                         />
                     )}
                 </div>

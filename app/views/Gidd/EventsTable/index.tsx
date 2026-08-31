@@ -111,7 +111,9 @@ const GIDD_EVENTS = gql`
                 causeDisplay
                 iso3
                 newDisplacement
+                newDisplacementRounded
                 totalDisplacement
+                totalDisplacementRounded
                 startDate
                 year
             }
@@ -278,7 +280,7 @@ function EventsTable(props: Props) {
                         getCauseVariantClassName(data.cause),
                     );
                     return {
-                        value: data.newDisplacement,
+                        value: data.newDisplacementRounded,
                         placeholder: '',
                         separator: ',',
                         abbreviate,
@@ -311,7 +313,7 @@ function EventsTable(props: Props) {
                         getCauseVariantClassName(data.cause),
                     );
                     return {
-                        value: data.totalDisplacement,
+                        value: data.totalDisplacementRounded,
                         placeholder: '',
                         separator: ',',
                         abbreviate,

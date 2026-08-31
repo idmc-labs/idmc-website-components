@@ -36,6 +36,7 @@ import BubbleSizeLegend from '#components/BubbleSizeLegend';
 import {
     DATA_RELEASE,
     getLogRadius,
+    roundAndRemoveZero,
     BUBBLE_RADIUS_MIN,
     BUBBLE_RADIUS_MAX,
 } from '#utils/common';
@@ -401,10 +402,14 @@ function GiddMap(props: Props) {
 
     const hazardEntries = useMemo(() => (
         (hazardData?.giddPublicDisasterStatistics?.displacementsByHazardType ?? [])
-            .map((item) => ({
-                ...item,
-                value: (isStockView ? item.totalDisplacements : item.newDisplacements) ?? 0,
-            }))
+            .map((item) => {
+                const flow = item.newDisplacementsRounded;
+                const stock = item.totalDisplacementsRounded;
+                return {
+                    ...item,
+                    value: (isStockView ? stock : flow) ?? 0,
+                };
+            })
             .filter((item) => item.value > 0)
             .sort((a, b) => b.value - a.value)
             .slice(0, 6)
@@ -424,10 +429,14 @@ function GiddMap(props: Props) {
 
     const violenceEntries = useMemo(() => (
         (violenceData?.giddPublicConflictStatistics?.displacementsByViolenceSubType ?? [])
-            .map((item) => ({
-                ...item,
-                value: (isStockView ? item.totalDisplacements : item.newDisplacements) ?? 0,
-            }))
+            .map((item) => {
+                const flow = item.newDisplacementsRounded;
+                const stock = item.totalDisplacementsRounded;
+                return {
+                    ...item,
+                    value: (isStockView ? stock : flow) ?? 0,
+                };
+            })
             .filter((item) => item.value > 0)
             .sort((a, b) => b.value - a.value)
             .slice(0, 6)
@@ -980,8 +989,14 @@ function GiddMap(props: Props) {
                             }}
                         />
                         <div className={styles.choroplethLabels}>
-                            <Numeral value={minValue} abbreviate={abbreviate} />
-                            <Numeral value={maxValue} abbreviate={abbreviate} />
+                            <Numeral
+                                value={abbreviate ? roundAndRemoveZero(minValue) : minValue}
+                                abbreviate={abbreviate}
+                            />
+                            <Numeral
+                                value={abbreviate ? roundAndRemoveZero(maxValue) : maxValue}
+                                abbreviate={abbreviate}
+                            />
                         </div>
                     </div>
                 )}
