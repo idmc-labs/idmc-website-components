@@ -333,6 +333,20 @@ const iconLayerLayout: mapboxgl.SymbolLayout = {
     'icon-ignore-placement': true,
 };
 
+const circleLayerLayout: mapboxgl.CircleLayout = {
+    'circle-sort-key': ['-', 0, ['get', 'value']],
+};
+
+const pieIconLayerLayout: mapboxgl.SymbolLayout = {
+    ...iconLayerLayout,
+    'symbol-sort-key': ['-', 0, ['get', 'value']],
+};
+
+const squareIconLayerLayout: mapboxgl.SymbolLayout = {
+    ...iconLayerLayout,
+    'symbol-sort-key': ['get', 'value'],
+};
+
 const sourceOption: mapboxgl.GeoJSONSourceRaw = {
     type: 'geojson',
 };
@@ -900,6 +914,7 @@ function GiddMap(props: Props) {
                                     layerKey="gidd-country-point"
                                     layerOptions={{
                                         type: 'circle',
+                                        layout: circleLayerLayout,
                                         paint: countryPointPaint,
                                     }}
                                     onClick={handleClick}
@@ -916,7 +931,7 @@ function GiddMap(props: Props) {
                                     layerKey="gidd-country-pie"
                                     layerOptions={{
                                         type: 'symbol',
-                                        layout: iconLayerLayout,
+                                        layout: pieIconLayerLayout,
                                     }}
                                     onClick={handleClick}
                                     onMouseEnter={handleMouseEnter}
@@ -935,7 +950,7 @@ function GiddMap(props: Props) {
                                 layerKey="gidd-country-square"
                                 layerOptions={{
                                     type: 'symbol',
-                                    layout: iconLayerLayout,
+                                    layout: squareIconLayerLayout,
                                 }}
                                 onClick={handleClick}
                                 onMouseEnter={handleMouseEnter}

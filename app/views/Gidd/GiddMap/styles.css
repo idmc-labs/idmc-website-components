@@ -23,7 +23,7 @@
             display: inline-flex;
             position: absolute;
             top: 0.75rem;
-            right: 0.75rem;
+            right: 3rem;
             align-items: center;
             z-index: 1;
             gap: var(--tui-spacing-extra-small);
