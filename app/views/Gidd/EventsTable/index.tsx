@@ -24,6 +24,7 @@ import {
 
 import Numeral from '#components/Numeral';
 import Message from '#components/Message';
+import PendingMessage from '#components/PendingMessage';
 import HazardType, { Props as HazardTypeProps } from '#components/IduMap/IduTable/HazardType';
 import useDebouncedValue from '#hooks/useDebouncedValue';
 import {
@@ -199,6 +200,7 @@ function EventsTable(props: Props) {
     const {
         previousData: previousEventsResponse,
         data: eventsResponse = previousEventsResponse,
+        loading,
     } = useQuery<
         GiddEventsQuery,
         GiddEventsQueryVariables
@@ -384,6 +386,7 @@ function EventsTable(props: Props) {
 
     return (
         <div className={_cs(className, styles.eventsTable)}>
+            {loading && <PendingMessage noDelay />}
             {isEmpty ? (
                 <Message
                     empty

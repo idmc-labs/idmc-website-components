@@ -31,6 +31,7 @@ import { IoInformationCircleOutline } from 'react-icons/io5';
 import { mapboxStyle } from '#base/configs/mapbox';
 import Numeral from '#components/Numeral';
 import TooltipIcon from '#components/TooltipIcon';
+import PendingMessage from '#components/PendingMessage';
 import BubbleSizeLegend from '#components/BubbleSizeLegend';
 import {
     DATA_RELEASE,
@@ -435,6 +436,7 @@ function GiddMap(props: Props) {
     const {
         previousData: previousCountryPointsData,
         data: countryPointsData = previousCountryPointsData,
+        loading: countryPointsLoading,
     } = useQuery<GiddMapCountryPointsQuery, GiddMapCountryPointsQueryVariables>(
         COUNTRY_POINTS,
         {
@@ -469,6 +471,7 @@ function GiddMap(props: Props) {
     const {
         previousData: previousDisplacementsData,
         data: displacementsData = previousDisplacementsData,
+        loading: displacementsLoading,
     } = useQuery<GiddMapDisplacementsQuery, GiddMapDisplacementsQueryVariables>(
         MAP_DISPLACEMENTS,
         {
@@ -502,6 +505,7 @@ function GiddMap(props: Props) {
     const {
         previousData: previousStockDisplacementsData,
         data: stockDisplacementsData = previousStockDisplacementsData,
+        loading: stockDisplacementsLoading,
     } = useQuery<GiddMapDisplacementsQuery, GiddMapDisplacementsQueryVariables>(
         MAP_DISPLACEMENTS,
         {
@@ -821,8 +825,11 @@ function GiddMap(props: Props) {
         && isDefined(hoverProperties)
         && isNotDefined(selection);
 
+    const pending = countryPointsLoading || displacementsLoading || stockDisplacementsLoading;
+
     return (
         <div className={_cs(styles.giddMap, className)}>
+            {pending && <PendingMessage noDelay />}
             <div className={styles.mapWrapper}>
                 {isStockView && (
                     <TooltipIcon
