@@ -167,9 +167,6 @@ function toCursorWorldCopy(
 }
 
 const SINGLE_COUNTRY_ZOOM = 4;
-// centred whole-world framing for winkelTripel: fitBounds on a lng/lat box
-// doesn't centre reliably in a non-mercator projection, so the world view uses
-// an explicit centre + zoom instead
 const WORLD_CENTER: LngLatLike = [0, 0];
 const WORLD_ZOOM = 1;
 
@@ -367,8 +364,6 @@ export interface Props {
     endYear: number;
     clientCode: string;
     abbreviate: boolean;
-    // false while this view is mounted but hidden, so its loading overlay
-    // doesn't portal on top of whichever view is actually visible
     active?: boolean;
     onCountryFocus?: (iso3: string) => void;
 }
@@ -591,8 +586,6 @@ function GiddMap(props: Props) {
         setFitBounds(camera.fitBounds);
     }, [countriesIso3, countryCentroidByIso3]);
 
-    // a single-country focus zooms in; the world view (no country filter) stays
-    // zoomed out and centred on [0, 0]
     const centerOptions = useMemo(
         () => ({ zoom: countriesIso3.length === 0 ? WORLD_ZOOM : SINGLE_COUNTRY_ZOOM }),
         [countriesIso3.length],
@@ -884,7 +877,6 @@ function GiddMap(props: Props) {
                         renderWorldCopies: false,
                         center: [0, 0],
                         zoom: 1,
-                        // projection isn't in @types 2.7; cast to keep winkelTripel
                         projection: { name: 'winkelTripel' },
                     } as Omit<mapboxgl.MapboxOptions, 'style' | 'container'>}
                     scaleControlShown

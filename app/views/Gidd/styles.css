@@ -550,6 +550,7 @@
    noticeably larger than IDU's. Mirrors .select-popup in
    app/components/IduMap/styles.css. */
 .select-popup {
+    z-index: 10;
     font-size: var(--tui-font-size-small, 0.8rem);
 }
 
@@ -557,6 +558,7 @@
    The group labels are GIDD's own strings (TRIGGER_GROUP_LABELS), which
    differ from IDU's, so the attribute selectors cannot be shared. */
 .trigger-popup {
+    z-index: 10;
     font-size: var(--tui-font-size-small, 0.8rem);
 
     :global {

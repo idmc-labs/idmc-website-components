@@ -1,8 +1,6 @@
 .data-table {
     display: flex;
     flex-direction: column;
-    /* fill the pane so the loading overlay and empty message occupy the height
-       the table would have taken, instead of collapsing to a thin strip */
     min-height: 100%;
     gap: var(--tui-spacing-medium);
     overflow-x: auto;

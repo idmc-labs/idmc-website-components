@@ -479,6 +479,15 @@ function Gidd(props: Props) {
     const [regions, setRegions] = useState<string[]>([]);
     const [filtersExpanded, setFiltersExpanded] = useState(false);
 
+    useEffect(() => {
+        setDataActivePage(1);
+        setEventsActivePage(1);
+    }, [displacementCategory, displacementCause, timeRange, countries, triggerTypes, regions]);
+
+    useEffect(() => {
+        setEventsActivePage(1);
+    }, [eventSearchText]);
+
     const { width: viewportWidth } = useDocumentSize();
     const isMobile = viewportWidth <= MOBILE_BREAKPOINT;
 
