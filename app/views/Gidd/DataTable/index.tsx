@@ -12,6 +12,7 @@ import {
 } from '@togglecorp/toggle-ui';
 import {
     DATA_RELEASE,
+    roundAndRemoveZero,
 } from '#utils/common';
 import {
     gql,
@@ -91,9 +92,13 @@ const GIDD_DISPLACEMENTS = gql`
                 countryId
                 year
                 conflictNewDisplacement
+                conflictNewDisplacementRounded
                 conflictTotalDisplacement
+                conflictTotalDisplacementRounded
                 disasterNewDisplacement
+                disasterNewDisplacementRounded
                 disasterTotalDisplacement
+                disasterTotalDisplacementRounded
             }
             totalCount
             page
@@ -120,6 +125,9 @@ interface Props {
     onActivePageChange: (newVal: number) => void;
     clientCode: string;
     abbreviate: boolean;
+    // false while this view is mounted but hidden, so its loading overlay
+    // doesn't portal on top of whichever view is actually visible
+    active?: boolean;
 }
 
 function DataTable(props: Props) {
@@ -138,6 +146,7 @@ function DataTable(props: Props) {
         onActivePageChange,
         clientCode,
         abbreviate,
+        active = true,
     } = props;
 
     const overallDataSortState = useSortState({ name: 'year', direction: 'dsc' });
@@ -221,7 +230,7 @@ function DataTable(props: Props) {
             isFlowShown && isConflictDataShown ? createNumberColumn<DisplacementData, string>(
                 'conflictNewDisplacement',
                 'Conflict Displacements',
-                (item) => item.conflictNewDisplacement,
+                (item) => item.conflictNewDisplacementRounded,
                 {
                     sortable: true,
                     variant: 'conflict',
@@ -233,7 +242,7 @@ function DataTable(props: Props) {
             isFlowShown && isDisasterDataShown ? createNumberColumn<DisplacementData, string>(
                 'disasterNewDisplacement',
                 'Disaster Displacements',
-                (item) => item.disasterNewDisplacement,
+                (item) => item.disasterNewDisplacementRounded,
                 {
                     sortable: true,
                     variant: 'disaster',
@@ -249,10 +258,14 @@ function DataTable(props: Props) {
             isFlowShown && bothCauses ? createNumberColumn<DisplacementData, string>(
                 'totalNewDisplacement',
                 'Total Internal Displacement',
-                (item) => getCombinedTotal(
-                    item.conflictNewDisplacement,
-                    item.disasterNewDisplacement,
-                ),
+                (item) => {
+                    // sum the raw figures, then round — not a sum of rounded parts
+                    const total = getCombinedTotal(
+                        item.conflictNewDisplacement,
+                        item.disasterNewDisplacement,
+                    );
+                    return roundAndRemoveZero(total);
+                },
                 {
                     emphasize: true,
                     abbreviate,
@@ -262,7 +275,7 @@ function DataTable(props: Props) {
             isStockShown && isConflictDataShown ? createNumberColumn<DisplacementData, string>(
                 'conflictTotalDisplacement',
                 'Conflict IDPs',
-                (item) => item.conflictTotalDisplacement,
+                (item) => item.conflictTotalDisplacementRounded,
                 {
                     sortable: true,
                     variant: 'conflict',
@@ -274,7 +287,7 @@ function DataTable(props: Props) {
             isStockShown && isDisasterDataShown ? createNumberColumn<DisplacementData, string>(
                 'disasterTotalDisplacement',
                 'Disaster IDPs',
-                (item) => item.disasterTotalDisplacement,
+                (item) => item.disasterTotalDisplacementRounded,
                 {
                     sortable: true,
                     variant: 'disaster',
@@ -287,10 +300,14 @@ function DataTable(props: Props) {
             isStockShown && bothCauses ? createNumberColumn<DisplacementData, string>(
                 'totalIDPs',
                 'Total IDPs',
-                (item) => getCombinedTotal(
-                    item.conflictTotalDisplacement,
-                    item.disasterTotalDisplacement,
-                ),
+                (item) => {
+                    // sum the raw figures, then round — not a sum of rounded parts
+                    const total = getCombinedTotal(
+                        item.conflictTotalDisplacement,
+                        item.disasterTotalDisplacement,
+                    );
+                    return roundAndRemoveZero(total);
+                },
                 {
                     emphasize: true,
                     abbreviate,
@@ -314,7 +331,7 @@ function DataTable(props: Props) {
 
     return (
         <div className={_cs(className, styles.dataTable)}>
-            {loading && <PendingMessage noDelay />}
+            {active && loading && <PendingMessage noDelay />}
             {isEmpty ? (
                 <Message
                     empty

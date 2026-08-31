@@ -211,6 +211,26 @@ export function sumAndRemoveZero(args: (number | undefined)[]) {
     return total === 0 ? undefined : total;
 }
 
+// Mirrors the backend's `round_and_remove_zero` (utils/common.py) so a client-side
+// sum of raw figures rounds to the same magnitude buckets the server publishes.
+export function roundAndRemoveZero(value: number | undefined | null): number | undefined {
+    if (isNotDefined(value) || value === 0) {
+        return undefined;
+    }
+    const absoluteValue = Math.abs(value);
+    const sign = value > 0 ? 1 : -1;
+    if (absoluteValue <= 100) {
+        return sign * absoluteValue;
+    }
+    if (absoluteValue <= 1000) {
+        return sign * Math.round(absoluteValue / 10) * 10;
+    }
+    if (absoluteValue < 10000) {
+        return sign * Math.round(absoluteValue / 100) * 100;
+    }
+    return sign * Math.round(absoluteValue / 1000) * 1000;
+}
+
 export function suffixDrupalEndpoint(path: string) {
     return `${DRUPAL_ENDPOINT}${path}`;
 }

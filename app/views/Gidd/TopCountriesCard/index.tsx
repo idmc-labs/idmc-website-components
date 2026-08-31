@@ -6,6 +6,7 @@ import ListView from '#components/ListView';
 import CountryBar from '#components/IduMap/TopCountries/CountryBar';
 
 import { buildTriggerFilterSuffix } from '#utils/strings';
+import { roundAndRemoveZero } from '#utils/common';
 
 import {
     useCountryRanking,
@@ -118,9 +119,11 @@ function TopCountriesCard(props: Props) {
         name: country.iso3,
         rank: index + 1,
         countryName: country.countryName,
+        // conflict/disaster (raw) drive the bar widths; the displayed total is
+        // the raw sum, then rounded (round-of-sum, not a sum of rounded parts)
         conflict: country.conflict,
         disaster: country.disaster,
-        total: country.total,
+        total: roundAndRemoveZero(country.total) ?? 0,
         maxTotal,
         abbreviate,
         onClick: onCountrySelect,
@@ -135,24 +138,26 @@ function TopCountriesCard(props: Props) {
                 headingDescription={description}
                 headingDescriptionClassName={styles.description}
             />
-            <ListView
-                className={styles.list}
-                data={topCountries}
-                keySelector={countryKeySelector}
-                renderer={CountryBar}
-                rendererParams={countryRendererParams}
-                pending={pending}
-                errored={false}
-                filtered={false}
-                messageShown
-                compactPendingMessage
-                emptyMessage="No data available for the selected filters."
-            />
-            {!pending && (
-                <div className={styles.footer}>
-                    {footer}
-                </div>
-            )}
+            <div className={styles.body}>
+                <ListView
+                    className={styles.list}
+                    data={topCountries}
+                    keySelector={countryKeySelector}
+                    renderer={CountryBar}
+                    rendererParams={countryRendererParams}
+                    pending={pending}
+                    errored={false}
+                    filtered={false}
+                    messageShown
+                    compactPendingMessage
+                    emptyMessage="No data available for the selected filters."
+                />
+                {!pending && (
+                    <div className={styles.footer}>
+                        {footer}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

@@ -111,7 +111,9 @@ const GIDD_EVENTS = gql`
                 causeDisplay
                 iso3
                 newDisplacement
+                newDisplacementRounded
                 totalDisplacement
+                totalDisplacementRounded
                 startDate
                 year
             }
@@ -140,6 +142,9 @@ interface Props {
     clientCode: string;
     searchText: string | undefined;
     abbreviate: boolean;
+    // false while this view is mounted but hidden, so its loading overlay
+    // doesn't portal on top of whichever view is actually visible
+    active?: boolean;
 }
 
 function EventsTable(props: Props) {
@@ -157,6 +162,7 @@ function EventsTable(props: Props) {
         cause,
         category,
         abbreviate,
+        active = true,
     } = props;
 
     const isFlowShown = category !== 'stock';
@@ -278,7 +284,7 @@ function EventsTable(props: Props) {
                         getCauseVariantClassName(data.cause),
                     );
                     return {
-                        value: data.newDisplacement,
+                        value: data.newDisplacementRounded,
                         placeholder: '',
                         separator: ',',
                         abbreviate,
@@ -311,7 +317,7 @@ function EventsTable(props: Props) {
                         getCauseVariantClassName(data.cause),
                     );
                     return {
-                        value: data.totalDisplacement,
+                        value: data.totalDisplacementRounded,
                         placeholder: '',
                         separator: ',',
                         abbreviate,
@@ -386,7 +392,7 @@ function EventsTable(props: Props) {
 
     return (
         <div className={_cs(className, styles.eventsTable)}>
-            {loading && <PendingMessage noDelay />}
+            {active && loading && <PendingMessage noDelay />}
             {isEmpty ? (
                 <Message
                     empty

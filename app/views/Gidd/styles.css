@@ -231,6 +231,9 @@
             background-color: var(--tui-color-foreground);
             gap: var(--tui-spacing-medium);
             min-width: 0;
+            /* fixed height so the panels line up with the sidebar and, crucially,
+               so switching views never resizes the map (which would re-fit it) */
+            height: var(--gidd-sidebar-height);
 
             .view-selector {
                 display: flex;
@@ -247,7 +250,24 @@
             }
 
             .view-panels {
-                padding: 0 var(--tui-spacing-large) var(--tui-spacing-large);
+                position: relative;
+                flex-grow: 1;
+                min-height: 0;
+
+                /* panes overlap so their box size stays constant across view
+                   switches; inactive ones are hidden without being unmounted or
+                   resized (visibility, not display) */
+                .view-pane {
+                    position: absolute;
+                    inset: 0;
+                    padding: 0 var(--tui-spacing-large) var(--tui-spacing-large);
+                    overflow: auto;
+
+                    &.view-hidden {
+                        visibility: hidden;
+                        pointer-events: none;
+                    }
+                }
             }
         }
 
@@ -276,6 +296,13 @@
                 background-color: var(--tui-color-foreground);
                 padding: var(--tui-spacing-medium);
                 min-height: 100%;
+
+                .glance-body {
+                    display: flex;
+                    flex-direction: column;
+                    flex-grow: 1;
+                    gap: var(--tui-spacing-medium);
+                }
 
                 .glance-description {
                     margin: var(--tui-spacing-small) 0 var(--tui-spacing-small);

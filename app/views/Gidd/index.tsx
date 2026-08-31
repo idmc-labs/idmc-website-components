@@ -459,11 +459,15 @@ function Gidd(props: Props) {
     const [combineCauseCharts, setCombineCauseCharts] = useState(false);
     const [displacementCategory, setDisplacementCategory] = useState<Category | undefined>();
     const [activeView, setActiveView] = useState<View>('charts');
+    // keep a view mounted once it has been opened, so its state (map instance,
+    // table page/sort, fetched data) survives switching between views
+    const [mountedViews, setMountedViews] = useState<Set<View>>(() => new Set<View>(['charts']));
     const [combineCountriesChart, setCombineCountriesChart] = useState(false);
     const [dataActivePage, setDataActivePage] = useState<number>(1);
     const [eventsActivePage, setEventsActivePage] = useState<number>(1);
     const [eventSearchText, setEventSearchText] = useState<string | undefined>();
     const [precision, setPrecision] = useState<Precision>('rounded');
+    const isRounded = precision === 'rounded';
     const [
         countries,
         setCountries,
@@ -489,6 +493,17 @@ function Gidd(props: Props) {
             setActiveView('charts');
         }
     }, [isMobile, displacementCategory, activeView]);
+
+    useEffect(() => {
+        setMountedViews((prev) => {
+            if (prev.has(activeView)) {
+                return prev;
+            }
+            const next = new Set(prev);
+            next.add(activeView);
+            return next;
+        });
+    }, [activeView]);
 
     const handleFiltersToggle = useCallback(() => {
         setFiltersExpanded((prev) => !prev);
@@ -1484,7 +1499,6 @@ function Gidd(props: Props) {
 
     const glanceCard = (
         <div className={styles.glanceCard}>
-            {statisticsLoading && <PendingMessage noDelay />}
             <Header
                 heading="At a glance"
                 headingClassName={styles.slideHeading}
@@ -1492,107 +1506,110 @@ function Gidd(props: Props) {
                 headingDescription={glanceDescription}
                 headingDescriptionClassName={styles.glanceDescription}
             />
-            <div className={_cs(styles.glanceSection, isFlowSelected && styles.selected)}>
-                <Header
-                    heading="Internal displacements"
-                    headingClassName={styles.slideHeading}
-                    headingSize="small"
-                    headingTooltip={flowDetails}
-                    headingTooltipTitle="Internal displacements"
-                    actions={isFlowSelected ? shownOnMap : showOnMapFlow}
-                />
-                {!displacementCause && (
-                    <div className={styles.totalStat}>
-                        <Numeral
-                            className={styles.totalValue}
-                            value={combinedStats?.internalDisplacements}
-                            abbreviate={precision === 'rounded'}
-                        />
-                        <span className={styles.totalSubLabel}>
-                            {getCountryCountSubLabel(
-                                combinedStats?.internalDisplacementCountries,
-                            )}
-                        </span>
+            <div className={styles.glanceBody}>
+                {statisticsLoading && <PendingMessage noDelay />}
+                <div className={_cs(styles.glanceSection, isFlowSelected && styles.selected)}>
+                    <Header
+                        heading="Internal displacements"
+                        headingClassName={styles.slideHeading}
+                        headingSize="small"
+                        headingTooltip={flowDetails}
+                        headingTooltipTitle="Internal displacements"
+                        actions={isFlowSelected ? shownOnMap : showOnMapFlow}
+                    />
+                    {!displacementCause && (
+                        <div className={styles.totalStat}>
+                            <Numeral
+                                className={styles.totalValue}
+                                value={combinedStats?.internalDisplacementsRounded}
+                                abbreviate={isRounded}
+                            />
+                            <span className={styles.totalSubLabel}>
+                                {getCountryCountSubLabel(
+                                    combinedStats?.internalDisplacementCountries,
+                                )}
+                            </span>
+                        </div>
+                    )}
+                    <div className={styles.numberRow}>
+                        {isConflictDataShown && (
+                            <NumberBlock
+                                label="Total by conflict and violence"
+                                size={displacementCause ? 'large' : 'medium'}
+                                variant="conflict"
+                                subLabel={getCountryCountSubLabel(
+                                    conflictStats?.internalDisplacementCountries,
+                                )}
+                                value={conflictStats?.newDisplacementsRounded}
+                                abbreviated={isRounded}
+                            />
+                        )}
+                        {isDisasterDataShown && (
+                            <NumberBlock
+                                label="Total by disasters"
+                                size={displacementCause ? 'large' : 'medium'}
+                                variant="disaster"
+                                subLabel={getCountryCountSubLabel(
+                                    disasterStats?.internalDisplacementCountries,
+                                )}
+                                value={disasterStats?.newDisplacementsRounded}
+                                abbreviated={isRounded}
+                            />
+                        )}
                     </div>
-                )}
-                <div className={styles.numberRow}>
-                    {isConflictDataShown && (
-                        <NumberBlock
-                            label="Total by conflict and violence"
-                            size={displacementCause ? 'large' : 'medium'}
-                            variant="conflict"
-                            subLabel={getCountryCountSubLabel(
-                                conflictStats?.internalDisplacementCountries,
-                            )}
-                            value={conflictStats?.newDisplacements}
-                            abbreviated={precision === 'rounded'}
-                        />
-                    )}
-                    {isDisasterDataShown && (
-                        <NumberBlock
-                            label="Total by disasters"
-                            size={displacementCause ? 'large' : 'medium'}
-                            variant="disaster"
-                            subLabel={getCountryCountSubLabel(
-                                disasterStats?.internalDisplacementCountries,
-                            )}
-                            value={disasterStats?.newDisplacements}
-                            abbreviated={precision === 'rounded'}
-                        />
-                    )}
                 </div>
-            </div>
-            <div className={_cs(styles.glanceSection, isStockSelected && styles.selected)}>
-                <Header
-                    heading="Internally displaced people (IDPs)"
-                    headingClassName={styles.slideHeading}
-                    headingTooltip={stockDetails}
-                    headingTooltipTitle="Internally displaced people (IDPs)"
-                    headingSize="small"
-                    actions={isStockSelected ? shownOnMap : showOnMapStock}
-                />
-                {!displacementCause && (
-                    <div className={styles.totalStat}>
-                        <Numeral
-                            className={styles.totalValue}
-                            value={combinedStats?.totalDisplacements}
-                            abbreviate={precision === 'rounded'}
-                        />
-                        <span className={styles.totalSubLabel}>
-                            {getCountryStockCountSubLabel(
-                                combinedStats?.totalDisplacementCountries,
-                                timeRange[1],
-                            )}
-                        </span>
+                <div className={_cs(styles.glanceSection, isStockSelected && styles.selected)}>
+                    <Header
+                        heading="Internally displaced people (IDPs)"
+                        headingClassName={styles.slideHeading}
+                        headingTooltip={stockDetails}
+                        headingTooltipTitle="Internally displaced people (IDPs)"
+                        headingSize="small"
+                        actions={isStockSelected ? shownOnMap : showOnMapStock}
+                    />
+                    {!displacementCause && (
+                        <div className={styles.totalStat}>
+                            <Numeral
+                                className={styles.totalValue}
+                                value={combinedStats?.totalDisplacementsRounded}
+                                abbreviate={isRounded}
+                            />
+                            <span className={styles.totalSubLabel}>
+                                {getCountryStockCountSubLabel(
+                                    combinedStats?.totalDisplacementCountries,
+                                    timeRange[1],
+                                )}
+                            </span>
+                        </div>
+                    )}
+                    <div className={styles.numberRow}>
+                        {isConflictDataShown && (
+                            <NumberBlock
+                                label="Total by conflict and violence"
+                                variant="conflict"
+                                size={displacementCause ? 'large' : 'medium'}
+                                subLabel={getCountryStockCountSubLabel(
+                                    conflictStats?.totalDisplacementCountries,
+                                    timeRange[1],
+                                )}
+                                value={conflictStats?.totalDisplacementsRounded}
+                                abbreviated={isRounded}
+                            />
+                        )}
+                        {isDisasterDataShown && (
+                            <NumberBlock
+                                label="Total by disasters"
+                                size={displacementCause ? 'large' : 'medium'}
+                                variant="disaster"
+                                subLabel={getCountryStockCountSubLabel(
+                                    disasterStats?.totalDisplacementCountries,
+                                    timeRange[1],
+                                )}
+                                value={disasterStats?.totalDisplacementsRounded}
+                                abbreviated={isRounded}
+                            />
+                        )}
                     </div>
-                )}
-                <div className={styles.numberRow}>
-                    {isConflictDataShown && (
-                        <NumberBlock
-                            label="Total by conflict and violence"
-                            variant="conflict"
-                            size={displacementCause ? 'large' : 'medium'}
-                            subLabel={getCountryStockCountSubLabel(
-                                conflictStats?.totalDisplacementCountries,
-                                timeRange[1],
-                            )}
-                            value={conflictStats?.totalDisplacements}
-                            abbreviated={precision === 'rounded'}
-                        />
-                    )}
-                    {isDisasterDataShown && (
-                        <NumberBlock
-                            label="Total by disasters"
-                            size={displacementCause ? 'large' : 'medium'}
-                            variant="disaster"
-                            subLabel={getCountryStockCountSubLabel(
-                                disasterStats?.totalDisplacementCountries,
-                                timeRange[1],
-                            )}
-                            value={disasterStats?.totalDisplacements}
-                            abbreviated={precision === 'rounded'}
-                        />
-                    )}
                 </div>
             </div>
         </div>
@@ -1758,7 +1775,6 @@ function Gidd(props: Props) {
 
     return (
         <div className={styles.bodyContainer}>
-            {filterOptionsLoading && <PendingMessage noDelay />}
             <div className={styles.gidd}>
                 <div className={styles.headerRow}>
                     <div className={styles.headerText}>
@@ -1939,6 +1955,7 @@ function Gidd(props: Props) {
                 )}
 
                 <div className={styles.mainRow}>
+                    {filterOptionsLoading && <PendingMessage noDelay />}
                     {!isMobile && (
                         <div className={styles.mainPanel}>
                             <div className={styles.viewSelector}>
@@ -1963,74 +1980,106 @@ function Gidd(props: Props) {
                                 )}
                             </div>
                             <div className={styles.viewPanels}>
-                                {activeView === 'map' && (
-                                    <GiddMap
-                                        cause={displacementCause}
-                                        category={displacementCategory}
-                                        countriesIso3={effectiveCountries}
-                                        hazardTypes={
-                                            isDisasterDataShown ? selectedHazardTypeIds : undefined
-                                        }
-                                        violenceSubTypes={
-                                            isConflictDataShown
-                                                ? selectedViolenceSubTypeIds
-                                                : undefined
-                                        }
-                                        startYear={timeRange[0]}
-                                        endYear={timeRange[1]}
-                                        clientCode={clientCode}
-                                        abbreviate={precision === 'rounded'}
-                                        onCountryFocus={handleCountryFocus}
-                                    />
+                                {/* views stay mounted once opened so the map, tables
+                                    and their state survive switching views */}
+                                {mountedViews.has('map') && (
+                                    <div className={_cs(
+                                        styles.viewPane,
+                                        activeView !== 'map' && styles.viewHidden,
+                                    )}
+                                    >
+                                        <GiddMap
+                                            cause={displacementCause}
+                                            category={displacementCategory}
+                                            countriesIso3={effectiveCountries}
+                                            hazardTypes={
+                                                isDisasterDataShown
+                                                    ? selectedHazardTypeIds
+                                                    : undefined
+                                            }
+                                            violenceSubTypes={
+                                                isConflictDataShown
+                                                    ? selectedViolenceSubTypeIds
+                                                    : undefined
+                                            }
+                                            startYear={timeRange[0]}
+                                            endYear={timeRange[1]}
+                                            clientCode={clientCode}
+                                            abbreviate={precision === 'rounded'}
+                                            active={activeView === 'map'}
+                                            onCountryFocus={handleCountryFocus}
+                                        />
+                                    </div>
                                 )}
-                                {activeView === 'table' && (
-                                    <DataTable
-                                        isConflictDataShown={isConflictDataShown}
-                                        isDisasterDataShown={isDisasterDataShown}
-                                        category={displacementCategory}
-                                        cause={displacementCause}
-                                        countriesIso3={effectiveCountries}
-                                        hazardTypes={
-                                            isDisasterDataShown ? selectedHazardTypeIds : undefined
-                                        }
-                                        violenceSubTypes={
-                                            isConflictDataShown
-                                                ? selectedViolenceSubTypeIds
-                                                : undefined
-                                        }
-                                        startYear={timeRange[0]}
-                                        endYear={timeRange[1]}
-                                        activePage={dataActivePage}
-                                        onActivePageChange={setDataActivePage}
-                                        clientCode={clientCode}
-                                        abbreviate={precision === 'rounded'}
-                                    />
+                                {mountedViews.has('table') && (
+                                    <div className={_cs(
+                                        styles.viewPane,
+                                        activeView !== 'table' && styles.viewHidden,
+                                    )}
+                                    >
+                                        <DataTable
+                                            isConflictDataShown={isConflictDataShown}
+                                            isDisasterDataShown={isDisasterDataShown}
+                                            category={displacementCategory}
+                                            cause={displacementCause}
+                                            countriesIso3={effectiveCountries}
+                                            hazardTypes={
+                                                isDisasterDataShown
+                                                    ? selectedHazardTypeIds
+                                                    : undefined
+                                            }
+                                            violenceSubTypes={
+                                                isConflictDataShown
+                                                    ? selectedViolenceSubTypeIds
+                                                    : undefined
+                                            }
+                                            startYear={timeRange[0]}
+                                            endYear={timeRange[1]}
+                                            activePage={dataActivePage}
+                                            onActivePageChange={setDataActivePage}
+                                            clientCode={clientCode}
+                                            abbreviate={precision === 'rounded'}
+                                            active={activeView === 'table'}
+                                        />
+                                    </div>
                                 )}
-                                {activeView === 'charts' && (
-                                    <>
-                                        {statisticsLoading && <PendingMessage noDelay />}
+                                {mountedViews.has('charts') && (
+                                    <div className={_cs(
+                                        styles.viewPane,
+                                        activeView !== 'charts' && styles.viewHidden,
+                                    )}
+                                    >
+                                        {activeView === 'charts' && statisticsLoading
+                                            && <PendingMessage noDelay />}
                                         {chartTypeSelection}
                                         <div className={styles.chartsStack}>
                                             {flowChartBlock}
                                             {stockChartBlock}
                                         </div>
-                                    </>
+                                    </div>
                                 )}
-                                {activeView === 'events' && (
-                                    <EventsTable
-                                        activePage={eventsActivePage}
-                                        onActivePageChange={setEventsActivePage}
-                                        countriesIso3={effectiveCountries}
-                                        hazardTypes={selectedHazardTypeIds}
-                                        violenceSubTypes={selectedViolenceSubTypeIds}
-                                        startYear={timeRange[0]}
-                                        cause={displacementCause}
-                                        category={displacementCategory}
-                                        endYear={timeRange[1]}
-                                        clientCode={clientCode}
-                                        searchText={eventSearchText}
-                                        abbreviate={precision === 'rounded'}
-                                    />
+                                {mountedViews.has('events') && (
+                                    <div className={_cs(
+                                        styles.viewPane,
+                                        activeView !== 'events' && styles.viewHidden,
+                                    )}
+                                    >
+                                        <EventsTable
+                                            activePage={eventsActivePage}
+                                            onActivePageChange={setEventsActivePage}
+                                            countriesIso3={effectiveCountries}
+                                            hazardTypes={selectedHazardTypeIds}
+                                            violenceSubTypes={selectedViolenceSubTypeIds}
+                                            startYear={timeRange[0]}
+                                            cause={displacementCause}
+                                            category={displacementCategory}
+                                            endYear={timeRange[1]}
+                                            clientCode={clientCode}
+                                            searchText={eventSearchText}
+                                            abbreviate={precision === 'rounded'}
+                                            active={activeView === 'events'}
+                                        />
+                                    </div>
                                 )}
                             </div>
                         </div>

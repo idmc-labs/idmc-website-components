@@ -12,6 +12,13 @@
         font-size: var(--tui-font-size-small);
     }
 
+    .body {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        gap: var(--tui-spacing-medium);
+    }
+
     .placeholder {
         display: flex;
         align-items: center;

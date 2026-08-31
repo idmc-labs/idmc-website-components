@@ -3,7 +3,7 @@ import {
     gql,
     useQuery,
 } from '@apollo/client';
-import PendingMessage from '#components/PendingMessage';
+import { PendingAnimation } from '@togglecorp/toggle-ui';
 import useIduMap from '#components/IduMap/useIduMap';
 import Header from '#components/Header';
 import HTMLOutput from '#components/HTMLOutput';
@@ -76,7 +76,11 @@ function IduWidget(props: IduWidgetProps) {
             id="internal-displacement"
             className={styles.internalDisplacementUpdates}
         >
-            {pending && <PendingMessage noDelay />}
+            {pending && (
+                <div className={styles.pendingOverlay}>
+                    <PendingAnimation />
+                </div>
+            )}
             <Header
                 headingSize="large"
                 heading={countryMetadata.internalDisplacementUpdatesHeader}

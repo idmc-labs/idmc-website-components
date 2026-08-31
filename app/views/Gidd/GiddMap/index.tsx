@@ -125,6 +125,13 @@ const MIN_PIE_RADIUS = 6;
 // only affects the flow map.
 const GIDD_FLOW_VALUE_MAX = 103_859_782;
 
+// Fixed domain for the stock choropleth (total IDPs, all causes), mirroring the
+// flow bubbles' GIDD_FLOW_VALUE_MAX: a constant scale so the colour ramp and its
+// legend never rescale as filters change. The max is the no-filter ceiling — the
+// largest country total IDPs; update it if the data's true maximum changes.
+const GIDD_STOCK_VALUE_MIN = 1;
+const GIDD_STOCK_VALUE_MAX = 12_000_000;
+
 const MARKER_BORDER_WIDTH = 1.5;
 
 function getCoordinates(
@@ -160,8 +167,11 @@ function toCursorWorldCopy(
 }
 
 const SINGLE_COUNTRY_ZOOM = 4;
-const FLY_TO_OPTIONS = { zoom: SINGLE_COUNTRY_ZOOM };
-const WORLD_BOUNDS: LngLatBoundsLike = [[-140, -52], [165, 75]];
+// centred whole-world framing for winkelTripel: fitBounds on a lng/lat box
+// doesn't centre reliably in a non-mercator projection, so the world view uses
+// an explicit centre + zoom instead
+const WORLD_CENTER: LngLatLike = [0, 0];
+const WORLD_ZOOM = 1;
 
 function computeBounds(points: [number, number][]): LngLatBoundsLike | undefined {
     if (points.length === 0) {
@@ -190,7 +200,7 @@ function computeCameraForCountries(
     countryCentroidByIso3: Map<string, [number, number]>,
 ): CameraTarget | undefined {
     if (countriesIso3.length === 0) {
-        return { flyTo: undefined, fitBounds: WORLD_BOUNDS };
+        return { flyTo: WORLD_CENTER, fitBounds: undefined };
     }
     const coordinatesList = countriesIso3
         .map((iso3) => countryCentroidByIso3.get(iso3))
@@ -357,6 +367,9 @@ export interface Props {
     endYear: number;
     clientCode: string;
     abbreviate: boolean;
+    // false while this view is mounted but hidden, so its loading overlay
+    // doesn't portal on top of whichever view is actually visible
+    active?: boolean;
     onCountryFocus?: (iso3: string) => void;
 }
 
@@ -372,6 +385,7 @@ function GiddMap(props: Props) {
         endYear,
         clientCode,
         abbreviate,
+        active = true,
         onCountryFocus,
     } = props;
 
@@ -401,10 +415,14 @@ function GiddMap(props: Props) {
 
     const hazardEntries = useMemo(() => (
         (hazardData?.giddPublicDisasterStatistics?.displacementsByHazardType ?? [])
-            .map((item) => ({
-                ...item,
-                value: (isStockView ? item.totalDisplacements : item.newDisplacements) ?? 0,
-            }))
+            .map((item) => {
+                const flow = item.newDisplacementsRounded;
+                const stock = item.totalDisplacementsRounded;
+                return {
+                    ...item,
+                    value: (isStockView ? stock : flow) ?? 0,
+                };
+            })
             .filter((item) => item.value > 0)
             .sort((a, b) => b.value - a.value)
             .slice(0, 6)
@@ -424,10 +442,14 @@ function GiddMap(props: Props) {
 
     const violenceEntries = useMemo(() => (
         (violenceData?.giddPublicConflictStatistics?.displacementsByViolenceSubType ?? [])
-            .map((item) => ({
-                ...item,
-                value: (isStockView ? item.totalDisplacements : item.newDisplacements) ?? 0,
-            }))
+            .map((item) => {
+                const flow = item.newDisplacementsRounded;
+                const stock = item.totalDisplacementsRounded;
+                return {
+                    ...item,
+                    value: (isStockView ? stock : flow) ?? 0,
+                };
+            })
             .filter((item) => item.value > 0)
             .sort((a, b) => b.value - a.value)
             .slice(0, 6)
@@ -569,6 +591,13 @@ function GiddMap(props: Props) {
         setFitBounds(camera.fitBounds);
     }, [countriesIso3, countryCentroidByIso3]);
 
+    // a single-country focus zooms in; the world view (no country filter) stays
+    // zoomed out and centred on [0, 0]
+    const centerOptions = useMemo(
+        () => ({ zoom: countriesIso3.length === 0 ? WORLD_ZOOM : SINGLE_COUNTRY_ZOOM }),
+        [countriesIso3.length],
+    );
+
     const countryPoints = useMemo(() => (
         (countryPointsData?.giddPublicCountries ?? [])
             .map((country) => {
@@ -696,18 +725,6 @@ function GiddMap(props: Props) {
         };
     }), [pieCountryPoints]);
 
-    const maxValue = useMemo(
-        () => Math.max(0, ...countryPoints.map((point) => point.value)),
-        [countryPoints],
-    );
-
-    const minValue = useMemo(() => {
-        if (countryPoints.length === 0) {
-            return 0;
-        }
-        return Math.min(...countryPoints.map((point) => point.value));
-    }, [countryPoints]);
-
     const squareGeoJson: CountryPointGeoJSON = useMemo(() => ({
         type: 'FeatureCollection',
         features: !isStockView ? [] : countryPoints.map((point) => ({
@@ -739,13 +756,20 @@ function GiddMap(props: Props) {
             return [];
         }
         return countryPoints.map((point) => {
-            const t = maxValue > 0 ? Math.sqrt(point.value / maxValue) : 0;
+            // same log scale as the flow bubbles, over the fixed stock domain
+            const t = getLogRadius(
+                point.value,
+                GIDD_STOCK_VALUE_MIN,
+                GIDD_STOCK_VALUE_MAX,
+                0,
+                1,
+            );
             return {
                 name: `gidd-square-${point.iso3}-${choroplethRamp}`,
                 image: createSquareIcon(SQUARE_SIZE, getChoroplethColor(choroplethRamp, t)),
             };
         });
-    }, [isStockView, countryPoints, maxValue, choroplethRamp]);
+    }, [isStockView, countryPoints, choroplethRamp]);
 
     const handleMouseEnter = useCallback((feature: MapboxGeoJSONFeature, lngLat: LngLat) => {
         const properties = feature.properties as PointProperties;
@@ -829,7 +853,7 @@ function GiddMap(props: Props) {
 
     return (
         <div className={_cs(styles.giddMap, className)}>
-            {pending && <PendingMessage noDelay />}
+            {active && pending && <PendingMessage noDelay />}
             <div className={styles.mapWrapper}>
                 {isStockView && (
                     <TooltipIcon
@@ -858,13 +882,16 @@ function GiddMap(props: Props) {
                         logoPosition: 'bottom-right',
                         scrollZoom: false,
                         renderWorldCopies: false,
+                        center: [0, 0],
                         zoom: 1,
-                    }}
+                        // projection isn't in @types 2.7; cast to keep winkelTripel
+                        projection: { name: 'winkelTripel' },
+                    } as Omit<mapboxgl.MapboxOptions, 'style' | 'container'>}
                     scaleControlShown
                     navControlShown
                 >
                     <MapContainer className={styles.mapContainer} />
-                    <MapCenter center={flyTo} centerOptions={FLY_TO_OPTIONS} />
+                    <MapCenter center={flyTo} centerOptions={centerOptions} />
                     <MapBounds
                         bounds={fitBounds}
                         padding={40}
@@ -971,6 +998,9 @@ function GiddMap(props: Props) {
                 </ReMap>
                 {isStockView && (
                     <div className={styles.choroplethLegend}>
+                        <div className={styles.choroplethTitle}>
+                            Number of internally displaced people
+                        </div>
                         <div
                             className={styles.choroplethBar}
                             style={{
@@ -980,8 +1010,8 @@ function GiddMap(props: Props) {
                             }}
                         />
                         <div className={styles.choroplethLabels}>
-                            <Numeral value={minValue} abbreviate={abbreviate} />
-                            <Numeral value={maxValue} abbreviate={abbreviate} />
+                            <Numeral value={GIDD_STOCK_VALUE_MIN} abbreviate />
+                            <Numeral value={GIDD_STOCK_VALUE_MAX} abbreviate />
                         </div>
                     </div>
                 )}

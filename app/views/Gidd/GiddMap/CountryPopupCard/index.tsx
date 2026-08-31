@@ -8,7 +8,7 @@ import {
 import Numeral from '#components/Numeral';
 import RawButton from '#components/RawButton';
 import ListView from '#components/ListView';
-import { getHazardTypeLabel } from '#utils/common';
+import { getHazardTypeLabel, roundAndRemoveZero } from '#utils/common';
 
 import {
     Cause,
@@ -108,6 +108,11 @@ function CountryPopupCard(props: Props) {
     const otherConflict = isStock ? conflictNew : conflictTotal;
     const otherDisaster = isStock ? disasterNew : disasterTotal;
     const otherTotal = (cOn ? otherConflict : 0) + (dOn ? otherDisaster : 0);
+
+    const displayConflict = roundAndRemoveZero(currentConflict);
+    const displayDisaster = roundAndRemoveZero(currentDisaster);
+    const displayTotal = roundAndRemoveZero(currentTotal);
+    const displayOtherTotal = roundAndRemoveZero(otherTotal);
     const displacementsPeriod = startYear === endYear
         ? `in ${endYear}`
         : `from ${startYear} to ${endYear}`;
@@ -125,7 +130,7 @@ function CountryPopupCard(props: Props) {
                 <div className={styles.headerEnd}>
                     <Numeral
                         className={styles.headline}
-                        value={currentTotal}
+                        value={displayTotal}
                         abbreviate={abbreviate}
                     />
                     {canClose && (
@@ -151,7 +156,7 @@ function CountryPopupCard(props: Props) {
                             <span className={styles.breakdownLabel}>Conflict and violence</span>
                             <Numeral
                                 className={styles.breakdownValue}
-                                value={currentConflict}
+                                value={displayConflict}
                                 abbreviate={abbreviate}
                             />
                         </div>
@@ -162,7 +167,7 @@ function CountryPopupCard(props: Props) {
                             <span className={styles.breakdownLabel}>Disasters</span>
                             <Numeral
                                 className={styles.breakdownValue}
-                                value={currentDisaster}
+                                value={displayDisaster}
                                 abbreviate={abbreviate}
                             />
                         </div>
@@ -172,7 +177,7 @@ function CountryPopupCard(props: Props) {
                         <span className={styles.breakdownLabel}>{otherLabel}</span>
                         <Numeral
                             className={styles.breakdownValue}
-                            value={otherTotal}
+                            value={displayOtherTotal}
                             abbreviate={abbreviate}
                         />
                     </div>

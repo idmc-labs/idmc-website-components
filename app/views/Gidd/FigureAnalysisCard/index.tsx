@@ -109,43 +109,45 @@ function FigureAnalysisCard(props: Props) {
                 headingDescription={headingDescription}
                 headingDescriptionClassName={styles.description}
             />
-            {pending ? (
-                <Message pending compact />
-            ) : (
-                <>
-                    {countries.length === 0 && (
-                        <div className={styles.placeholder}>
-                            <div className={styles.placeholderTitle}>
-                                Select a country or territory
+            <div className={styles.body}>
+                {pending ? (
+                    <Message pending compact />
+                ) : (
+                    <>
+                        {countries.length === 0 && (
+                            <div className={styles.placeholder}>
+                                <div className={styles.placeholderTitle}>
+                                    Select a country or territory
+                                </div>
+                                <div className={styles.placeholderText}>
+                                    Pick a country or territory in the filter bar to
+                                    read IDMC&apos;s methodology and caveat notes behind
+                                    its published figures.
+                                </div>
                             </div>
-                            <div className={styles.placeholderText}>
-                                Pick a country or territory in the filter bar to
-                                read IDMC&apos;s methodology and caveat notes behind
-                                its published figures.
+                        )}
+                        {countries.length > 0 && entries.length === 0 && (
+                            <div className={styles.placeholder}>
+                                <div className={styles.placeholderText}>
+                                    No published figure analysis for the selected year.
+                                </div>
                             </div>
-                        </div>
-                    )}
-                    {countries.length > 0 && entries.length === 0 && (
-                        <div className={styles.placeholder}>
-                            <div className={styles.placeholderText}>
-                                No published figure analysis for the selected year.
-                            </div>
-                        </div>
-                    )}
-                    {entries.length > 0 && (
-                        <ListView
-                            className={styles.list}
-                            data={entries}
-                            keySelector={entryKeySelector}
-                            renderer={FigureAnalysisEntryCard}
-                            rendererParams={entryRendererParams}
-                            pending={false}
-                            errored={false}
-                            filtered={false}
-                        />
-                    )}
-                </>
-            )}
+                        )}
+                        {entries.length > 0 && (
+                            <ListView
+                                className={styles.list}
+                                data={entries}
+                                keySelector={entryKeySelector}
+                                renderer={FigureAnalysisEntryCard}
+                                rendererParams={entryRendererParams}
+                                pending={false}
+                                errored={false}
+                                filtered={false}
+                            />
+                        )}
+                    </>
+                )}
+            </div>
         </div>
     );
 }

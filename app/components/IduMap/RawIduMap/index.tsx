@@ -420,6 +420,8 @@ interface Props {
     focus: MapFocus | undefined;
     // true while any filter is applied (keeps the globe from spinning off the view)
     filtersActive: boolean;
+    // country pages pin the map to one country, so the globe must never spin
+    disableSpin?: boolean;
     // increment to animate back to the initial globe view
     resetTrigger: number;
     onPointClick: (lngLat: LngLatLike, properties: PopupProperties) => void;
@@ -438,6 +440,7 @@ function RawIduMap(props: Props) {
         fitBounds,
         focus,
         filtersActive,
+        disableSpin,
         resetTrigger,
         onPointClick,
         onClose,
@@ -588,7 +591,9 @@ function RawIduMap(props: Props) {
                     The boundaries and names shown and the designations used on this map do not imply official endorsement or acceptance by IDMC.
                 </div>
             </div>
-            <GlobeSpinner paused={isDefined(selection) || isDefined(focus) || filtersActive} />
+            <GlobeSpinner
+                paused={disableSpin || isDefined(selection) || isDefined(focus) || filtersActive}
+            />
             {isDefined(focus) && (
                 <RawButton
                     name={undefined}

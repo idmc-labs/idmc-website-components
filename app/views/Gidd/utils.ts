@@ -258,6 +258,8 @@ export function useCountryRanking(params: UseCountryRankingParams) {
 
     const rankedCountries = useMemo<RankedCountry[]>(() => {
         const rows = data?.giddPublicCountryDisplacements ?? [];
+        // raw figures throughout: conflict/disaster drive the bar-segment widths
+        // and ranking; the displayed total is rounded (round-of-sum) by the caller
         return rows
             .map((row) => {
                 const conflict = (isStock

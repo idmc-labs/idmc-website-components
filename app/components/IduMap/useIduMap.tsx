@@ -586,7 +586,7 @@ function useIduMap(
         const Workbook = ExcelJS.default?.Workbook ?? ExcelJS.Workbook;
         const workbook = new Workbook();
 
-        const dataSheet = workbook.addWorksheet('sheet1');
+        const dataSheet = workbook.addWorksheet('IDUS_Data');
         dataSheet.columns = EXCEL_COLUMNS.map((col) => ({
             header: col.header,
             key: col.key,
@@ -600,7 +600,7 @@ function useIduMap(
             dataSheet.addRow(row);
         });
 
-        const readmeSheet = workbook.addWorksheet('sheet2');
+        const readmeSheet = workbook.addWorksheet('README');
         readmeSheet.addRow(['IDMC Internal Displacement Updates (IDU)']);
         readmeSheet.addRow(['Preliminary estimates of internal displacement events reported in the last 180 days.']);
         readmeSheet.addRow(['This provisional data is updated daily with new available data.']);
@@ -815,6 +815,7 @@ function useIduMap(
 
     const selectedIso3 = mapFocus?.type === 'country' ? mapFocus.iso3 : undefined;
     const selectedTriggerType = mapFocus?.type === 'trigger' ? mapFocus.triggerType : undefined;
+    const focusedEventId = mapFocus?.type === 'event' ? mapFocus.eventId : undefined;
 
     const activeFilters = useMemo<ActiveFilter[]>(() => {
         const filters: ActiveFilter[] = [];
@@ -945,8 +946,8 @@ function useIduMap(
                     endDate={endDate}
                     scopeLabel={scopeLabel}
                     filterSuffix={combinedFilterSuffix}
-                    onRecordSelect={isMobile ? undefined : handleRecordSelect}
-                    selectedRecordId={mapSelection?.recordId}
+                    onEventSelect={isMobile ? undefined : handleEventSelect}
+                    selectedEventId={focusedEventId}
                     expandable={isMobile}
                 />
             ),
@@ -1156,6 +1157,7 @@ function useIduMap(
                                 fitBounds={fitBounds}
                                 focus={mapFocus}
                                 filtersActive={appliedFilterCount > 0}
+                                disableSpin={isDefined(iso3)}
                                 resetTrigger={resetTrigger}
                                 onPointClick={handleMapPointClick}
                                 onClose={handleMapPopupClose}

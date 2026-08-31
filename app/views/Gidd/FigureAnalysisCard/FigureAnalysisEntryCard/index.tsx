@@ -44,7 +44,7 @@ function FigureAnalysisEntryCard(props: Props) {
                         styles.entryValue,
                         isConflict ? styles.conflict : styles.disaster,
                     )}
-                    value={entry.figures}
+                    value={entry.figuresRounded}
                     abbreviate={abbreviate}
                 />
             </div>
