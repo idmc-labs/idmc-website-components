@@ -347,7 +347,14 @@
         }
 
         [class*="segment"] > [class*="button"] {
+            background-color: transparent !important;
             height: 100%;
+            color: var(--tui-color-brand, #193256) !important;
+        }
+
+        [class*="segment"] > [class*="button"][class*="primary"] {
+            background-color: var(--tui-color-brand, #193256) !important;
+            color: #fff !important;
         }
     }
 }

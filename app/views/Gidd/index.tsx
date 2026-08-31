@@ -454,7 +454,7 @@ function Gidd(props: Props) {
         clientCode,
     } = props;
 
-    const [timeRange, setTimeRange] = useState([endYear, endYear]);
+    const [timeRange, setTimeRange] = useState([START_YEAR, endYear]);
     const [displacementCause, setDisplacementCause] = useState<Cause | undefined>();
     const [combineCauseCharts, setCombineCauseCharts] = useState(false);
     const [displacementCategory, setDisplacementCategory] = useState<Category | undefined>();
@@ -588,7 +588,7 @@ function Gidd(props: Props) {
         setTriggerTypes([]);
         setRegions([]);
         handleCauseChange(undefined);
-        setTimeRange([endYear, endYear]);
+        setTimeRange([START_YEAR, endYear]);
         setDisplacementCategory(undefined);
         setActiveView('charts');
         setDataActivePage(1);
@@ -1709,7 +1709,7 @@ function Gidd(props: Props) {
         + (triggerTypes.length > 0 ? 1 : 0)
         + (regions.length > 0 ? 1 : 0)
         + (countries.length > 0 ? 1 : 0)
-        + (timeRange[0] !== endYear || timeRange[1] !== endYear ? 1 : 0)
+        + (timeRange[0] !== START_YEAR || timeRange[1] !== endYear ? 1 : 0)
     );
 
     const activeFilters = useMemo(() => {
@@ -1758,11 +1758,11 @@ function Gidd(props: Props) {
                 onRemove: () => handleCountriesChange(countries.filter((item) => item !== iso3)),
             });
         });
-        if (timeRange[0] !== endYear || timeRange[1] !== endYear) {
+        if (timeRange[0] !== START_YEAR || timeRange[1] !== endYear) {
             filters.push({
                 key: 'timescale',
                 label: `${timeRange[0]} - ${timeRange[1]}`,
-                onRemove: () => setTimeRange([endYear, endYear]),
+                onRemove: () => setTimeRange([START_YEAR, endYear]),
             });
         }
         return filters;
