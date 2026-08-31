@@ -8,7 +8,6 @@ import {
     Table,
     Pager,
     SortContext,
-    useSortState,
 } from '@togglecorp/toggle-ui';
 import {
     DATA_RELEASE,
@@ -24,13 +23,16 @@ import {
 } from '#components/tableHelpers';
 import Message from '#components/Message';
 import PendingMessage from '#components/PendingMessage';
-import useDebouncedValue from '#hooks/useDebouncedValue';
+import useActiveVariables from '#hooks/useActiveVariables';
+import useFilterState from '#hooks/useFilterState';
+import useSyncedFilter from '#hooks/useSyncedFilter';
 import {
     GiddDisplacementsQuery,
     GiddDisplacementsQueryVariables,
 } from '#generated/types';
 
 import { CAUSE_BY_KEY } from '../utils';
+import { GiddTableFilter } from '../types';
 
 import styles from './styles.css';
 
@@ -102,26 +104,17 @@ const GIDD_DISPLACEMENTS = gql`
     }
 `;
 
-type Category = 'flow' | 'stock';
-type Cause = 'conflict' | 'disaster';
-
 interface Props {
     className?: string;
     isConflictDataShown?: boolean;
     isDisasterDataShown?: boolean;
-    category: Category | undefined;
-    cause: Cause | undefined;
-    startYear: number;
-    endYear: number;
-    countriesIso3: string[] | undefined;
-    hazardTypes?: string[];
-    violenceSubTypes?: string[];
-    activePage: number;
-    onActivePageChange: (newVal: number) => void;
+    filter: GiddTableFilter;
     clientCode: string;
     abbreviate: boolean;
-    // false while this view is mounted but hidden, so its loading overlay
-    // doesn't portal on top of whichever view is actually visible
+    /**
+     * False while the pane is mounted but hidden: its loading overlay stays out of the visible
+     * view, and its query holds the variables it last fetched with.
+     */
     active?: boolean;
 }
 
@@ -130,52 +123,56 @@ function DataTable(props: Props) {
         className,
         isConflictDataShown,
         isDisasterDataShown,
-        category,
-        cause,
-        startYear,
-        endYear,
-        countriesIso3,
-        hazardTypes,
-        violenceSubTypes,
-        activePage,
-        onActivePageChange,
+        filter: sharedFilter,
         clientCode,
         abbreviate,
         active = true,
     } = props;
 
-    const overallDataSortState = useSortState({ name: 'year', direction: 'dsc' });
-    const { sorting } = overallDataSortState;
+    const {
+        filter,
+        page,
+        setPage,
+        rawPage,
+        pageSize,
+        ordering,
+        sortState,
+        setFilter,
+    } = useFilterState<GiddTableFilter>({
+        filter: sharedFilter,
+        ordering: { name: 'year', direction: 'dsc' },
+        pageSize: DISPLACEMENTS_TABLE_PAGE_SIZE,
+    });
+
+    useSyncedFilter(sharedFilter, setFilter);
+
+    const { sorting } = sortState;
 
     const sortedHeaderClassName = useCallback((columnId: string) => (
         sorting?.name === columnId ? styles.sortedHeader : undefined
     ), [sorting]);
 
     const giddDisplacementsVariables = useMemo(() => ({
-        ordering: `${sorting?.direction === 'asc' ? '' : '-'}${sorting?.name}`,
-        page: activePage,
-        pageSize: DISPLACEMENTS_TABLE_PAGE_SIZE,
-        countriesIso3,
-        cause: cause ? CAUSE_BY_KEY[cause] : undefined,
-        startYear,
-        endYear,
-        hazardTypes,
-        violenceSubTypes,
+        ordering,
+        page,
+        pageSize,
+        countriesIso3: filter.countriesIso3,
+        cause: filter.cause ? CAUSE_BY_KEY[filter.cause] : undefined,
+        startYear: filter.startYear,
+        endYear: filter.endYear,
+        hazardTypes: filter.hazardTypes,
+        violenceSubTypes: filter.violenceSubTypes,
         releaseEnvironment: DATA_RELEASE,
         clientId: clientCode,
     }), [
-        sorting,
-        activePage,
-        countriesIso3,
-        cause,
-        startYear,
-        endYear,
-        hazardTypes,
-        violenceSubTypes,
+        ordering,
+        page,
+        pageSize,
+        filter,
         clientCode,
     ]);
 
-    const debouncedVariables = useDebouncedValue(giddDisplacementsVariables);
+    const activeVariables = useActiveVariables(giddDisplacementsVariables, active);
 
     const {
         previousData: previousDisplacementsResponse,
@@ -187,15 +184,15 @@ function DataTable(props: Props) {
     >(
         GIDD_DISPLACEMENTS,
         {
-            variables: debouncedVariables,
+            variables: activeVariables,
             context: {
                 clientName: 'helix',
             },
         },
     );
 
-    const isFlowShown = category !== 'stock';
-    const isStockShown = category !== 'flow';
+    const isFlowShown = filter.category !== 'stock';
+    const isStockShown = filter.category !== 'flow';
     const bothCauses = !!isConflictDataShown && !!isDisasterDataShown;
 
     const columns = useMemo(
@@ -316,7 +313,9 @@ function DataTable(props: Props) {
     );
 
     const rows = displacementsResponse?.giddPublicCountryYearDisplacements?.results;
-    const isEmpty = (rows ?? []).length === 0;
+    // A pane that has just been shown has an in-flight query and no rows yet; the empty
+    // message belongs to a finished query, not that gap.
+    const isEmpty = !loading && (rows ?? []).length === 0;
 
     return (
         <div className={_cs(className, styles.dataTable)}>
@@ -328,7 +327,7 @@ function DataTable(props: Props) {
                     emptyMessage="No data available for the selected filters."
                 />
             ) : (
-                <SortContext.Provider value={overallDataSortState}>
+                <SortContext.Provider value={sortState}>
                     <Table
                         // using dynamic key to reset the column width caching
                         key={columns.map((column) => column.id).join(',')}
@@ -340,13 +339,13 @@ function DataTable(props: Props) {
                     />
                     <Pager
                         className={styles.pager}
-                        activePage={activePage}
+                        activePage={rawPage}
                         itemsCount={
                             displacementsResponse
                                 ?.giddPublicCountryYearDisplacements?.totalCount ?? 0
                         }
-                        maxItemsPerPage={DISPLACEMENTS_TABLE_PAGE_SIZE}
-                        onActivePageChange={onActivePageChange}
+                        maxItemsPerPage={pageSize}
+                        onActivePageChange={setPage}
                         itemsPerPageControlHidden
                     />
                 </SortContext.Provider>

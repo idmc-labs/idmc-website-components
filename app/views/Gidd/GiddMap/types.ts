@@ -1,5 +1,7 @@
 import { BreakdownEntry } from '../utils';
 
+export type { Cause, Category } from '../types';
+
 export type MarkerCause = 'Conflict' | 'Disaster';
 
 export interface PointProperties {
@@ -17,8 +19,5 @@ export interface PointProperties {
     disasterNew?: number;
     disasterTotal?: number;
 }
-
-export type Cause = 'conflict' | 'disaster';
-export type Category = 'flow' | 'stock';
 
 export type BreakdownDisplayItem = BreakdownEntry & { value: number };

@@ -39,6 +39,7 @@ import {
     BUBBLE_RADIUS_MIN,
     BUBBLE_RADIUS_MAX,
 } from '#utils/common';
+import useActiveVariables from '#hooks/useActiveVariables';
 import useDebouncedValue from '#hooks/useDebouncedValue';
 import {
     GiddMapCountryPointsQuery,
@@ -486,6 +487,11 @@ function GiddMap(props: Props) {
 
     const debouncedDisplacementsVariables = useDebouncedValue(displacementsVariables);
 
+    const activeDisplacementsVariables = useActiveVariables(
+        debouncedDisplacementsVariables,
+        active,
+    );
+
     const {
         previousData: previousDisplacementsData,
         data: displacementsData = previousDisplacementsData,
@@ -493,7 +499,7 @@ function GiddMap(props: Props) {
     } = useQuery<GiddMapDisplacementsQuery, GiddMapDisplacementsQueryVariables>(
         MAP_DISPLACEMENTS,
         {
-            variables: debouncedDisplacementsVariables,
+            variables: activeDisplacementsVariables,
             context: {
                 clientName: 'helix',
             },
@@ -520,6 +526,11 @@ function GiddMap(props: Props) {
 
     const debouncedStockDisplacementsVariables = useDebouncedValue(stockDisplacementsVariables);
 
+    const activeStockDisplacementsVariables = useActiveVariables(
+        debouncedStockDisplacementsVariables,
+        active,
+    );
+
     const {
         previousData: previousStockDisplacementsData,
         data: stockDisplacementsData = previousStockDisplacementsData,
@@ -527,7 +538,7 @@ function GiddMap(props: Props) {
     } = useQuery<GiddMapDisplacementsQuery, GiddMapDisplacementsQueryVariables>(
         MAP_DISPLACEMENTS,
         {
-            variables: debouncedStockDisplacementsVariables,
+            variables: activeStockDisplacementsVariables,
             context: {
                 clientName: 'helix',
             },
