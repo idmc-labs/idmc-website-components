@@ -3,7 +3,6 @@ import { _cs } from '@togglecorp/fujs';
 import { useQuery } from '@apollo/client';
 
 import Header from '#components/Header';
-import Message from '#components/Message';
 import ListView from '#components/ListView';
 import BreakdownBar from '#components/IduMap/BreakdownBar';
 import { DATA_RELEASE } from '#utils/common';
@@ -184,22 +183,21 @@ function TypeBreakdownCard(props: Props) {
                 headingDescription={description}
                 headingDescriptionClassName={styles.description}
             />
-            {pending ? (
-                <Message pending compact />
-            ) : (
+            <div className={styles.body}>
                 <ListView
                     className={styles.list}
                     data={rows}
                     keySelector={rowKeySelector}
                     renderer={BreakdownBar}
                     rendererParams={rowRendererParams}
-                    pending={false}
+                    pending={pending}
                     errored={false}
                     filtered={false}
                     messageShown
+                    compactPendingMessage
                     emptyMessage="No data available for the selected filters."
                 />
-            )}
+            </div>
         </div>
     );
 }

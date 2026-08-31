@@ -1,13 +1,20 @@
 .gidd-map {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
     .map-wrapper {
         position: relative;
+        flex-grow: 1;
         z-index: 0;
         margin-top: var(--tui-spacing-medium);
+        min-height: 0;
 
         .map-container {
             border-radius: var(--tui-radius-border-large);
             width: 100%;
-            min-height: 60vh;
+            height: 100%;
+            min-height: 20rem;
             overflow: visible;
         }
 
@@ -40,7 +47,12 @@
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
             background-color: #fff;
             padding: 0.5rem 0.75rem;
-            width: 8rem;
+            width: 10.4rem;
+
+            .choropleth-title {
+                color: var(--tui-color-label, #7a7a7a);
+                font-size: var(--tui-font-size-extra-small);
+            }
 
             .choropleth-bar {
                 border-radius: var(--tui-radius-border-large);

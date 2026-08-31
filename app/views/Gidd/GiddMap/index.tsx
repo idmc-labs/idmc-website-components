@@ -36,7 +36,6 @@ import BubbleSizeLegend from '#components/BubbleSizeLegend';
 import {
     DATA_RELEASE,
     getLogRadius,
-    roundAndRemoveZero,
     BUBBLE_RADIUS_MIN,
     BUBBLE_RADIUS_MAX,
 } from '#utils/common';
@@ -125,6 +124,13 @@ const MIN_PIE_RADIUS = 6;
 // rescaling as filters change. Stock renders a choropleth (no bubbles), so this
 // only affects the flow map.
 const GIDD_FLOW_VALUE_MAX = 103_859_782;
+
+// Fixed domain for the stock choropleth (total IDPs, all causes), mirroring the
+// flow bubbles' GIDD_FLOW_VALUE_MAX: a constant scale so the colour ramp and its
+// legend never rescale as filters change. The max is the no-filter ceiling — the
+// largest country total IDPs; update it if the data's true maximum changes.
+const GIDD_STOCK_VALUE_MIN = 1;
+const GIDD_STOCK_VALUE_MAX = 12_000_000;
 
 const MARKER_BORDER_WIDTH = 1.5;
 
@@ -705,18 +711,6 @@ function GiddMap(props: Props) {
         };
     }), [pieCountryPoints]);
 
-    const maxValue = useMemo(
-        () => Math.max(0, ...countryPoints.map((point) => point.value)),
-        [countryPoints],
-    );
-
-    const minValue = useMemo(() => {
-        if (countryPoints.length === 0) {
-            return 0;
-        }
-        return Math.min(...countryPoints.map((point) => point.value));
-    }, [countryPoints]);
-
     const squareGeoJson: CountryPointGeoJSON = useMemo(() => ({
         type: 'FeatureCollection',
         features: !isStockView ? [] : countryPoints.map((point) => ({
@@ -748,13 +742,20 @@ function GiddMap(props: Props) {
             return [];
         }
         return countryPoints.map((point) => {
-            const t = maxValue > 0 ? Math.sqrt(point.value / maxValue) : 0;
+            // same log scale as the flow bubbles, over the fixed stock domain
+            const t = getLogRadius(
+                point.value,
+                GIDD_STOCK_VALUE_MIN,
+                GIDD_STOCK_VALUE_MAX,
+                0,
+                1,
+            );
             return {
                 name: `gidd-square-${point.iso3}-${choroplethRamp}`,
                 image: createSquareIcon(SQUARE_SIZE, getChoroplethColor(choroplethRamp, t)),
             };
         });
-    }, [isStockView, countryPoints, maxValue, choroplethRamp]);
+    }, [isStockView, countryPoints, choroplethRamp]);
 
     const handleMouseEnter = useCallback((feature: MapboxGeoJSONFeature, lngLat: LngLat) => {
         const properties = feature.properties as PointProperties;
@@ -980,6 +981,9 @@ function GiddMap(props: Props) {
                 </ReMap>
                 {isStockView && (
                     <div className={styles.choroplethLegend}>
+                        <div className={styles.choroplethTitle}>
+                            Number of internally displaced people
+                        </div>
                         <div
                             className={styles.choroplethBar}
                             style={{
@@ -989,14 +993,8 @@ function GiddMap(props: Props) {
                             }}
                         />
                         <div className={styles.choroplethLabels}>
-                            <Numeral
-                                value={abbreviate ? roundAndRemoveZero(minValue) : minValue}
-                                abbreviate={abbreviate}
-                            />
-                            <Numeral
-                                value={abbreviate ? roundAndRemoveZero(maxValue) : maxValue}
-                                abbreviate={abbreviate}
-                            />
+                            <Numeral value={GIDD_STOCK_VALUE_MIN} abbreviate />
+                            <Numeral value={GIDD_STOCK_VALUE_MAX} abbreviate />
                         </div>
                     </div>
                 )}
