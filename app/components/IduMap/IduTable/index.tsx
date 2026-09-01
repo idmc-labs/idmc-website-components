@@ -72,6 +72,7 @@ interface Props {
     className?: string;
     idus: IduRow[] | undefined;
     onRecordSelect?: (recordId: number) => void;
+    abbreviate?: boolean;
 }
 
 function IduTable(props: Props) {
@@ -79,6 +80,7 @@ function IduTable(props: Props) {
         className,
         idus,
         onRecordSelect,
+        abbreviate = true,
     } = props;
 
     const [activePage, setActivePage] = useState(1);
@@ -128,7 +130,7 @@ function IduTable(props: Props) {
             cellRenderer: Numeral,
             cellRendererParams: (_, datum) => ({
                 value: datum.figure,
-                abbreviate: true,
+                abbreviate,
                 valueClassName: _cs(
                     styles.figure,
                     datum.displacement_type === 'Conflict' && styles.conflict,
@@ -205,7 +207,7 @@ function IduTable(props: Props) {
             displacementsColumn,
             triggerTypeColumn,
         ];
-    }, [sorting, onRecordSelect]);
+    }, [sorting, onRecordSelect, abbreviate]);
 
     const sortedData = useMemo(() => {
         const data = idus ?? [];

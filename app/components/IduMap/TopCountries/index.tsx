@@ -63,6 +63,7 @@ interface Props {
     filterSuffix: string;
     onCountrySelect?: (iso3: string) => void;
     selectedIso3: string | undefined;
+    abbreviate?: boolean;
 }
 
 function TopCountries(props: Props) {
@@ -76,6 +77,7 @@ function TopCountries(props: Props) {
         filterSuffix,
         onCountrySelect,
         selectedIso3,
+        abbreviate = true,
     } = props;
 
     const countries = useMemo<CountryDatum[]>(() => {
@@ -123,7 +125,8 @@ function TopCountries(props: Props) {
         maxTotal,
         onClick: country.key ? onCountrySelect : undefined,
         selected: country.key === selectedIso3,
-    }), [maxTotal, onCountrySelect, selectedIso3]);
+        abbreviate,
+    }), [maxTotal, onCountrySelect, selectedIso3, abbreviate]);
 
     // when a country/region filter is active, name it; otherwise keep the
     // generic "the following countries" phrasing for the global ranking

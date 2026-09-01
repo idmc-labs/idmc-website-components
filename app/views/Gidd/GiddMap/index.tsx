@@ -279,6 +279,19 @@ function getChoroplethColor(ramp: ChoroplethRampKey, t: number) {
     return `rgb(${r}, ${g}, ${b})`;
 }
 
+const CHOROPLETH_LEGEND_STOPS = 12;
+
+// The fill places a country at `log(value / min) / log(max / min)`, so the bar is a log axis
+// between its two end labels and the color stops sit evenly along it. Spacing them any other
+// way would put each color somewhere the fill never uses.
+function getChoroplethLegendGradient(ramp: ChoroplethRampKey) {
+    const stops = Array.from({ length: CHOROPLETH_LEGEND_STOPS + 1 }, (_, index) => {
+        const t = index / CHOROPLETH_LEGEND_STOPS;
+        return `${getChoroplethColor(ramp, t)} ${(t * 100).toFixed(2)}%`;
+    });
+    return `linear-gradient(to right, ${stops.join(', ')})`;
+}
+
 const SQUARE_BORDER_WIDTH = 1.5;
 
 function createSquareIcon(size: number, color: string): ImageData {
@@ -793,6 +806,13 @@ function GiddMap(props: Props) {
         });
     }, [isStockView, countryPoints, choroplethRamp]);
 
+    // The legend labels stop at the largest bubble actually on the map; the bubble scale
+    // itself stays pinned to GIDD_FLOW_VALUE_MAX so sizes do not shift as filters narrow.
+    const maxValue = useMemo(
+        () => Math.max(0, ...countryPoints.map((point) => point.value)),
+        [countryPoints],
+    );
+
     const handleMouseEnter = useCallback((feature: MapboxGeoJSONFeature, lngLat: LngLat) => {
         const properties = feature.properties as PointProperties;
         setHoverLngLat(toCursorWorldCopy(
@@ -843,7 +863,11 @@ function GiddMap(props: Props) {
             fetchViolenceBreakdown({ variables: breakdownVariables });
         }
 
-        return undefined;
+        // re-map dispatches as `features.every((f) => !layer.onClick(...))`, so a falsy return
+        // means "not handled, try the next feature" -- and features arrive top-most first, so
+        // every later one would overwrite this selection and the bottom marker would win.
+        // RawIduMap returns false on purpose, because it stacks records into one popup.
+        return true;
     }, [
         cause,
         startYear,
@@ -1026,9 +1050,7 @@ function GiddMap(props: Props) {
                         <div
                             className={styles.choroplethBar}
                             style={{
-                                background: `linear-gradient(to right, ${
-                                    getChoroplethColor(choroplethRamp, 0)
-                                }, ${getChoroplethColor(choroplethRamp, 1)})`,
+                                background: getChoroplethLegendGradient(choroplethRamp),
                             }}
                         />
                         <div className={styles.choroplethLabels}>
@@ -1054,6 +1076,8 @@ function GiddMap(props: Props) {
                         <BubbleSizeLegend
                             domainMin={1}
                             domainMax={GIDD_FLOW_VALUE_MAX}
+                            valueMax={maxValue}
+                            abbreviate={abbreviate}
                         />
                     </div>
                 )}

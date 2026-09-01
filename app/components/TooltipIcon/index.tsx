@@ -24,17 +24,21 @@ interface TooltipIconProps {
     trigger?: 'hover' | 'click';
     // shown on the left of the close button row (click-trigger only)
     title?: React.ReactNode;
+    // accessible name for the trigger. A text `infoLabel` names itself, so the name is only
+    // applied when the trigger renders as an icon -- including the default one.
+    label?: string;
 }
 
 function TooltipIcon(props: TooltipIconProps) {
     const {
         className,
         tooltipClassName,
-        infoLabel = <IoInformationCircleOutline />,
+        infoLabel,
         children,
         content,
         trigger = 'hover',
         title,
+        label = 'More information',
     } = props;
 
     const boolState = useBooleanState(false);
@@ -68,17 +72,10 @@ function TooltipIcon(props: TooltipIconProps) {
         return null;
     }
 
+    // The hover trigger toggles on click too, so the button role it announces is one it
+    // honours -- and so a touch device, where hover never fires, can open it at all.
     const triggerProps = trigger === 'click'
-        ? {
-            onClick: toggleTooltip,
-            role: 'button' as const,
-            tabIndex: 0,
-            onKeyDown: (e: React.KeyboardEvent) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    toggleTooltip();
-                }
-            },
-        }
+        ? {}
         : {
             onMouseOver: setShowTooltipTrue,
             onFocus: setShowTooltipTrue,
@@ -86,14 +83,31 @@ function TooltipIcon(props: TooltipIconProps) {
             onBlur: setShowTooltipFalse,
         };
 
+    // WCAG 1.4.13: content shown on hover must also be dismissable from the keyboard.
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Escape') {
+            setShowTooltipFalse();
+        } else if (e.key === 'Enter' || e.key === ' ') {
+            toggleTooltip();
+        }
+    };
+
     return (
         <>
             <span
                 className={_cs(className, trigger === 'click' && styles.clickTrigger)}
                 ref={labelRef}
+                role="button"
+                tabIndex={0}
+                aria-expanded={showTooltip}
+                // A text `infoLabel` names the trigger itself; an icon carries no text, so
+                // the name has to come from here -- including for the default icon.
+                aria-label={typeof infoLabel === 'string' ? undefined : label}
+                onClick={toggleTooltip}
+                onKeyDown={handleKeyDown}
                 {...triggerProps}
             >
-                {infoLabel}
+                {infoLabel ?? <IoInformationCircleOutline />}
             </span>
             {showTooltip && (
                 <Portal>

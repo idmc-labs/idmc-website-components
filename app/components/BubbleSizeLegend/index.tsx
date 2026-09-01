@@ -36,6 +36,12 @@ interface Props {
     title?: string;
     domainMin: number;
     domainMax: number;
+    // Where the labelled circles sit, when the sizing domain is a fixed ceiling rather than
+    // the data on screen. Without it the legend advertises a bubble nothing on the map has.
+    valueMax?: number;
+    // Required, not defaulted: the legend labels the same figures the map does, and an
+    // optional flag is how this one silently stopped following the map's number format.
+    abbreviate: boolean;
 }
 
 function BubbleSizeLegend(props: Props) {
@@ -44,10 +50,12 @@ function BubbleSizeLegend(props: Props) {
         title = 'Number of internal displacements',
         domainMin,
         domainMax,
+        valueMax = domainMax,
+        abbreviate,
     } = props;
 
     const items = useMemo(() => (
-        getLegendValues(domainMax).map((value) => ({
+        getLegendValues(Math.min(valueMax, domainMax)).map((value) => ({
             value,
             radius: getLogRadius(
                 value,
@@ -57,7 +65,7 @@ function BubbleSizeLegend(props: Props) {
                 BUBBLE_RADIUS_MAX,
             ),
         }))
-    ), [domainMin, domainMax]);
+    ), [domainMin, domainMax, valueMax]);
 
     if (domainMax <= 0 || items.length === 0) {
         return null;
@@ -108,7 +116,7 @@ function BubbleSizeLegend(props: Props) {
                                 className={styles.label}
                                 style={{ top, left: diameter + LEADER_LENGTH }}
                             >
-                                <Numeral value={item.value} abbreviate />
+                                <Numeral value={item.value} abbreviate={abbreviate} />
                             </span>
                         </React.Fragment>
                     );

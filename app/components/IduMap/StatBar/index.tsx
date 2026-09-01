@@ -11,12 +11,14 @@ type IduRow = NonNullable<IduDataQuery['idu']>[number];
 interface Props {
     className?: string;
     idus: IduRow[] | undefined;
+    abbreviate?: boolean;
 }
 
 function StatBar(props: Props) {
     const {
         className,
         idus,
+        abbreviate = true,
     } = props;
 
     const {
@@ -45,7 +47,7 @@ function StatBar(props: Props) {
                 <Numeral
                     className={styles.value}
                     value={conflictTotal}
-                    abbreviate
+                    abbreviate={abbreviate}
                     valueClassName={styles.conflictText}
                     abbrClassName={styles.conflictText}
                 />
@@ -58,7 +60,7 @@ function StatBar(props: Props) {
                 <Numeral
                     className={styles.value}
                     value={disasterTotal}
-                    abbreviate
+                    abbreviate={abbreviate}
                     valueClassName={styles.disasterText}
                     abbrClassName={styles.disasterText}
                 />
