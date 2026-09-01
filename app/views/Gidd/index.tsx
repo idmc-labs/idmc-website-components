@@ -78,6 +78,7 @@ import {
 import useYear from '#hooks/useYear';
 import { buildCausePhrase, buildScopeLabel, buildTriggerFilterSuffix } from '#utils/strings';
 
+import { Cause, Category, GiddTableFilter } from './types';
 import EventsTable from './EventsTable';
 import DataTable from './DataTable';
 import DownloadMenu from './DownloadMenu';
@@ -315,7 +316,6 @@ function yearLabelSelector(d: { label: string }) {
     return d.label;
 }
 
-type Cause = 'conflict' | 'disaster';
 type CauseOption = {
     key: Cause;
     label: string;
@@ -377,7 +377,6 @@ function triggerTypeOptionGroupLabelSelector(option: TriggerTypeOption) {
     return option.groupLabel;
 }
 
-type Category = 'flow' | 'stock';
 type CategoryOption = {
     key: Category;
     label: string;
@@ -464,8 +463,6 @@ function Gidd(props: Props) {
     // table page/sort, fetched data) survives switching between views
     const [mountedViews, setMountedViews] = useState<Set<View>>(() => new Set<View>(['charts']));
     const [combineCountriesChart, setCombineCountriesChart] = useState(false);
-    const [dataActivePage, setDataActivePage] = useState<number>(1);
-    const [eventsActivePage, setEventsActivePage] = useState<number>(1);
     const [eventSearchText, setEventSearchText] = useState<string | undefined>();
     const [numberFormat, setNumberFormat] = useState<NumberFormat>('abbreviated');
     const abbreviateFigures = numberFormat === 'abbreviated';
@@ -522,8 +519,6 @@ function Gidd(props: Props) {
         if (newVal) {
             setCombineCauseCharts(false);
         }
-        setDataActivePage(1);
-        setEventsActivePage(1);
     }, [setTriggerTypes]);
 
     const handleTriggerTypesChange = useCallback((newVal: string[]) => {
@@ -547,8 +542,6 @@ function Gidd(props: Props) {
         if (newVal.length === 0 || newVal.length > 3) {
             setCombineCountriesChart(false);
         }
-        setDataActivePage(1);
-        setEventsActivePage(1);
     }, [setCountries]);
 
     const handleCountryFocus = useCallback((iso3: string) => {
@@ -557,9 +550,6 @@ function Gidd(props: Props) {
 
     const handleTimeRangeChange = useCallback((newVal: number[]) => {
         setTimeRange(newVal);
-
-        setDataActivePage(1);
-        setEventsActivePage(1);
     }, []);
 
     const handleStartYearChange = useCallback((newVal: number | undefined) => {
@@ -584,8 +574,7 @@ function Gidd(props: Props) {
         setTimeRange([endYear, endYear]);
         setDisplacementCategory(undefined);
         setActiveView('charts');
-        setDataActivePage(1);
-        setEventsActivePage(1);
+        setEventSearchText(undefined);
     }, [
         handleCauseChange,
         handleCountriesChange,
@@ -665,8 +654,6 @@ function Gidd(props: Props) {
             const allowed = new Set(nextRegions.flatMap((id) => regionToIso3.get(id) ?? []));
             setCountries((prev) => prev.filter((iso3) => allowed.has(iso3)));
         }
-        setDataActivePage(1);
-        setEventsActivePage(1);
     }, [regionToIso3]);
 
     const countriesOptions = useMemo(() => {
@@ -716,6 +703,27 @@ function Gidd(props: Props) {
         });
         return { selectedHazardTypeIds: hazardIds, selectedViolenceSubTypeIds: violenceIds };
     }, [triggerTypes]);
+
+    // The dashboard-wide filter, as each table receives it. Held here rather than in a table so
+    // both tables answer the same question, while each keeps its own page, page size and sorting.
+    const tableFilter: GiddTableFilter = useMemo(() => ({
+        cause: displacementCause,
+        category: displacementCategory,
+        countriesIso3: effectiveCountries,
+        hazardTypes: isDisasterDataShown ? selectedHazardTypeIds : undefined,
+        violenceSubTypes: isConflictDataShown ? selectedViolenceSubTypeIds : undefined,
+        startYear: timeRange[0],
+        endYear: timeRange[1],
+    }), [
+        displacementCause,
+        displacementCategory,
+        effectiveCountries,
+        isDisasterDataShown,
+        isConflictDataShown,
+        selectedHazardTypeIds,
+        selectedViolenceSubTypeIds,
+        timeRange,
+    ]);
 
     const statisticsVariables = useMemo(() => ({
         countriesIso3: effectiveCountries,
@@ -1222,8 +1230,6 @@ function Gidd(props: Props) {
             setDisplacementCause('disaster');
             setCombineCauseCharts(false);
         }
-        setDataActivePage(1);
-        setEventsActivePage(1);
     }, [displacementCause]);
 
     const selectedViolenceType = useMemo(() => {
@@ -1243,8 +1249,6 @@ function Gidd(props: Props) {
             setDisplacementCause('conflict');
             setCombineCauseCharts(false);
         }
-        setDataActivePage(1);
-        setEventsActivePage(1);
     }, [displacementCause]);
 
     const chartTypeSelection = (
@@ -1991,6 +1995,7 @@ function Gidd(props: Props) {
                                     )}
                                     >
                                         <GiddMap
+                                            active={activeView === 'map'}
                                             cause={displacementCause}
                                             category={displacementCategory}
                                             countriesIso3={effectiveCountries}
@@ -2008,7 +2013,6 @@ function Gidd(props: Props) {
                                             endYear={timeRange[1]}
                                             clientCode={clientCode}
                                             abbreviate={abbreviateFigures}
-                                            active={activeView === 'map'}
                                             onCountryFocus={handleCountryFocus}
                                         />
                                     </div>
@@ -2020,28 +2024,12 @@ function Gidd(props: Props) {
                                     )}
                                     >
                                         <DataTable
+                                            active={activeView === 'table'}
                                             isConflictDataShown={isConflictDataShown}
                                             isDisasterDataShown={isDisasterDataShown}
-                                            category={displacementCategory}
-                                            cause={displacementCause}
-                                            countriesIso3={effectiveCountries}
-                                            hazardTypes={
-                                                isDisasterDataShown
-                                                    ? selectedHazardTypeIds
-                                                    : undefined
-                                            }
-                                            violenceSubTypes={
-                                                isConflictDataShown
-                                                    ? selectedViolenceSubTypeIds
-                                                    : undefined
-                                            }
-                                            startYear={timeRange[0]}
-                                            endYear={timeRange[1]}
-                                            activePage={dataActivePage}
-                                            onActivePageChange={setDataActivePage}
+                                            filter={tableFilter}
                                             clientCode={clientCode}
                                             abbreviate={abbreviateFigures}
-                                            active={activeView === 'table'}
                                         />
                                     </div>
                                 )}
@@ -2067,19 +2055,11 @@ function Gidd(props: Props) {
                                     )}
                                     >
                                         <EventsTable
-                                            activePage={eventsActivePage}
-                                            onActivePageChange={setEventsActivePage}
-                                            countriesIso3={effectiveCountries}
-                                            hazardTypes={selectedHazardTypeIds}
-                                            violenceSubTypes={selectedViolenceSubTypeIds}
-                                            startYear={timeRange[0]}
-                                            cause={displacementCause}
-                                            category={displacementCategory}
-                                            endYear={timeRange[1]}
-                                            clientCode={clientCode}
-                                            searchText={eventSearchText}
-                                            abbreviate={abbreviateFigures}
                                             active={activeView === 'events'}
+                                            filter={tableFilter}
+                                            searchText={eventSearchText}
+                                            clientCode={clientCode}
+                                            abbreviate={abbreviateFigures}
                                         />
                                     </div>
                                 )}

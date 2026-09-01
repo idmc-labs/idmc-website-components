@@ -10,7 +10,6 @@ import {
     TableColumn,
     Pager,
     SortContext,
-    useSortState,
     createDateColumn,
 } from '@togglecorp/toggle-ui';
 import {
@@ -26,7 +25,9 @@ import Numeral from '#components/Numeral';
 import Message from '#components/Message';
 import PendingMessage from '#components/PendingMessage';
 import HazardType, { Props as HazardTypeProps } from '#components/IduMap/IduTable/HazardType';
-import useDebouncedValue from '#hooks/useDebouncedValue';
+import useActiveVariables from '#hooks/useActiveVariables';
+import useFilterState from '#hooks/useFilterState';
+import useSyncedFilter from '#hooks/useSyncedFilter';
 import {
     GiddEventsQuery,
     GiddEventsQueryVariables,
@@ -35,6 +36,7 @@ import {
 import EventTitle, { Props as EventTitleProps } from '../EventTitle';
 
 import { CAUSE_BY_KEY } from '../utils';
+import { GiddTableFilter, GiddEventsFilter } from '../types';
 
 import styles from './styles.css';
 
@@ -124,82 +126,84 @@ const GIDD_EVENTS = gql`
 
 const EVENTS_TABLE_PAGE_SIZE = 10;
 
-type Category = 'flow' | 'stock';
-
 interface Props {
     className?: string;
-    activePage: number;
-    onActivePageChange: (newVal: number) => void;
-    startYear: number;
-    endYear: number;
-    cause: string | undefined;
-    category: Category | undefined;
-    countriesIso3: string[] | undefined;
-    hazardTypes: string[] | undefined;
-    violenceSubTypes: string[] | undefined;
-    clientCode: string;
+    filter: GiddTableFilter;
     searchText: string | undefined;
+    clientCode: string;
     abbreviate: boolean;
-    // false while this view is mounted but hidden, so its loading overlay
-    // doesn't portal on top of whichever view is actually visible
+    /**
+     * False while the pane is mounted but hidden: its loading overlay stays out of the visible
+     * view, and its query holds the variables it last fetched with.
+     */
     active?: boolean;
 }
 
 function EventsTable(props: Props) {
     const {
         className,
-        activePage,
-        onActivePageChange,
-        startYear,
-        endYear,
-        countriesIso3,
-        hazardTypes,
-        violenceSubTypes,
-        clientCode,
+        filter: sharedFilter,
         searchText,
-        cause,
-        category,
+        clientCode,
         abbreviate,
         active = true,
     } = props;
 
-    const isFlowShown = category !== 'stock';
-    const isStockShown = category !== 'flow';
+    const {
+        filter,
+        page,
+        rawPage,
+        setPage,
+        pageSize,
+        ordering,
+        sortState,
+        setFilter,
+    } = useFilterState<GiddEventsFilter>({
+        filter: { ...sharedFilter, eventName: searchText },
+        ordering: { name: 'startDate', direction: 'dsc' },
+        pageSize: EVENTS_TABLE_PAGE_SIZE,
+    });
 
-    const eventDataSortState = useSortState({ name: 'startDate', direction: 'dsc' });
-    const { sorting: eventSorting } = eventDataSortState;
+    // The search box lives in the view toolbar rather than in this table, so its value arrives as
+    // a prop and joins the shared filter here -- no other endpoint accepts an event name.
+    const sharedEventsFilter = useMemo(() => ({
+        ...sharedFilter,
+        eventName: searchText,
+    }), [sharedFilter, searchText]);
+
+    useSyncedFilter(sharedEventsFilter, setFilter);
+
+    const isFlowShown = filter.category !== 'stock';
+    const isStockShown = filter.category !== 'flow';
+
+    const { sorting: eventSorting } = sortState;
 
     const sortedHeaderClassName = useCallback((columnId: string) => (
         eventSorting?.name === columnId ? styles.sortedHeader : undefined
     ), [eventSorting]);
 
     const giddEventsVariables = useMemo(() => ({
-        eventName: searchText,
-        ordering: `${eventSorting?.direction === 'asc' ? '' : '-'}${eventSorting?.name}`,
-        page: activePage,
-        countriesIso3,
-        startYear,
-        cause: cause ? CAUSE_BY_KEY[cause] : undefined,
-        endYear,
-        hazardTypes,
-        violenceSubTypes,
-        pageSize: EVENTS_TABLE_PAGE_SIZE,
+        eventName: filter.eventName,
+        ordering,
+        page,
+        countriesIso3: filter.countriesIso3,
+        startYear: filter.startYear,
+        cause: filter.cause ? CAUSE_BY_KEY[filter.cause] : undefined,
+        endYear: filter.endYear,
+        hazardTypes: filter.hazardTypes,
+        violenceSubTypes: filter.violenceSubTypes,
+        pageSize,
         releaseEnvironment: DATA_RELEASE,
         clientId: clientCode,
     }), [
-        countriesIso3,
-        startYear,
-        cause,
-        endYear,
-        searchText,
-        hazardTypes,
-        violenceSubTypes,
-        eventSorting,
-        activePage,
+        filter,
+        ordering,
+        page,
+        pageSize,
         clientCode,
     ]);
 
-    const debouncedVariables = useDebouncedValue(giddEventsVariables);
+    const activeVariables = useActiveVariables(giddEventsVariables, active);
 
     const {
         previousData: previousEventsResponse,
@@ -211,7 +215,7 @@ function EventsTable(props: Props) {
     >(
         GIDD_EVENTS,
         {
-            variables: debouncedVariables,
+            variables: activeVariables,
             context: {
                 clientName: 'helix',
             },
@@ -386,7 +390,9 @@ function EventsTable(props: Props) {
     );
 
     const eventRows = eventsResponse?.giddPublicDisplacementEvents?.results;
-    const isEmpty = (eventRows ?? []).length === 0;
+    // A pane that has just been shown has an in-flight query and no rows yet; the empty
+    // message belongs to a finished query, not that gap.
+    const isEmpty = !loading && (eventRows ?? []).length === 0;
 
     return (
         <div className={_cs(className, styles.eventsTable)}>
@@ -398,7 +404,7 @@ function EventsTable(props: Props) {
                     emptyMessage="No data available for the selected filters."
                 />
             ) : (
-                <SortContext.Provider value={eventDataSortState}>
+                <SortContext.Provider value={sortState}>
                     <Table
                         // using dynamic key to reset the column width caching
                         key={eventColumns.map((column) => column.id).join(',')}
@@ -410,10 +416,10 @@ function EventsTable(props: Props) {
                     />
                     <Pager
                         className={styles.pager}
-                        activePage={activePage}
+                        activePage={rawPage}
                         itemsCount={eventsResponse?.giddPublicDisplacementEvents?.totalCount ?? 0}
-                        maxItemsPerPage={EVENTS_TABLE_PAGE_SIZE}
-                        onActivePageChange={onActivePageChange}
+                        maxItemsPerPage={pageSize}
+                        onActivePageChange={setPage}
                         itemsPerPageControlHidden
                     />
                 </SortContext.Provider>
