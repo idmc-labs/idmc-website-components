@@ -125,8 +125,6 @@ interface Props {
     onActivePageChange: (newVal: number) => void;
     clientCode: string;
     abbreviate: boolean;
-    // false while this view is mounted but hidden, so its loading overlay
-    // doesn't portal on top of whichever view is actually visible
     active?: boolean;
 }
 

@@ -7,10 +7,6 @@ html, body {
     box-sizing: border-box;
 }
 
-#app-container {
-    min-height: var(--embed-min-height, 100vh);
-}
-
 /* Mirrors the <Message /> component */
 .embed-loading {
     display: flex;
