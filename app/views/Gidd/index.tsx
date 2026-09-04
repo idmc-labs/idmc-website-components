@@ -602,19 +602,12 @@ function Gidd(props: Props) {
         endYear,
     ]);
 
-    const domainForCharts = useMemo(() => {
-        if (timeRange[0] === timeRange[1]) {
-            return [START_YEAR, timeRange[0]];
-        }
-        return timeRange;
-    }, [timeRange]);
-
     const timeRangeArray = useMemo(() => (
         Array.from(
-            { length: (domainForCharts[1] - domainForCharts[0]) + 1 },
-            (_, index) => domainForCharts[0] + index,
+            { length: (timeRange[1] - timeRange[0]) + 1 },
+            (_, index) => timeRange[0] + index,
         )
-    ), [domainForCharts]);
+    ), [timeRange]);
 
     const yearFilterOptions = useMemo(() => (
         Array.from(
@@ -733,7 +726,7 @@ function Gidd(props: Props) {
         violenceSubTypes: isConflictDataShown ? selectedViolenceSubTypeIds : undefined,
         startYear: timeRange[0],
         endYear: timeRange[1],
-        startYearForTimeseries: timeRange[0] === timeRange[1] ? START_YEAR : timeRange[0],
+        startYearForTimeseries: timeRange[0],
         endYearForTimeseries: timeRange[1],
         releaseEnvironment: DATA_RELEASE,
         clientId: clientCode,
@@ -1291,7 +1284,7 @@ function Gidd(props: Props) {
                 headingSize="medium"
                 headingTooltip={flowDetails}
                 headingTooltipTitle="Internal displacements"
-                headingDescription={`New movements per year globally, ${domainForCharts[0]}–${domainForCharts[1]}`}
+                headingDescription={`New movements per year globally, ${timeRange[0]}–${timeRange[1]}`}
                 headingDescriptionClassName={styles.cardDescription}
             />
             <div className={styles.chartPanel}>
@@ -1310,7 +1303,7 @@ function Gidd(props: Props) {
                                 axisLine={false}
                                 allowDecimals={false}
                                 type="number"
-                                domain={domainForCharts}
+                                domain={timeRange}
                                 padding={{ left: 20, right: 20 }}
                             />
                             <YAxis
@@ -1346,7 +1339,7 @@ function Gidd(props: Props) {
                 headingTooltip={stockDetails}
                 headingTooltipTitle="Internally displaced people (IDPs)"
                 headingSize="medium"
-                headingDescription={`People living in displacement at year end globally, as of ${domainForCharts[1]}`}
+                headingDescription={`People living in displacement at year end globally, as of ${timeRange[1]}`}
                 headingDescriptionClassName={styles.cardDescription}
             />
             <div className={styles.chartPanel}>
@@ -1366,7 +1359,7 @@ function Gidd(props: Props) {
                                 type="number"
                                 padding={{ left: 20, right: 20 }}
                                 allowDecimals={false}
-                                domain={domainForCharts}
+                                domain={timeRange}
                             />
                             <YAxis
                                 axisLine={false}
