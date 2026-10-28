@@ -126,6 +126,7 @@ function TopCountriesCard(props: Props) {
         total: roundAndRemoveZero(country.total) ?? 0,
         maxTotal,
         abbreviate,
+        showBreakdown: true,
         onClick: onCountrySelect,
     }), [maxTotal, abbreviate, onCountrySelect]);
 

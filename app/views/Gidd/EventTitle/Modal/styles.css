@@ -18,6 +18,26 @@
             display: flex;
             flex-direction: column;
             gap: var(--tui-spacing-medium);
+
+            .figures {
+                display: flex;
+                flex-wrap: wrap;
+                gap: var(--tui-spacing-large);
+            }
         }
+    }
+}
+
+.conflict-progress {
+    background-color: var(--color-conflict) !important;
+}
+
+.country-figures {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tui-spacing-extra-small);
+
+    .country-name {
+        font-weight: var(--tui-font-weight-bold);
     }
 }

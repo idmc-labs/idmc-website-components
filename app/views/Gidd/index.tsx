@@ -1276,6 +1276,24 @@ function Gidd(props: Props) {
         </div>
     );
 
+    // every selected region then every selected country, as display names —
+    // shared by the sidebar subtitles (Oxford-joined into scopeLabel) and the
+    // Figure analysis header (possessive phrasing)
+    const scopeNames = useMemo(() => {
+        const regionNames = regions.map((id) => (
+            regionOptions.find((item) => item.key === id)?.label ?? id
+        ));
+        const countryNames = countries.map((iso3) => (
+            countriesOptions?.find((item) => item.iso3 === iso3)?.idmcShortName ?? iso3
+        ));
+        return [...regionNames, ...countryNames];
+    }, [countries, countriesOptions, regions, regionOptions]);
+
+    const scopeLabel = buildScopeLabel(scopeNames);
+
+    const chartCausePhrase = buildCausePhrase(displacementCause);
+    const chartRangeLabel = `${timeRange[0]}–${timeRange[1]}`;
+
     const flowChartBlock = displacementCategory !== 'stock' && (
         <div className={styles.chartBlock}>
             <Header
@@ -1284,7 +1302,7 @@ function Gidd(props: Props) {
                 headingSize="medium"
                 headingTooltip={flowDetails}
                 headingTooltipTitle="Internal displacements"
-                headingDescription={`New movements per year globally, ${timeRange[0]}–${timeRange[1]}`}
+                headingDescription={`New movements per year${chartCausePhrase} ${scopeLabel}, ${chartRangeLabel}`}
                 headingDescriptionClassName={styles.cardDescription}
             />
             <div className={styles.chartPanel}>
@@ -1339,7 +1357,7 @@ function Gidd(props: Props) {
                 headingTooltip={stockDetails}
                 headingTooltipTitle="Internally displaced people (IDPs)"
                 headingSize="medium"
-                headingDescription={`People living in displacement at year end globally, as of ${timeRange[1]}`}
+                headingDescription={`People living in displacement at year end${chartCausePhrase} ${scopeLabel}, ${chartRangeLabel}`}
                 headingDescriptionClassName={styles.cardDescription}
             />
             <div className={styles.chartPanel}>
@@ -1420,21 +1438,6 @@ function Gidd(props: Props) {
             show on map →
         </RawButton>
     );
-
-    // every selected region then every selected country, as display names —
-    // shared by the sidebar subtitles (Oxford-joined into scopeLabel) and the
-    // Figure analysis header (possessive phrasing)
-    const scopeNames = useMemo(() => {
-        const regionNames = regions.map((id) => (
-            regionOptions.find((item) => item.key === id)?.label ?? id
-        ));
-        const countryNames = countries.map((iso3) => (
-            countriesOptions?.find((item) => item.iso3 === iso3)?.idmcShortName ?? iso3
-        ));
-        return [...regionNames, ...countryNames];
-    }, [countries, countriesOptions, regions, regionOptions]);
-
-    const scopeLabel = buildScopeLabel(scopeNames);
 
     // trigger-type selections split by group, independent of the cause filter —
     // each feeds its own "... figures are filtered to..." sentence

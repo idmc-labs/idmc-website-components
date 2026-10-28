@@ -191,12 +191,12 @@ function DisasterWidget(props: Props) {
     );
 
     const displacementsByHazardType = useMemo(() => (
-        disasterData?.giddPublicDisasterStatistics.displacementsByHazardType?.map((hazard) => ({
+        disasterData?.giddPublicDisasterStatistics?.displacementsByHazardType?.map((hazard) => ({
             ...hazard,
             label: getHazardTypeLabel(hazard),
         }))
     ), [
-        disasterData?.giddPublicDisasterStatistics.displacementsByHazardType,
+        disasterData?.giddPublicDisasterStatistics?.displacementsByHazardType,
     ]);
 
     if ((statsData?.giddPublicDisasterStatistics?.newDisplacementsRounded ?? 0) <= 0) {
@@ -339,7 +339,7 @@ function DisasterWidget(props: Props) {
                                 value={disasterTypes}
                                 options={(
                                     statsData
-                                        ?.giddPublicDisasterStatistics.displacementsByHazardType
+                                        ?.giddPublicDisasterStatistics?.displacementsByHazardType
                                     ?? undefined
                                 )}
                                 keySelector={disasterTypeKeySelector}
@@ -355,7 +355,7 @@ function DisasterWidget(props: Props) {
                 <Infographic
                     className={styles.disasterInfographic}
                     totalValue={
-                        disasterData?.giddPublicDisasterStatistics.newDisplacementsRounded || 0
+                        disasterData?.giddPublicDisasterStatistics?.newDisplacementsRounded || 0
                     }
                     description={(
                         <div>
@@ -373,7 +373,7 @@ function DisasterWidget(props: Props) {
                     )}
                     date={`${disasterTimeRangeActual[0]} - ${disasterTimeRangeActual[1]}`}
                     chart={disasterData
-                        ?.giddPublicDisasterStatistics.newDisplacementTimeseriesByYear
+                        ?.giddPublicDisasterStatistics?.newDisplacementTimeseriesByYear
                         && (
                             <ErrorBoundary>
                                 <ResponsiveContainer>
@@ -418,7 +418,7 @@ function DisasterWidget(props: Props) {
                 <Infographic
                     className={styles.disasterInfographic}
                     totalValue={disasterData
-                        ?.giddPublicDisasterStatistics.totalEvents || 0}
+                        ?.giddPublicDisasterStatistics?.totalEvents || 0}
                     description={(
                         <Header
                             headingClassName={styles.heading}

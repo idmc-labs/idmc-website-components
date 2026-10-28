@@ -19,20 +19,72 @@
         white-space: nowrap;
     }
 
-    .track {
-        display: flex;
+    .track-wrapper {
+        position: relative;
         flex-grow: 1;
-        border-radius: 0.25rem;
-        background-color: var(--color-progress-line-background, #f0f0f0);
-        height: var(--bar-track-height, 0.5rem);
-        overflow: hidden;
 
-        .conflict {
-            background-color: var(--color-conflict);
+        .track {
+            display: flex;
+            border-radius: 0.25rem;
+            background-color: var(--color-progress-line-background, #f0f0f0);
+            height: var(--bar-track-height, 0.5rem);
+            overflow: hidden;
+
+            .conflict {
+                background-color: var(--color-conflict);
+            }
+
+            .disaster {
+                background-color: var(--color-disaster);
+            }
         }
 
-        .disaster {
-            background-color: var(--color-disaster);
+        .breakdown {
+            display: none;
+            position: absolute;
+            bottom: calc(100% + 0.25rem);
+            left: 0;
+            z-index: 10;
+            border-radius: 0.25rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            background-color: var(--tui-color-white, #fff);
+            padding: var(--tui-spacing-small);
+            white-space: nowrap;
+            font-size: var(--tui-font-size-small);
+            pointer-events: none;
+
+            .breakdown-item {
+                display: flex;
+                align-items: center;
+                gap: var(--tui-spacing-small);
+            }
+
+            .breakdown-dot {
+                flex-shrink: 0;
+                border-radius: 50%;
+                width: 0.5rem;
+                height: 0.5rem;
+
+                &.conflict {
+                    background-color: var(--color-conflict);
+                }
+
+                &.disaster {
+                    background-color: var(--color-disaster);
+                }
+            }
+
+            .breakdown-label {
+                flex-grow: 1;
+            }
+
+            .breakdown-value {
+                font-weight: var(--tui-font-weight-bold);
+            }
+        }
+
+        &:hover .breakdown {
+            display: block;
         }
     }
 

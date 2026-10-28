@@ -115,4 +115,15 @@
         }
     }
 
+    .show-more {
+        align-self: center;
+        color: var(--tui-color-brand, #193256);
+        font-size: var(--tui-font-size-small);
+        font-weight: var(--tui-font-weight-bold);
+
+        &:hover:not(:disabled) {
+            text-decoration: underline;
+        }
+    }
+
 }

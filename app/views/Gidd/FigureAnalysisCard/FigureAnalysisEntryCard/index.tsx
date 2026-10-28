@@ -5,9 +5,13 @@ import Numeral from '#components/Numeral';
 import RawButton from '#components/RawButton';
 import MarkdownViewer from '#components/MarkdownViewer';
 
-import { FigureAnalysisEntry } from '../FigureAnalysisFetcher';
+import { GiddDashboardFigureAnalysisQuery } from '#generated/types';
 
 import styles from '../styles.css';
+
+type FigureAnalysisEntry = NonNullable<
+    NonNullable<GiddDashboardFigureAnalysisQuery['giddPublicFigureAnalysisList']>['results']
+>[number];
 
 export interface Props {
     entry: FigureAnalysisEntry & { countryName: string };

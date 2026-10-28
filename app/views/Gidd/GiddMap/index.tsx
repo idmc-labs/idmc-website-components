@@ -33,6 +33,7 @@ import Numeral from '#components/Numeral';
 import TooltipIcon from '#components/TooltipIcon';
 import PendingMessage from '#components/PendingMessage';
 import BubbleSizeLegend from '#components/BubbleSizeLegend';
+import GlobeSpinner from '#components/GlobeSpinner';
 import {
     DATA_RELEASE,
     getLogRadius,
@@ -167,8 +168,8 @@ function toCursorWorldCopy(
 }
 
 const SINGLE_COUNTRY_ZOOM = 4;
-const WORLD_CENTER: LngLatLike = [0, 0];
-const WORLD_ZOOM = 1;
+const WORLD_CENTER: LngLatLike = [0, 20];
+const WORLD_ZOOM = 2;
 
 function computeBounds(points: [number, number][]): LngLatBoundsLike | undefined {
     if (points.length === 0) {
@@ -600,6 +601,12 @@ function GiddMap(props: Props) {
         setFitBounds(camera.fitBounds);
     }, [countriesIso3, countryCentroidByIso3]);
 
+    // any filter besides the year range keeps the globe from spinning off the view
+    const filtersActive = countriesIso3.length > 0
+        || isDefined(cause)
+        || (hazardTypes?.length ?? 0) > 0
+        || (violenceSubTypes?.length ?? 0) > 0;
+
     const centerOptions = useMemo(
         () => ({ zoom: countriesIso3.length === 0 ? WORLD_ZOOM : SINGLE_COUNTRY_ZOOM }),
         [countriesIso3.length],
@@ -888,15 +895,16 @@ function GiddMap(props: Props) {
                     mapOptions={{
                         logoPosition: 'bottom-right',
                         scrollZoom: false,
-                        renderWorldCopies: false,
-                        center: [0, 0],
-                        zoom: 1,
-                        projection: { name: 'winkelTripel' },
+                        center: WORLD_CENTER,
+                        zoom: WORLD_ZOOM,
+                        // projection isn't in @types 2.7; applied at construction for globe
+                        projection: { name: 'globe' },
                     } as Omit<mapboxgl.MapboxOptions, 'style' | 'container'>}
                     scaleControlShown
                     navControlShown
                 >
                     <MapContainer className={styles.mapContainer} />
+                    <GlobeSpinner paused={isDefined(selection) || filtersActive} />
                     <MapCenter center={flyTo} centerOptions={centerOptions} />
                     <MapBounds
                         bounds={fitBounds}

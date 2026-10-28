@@ -136,8 +136,9 @@ function DownloadMenu(props: Props) {
             </div>
             {!disaggregationAvailable && (
                 <p className={styles.exportMessage}>
-                    Note: Disaggregated data can only be downloaded one
-                    year at a time.
+                    Note: Disaggregated data can only be downloaded one year at a time due to the
+                    size of the dataset. To access the full disaggregated dataset, please request
+                    an API key.
                 </p>
             )}
             <div className={styles.downloadGroupRow}>
