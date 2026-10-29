@@ -7,6 +7,9 @@ export interface PointProperties {
     name: string;
     cause: MarkerCause;
     value: number;
+    // The same figure for the metric the map is not showing, resolved by the map so the
+    // popup never re-sums rounded parts.
+    otherValue: number;
     radius?: number;
     iconName?: string;
     conflictNew?: number;

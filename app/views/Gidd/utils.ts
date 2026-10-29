@@ -24,6 +24,8 @@ export const OTHER_BUCKET_ID = '__other__';
 export interface BucketableItem {
     id: string;
     name: string;
+    // The API's published figure. "Other" is summed from these rather than published, so
+    // it can sit up to 1,000 away from a figure rounded once from the raw total.
     value: number;
 }
 
@@ -55,12 +57,14 @@ export function bucketSmallValues<T extends BucketableItem>(
         return items;
     }
 
+    const otherTotal = sum(minor.map((item) => item.value));
+
     return [
         ...major,
         {
             id: OTHER_BUCKET_ID,
             name: 'Other',
-            value: sum(minor.map((item) => item.value)),
+            value: otherTotal,
             isOther: true,
         },
     ];
@@ -108,9 +112,7 @@ export const HAZARD_BREAKDOWN_QUERY = gql`
             displacementsByHazardType {
                 id
                 label
-                newDisplacements
                 newDisplacementsRounded
-                totalDisplacements
                 totalDisplacementsRounded
             }
         }
@@ -137,9 +139,7 @@ export const VIOLENCE_BREAKDOWN_QUERY = gql`
             displacementsByViolenceSubType {
                 id
                 label
-                newDisplacements
                 newDisplacementsRounded
-                totalDisplacements
                 totalDisplacementsRounded
             }
         }
@@ -169,10 +169,10 @@ export const TOP_COUNTRIES_QUERY = gql`
         ){
             iso3
             countryName
-            conflictNewDisplacement
-            conflictTotalDisplacement
-            disasterNewDisplacement
-            disasterTotalDisplacement
+            conflictNewDisplacementRounded
+            conflictTotalDisplacementRounded
+            disasterNewDisplacementRounded
+            disasterTotalDisplacementRounded
         }
     }
 `;
@@ -258,16 +258,19 @@ export function useCountryRanking(params: UseCountryRankingParams) {
 
     const rankedCountries = useMemo<RankedCountry[]>(() => {
         const rows = data?.giddPublicCountryDisplacements ?? [];
-        // raw figures throughout: conflict/disaster drive the bar-segment widths
-        // and ranking; the displayed total is rounded (round-of-sum) by the caller
+        // conflict/disaster drive the bar-segment widths and the ranking
         return rows
             .map((row) => {
+                // The API's published figures throughout: the two segments and the total
+                // printed beside them share one scale. The total is summed here because the
+                // server publishes no combined column, so it can sit up to 1,000 away from a
+                // figure rounded once from the raw sum.
                 const conflict = (isStock
-                    ? row.conflictTotalDisplacement
-                    : row.conflictNewDisplacement) ?? 0;
+                    ? row.conflictTotalDisplacementRounded
+                    : row.conflictNewDisplacementRounded) ?? 0;
                 const disaster = (isStock
-                    ? row.disasterTotalDisplacement
-                    : row.disasterNewDisplacement) ?? 0;
+                    ? row.disasterTotalDisplacementRounded
+                    : row.disasterNewDisplacementRounded) ?? 0;
                 const scopedConflict = conflictShown ? conflict : 0;
                 const scopedDisaster = disasterShown ? disaster : 0;
                 return {

@@ -8,7 +8,7 @@ import {
 import Numeral from '#components/Numeral';
 import RawButton from '#components/RawButton';
 import ListView from '#components/ListView';
-import { getHazardTypeLabel, roundAndRemoveZero } from '#utils/common';
+import { getHazardTypeLabel } from '#utils/common';
 
 import {
     Cause,
@@ -101,18 +101,15 @@ function CountryPopupCard(props: Props) {
     const disasterNew = properties.disasterNew ?? 0;
     const disasterTotal = properties.disasterTotal ?? 0;
 
+    // The per-cause rows print the API's own rounded figures.
     const currentConflict = isStock ? conflictTotal : conflictNew;
     const currentDisaster = isStock ? disasterTotal : disasterNew;
-    const currentTotal = (cOn ? currentConflict : 0) + (dOn ? currentDisaster : 0);
 
-    const otherConflict = isStock ? conflictNew : conflictTotal;
-    const otherDisaster = isStock ? disasterNew : disasterTotal;
-    const otherTotal = (cOn ? otherConflict : 0) + (dOn ? otherDisaster : 0);
-
-    const displayConflict = roundAndRemoveZero(currentConflict);
-    const displayDisaster = roundAndRemoveZero(currentDisaster);
-    const displayTotal = roundAndRemoveZero(currentTotal);
-    const displayOtherTotal = roundAndRemoveZero(otherTotal);
+    // The totals come from the map, which already applied the cause selection and summed
+    // from raw figures. Re-adding the rounded rows above would compound their errors, and
+    // the headline would then disagree with the bubble it sits on.
+    const currentTotal = properties.value;
+    const otherTotal = properties.otherValue;
     const displacementsPeriod = startYear === endYear
         ? `in ${endYear}`
         : `from ${startYear} to ${endYear}`;
@@ -130,7 +127,7 @@ function CountryPopupCard(props: Props) {
                 <div className={styles.headerEnd}>
                     <Numeral
                         className={styles.headline}
-                        value={displayTotal}
+                        value={currentTotal}
                         abbreviate={abbreviate}
                     />
                     {canClose && (
@@ -156,7 +153,7 @@ function CountryPopupCard(props: Props) {
                             <span className={styles.breakdownLabel}>Conflict and violence</span>
                             <Numeral
                                 className={styles.breakdownValue}
-                                value={displayConflict}
+                                value={currentConflict}
                                 abbreviate={abbreviate}
                             />
                         </div>
@@ -167,7 +164,7 @@ function CountryPopupCard(props: Props) {
                             <span className={styles.breakdownLabel}>Disasters</span>
                             <Numeral
                                 className={styles.breakdownValue}
-                                value={displayDisaster}
+                                value={currentDisaster}
                                 abbreviate={abbreviate}
                             />
                         </div>
@@ -177,7 +174,7 @@ function CountryPopupCard(props: Props) {
                         <span className={styles.breakdownLabel}>{otherLabel}</span>
                         <Numeral
                             className={styles.breakdownValue}
-                            value={displayOtherTotal}
+                            value={otherTotal}
                             abbreviate={abbreviate}
                         />
                     </div>

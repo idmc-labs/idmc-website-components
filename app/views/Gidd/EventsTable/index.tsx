@@ -110,9 +110,7 @@ const GIDD_EVENTS = gql`
                 cause
                 causeDisplay
                 iso3
-                newDisplacement
                 newDisplacementRounded
-                totalDisplacement
                 totalDisplacementRounded
                 startDate
                 year

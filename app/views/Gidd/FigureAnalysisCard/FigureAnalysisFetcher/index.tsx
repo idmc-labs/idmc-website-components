@@ -29,7 +29,6 @@ const GIDD_COUNTRY_FIGURE_ANALYSIS = gql`
                 figureCategoryDisplay
                 figureCause
                 figureCauseDisplay
-                figures
                 figuresRounded
                 iso3
                 year

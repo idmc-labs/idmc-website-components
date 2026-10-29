@@ -6,7 +6,6 @@ import ListView from '#components/ListView';
 import CountryBar from '#components/IduMap/TopCountries/CountryBar';
 
 import { buildTriggerFilterSuffix } from '#utils/strings';
-import { roundAndRemoveZero } from '#utils/common';
 
 import {
     useCountryRanking,
@@ -119,11 +118,11 @@ function TopCountriesCard(props: Props) {
         name: country.iso3,
         rank: index + 1,
         countryName: country.countryName,
-        // conflict/disaster (raw) drive the bar widths; the displayed total is
-        // the raw sum, then rounded (round-of-sum, not a sum of rounded parts)
+        // The two segments and the total beside them are all published figures, so the bar
+        // widths and the number share one scale.
         conflict: country.conflict,
         disaster: country.disaster,
-        total: roundAndRemoveZero(country.total) ?? 0,
+        total: country.total,
         maxTotal,
         abbreviate,
         onClick: onCountrySelect,
