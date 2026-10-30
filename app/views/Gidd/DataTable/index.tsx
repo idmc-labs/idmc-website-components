@@ -1,8 +1,11 @@
-import React, { useMemo, useCallback } from 'react';
+import React, {
+    useMemo,
+    useCallback,
+    useEffect,
+} from 'react';
 import {
     _cs,
     isDefined,
-    isNotDefined,
 } from '@togglecorp/fujs';
 import {
     Table,
@@ -10,10 +13,7 @@ import {
     SortContext,
     useSortState,
 } from '@togglecorp/toggle-ui';
-import {
-    DATA_RELEASE,
-    roundAndRemoveZero,
-} from '#utils/common';
+import { DATA_RELEASE } from '#utils/common';
 import {
     gql,
     useQuery,
@@ -41,16 +41,8 @@ type DisplacementData = NonNullable<
 
 const displacementItemKeySelector = (item: DisplacementData) => `${item.iso3}-${item.year}`;
 const DISPLACEMENTS_TABLE_PAGE_SIZE = 10;
-
-function getCombinedTotal(
-    a: number | null | undefined,
-    b: number | null | undefined,
-) {
-    if (isNotDefined(a) && isNotDefined(b)) {
-        return undefined;
-    }
-    return (a ?? 0) + (b ?? 0);
-}
+const DEFAULT_SORTING = { name: 'year', direction: 'dsc' as const };
+const TOTAL_COLUMN_IDS = ['totalInternalDisplacements', 'totalIdps'];
 
 const smallNumberWidth = 80;
 // the IDPs headers are far shorter than the displacement ones, so they need less room
@@ -99,6 +91,10 @@ const GIDD_DISPLACEMENTS = gql`
                 disasterNewDisplacementRounded
                 disasterTotalDisplacement
                 disasterTotalDisplacementRounded
+                totalInternalDisplacements
+                totalInternalDisplacementsRounded
+                totalIdps
+                totalIdpsRounded
             }
             totalCount
             page
@@ -147,8 +143,8 @@ function DataTable(props: Props) {
         active = true,
     } = props;
 
-    const overallDataSortState = useSortState({ name: 'year', direction: 'dsc' });
-    const { sorting } = overallDataSortState;
+    const overallDataSortState = useSortState(DEFAULT_SORTING);
+    const { sorting, setSorting } = overallDataSortState;
 
     const sortedHeaderClassName = useCallback((columnId: string) => (
         sorting?.name === columnId ? styles.sortedHeader : undefined
@@ -249,25 +245,18 @@ function DataTable(props: Props) {
                     headerCellRendererClassName: sortedHeaderClassName('disasterNewDisplacement'),
                 },
             ) : undefined,
-            // not sortable: this is a client-side sum of two fields with no
-            // single backing field the server can order by, and the table
-            // is now server-paginated — sorting it would only reorder
-            // whatever happens to be on the current page
             isFlowShown && bothCauses ? createNumberColumn<DisplacementData, string>(
-                'totalNewDisplacement',
+                'totalInternalDisplacements',
                 'Total Internal Displacement',
-                (item) => {
-                    // sum the raw figures, then round — not a sum of rounded parts
-                    const total = getCombinedTotal(
-                        item.conflictNewDisplacement,
-                        item.disasterNewDisplacement,
-                    );
-                    return roundAndRemoveZero(total);
-                },
+                (item) => item.totalInternalDisplacementsRounded,
                 {
+                    sortable: true,
                     emphasize: true,
                     abbreviate,
                     columnWidth: largeNumberWidth,
+                    headerCellRendererClassName: sortedHeaderClassName(
+                        'totalInternalDisplacements',
+                    ),
                 },
             ) : undefined,
             isStockShown && isConflictDataShown ? createNumberColumn<DisplacementData, string>(
@@ -294,22 +283,16 @@ function DataTable(props: Props) {
                     headerCellRendererClassName: sortedHeaderClassName('disasterTotalDisplacement'),
                 },
             ) : undefined,
-            // not sortable — see the "Total Internal Displacement" column above
             isStockShown && bothCauses ? createNumberColumn<DisplacementData, string>(
-                'totalIDPs',
+                'totalIdps',
                 'Total IDPs',
-                (item) => {
-                    // sum the raw figures, then round — not a sum of rounded parts
-                    const total = getCombinedTotal(
-                        item.conflictTotalDisplacement,
-                        item.disasterTotalDisplacement,
-                    );
-                    return roundAndRemoveZero(total);
-                },
+                (item) => item.totalIdpsRounded,
                 {
+                    sortable: true,
                     emphasize: true,
                     abbreviate,
                     columnWidth: mediumNumberWidth,
+                    headerCellRendererClassName: sortedHeaderClassName('totalIdps'),
                 },
             ) : undefined,
         ]).filter(isDefined),
@@ -323,6 +306,18 @@ function DataTable(props: Props) {
             abbreviate,
         ],
     );
+
+    // total columns are only shown when both causes are, so ordering
+    // falls back to the default if the column being sorted by gets hidden
+    useEffect(() => {
+        if (
+            sorting
+            && TOTAL_COLUMN_IDS.includes(sorting.name)
+            && !columns.some((column) => column.id === sorting.name)
+        ) {
+            setSorting(DEFAULT_SORTING);
+        }
+    }, [sorting, columns, setSorting]);
 
     const rows = displacementsResponse?.giddPublicCountryYearDisplacements?.results;
     const isEmpty = (rows ?? []).length === 0;

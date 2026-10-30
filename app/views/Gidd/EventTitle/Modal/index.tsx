@@ -43,6 +43,7 @@ query GiddEventDetails(
             countryName
             iso3
             newDisplacementRounded
+            totalDisplacementRounded
         }
         endDate
         eventName
@@ -52,6 +53,7 @@ query GiddEventDetails(
             name
         }
         newDisplacementRounded
+        totalDisplacementRounded
         startDate
     }
 }
@@ -60,6 +62,75 @@ query GiddEventDetails(
 type Country = NonNullable<NonNullable<GiddEventDetailsQuery['giddPublicEvent']>['affectedCountries']>[number];
 
 const countryKeySelector = (item: Country) => item?.iso3 ?? '';
+
+interface CountryFiguresProps {
+    countryName: string | undefined;
+    newDisplacement: number | null | undefined;
+    totalDisplacement: number | null | undefined;
+    maxNewDisplacement: number | undefined;
+    maxTotalDisplacement: number | undefined;
+    isFlowShown: boolean;
+    isStockShown: boolean;
+    progressClassName: string | undefined;
+}
+
+function CountryFigures(props: CountryFiguresProps) {
+    const {
+        countryName,
+        newDisplacement,
+        totalDisplacement,
+        maxNewDisplacement,
+        maxTotalDisplacement,
+        isFlowShown,
+        isStockShown,
+        progressClassName,
+    } = props;
+
+    if (!isStockShown) {
+        return (
+            <ProgressLine
+                title={countryName}
+                value={newDisplacement ?? 0}
+                total={maxNewDisplacement}
+                progressClassName={progressClassName}
+            />
+        );
+    }
+    if (!isFlowShown) {
+        return (
+            <ProgressLine
+                title={countryName}
+                value={totalDisplacement ?? 0}
+                total={maxTotalDisplacement}
+                progressClassName={progressClassName}
+            />
+        );
+    }
+
+    return (
+        <div className={styles.countryFigures}>
+            <div className={styles.countryName}>
+                {countryName}
+            </div>
+            {isDefined(newDisplacement) && (
+                <ProgressLine
+                    title="Internal Displacements"
+                    value={newDisplacement}
+                    total={maxNewDisplacement}
+                    progressClassName={progressClassName}
+                />
+            )}
+            {isDefined(totalDisplacement) && (
+                <ProgressLine
+                    title="IDPs"
+                    value={totalDisplacement}
+                    total={maxTotalDisplacement}
+                    progressClassName={progressClassName}
+                />
+            )}
+        </div>
+    );
+}
 
 export type Props = {
     className?: string;
@@ -71,6 +142,7 @@ export type Props = {
     // both come from the events table row that opened this modal
     cause?: CrisisType | null;
     violenceSubTypeName?: string | null;
+    category?: 'flow' | 'stock';
 }
 
 function EventModal(props: Props) {
@@ -82,7 +154,11 @@ function EventModal(props: Props) {
         clientCode,
         cause,
         violenceSubTypeName,
+        category,
     } = props;
+
+    const isFlowShown = category !== 'stock';
+    const isStockShown = category !== 'flow';
 
     const eventVariables = useMemo((): GiddEventDetailsQueryVariables => ({
         eventId,
@@ -107,32 +183,73 @@ function EventModal(props: Props) {
     const event = data?.giddPublicEvent;
 
     const sortedCountries = useMemo(() => {
-        const tempCountries = [...event?.affectedCountries ?? []];
+        const tempCountries = (event?.affectedCountries ?? []).filter(
+            (country) => (
+                (isFlowShown && isDefined(country?.newDisplacementRounded))
+                || (isStockShown && isDefined(country?.totalDisplacementRounded))
+            ),
+        );
 
         tempCountries.sort(
-            (foo, bar) => compareNumber(
-                foo?.newDisplacementRounded,
-                bar?.newDisplacementRounded,
-                -1,
+            (foo, bar) => (
+                isFlowShown
+                    ? compareNumber(
+                        foo?.newDisplacementRounded,
+                        bar?.newDisplacementRounded,
+                        -1,
+                    )
+                    : compareNumber(
+                        foo?.totalDisplacementRounded,
+                        bar?.totalDisplacementRounded,
+                        -1,
+                    )
             ),
         );
 
         return removeNull(tempCountries.filter(isDefined));
-    }, [event?.affectedCountries]);
+    }, [event?.affectedCountries, isFlowShown, isStockShown]);
+
+    const maxNewDisplacement = useMemo(() => (
+        Math.max(0, ...sortedCountries.map((country) => country.newDisplacementRounded ?? 0))
+    ), [sortedCountries]);
+
+    const maxTotalDisplacement = useMemo(() => (
+        Math.max(0, ...sortedCountries.map((country) => country.totalDisplacementRounded ?? 0))
+    ), [sortedCountries]);
 
     // conflict events carry no hazard types; their taxonomy is the violence
     // sub-type, which only the events table row knows about
     const isConflict = cause === 'CONFLICT';
+    const isDisaster = cause === 'DISASTER';
+    let figureVariant: 'conflict' | 'disaster' | 'normal' = 'normal';
+    if (isConflict) {
+        figureVariant = 'conflict';
+    } else if (isDisaster) {
+        figureVariant = 'disaster';
+    }
+    const progressClassName = isConflict ? styles.conflictProgress : undefined;
+
     const subTypeLabel = isConflict ? 'Conflict Subtypes' : 'Hazard Subtypes';
     const subTypeValue = isConflict
         ? violenceSubTypeName
         : event?.hazardTypes?.map((hazard) => hazard?.name).join(' / ');
 
     const countryRendererParams = useCallback((_: string, country: Country) => ({
-        total: sortedCountries?.[0]?.newDisplacementRounded,
-        value: country?.newDisplacementRounded ?? 0,
-        title: country?.countryName,
-    }), [sortedCountries]);
+        countryName: country?.countryName,
+        newDisplacement: country?.newDisplacementRounded,
+        totalDisplacement: country?.totalDisplacementRounded,
+        maxNewDisplacement,
+        maxTotalDisplacement,
+        isFlowShown,
+        isStockShown,
+        progressClassName,
+    }), [
+        maxNewDisplacement,
+        maxTotalDisplacement,
+        isFlowShown,
+        isStockShown,
+        progressClassName,
+    ]);
 
     return (
         <Modal
@@ -147,12 +264,28 @@ function EventModal(props: Props) {
                 pendingMessage="Loading"
             />
             <div className={styles.left}>
-                <NumberBlock
-                    label="Internal Displacements"
-                    size="medium"
-                    value={event?.newDisplacementRounded}
-                    abbreviated={false}
-                />
+                <div className={styles.figures}>
+                    {isFlowShown && (
+                        <NumberBlock
+                            label="Internal Displacements"
+                            size="medium"
+                            variant={figureVariant}
+                            value={event?.newDisplacementRounded}
+                            abbreviated={false}
+                            hiddenIfNoValue
+                        />
+                    )}
+                    {isStockShown && (
+                        <NumberBlock
+                            label="IDPs"
+                            size="medium"
+                            variant={figureVariant}
+                            value={event?.totalDisplacementRounded}
+                            abbreviated={false}
+                            hiddenIfNoValue
+                        />
+                    )}
+                </div>
                 <TextOutput
                     label="Event Name"
                     value={event?.eventName}
@@ -192,7 +325,7 @@ function EventModal(props: Props) {
             <div className={styles.right}>
                 <ListView
                     rendererParams={countryRendererParams}
-                    renderer={ProgressLine}
+                    renderer={CountryFigures}
                     keySelector={countryKeySelector}
                     data={sortedCountries}
                     pending={loading && !data}

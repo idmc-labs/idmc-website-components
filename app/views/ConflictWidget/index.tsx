@@ -301,7 +301,7 @@ function ConflictWidget(props: Props) {
                 <Infographic
                     className={styles.conflictInfographic}
                     totalValue={
-                        conflictData?.giddPublicConflictStatistics.newDisplacementsRounded || 0
+                        conflictData?.giddPublicConflictStatistics?.newDisplacementsRounded || 0
                     }
                     description={(
                         <Header
@@ -318,7 +318,7 @@ function ConflictWidget(props: Props) {
                     date={`${conflictTimeRangeActual[0]} - ${conflictTimeRangeActual[1]}`}
                     chart={
                         conflictData
-                            ?.giddPublicConflictStatistics.newDisplacementTimeseriesByYear && (
+                            ?.giddPublicConflictStatistics?.newDisplacementTimeseriesByYear && (
                             <ErrorBoundary>
                                 <ResponsiveContainer>
                                     <BarChart
@@ -364,7 +364,7 @@ function ConflictWidget(props: Props) {
                 <Infographic
                     className={styles.conflictInfographic}
                     totalValue={
-                        conflictData?.giddPublicConflictStatistics.totalDisplacementsRounded || 0
+                        conflictData?.giddPublicConflictStatistics?.totalDisplacementsRounded || 0
                     }
                     description={(
                         <Header
@@ -382,7 +382,7 @@ function ConflictWidget(props: Props) {
                     chart={
                         conflictData
                             ?.giddPublicConflictStatistics
-                            .totalDisplacementTimeseriesByYear
+                            ?.totalDisplacementTimeseriesByYear
                         && (
                             <ErrorBoundary>
                                 <ResponsiveContainer>

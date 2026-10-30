@@ -20,6 +20,7 @@ export type Props = {
     // forwarded to the modal: the event details query exposes neither field
     cause?: CrisisType | null;
     violenceSubTypeName?: string | null;
+    category?: 'flow' | 'stock';
 }
 
 function EventTitle(props: Props) {
@@ -31,6 +32,7 @@ function EventTitle(props: Props) {
         clientId,
         cause,
         violenceSubTypeName,
+        category,
     } = props;
 
     const [
@@ -60,6 +62,7 @@ function EventTitle(props: Props) {
                             title={title}
                             cause={cause}
                             violenceSubTypeName={violenceSubTypeName}
+                            category={category}
                             onCloseButtonClick={hideModal}
                         />
                     )}

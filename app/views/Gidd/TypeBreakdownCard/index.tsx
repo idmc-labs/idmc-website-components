@@ -88,6 +88,7 @@ function TypeBreakdownCard(props: Props) {
         {
             variables: debouncedVariables,
             skip: isConflict || noData,
+            fetchPolicy: 'cache-and-network',
             context: {
                 clientName: 'helix',
             },
@@ -103,6 +104,7 @@ function TypeBreakdownCard(props: Props) {
         {
             variables: debouncedVariables,
             skip: !isConflict || noData,
+            fetchPolicy: 'cache-and-network',
             context: {
                 clientName: 'helix',
             },

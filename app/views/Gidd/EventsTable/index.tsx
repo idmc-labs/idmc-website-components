@@ -73,6 +73,7 @@ const GIDD_EVENTS = gql`
         $hazardTypes: [ID!],
         $violenceSubTypes: [ID!],
         $countriesIso3: [String!],
+        $displacementType: GiddDisplacementTypeEnum,
         $releaseEnvironment: String!,
         $clientId: String!,
     ){
@@ -88,6 +89,8 @@ const GIDD_EVENTS = gql`
                 hazardTypes: $hazardTypes,
                 violenceSubTypes: $violenceSubTypes,
                 cause: $cause,
+                displacementType: $displacementType,
+                hasFigures: true,
                 releaseEnvironment: $releaseEnvironment,
             },
             clientId: $clientId,
@@ -127,6 +130,11 @@ const GIDD_EVENTS = gql`
 const EVENTS_TABLE_PAGE_SIZE = 10;
 
 type Category = 'flow' | 'stock';
+
+const DISPLACEMENT_TYPE_BY_CATEGORY = {
+    flow: 'NEW_DISPLACEMENT',
+    stock: 'IDPS',
+} as const;
 
 interface Props {
     className?: string;
@@ -183,6 +191,7 @@ function EventsTable(props: Props) {
         endYear,
         hazardTypes,
         violenceSubTypes,
+        displacementType: category ? DISPLACEMENT_TYPE_BY_CATEGORY[category] : undefined,
         pageSize: EVENTS_TABLE_PAGE_SIZE,
         releaseEnvironment: DATA_RELEASE,
         clientId: clientCode,
@@ -194,6 +203,7 @@ function EventsTable(props: Props) {
         searchText,
         hazardTypes,
         violenceSubTypes,
+        category,
         eventSorting,
         activePage,
         clientCode,
@@ -256,6 +266,7 @@ function EventsTable(props: Props) {
                     clientId: clientCode,
                     cause: data.cause,
                     violenceSubTypeName: data.violenceSubTypeName,
+                    category,
                 }),
                 columnWidth: mediumTextWidth,
                 columnStretch: true,
@@ -378,6 +389,7 @@ function EventsTable(props: Props) {
         },
         [
             clientCode,
+            category,
             sortedHeaderClassName,
             isFlowShown,
             isStockShown,

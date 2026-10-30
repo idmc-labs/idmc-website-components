@@ -76,12 +76,15 @@ export interface BreakdownQueryVariables {
     violenceSubTypes?: string[];
 }
 
+type HazardStatistics = NonNullable<GiddHazardBreakdownQuery['giddPublicDisasterStatistics']>;
+type ViolenceStatistics = NonNullable<GiddViolenceBreakdownQuery['giddPublicConflictStatistics']>;
+
 export type HazardBreakdownEntry = NonNullable<
-    GiddHazardBreakdownQuery['giddPublicDisasterStatistics']['displacementsByHazardType']
+    HazardStatistics['displacementsByHazardType']
 >[number];
 
 export type ViolenceBreakdownEntry = NonNullable<
-    GiddViolenceBreakdownQuery['giddPublicConflictStatistics']['displacementsByViolenceSubType']
+    ViolenceStatistics['displacementsByViolenceSubType']
 >[number];
 
 // Both breakdown entries carry the same shape (id/label/new+total

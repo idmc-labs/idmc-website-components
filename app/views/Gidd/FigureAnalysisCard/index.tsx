@@ -1,19 +1,66 @@
 import React, {
-    useState,
     useMemo,
     useCallback,
 } from 'react';
 import { _cs } from '@togglecorp/fujs';
+import {
+    gql,
+    useQuery,
+    NetworkStatus,
+} from '@apollo/client';
 
 import Header from '#components/Header';
 import Message from '#components/Message';
 import ListView from '#components/ListView';
+import RawButton from '#components/RawButton';
+import { DATA_RELEASE } from '#utils/common';
 import { joinWithAnd } from '#utils/strings';
+import {
+    GiddDashboardFigureAnalysisQuery,
+    GiddDashboardFigureAnalysisQueryVariables,
+} from '#generated/types';
 
-import FigureAnalysisFetcher, { FigureAnalysisEntry } from './FigureAnalysisFetcher';
 import FigureAnalysisEntryCard from './FigureAnalysisEntryCard';
 
 import styles from './styles.css';
+
+const GIDD_FIGURE_ANALYSIS = gql`
+    query GiddDashboardFigureAnalysis(
+        $countriesIso3: [String!],
+        $year: Int!,
+        $page: Int,
+        $pageSize: Int,
+        $releaseEnvironment: String!,
+        $clientId: String!,
+    ){
+        giddPublicFigureAnalysisList(
+            filters: {
+                countriesIso3: $countriesIso3,
+                year: $year,
+                releaseEnvironment: $releaseEnvironment,
+            },
+            page: $page,
+            pageSize: $pageSize,
+            clientId: $clientId,
+        ) {
+            results {
+                id
+                description
+                figureCategory
+                figureCategoryDisplay
+                figureCause
+                figureCauseDisplay
+                figures
+                figuresRounded
+                iso3
+                year
+            }
+            totalCount
+        }
+    }
+`;
+
+const FIGURE_ANALYSIS_PAGE_SIZE = 25;
 
 export interface FigureAnalysisCountry {
     iso3: string;
@@ -25,9 +72,6 @@ type Category = 'flow' | 'stock';
 export interface Props {
     className?: string;
     countries: FigureAnalysisCountry[];
-    // display names for the header only — selected regions then countries,
-    // Oxford-joined; distinct from `countries` (a region expands to its members
-    // for fetching, but the header should name the region, not each member)
     scopeNames: string[];
     category: Category | undefined;
     year: number;
@@ -46,28 +90,76 @@ function FigureAnalysisCard(props: Props) {
         abbreviate,
     } = props;
 
-    const [resultsByIso3, setResultsByIso3] = useState<Record<string, FigureAnalysisEntry[]>>({});
-    const [pendingByIso3, setPendingByIso3] = useState<Record<string, boolean>>({});
+    const variables = useMemo((): GiddDashboardFigureAnalysisQueryVariables => ({
+        countriesIso3: countries.map((country) => country.iso3),
+        year,
+        page: 1,
+        pageSize: FIGURE_ANALYSIS_PAGE_SIZE,
+        releaseEnvironment: DATA_RELEASE,
+        clientId: clientCode,
+    }), [countries, year, clientCode]);
 
-    const handleResults = useCallback((
-        iso3: string,
-        results: FigureAnalysisEntry[],
-        pending: boolean,
-    ) => {
-        setResultsByIso3((prev) => ({ ...prev, [iso3]: results }));
-        setPendingByIso3((prev) => ({ ...prev, [iso3]: pending }));
-    }, []);
+    const {
+        data,
+        loading,
+        networkStatus,
+        fetchMore,
+    } = useQuery<GiddDashboardFigureAnalysisQuery, GiddDashboardFigureAnalysisQueryVariables>(
+        GIDD_FIGURE_ANALYSIS,
+        {
+            variables,
+            skip: countries.length === 0,
+            fetchPolicy: 'cache-and-network',
+            notifyOnNetworkStatusChange: true,
+            context: {
+                clientName: 'helix',
+            },
+        },
+    );
+
+    const results = data?.giddPublicFigureAnalysisList?.results;
+    const totalCount = data?.giddPublicFigureAnalysisList?.totalCount ?? 0;
 
     const showCountryName = countries.length > 1;
 
-    const entries = useMemo(() => (
-        countries.flatMap((country) => (
-            (resultsByIso3[country.iso3] ?? []).map((entry) => ({
-                ...entry,
-                countryName: country.name,
-            }))
-        ))
-    ), [countries, resultsByIso3]);
+    const entries = useMemo(() => {
+        const countryNameByIso3 = new Map(
+            countries.map((country) => [country.iso3, country.name]),
+        );
+        return (results ?? []).map((entry) => ({
+            ...entry,
+            countryName: countryNameByIso3.get(entry.iso3) ?? entry.iso3,
+        }));
+    }, [countries, results]);
+
+    const loadedCount = results?.length ?? 0;
+    const hasMore = loadedCount < totalCount;
+    const loadingMore = networkStatus === NetworkStatus.fetchMore;
+
+    const handleShowMore = useCallback(() => {
+        fetchMore({
+            variables: {
+                page: Math.floor(loadedCount / FIGURE_ANALYSIS_PAGE_SIZE) + 1,
+            },
+            updateQuery: (previousResult, { fetchMoreResult }) => {
+                const previousList = previousResult.giddPublicFigureAnalysisList;
+                const nextList = fetchMoreResult?.giddPublicFigureAnalysisList;
+                if (!previousList || !nextList) {
+                    return previousResult;
+                }
+                return {
+                    ...previousResult,
+                    giddPublicFigureAnalysisList: {
+                        ...nextList,
+                        results: [
+                            ...previousList.results ?? [],
+                            ...nextList.results ?? [],
+                        ],
+                    },
+                };
+            },
+        });
+    }, [fetchMore, loadedCount]);
 
     const entryKeySelector = useCallback((entry: typeof entries[number]) => entry.id, []);
     const entryRendererParams = useCallback((_: string, entry: typeof entries[number]) => ({
@@ -76,12 +168,7 @@ function FigureAnalysisCard(props: Props) {
         abbreviate,
     }), [showCountryName, abbreviate]);
 
-    // Any selected country still on its first load, before any entries have
-    // arrived at all — once at least one comes in, show what we have rather
-    // than blocking on the slowest country.
-    const pending = countries.length > 0
-        && entries.length === 0
-        && countries.some((country) => pendingByIso3[country.iso3] !== false);
+    const pending = countries.length > 0 && loading && !loadingMore;
 
     const headingDescription = useMemo(() => {
         if (scopeNames.length === 0) {
@@ -93,15 +180,6 @@ function FigureAnalysisCard(props: Props) {
 
     return (
         <div className={_cs(styles.figureAnalysisCard, className)}>
-            {countries.map((country) => (
-                <FigureAnalysisFetcher
-                    key={country.iso3}
-                    iso3={country.iso3}
-                    year={year}
-                    clientCode={clientCode}
-                    onResults={handleResults}
-                />
-            ))}
             <Header
                 heading="Figure analysis"
                 headingClassName={styles.slideHeading}
@@ -144,6 +222,16 @@ function FigureAnalysisCard(props: Props) {
                                 errored={false}
                                 filtered={false}
                             />
+                        )}
+                        {hasMore && (
+                            <RawButton
+                                name={undefined}
+                                className={styles.showMore}
+                                onClick={handleShowMore}
+                                disabled={loadingMore}
+                            >
+                                {loadingMore ? 'Loading…' : 'Show more'}
+                            </RawButton>
                         )}
                     </>
                 )}
