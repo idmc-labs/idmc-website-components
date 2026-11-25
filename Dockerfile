@@ -51,7 +51,7 @@ RUN env > .env && yarn build
 RUN find /code/build -name '*.gz' -delete
 
 # ---------------------------------------------------------------------------
-FROM ghcr.io/toggle-corp/web-app-serve:v0.1.2 AS web-app-serve
+FROM ghcr.io/toggle-corp/web-app-serve:v0.2.0 AS web-app-serve
 
 LABEL org.opencontainers.image.source="https://github.com/idmc-labs/idmc-website-components"
 LABEL org.opencontainers.image.authors="IDMC"
